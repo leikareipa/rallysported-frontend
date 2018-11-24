@@ -11,3 +11,22 @@ Also see the [live version of RallySportED](http://tarpeeksihyvaesoft.com/rallys
 
 ### Usage
 Verbose instructions to follow, but suffice to say for now that, to test RallySportED on your localhost, use ```localhost/?track=abc``` as the address. This will load the sample track from ```res/tracks/abc.zip```.
+
+### Todo
+- [ ] Moving track props by dragging them in the 3d view.
+- [ ] Editing of textures.
+- [ ] A user interface that works on mobile devices.
+- [ ] Highlight track prop locations in the paint view.
+- [ ] Have the height of water tiles reflect how the game displays them.
+- [ ] Non-FPS-sensitive terrain editing.
+- [ ] A viewing angle in the 3d view that matches that of the game. Useful since the texture distortion is angle-dependent.
+- [ ] Move the camera by clicking on the minimap.
+- [ ] Terrain shading.
+- [ ] An indicator rectangle in the texture pane around the texture that's currently selected.
+
+### Known issues
+- [ ] Middle mouse button clicks, used to paint the terrain, may intermittently stop getting registered. Not sure that this isn't a browser/focus issue; and I might reassign the button to something else.
+- [ ] The paint view may be slow to draw, as it's sloppily implemented. One workaround for now is to zoom the page in your browser (e.g. with ctrl + wheel up), which results in lower-resolution, quicker rendering.
+- [ ] There are some rendering errors in the 3d view. (Disable the wireframe to see them in their full.)
+- [ ] The house prop has bad texturing. 
+- [ ] Keyboard keys can stick if released while the app doesn't have focus.
