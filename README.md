@@ -30,3 +30,4 @@ Verbose instructions to follow, but suffice to say for now that, to test RallySp
 - [ ] There are some rendering errors in the 3d view. (Disable the wireframe to see them in their full.)
 - [ ] The house prop has bad texturing. 
 - [ ] Keyboard keys can stick if released while the app doesn't have focus.
+- [ ] The camera moves in units of tiles rather than pixels, making for jerky scrolling when moving diagonally.
