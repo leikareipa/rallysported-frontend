@@ -27,7 +27,7 @@ Verbose instructions to follow, but suffice to say for now that, to test RallySp
 ### Known issues
 - [ ] Middle mouse button clicks, used to paint the terrain, may intermittently stop getting registered. Not sure that this isn't a browser/focus issue; and I might reassign the button to something else.
 - [ ] The paint view may be slow to draw, as it's sloppily implemented. One workaround for now is to zoom the page in your browser (e.g. with ctrl + wheel up), which results in lower-resolution, quicker rendering.
-- [ ] There are some rendering errors in the 3d view. (Disable the wireframe to see them in their full.)
+- [ ] There are occasional rendering errors in the 3d view.
 - [ ] The house prop has bad texturing. 
 - [ ] Keyboard keys can stick if released while the app doesn't have focus.
 - [ ] The camera moves in units of tiles rather than pixels, making for jerky scrolling when moving diagonally.
