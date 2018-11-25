@@ -27,6 +27,10 @@ const line_draw_n = (function()
             const x1 = Math.floor(vert2.x);
             const y1 = Math.floor(vert2.y);
 
+            // If true, we won't touch non-null elements in the array. Useful in preventing certain
+            // edge rendering errors.
+            const noOverwrite = (y1 <= y0);
+
             // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
             {
                 let dx = Math.abs(x1 - x0);
@@ -38,7 +42,14 @@ const line_draw_n = (function()
                 while (true)
                 {
                     // Mark the pixel.
-                    array[y0 - yOffset] = x0;
+                    if (noOverwrite)
+                    {
+                        if (array[y0 - yOffset] == null) array[y0 - yOffset] = x0;
+                    }
+                    else
+                    {
+                        array[y0 - yOffset] = x0;
+                    }
 
                     if ((x0 === x1) &&
                         (y0 === y1))
