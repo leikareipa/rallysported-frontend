@@ -109,36 +109,34 @@ window.onmousemove = function(event)
 
 window.onkeydown = function(event)
 {
-    /// FIXME: Depending on browser, could be .keyCode or .which.
-    const key = String.fromCharCode(event.keyCode).toLowerCase();
+    ui_input_n.update_key_status(event, true);
 
-    ui_input_n.set_key_status(key, true);
-
-    if (event.repeat) return;
-
-    switch (event.keyCode)
+    /// Temp hack. Process some of the key presses here, for convenience.
     {
-        case "q": case 81: ui_view_n.toggle_view("2d-topdown", "3d"); break;
-        case "w": case 87: ui_view_n.show3dWireframe = !ui_view_n.show3dWireframe; break;
-        case "a": case 65: ui_view_n.showPalatPane = !ui_view_n.showPalatPane; break;
-        case "r": case 82: ui_view_n.toggle_view("3d", "3d-topdown"); break;
-        case "l": case 76: maasto_n.level_terrain(); break;
-        case "spacebar": case 32: ui_brush_n.brushSmoothens = !ui_brush_n.brushSmoothens; event.preventDefault(); break;
-        case "1": case 49: ui_brush_n.set_brush_size(0); break;
-        case "2": case 50: ui_brush_n.set_brush_size(1); break;
-        case "3": case 51: ui_brush_n.set_brush_size(2); break;
-        case "4": case 52: ui_brush_n.set_brush_size(3); break;
-        case "5": case 53: ui_brush_n.set_brush_size(8); break;
-        case "tab": case 9: event.preventDefault(); break;
-        default: break;
+        if (event.repeat) return;
+
+        switch (event.keyCode)
+        {
+            case "q": case 81: ui_view_n.toggle_view("2d-topdown", "3d"); break;
+            case "w": case 87: ui_view_n.show3dWireframe = !ui_view_n.show3dWireframe; break;
+            case "a": case 65: ui_view_n.showPalatPane = !ui_view_n.showPalatPane; break;
+            case "r": case 82: ui_view_n.toggle_view("3d", "3d-topdown"); break;
+            case "l": case 76: maasto_n.level_terrain(); break;
+            case "spacebar": case 32: ui_brush_n.brushSmoothens = !ui_brush_n.brushSmoothens; event.preventDefault(); break;
+            case "1": case 49: ui_brush_n.set_brush_size(0); break;
+            case "2": case 50: ui_brush_n.set_brush_size(1); break;
+            case "3": case 51: ui_brush_n.set_brush_size(2); break;
+            case "4": case 52: ui_brush_n.set_brush_size(3); break;
+            case "5": case 53: ui_brush_n.set_brush_size(8); break;
+            case "tab": case 9: event.preventDefault(); break;
+            default: break;
+        }
     }
 }
 
 window.onkeyup = function(event)
 {
-    const key = String.fromCharCode(event.keyCode).toLowerCase();
-
-    ui_input_n.set_key_status(key, false);
+    ui_input_n.update_key_status(event, false);
 }
 
 const page_n = (function()

@@ -34,6 +34,9 @@ const maasto_n = (function()
     const propLocations = [];
     const propNames = [];
 
+    // The maximum number of props that can exist on a track.
+    const maxNumProps = 14;
+
     // The byte sizes of the binary MAASTO and VARIMAA data that our current heightmap and tilemap are based on.
     let originalMaastoBytesize = 0;
     let originalVarimaaBytesize = 0;
@@ -52,14 +55,36 @@ const maasto_n = (function()
             trackCheckpoint.y = y;
         }
 
+        publicInterface.num_props = function()
+        {
+            k_assert((propLocations.length === propNames.length), "Detected mismatched prop data.");
+
+            return propLocations.length;
+        }
+
         publicInterface.prop_locations = function() { return propLocations.slice(0); }
+        publicInterface.prop_names = function() { return propNames.slice(0); }
 
         publicInterface.track_checkpoint_x = function() { return trackCheckpoint.x; }
         publicInterface.track_checkpoint_y = function() { return trackCheckpoint.y; }
 
+        publicInterface.remove_prop = function(propIdx)
+        {
+            k_assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to delete a prop whose index is out of bounds.");
+
+            // Don't allow removing the finish line, since a track needs to have one at all times. But if you
+            // really want to remove it, and you know what you're doing, you need to call some other function,
+            // whichever that may be.
+            if (propIdx === 0) return;
+
+            propLocations.splice(propIdx, 1);
+            propNames.splice(propIdx, 1);
+        }
+
         publicInterface.move_prop = function(propIdx, deltaX, deltaZ)
         {
-            k_assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index out of bounds.");
+            k_assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index is out of bounds.");
+
             propLocations[propIdx].x += deltaX;
             propLocations[propIdx].z += deltaZ;
 
@@ -204,10 +229,16 @@ const maasto_n = (function()
         publicInterface.add_prop_location = function(trackId = 0, propName = "", x = 0, y = 0, z = 0)
         {
             k_assert((trackId >= 0 && trackId <= 8), "Track id is out of bounds.");
-            k_assert((propName.length > 0), "Expected a non-empty string.");
+            k_assert((propName.length > 0), "Expected a non-empty prop name.");
 
             /// Temp hack.
             if (trackId !== rsed_n.underlying_track_id()) return;
+
+            if (propLocations.length >= maxNumProps)
+            {
+                k_popup("A track can have " + maxNumProps +" props, at most. This one has that many, already. Remove some to make room for more.");
+                return;
+            }
             
             const pos = new geometry_n.vector3_o(x, y, z);
             propLocations.push(pos);

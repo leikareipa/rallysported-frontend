@@ -25,6 +25,16 @@ function k_message(message = "")
     console.log(message);
 }
 
+// Displays a popup notification to the user. Doesn't take user input. Not guaranteed to be modal.
+function k_popup(message = "")
+{
+    /// Temp hack. A modifier's status will stick if the key is releasd while a modal popup is open,
+    /// so just clear them all in advance.
+    ui_input_n.reset_modifier_key_statuses();
+
+    window.alert(message);
+}
+
 // Linear interpolation.
 function k_lerp(x = 0, y = 0, interval = 0)
 {

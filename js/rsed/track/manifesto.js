@@ -182,25 +182,43 @@ const manifesto_n = (function()
 
                 switch (params[0])
                 {
+                    case 2:
+                    case 4:
                     case 5: break;
-                    default: newManifesto += manifLines[i] + "\n";
+                    default: newManifesto += (manifLines[i] + "\n");
                 }
             }
+
+            // Add command 2 to set the number of props.
+            newManifesto += ("2 " + maasto_n.num_props() + "\n");
             
             // Add command 5 for all props on the track, except for the starting line (first prop in the list), so they
             // get put in their correct places.
-            const props = maasto_n.prop_locations();
-            for (let i = 1; i < props.length; i++)
             {
-                const globalX = Math.floor((props[i].x / maasto_n.tile_size()) / 2);
-                const globalZ = Math.floor((props[i].z / maasto_n.tile_size()) / 2);
+                const propLocations = maasto_n.prop_locations();
 
-                const localX = Math.floor((((props[i].x / maasto_n.tile_size()) / 2) - globalX) * 256);
-                const localZ = Math.floor((((props[i].z / maasto_n.tile_size()) / 2) - globalZ) * 256);
+                for (let i = 1; i < propLocations.length; i++)
+                {
+                    const globalX = Math.floor((propLocations[i].x / maasto_n.tile_size()) / 2);
+                    const globalZ = Math.floor((propLocations[i].z / maasto_n.tile_size()) / 2);
 
-                const commandStr = "5 " + (i + 1) + " " + globalX + " " + globalZ + " " + localX + " " + localZ + "\n";
+                    const localX = Math.floor((((propLocations[i].x / maasto_n.tile_size()) / 2) - globalX) * 256);
+                    const localZ = Math.floor((((propLocations[i].z / maasto_n.tile_size()) / 2) - globalZ) * 256);
 
-                newManifesto += commandStr;
+                    newManifesto += ("5 " + (i + 1) + " " + globalX + " " + globalZ + " " + localX + " " + localZ + "\n");
+                }
+            }
+
+            // Add command 4 for all props, except for the starting line, to make sure they're the right type.
+            {
+                const propNames = maasto_n.prop_names();
+                
+                for (let i = 1; i < propNames.length; i++)
+                {
+                    const typeId = props_n.prop_idx_for_name(propNames[i]);
+
+                    newManifesto += ("4 " + (i + 1) + " " + (typeId + 1) + "\n");
+                }
             }
 
             newManifesto += "99\n";

@@ -57,6 +57,14 @@ const props_n = (function()
             return propNames[propIdx];
         }
 
+        publicInterface.prop_idx_for_name = function(propName = "")
+        {
+            const propIdx = propNames.indexOf(propName);
+            k_assert((propIdx >= 0 && propIdx < propNames.length), "Can't find the given prop name to return an index.");
+
+            return propIdx;
+        }
+
         // Returns a copy of the mesh of the prop of the given name, offset by the given x,y,z.
         publicInterface.prop_mesh = function(name = "", idOnTrack = 0, offsetX = 0, offsetY = 0, offsetZ = 0, wireframeEnabled = false)
         {

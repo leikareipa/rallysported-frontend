@@ -48,6 +48,10 @@ const ui_input_n = (function()
     let mouseMiddlePressed = false;
     let mouseRightPressed = false;
 
+    // Modifier key statuses.
+    let ctrlPressed = false;
+    let shiftPressed = false;
+
     // Keyboard key statuses.
     const keyDown = [];
 
@@ -104,6 +108,10 @@ const ui_input_n = (function()
                 default: k_assert(0, "Unhandled mouse lock type."); break;
             }
         }
+        else if (mouseLock.hibernating)
+        {
+            return;
+        }
 
         // Commit an action depending on what the user clicked on.
         /// FIXME: The nested code gets a bit ugly/unclear here.
@@ -112,17 +120,28 @@ const ui_input_n = (function()
             case "ground":
             {
                 if (hoverPickType !== publicInterface.mousePickingType.ground) return;
-                
-                if (mouseLeftPressed | mouseRightPressed)
+
+                // Add a new prop.
+                if (shiftPressed)
                 {
-                    const delta = (mouseLeftPressed? 2 : (mouseRightPressed? -2 : 0));
-                    ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changeHeight, delta,
-                                                      hoverArgs.tileX, hoverArgs.tileZ);
+                    maasto_n.add_prop_location(rsed_n.underlying_track_id(), "tree",
+                                               hoverArgs.tileX * maasto_n.tile_size(), 0, hoverArgs.tileZ * maasto_n.tile_size());
+                    mouseLock.hibernating = true;
                 }
-                else if (mouseMiddlePressed)
+                // Edit/paint the terrain.
+                else
                 {
-                    ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changePala, ui_brush_n.brush_pala_idx(),
-                                                    hoverArgs.tileX, hoverArgs.tileZ);
+                    if (mouseLeftPressed | mouseRightPressed)
+                    {
+                        const delta = (mouseLeftPressed? 2 : (mouseRightPressed? -2 : 0));
+                        ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changeHeight, delta,
+                                                        hoverArgs.tileX, hoverArgs.tileZ);
+                    }
+                    else if (mouseMiddlePressed)
+                    {
+                        ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changePala, ui_brush_n.brush_pala_idx(),
+                                                        hoverArgs.tileX, hoverArgs.tileZ);
+                    }
                 }
 
                 break;
@@ -131,10 +150,20 @@ const ui_input_n = (function()
             {
                 k_assert((mouseLock.propTrackId != null), "Expected the prop track id as a parameter to prop grabs.");
 
-                // For now, don't allow moving the starting line (prop #0).
-                if (mouseLock.propTrackId !== 0)
+                // Remove the selected prop.
+                if (shiftPressed)
                 {
-                    maasto_n.move_prop(mouseLock.propTrackId, ui_input_n.mouse_pos_delta_x()*6, ui_input_n.mouse_pos_delta_y()*12)
+                    maasto_n.remove_prop(mouseLock.propTrackId);
+                    mouseLock.hibernating = true;
+                }
+                // Drag the prop.
+                else
+                {
+                    // For now, don't allow moving the starting line (prop #0).
+                    if (mouseLock.propTrackId !== 0)
+                    {
+                        maasto_n.move_prop(mouseLock.propTrackId, ui_input_n.mouse_pos_delta_x()*6, ui_input_n.mouse_pos_delta_y()*12)
+                    }
                 }
 
                 break;
@@ -172,6 +201,9 @@ const ui_input_n = (function()
     
     function reset_mouse_hover_info()
     {
+        hoverPickType = 0;
+        hoverArgs = {};
+        
         mouseTileHover.x = -1000;
         mouseTileHover.y = -1000;
     }
@@ -237,11 +269,6 @@ const ui_input_n = (function()
                         (args.tileZ < 0) || (args.tileZ >= maasto_n.track_side_length()))
                     {
                         return null;
-                    }
-
-                    if ((args.tileX & ((1<<numBitsForTileCoords)-1)) !== args.tileX)
-                    {
-                        console.log(args.tileX, args.tileZ)
                     }
 
                     k_assert(((args.tileX & ((1<<numBitsForTileCoords)-1)) === args.tileX), "Can't store the MAASTO x coordinate in the picking id.");
@@ -351,6 +378,33 @@ const ui_input_n = (function()
             }
         }
 
+        publicInterface.reset_modifier_key_statuses = function()
+        {
+            ctrlPressed = false;
+            shiftPressed = false;
+        }
+
+        // Inform us of a key up/down event. Note: Takes in a HTML onkey* event.
+        publicInterface.update_key_status = function(keyEvent, isDown)
+        {
+            if (keyEvent.ctrlKey ||
+                keyEvent.key === "Control") /// TODO: With which browsers would (key === "control") fail to detect?
+            {
+                ctrlPressed = isDown;
+            }
+            if (keyEvent.shiftKey ||
+                keyEvent.key === "Shift") /// TODO: With which browsers would (key === "shift") fail to detect?
+            {
+                shiftPressed = isDown;
+            }
+            else
+            {
+                /// FIXME: Depending on the browser, the correct code could be in .keyCode or .which.
+                const key = String.fromCharCode(event.keyCode).toLowerCase();
+                keyDown[key] = isDown;
+            }
+        }
+
         publicInterface.mouse_pos_x = function() { return mousePos.x; }
         publicInterface.mouse_pos_y = function() { return mousePos.y; }
 
@@ -366,8 +420,6 @@ const ui_input_n = (function()
         publicInterface.set_left_click = function(isDown) { mouseLeftPressed = isDown; }
         publicInterface.set_right_click = function(isDown) { mouseRightPressed = isDown; }
         publicInterface.set_middle_click = function(isDown) { mouseMiddlePressed = isDown; }
-
-        publicInterface.set_key_status = function(key, isDown) { keyDown[key] = isDown; }
     }
     return publicInterface;
 })();
