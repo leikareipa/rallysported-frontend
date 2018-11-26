@@ -13,10 +13,10 @@ Also see the [live version of RallySportED](http://tarpeeksihyvaesoft.com/rallys
 Verbose instructions to follow, but suffice to say for now that, to test RallySportED on your localhost, use ```localhost/?track=abc``` as the address. This will load the sample track from ```res/tracks/abc.zip```.
 
 ### Todo
-- [ ] Moving track props by dragging them in the 3d view.
+- [ ] Changing a prop's type in the editor. (This can already be done indirectly through the manifesto file.)
 - [ ] Editing of textures.
 - [ ] A user interface that works on mobile devices.
-- [ ] Highlight track prop locations in the paint view.
+- [ ] Highlight prop locations in the paint view.
 - [ ] Have the height of water tiles reflect how the game displays them.
 - [ ] Non-FPS-sensitive terrain editing.
 - [ ] A viewing angle in the 3d view that matches that of the game. Useful since the texture distortion is angle-dependent.
