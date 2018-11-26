@@ -52,14 +52,22 @@ const maasto_n = (function()
             trackCheckpoint.y = y;
         }
 
+        publicInterface.prop_locations = function() { return propLocations.slice(0); }
+
         publicInterface.track_checkpoint_x = function() { return trackCheckpoint.x; }
         publicInterface.track_checkpoint_y = function() { return trackCheckpoint.y; }
 
-        publicInterface.move_prop = function(propIdx, x, z)
+        publicInterface.move_prop = function(propIdx, deltaX, deltaZ)
         {
             k_assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index out of bounds.");
-            propLocations[propIdx].x = x;
-            propLocations[propIdx].z = z;
+            propLocations[propIdx].x += deltaX;
+            propLocations[propIdx].z += deltaZ;
+
+            // Don't let the prop move outside of the track's boundaries.
+            const min = (publicInterface.tile_size() * 2);
+            const max = ((publicInterface.track_side_length() - 2) * publicInterface.tile_size());
+            propLocations[propIdx].x = Math.min(Math.max(propLocations[propIdx].x, min), max);
+            propLocations[propIdx].z = Math.min(Math.max(propLocations[propIdx].z, min), max);
         }
 
         publicInterface.level_terrain = function()

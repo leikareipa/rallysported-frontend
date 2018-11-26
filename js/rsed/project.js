@@ -193,7 +193,7 @@ const rsed_project_n = (function()
 
            //zip.file(saveName + ".TXT", lut_readme_txt.replace(/%TRACK/g, project.name.toUpperCase()));
             zip.file(saveName + "/" + saveName + ".DTA", project.projectFileContents);
-            zip.file(saveName + "/" + saveName + ".$FT", project.manifestoFileContents);
+            zip.file(saveName + "/" + saveName + ".$FT", manifesto_n.get_saveable_manifesto(project.manifestoFileContents));
             zip.file(saveName + "/" + "HITABLE.TXT", lut_hitable_txt);
 
             zip.generateAsync({type:"blob", compression:"DEFLATE", compressionOptions:{level: 1}})

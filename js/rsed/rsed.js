@@ -49,7 +49,7 @@ const rsed_n = (function()
                 }
             }
 
-            ui_input_n.update_inputs();
+            ui_input_n.enact_inputs();
         });
 
         // This function will be called whenever the size of the render surface changes.

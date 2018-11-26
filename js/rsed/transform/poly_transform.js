@@ -66,7 +66,7 @@ const polygon_transform_n = (function()
                         }
                     }
                     if (notVisible) continue;
-                    
+
                     k++;
                 }
             }

@@ -17,8 +17,17 @@ const ui_input_n = (function()
     // The current x,y pixel position of the mouse on the screen.
     const mousePos = new geometry_n.vector2_o(0, 0);
 
+    // The number of pixels the mouse has moved since the last time set_mouse_pos() was called.
+    const mousePosDelta = new geometry_n.vector2_o(0, 0);
+
     // The x,y coordinates of the ground tile the mouse is currently hovering over.
     const mouseTileHover = new geometry_n.vector2_o(-1, -1);
+
+    // Whenever the user presses down a mouse button, this object gets filled with relevant information
+    // about the click's target (e.g. track prop), so we can maintain that information across frames.
+    // This helps us prevent, for instance, accidentally grabbing a prop when moving the mouse over it
+    // while painting the ground.
+    let mouseLock = null;
 
     // Mouse-picking information about what's under the cursor at present.
     /// TODO. Move mouse-picking stuff into its own unit.
@@ -58,12 +67,52 @@ const ui_input_n = (function()
     // Depending on which mouse button (if any) the user has pressed, make corresponding things happen.
     function enact_mouse_clicks()
     {
-        if (!(mouseLeftPressed | mouseRightPressed | mouseMiddlePressed)) return;
-
-        switch (hoverPickType)
+        if (!(mouseLeftPressed | mouseRightPressed | mouseMiddlePressed)) 
         {
-            case publicInterface.mousePickingType.ground:
+            mouseLock = null;
+            return;
+        }
+
+        // If we don't already have mouse lock, see which lock we should acquire, based on what the
+        // user clicked on.
+        if (mouseLock == null)
+        {
+            switch (hoverPickType)
             {
+                case publicInterface.mousePickingType.prop:
+                {
+                    mouseLock = {grab:"prop",propTrackId:ui_input_n.mouse_hover_args().trackId};
+                    break;
+                }
+                case publicInterface.mousePickingType.ground:
+                {
+                    mouseLock = {grab:"ground"};
+                    break;
+                }
+                case publicInterface.mousePickingType.ui:
+                {
+                    mouseLock = {grab:"ui",
+                                    elementId:hoverArgs.elementId,
+                                    x:hoverArgs.x,
+                                    y:hoverArgs.y};  
+                    break;
+                }
+                case publicInterface.mousePickingType.void:
+                {
+                    return;
+                }
+                default: k_assert(0, "Unhandled mouse lock type."); break;
+            }
+        }
+
+        // Commit an action depending on what the user clicked on.
+        /// FIXME: The nested code gets a bit ugly/unclear here.
+        switch (mouseLock.grab)
+        {
+            case "ground":
+            {
+                if (hoverPickType !== publicInterface.mousePickingType.ground) return;
+                
                 if (mouseLeftPressed | mouseRightPressed)
                 {
                     const delta = (mouseLeftPressed? 2 : (mouseRightPressed? -2 : 0));
@@ -73,18 +122,33 @@ const ui_input_n = (function()
                 else if (mouseMiddlePressed)
                 {
                     ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changePala, ui_brush_n.brush_pala_idx(),
-                                                      hoverArgs.tileX, hoverArgs.tileZ);
+                                                    hoverArgs.tileX, hoverArgs.tileZ);
                 }
 
                 break;
             }
-            case publicInterface.mousePickingType.ui:
+            case "prop":
             {
-                switch (hoverArgs.elementId)
+                k_assert((mouseLock.propTrackId != null), "Expected the prop track id as a parameter to prop grabs.");
+
+                // For now, don't allow moving the starting line (prop #0).
+                if (mouseLock.propTrackId !== 0)
+                {
+                    maasto_n.move_prop(mouseLock.propTrackId, ui_input_n.mouse_pos_delta_x()*6, ui_input_n.mouse_pos_delta_y()*12)
+                }
+
+                break;
+            }
+            case "ui":
+            {
+                k_assert((mouseLock.elementId != null), "Expected the element id as a parameter to ui grabs.");
+                k_assert((mouseLock.x != null && mouseLock.y != null), "Expected x,y coordinates as parameters to ui grabs.");
+
+                switch (mouseLock.elementId)
                 {
                     case publicInterface.uiElement.palat_pane:
                     {
-                        if (mouseLeftPressed | mouseRightPressed) ui_brush_n.set_brush_pala_idx(hoverArgs.x);
+                        if (mouseLeftPressed | mouseRightPressed) ui_brush_n.set_brush_pala_idx(mouseLock.x);
 
                         break;
                     }
@@ -93,17 +157,16 @@ const ui_input_n = (function()
                         if (mouseMiddlePressed)
                         {
                             ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changePala, ui_brush_n.brush_pala_idx(),
-                                                              hoverArgs.x, hoverArgs.y);
+                                                                mouseLock.x, mouseLock.y);
                         }
 
                         break;
                     }
                     default: k_assert(0, "Unhandled UI element click."); break;
                 }
-
                 break;
             }
-            default: break;
+            default: k_assert(0, "Unknown mouse grab type."); break;
         }
     }
     
@@ -237,10 +300,15 @@ const ui_input_n = (function()
             k_assert(0, "Fell through (shouldn't have) when extracting mouse-picking args.");
         }
 
-        publicInterface.update_inputs = function()
+        publicInterface.enact_inputs = function()
         {
             enact_mouse_clicks();
             enact_key_presses();
+
+            // Mouse position deltas shouldn't carry across frames, so now that we've enacted all inputs,
+            // we can reset them.
+            mousePosDelta.x = 0;
+            mousePosDelta.y = 0;
         }
 
         publicInterface.set_mouse_pos = function(x = 0, y = 0)
@@ -251,6 +319,9 @@ const ui_input_n = (function()
             {
                 return;
             }
+
+            mousePosDelta.x = (x - mousePos.x);
+            mousePosDelta.y = (y - mousePos.y);
 
             mousePos.x = x;
             mousePos.y = y;
@@ -282,6 +353,9 @@ const ui_input_n = (function()
 
         publicInterface.mouse_pos_x = function() { return mousePos.x; }
         publicInterface.mouse_pos_y = function() { return mousePos.y; }
+
+        publicInterface.mouse_pos_delta_x = function() { return mousePosDelta.x; }
+        publicInterface.mouse_pos_delta_y = function() { return mousePosDelta.y; }
 
         publicInterface.mouse_tile_hover_x = function() { return mouseTileHover.x; }
         publicInterface.mouse_tile_hover_y = function() { return mouseTileHover.y; }

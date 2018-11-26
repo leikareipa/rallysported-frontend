@@ -157,6 +157,56 @@ const manifesto_n = (function()
                 .then(()=>{resolve();});
             });
         }
+
+        // Will take the given manifesto string (the full contents of a manifesto file) and process it for
+        // saving. This processing will involve, for instance, updating track prop positions in instances
+        // of command #5.
+        publicInterface.get_saveable_manifesto = function(manifestoString)
+        {
+            const manifLines = manifestoString.split("\n").filter(Boolean);
+
+            // The last manifesto command in the file should always be 99.
+            if (manifLines[manifLines.length - 1] !== "99")
+            {
+                alert("RallySportED detected a possibly invalid manifesto file. Saving it anyway, but just a heads-up.");
+                return manifestoString;
+            }
+
+            let newManifesto = "";
+
+            // Copy verbatim any manifesto commands we won't update.
+            for (let i = 0; i < (manifLines.length - 1); i++)
+            {
+                const params = manifLines[i].split(" ");
+                k_assert(params.length > 0, "Did not expect an empty parameters list.");
+
+                switch (params[0])
+                {
+                    case 5: break;
+                    default: newManifesto += manifLines[i] + "\n";
+                }
+            }
+            
+            // Add command 5 for all props on the track, except for the starting line (first prop in the list), so they
+            // get put in their correct places.
+            const props = maasto_n.prop_locations();
+            for (let i = 1; i < props.length; i++)
+            {
+                const globalX = Math.floor((props[i].x / maasto_n.tile_size()) / 2);
+                const globalZ = Math.floor((props[i].z / maasto_n.tile_size()) / 2);
+
+                const localX = Math.floor((((props[i].x / maasto_n.tile_size()) / 2) - globalX) * 256);
+                const localZ = Math.floor((((props[i].z / maasto_n.tile_size()) / 2) - globalZ) * 256);
+
+                const commandStr = "5 " + (i + 1) + " " + globalX + " " + globalZ + " " + localX + " " + localZ + "\n";
+
+                newManifesto += commandStr;
+            }
+
+            newManifesto += "99\n";
+
+            return newManifesto;
+        }
     }
     return publicInterface;
 })();
