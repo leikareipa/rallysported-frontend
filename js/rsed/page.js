@@ -79,8 +79,6 @@ window.oncontextmenu = function(event)
 
 window.onmousedown = function(event)
 {
-    if (event.target.id !== rsed_n.render_surface_id()) return;
-
     switch (event.button)
     {
         case 0: ui_input_n.set_left_click(true); break;
@@ -92,8 +90,6 @@ window.onmousedown = function(event)
 
 window.onmouseup = function(event)
 {
-    if (event.target.id !== rsed_n.render_surface_id()) return;
-
     switch (event.button)
     {
         case 0: ui_input_n.set_left_click(false); break;
