@@ -105,3 +105,15 @@ body
     z-index: 0;
     position:relative;
 }
+
+.disclaimer a
+{
+    color: rgb(134, 134, 134);
+    text-decoration: none;
+}
+
+.disclaimer a:hover
+{
+    color: rgb(134, 134, 134);
+    text-decoration: underline;
+}

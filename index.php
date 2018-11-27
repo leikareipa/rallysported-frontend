@@ -17,12 +17,13 @@
             </span>
 
             <a class="button" style="color: rgb(185, 185, 185); background-color: rgb(87, 87, 87);"
-                  href="./userguide/" target="_blank" rel="noopener">
-                user guide
+               href="./tracklist/" target="_blank" rel="noopener">
+                track list
             </a>
 
             <div class="disclaimer">
                 rallysported by tarpeeksi hyvae soft. rally-sport by jukka jäkälä. no endorsements or warranties.
+                <a href="./userguide/" target="_blank" rel="noopener">user guide</a> &#9656;
             </div>
         </div>
 
