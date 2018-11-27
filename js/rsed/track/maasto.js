@@ -37,6 +37,10 @@ const maasto_n = (function()
     // The maximum number of props that can exist on a track.
     const maxNumProps = 14;
 
+    // The number of tiles on each side of the track that can't have user-placed props on them. This
+    // prevents the user from placing props out of bounds, etc.
+    const propMargin = 2;
+
     // The byte sizes of the binary MAASTO and VARIMAA data that our current heightmap and tilemap are based on.
     let originalMaastoBytesize = 0;
     let originalVarimaaBytesize = 0;
@@ -62,12 +66,6 @@ const maasto_n = (function()
             return propLocations.length;
         }
 
-        publicInterface.prop_locations = function() { return propLocations.slice(0); }
-        publicInterface.prop_names = function() { return propNames.slice(0); }
-
-        publicInterface.track_checkpoint_x = function() { return trackCheckpoint.x; }
-        publicInterface.track_checkpoint_y = function() { return trackCheckpoint.y; }
-
         publicInterface.remove_prop = function(propIdx)
         {
             k_assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to delete a prop whose index is out of bounds.");
@@ -81,18 +79,23 @@ const maasto_n = (function()
             propNames.splice(propIdx, 1);
         }
 
+        // Returns a copy of the value such that it's clamped to within allowable track boundaries, considering both
+        // the side length of the track and its prop margin. Note that the value is expected to be in tile units
+        // multiplied by the tile size (e.g. 53 * 128 for tile 53).
+        publicInterface.clamped_to_track_prop_boundaries = function(value)
+        {
+            const min = (this.prop_margin() * this.tile_size());
+            const max = ((this.track_side_length() - this.prop_margin()) * this.tile_size());
+
+            return k_clamp(value, min, max);
+        }
+
         publicInterface.move_prop = function(propIdx, deltaX, deltaZ)
         {
             k_assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index is out of bounds.");
 
-            propLocations[propIdx].x += deltaX;
-            propLocations[propIdx].z += deltaZ;
-
-            // Don't let the prop move outside of the track's boundaries.
-            const min = (publicInterface.tile_size() * 2);
-            const max = ((publicInterface.track_side_length() - 2) * publicInterface.tile_size());
-            propLocations[propIdx].x = Math.min(Math.max(propLocations[propIdx].x, min), max);
-            propLocations[propIdx].z = Math.min(Math.max(propLocations[propIdx].z, min), max);
+            propLocations[propIdx].x = this.clamped_to_track_prop_boundaries(propLocations[propIdx].x + deltaX);
+            propLocations[propIdx].z = this.clamped_to_track_prop_boundaries(propLocations[propIdx].z + deltaZ);;
         }
 
         publicInterface.level_terrain = function()
@@ -153,16 +156,6 @@ const maasto_n = (function()
             return bytes;
         }
 
-        publicInterface.set_maasto_bytesize = function(numBytes)
-        {
-            originalMaastoBytesize = numBytes;
-        }
-
-        publicInterface.set_varimaa_bytesize = function(numBytes)
-        {
-            originalVarimaaBytesize = numBytes;
-        }
-
         // Returns a byte array that can be saved into a RallySportED project file.
         publicInterface.get_saveable_varimaa = function()
         {
@@ -196,11 +189,6 @@ const maasto_n = (function()
         {
             k_assert((propIdx >= 0 && propIdx < propNames.length), "Attempting to change prop type out of bounds.");
             propNames[propIdx] = props_n.prop_name_for_idx(newPropIdx);
-        }
-
-        publicInterface.track_side_length = function()
-        {
-            return maastoSideLength;
         }
 
         publicInterface.set_prop_count = function(numProps = 0)
@@ -462,6 +450,19 @@ const maasto_n = (function()
             return new geometry_n.polygon_mesh_o(polys, new geometry_n.vector3_o(0, 0, 0),
                                                         new geometry_n.vector3_o(topdown? (-Math.PI / 2) : -0.45, 0, 0));
         }
+
+        publicInterface.prop_locations = function() { return propLocations.slice(0); }
+        publicInterface.prop_names = function() { return propNames.slice(0); }
+
+        publicInterface.track_checkpoint_x = function() { return trackCheckpoint.x; }
+        publicInterface.track_checkpoint_y = function() { return trackCheckpoint.y; }
+
+        publicInterface.prop_margin = function() { return propMargin; }
+
+        publicInterface.track_side_length = function() { return maastoSideLength; }
+
+        publicInterface.set_maasto_bytesize = function(numBytes) { originalMaastoBytesize = numBytes; }
+        publicInterface.set_varimaa_bytesize = function(numBytes) { originalVarimaaBytesize = numBytes; }
     }
     return publicInterface;
 })();

@@ -124,8 +124,11 @@ const ui_input_n = (function()
                 // Add a new prop.
                 if (shiftPressed)
                 {
-                    maasto_n.add_prop_location(rsed_n.underlying_track_id(), "tree",
-                                               hoverArgs.tileX * maasto_n.tile_size(), 0, hoverArgs.tileZ * maasto_n.tile_size());
+                    const x = maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * maasto_n.tile_size());
+                    const z = maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * maasto_n.tile_size());
+
+                    maasto_n.add_prop_location(rsed_n.underlying_track_id(), "tree", x, 0, z);
+
                     mouseLock.hibernating = true;
                 }
                 // Edit/paint the terrain.

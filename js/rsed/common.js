@@ -40,3 +40,8 @@ function k_lerp(x = 0, y = 0, interval = 0)
 {
     return (x + (interval * (y - x)));
 }
+
+function k_clamp(value, min, max)
+{
+    return Math.min(Math.max(value, min), max);
+}
