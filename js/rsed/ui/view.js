@@ -24,6 +24,9 @@ const ui_view_n = (function()
         // around each polygon.
         publicInterface.show3dWireframe = true;
 
+        // Set to true if the user wants props to not be visible in the 3d view.
+        publicInterface.hideProps = false;
+
         publicInterface.set_view = function(view = "")
         {
             k_assert(availableViews.includes(view), "Can't find the given view to set.");

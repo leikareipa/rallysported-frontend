@@ -90,6 +90,12 @@ const geometry_n = {};
         this.color = new color_n.rgba_o();
         this.texture = 0;
 
+        // Whether to draw a wireframe around this polygon when rendering it.
+        this.hasWireframe = false;
+
+        // If true, this polygon won't be rendered with any solid fills.
+        this.isEthereal = false;
+
         // A value that can be drawn into the mouse-picking buffer during rendering to identify this
         // polygon in the resulting image. Set its value to null to disable this functionality.
         this.mousePickId = null;
@@ -120,6 +126,7 @@ const geometry_n = {};
             this.texture = otherPolygon.texture;
             this.mousePickId = otherPolygon.mousePickId;
             this.hasWireframe = otherPolygon.hasWireframe;
+            this.isEthereal = otherPolygon.isEthereal;
         };
 
         // Back-face culling.

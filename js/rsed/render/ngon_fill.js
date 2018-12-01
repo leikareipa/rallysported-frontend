@@ -105,90 +105,96 @@ const polygon_fill_canvas_n = (function()
                     line_draw_n.line_into_array(prevVert, leftVerts[0], rightEdge, poly.v[0].y);
                 }
 
-                // Fill the polygon in.
+                // Draw the polygon.
                 {
-                    const polyYOffset = Math.floor(poly.v[0].y);
-                    const polyHeight = leftEdge.length;
-                    const texture = poly.texture;
-
-                    let v = 0;
-                    const vDelta = ((texture == null)? 0 : ((texture.height - 0.001) / (polyHeight-1)));
-
-                    for (let y = 0; y < polyHeight; y++)
+                    // Solid or textured fill.
+                    if (!poly.isEthereal)
                     {
-                        const rowWidth = (rightEdge[y] - leftEdge[y]);
-                        if (rowWidth <= 0) continue;
+                        const polyYOffset = Math.floor(poly.v[0].y);
+                        const polyHeight = leftEdge.length;
+                        const texture = poly.texture;
 
-                        let u = 0;
-                        const uDelta = ((texture == null)? 0 : ((texture.width - 0.001) / rowWidth));
+                        let v = 0;
+                        const vDelta = ((texture == null)? 0 : ((texture.height - 0.001) / (polyHeight-1)));
 
-                        while (leftEdge[y] <= rightEdge[y])
+                        for (let y = 0; y < polyHeight; y++)
                         {
-                            if (leftEdge[y] >= 0 && leftEdge[y] < width)
-                            {
-                                const px = leftEdge[y];
-                                const py = (y + polyYOffset);
+                            const rowWidth = (rightEdge[y] - leftEdge[y]);
+                            if (rowWidth <= 0) continue;
 
-                                if (py >= 0 && py < height)
+                            let u = 0;
+                            const uDelta = ((texture == null)? 0 : ((texture.width - 0.001) / rowWidth));
+
+                            while (leftEdge[y] <= rightEdge[y])
+                            {
+                                if (leftEdge[y] >= 0 && leftEdge[y] < width)
                                 {
-                                    const idx = ((px + py * width) * 4);
-                                    
-                                    // Solid fill.
-                                    if (texture == null)
+                                    const px = leftEdge[y];
+                                    const py = (y + polyYOffset);
+
+                                    if (py >= 0 && py < height)
                                     {
-                                        pixelMap.data[idx + 0] = poly.color.r;
-                                        pixelMap.data[idx + 1] = poly.color.g;
-                                        pixelMap.data[idx + 2] = poly.color.b;
-                                        pixelMap.data[idx + 3] = poly.color.a;
-                                    }
-                                    // Textured fill.
-                                    else
-                                    {
-                                        const texelIdx = (Math.floor(u) + Math.floor(v) * texture.width);
-                                        const color = texture.pixels[texelIdx];
-        
-                                        // Alpha testing.
-                                        if (!texture.hasAlpha || texture.paletteIndices[texelIdx] != 0)
+                                        const idx = ((px + py * width) * 4);
+                                        
+                                        // Solid fill.
+                                        if (texture == null)
                                         {
-                                            pixelMap.data[idx + 0] = color.r;
-                                            pixelMap.data[idx + 1] = color.g;
-                                            pixelMap.data[idx + 2] = color.b;
-                                            pixelMap.data[idx + 3] = color.a;
+                                            pixelMap.data[idx + 0] = poly.color.r;
+                                            pixelMap.data[idx + 1] = poly.color.g;
+                                            pixelMap.data[idx + 2] = poly.color.b;
+                                            pixelMap.data[idx + 3] = poly.color.a;
+                                        }
+                                        // Textured fill.
+                                        else
+                                        {
+                                            const texelIdx = (Math.floor(u) + Math.floor(v) * texture.width);
+                                            const color = texture.pixels[texelIdx];
+            
+                                            // Alpha testing.
+                                            if (!texture.hasAlpha || texture.paletteIndices[texelIdx] != 0)
+                                            {
+                                                pixelMap.data[idx + 0] = color.r;
+                                                pixelMap.data[idx + 1] = color.g;
+                                                pixelMap.data[idx + 2] = color.b;
+                                                pixelMap.data[idx + 3] = color.a;
+                                            }
+                                        }
+
+                                        if (poly.mousePickId !== null)
+                                        {
+                                            surface.mousePickBuffer[px + py * width] = poly.mousePickId;
                                         }
                                     }
-
-                                    if (poly.mousePickId !== null)
-                                    {
-                                        surface.mousePickBuffer[px + py * width] = poly.mousePickId;
-                                    }
                                 }
+
+                                leftEdge[y]++;
+                                u += uDelta;
                             }
 
-                            leftEdge[y]++;
-                            u += uDelta;
+                            v += vDelta;
                         }
-
-                        v += vDelta;
                     }
 
                     // Draw a wireframe around any polygons that wish for one.
                     /// CLEANUP: The code for this is a bit unsightly.
                     if (poly.hasWireframe)
                     {
+                        const wireShade = ((poly.isEthereal)? 100 : 0);
+
                         let prevVert = leftVerts[0];
                         for (let l = 1; l < leftVerts.length; l++)
                         {
-                            line_draw_n.line_onto_canvas(prevVert, leftVerts[l], pixelMap.data, width, height);
+                            line_draw_n.line_onto_canvas(prevVert, leftVerts[l], pixelMap.data, width, height, wireShade, wireShade, wireShade);
                             prevVert = leftVerts[l];
                         }
-                        line_draw_n.line_onto_canvas(prevVert, rightVerts[0], pixelMap.data, width, height);
+                        line_draw_n.line_onto_canvas(prevVert, rightVerts[0], pixelMap.data, width, height, wireShade, wireShade, wireShade);
                         prevVert = rightVerts[0];
                         for (let r = 1; r < rightVerts.length; r++)
                         {
-                            line_draw_n.line_onto_canvas(prevVert, rightVerts[r], pixelMap.data, width, height);
+                            line_draw_n.line_onto_canvas(prevVert, rightVerts[r], pixelMap.data, width, height, wireShade, wireShade, wireShade);
                             prevVert = rightVerts[r];
                         }
-                        line_draw_n.line_onto_canvas(prevVert, leftVerts[0], pixelMap.data, width, height);
+                        line_draw_n.line_onto_canvas(prevVert, leftVerts[0], pixelMap.data, width, height, wireShade, wireShade, wireShade);
                     }
                 }
             }

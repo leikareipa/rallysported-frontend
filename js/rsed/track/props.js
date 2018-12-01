@@ -82,6 +82,8 @@ const props_n = (function()
 
                 copyMesh[i].hasWireframe = wireframeEnabled;
 
+                copyMesh[i].isEthereal = ui_view_n.hideProps;
+
                 copyMesh[i].mousePickId = ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.prop,
                                                                              {propIdx:idx, propTrackId:idOnTrack});
 
