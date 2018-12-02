@@ -90,12 +90,23 @@ const maasto_n = (function()
             return k_clamp(value, min, max);
         }
 
+        publicInterface.set_prop_position = function(propIdx, x, z)
+        {
+            k_assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index is out of bounds.");
+
+            /// TODO: For now, this doesn't clamp the values to track boundaries, as some tracks made with
+            /// old versions of RallySportED may try to put props outside of those boundaries (and expect
+            /// it to succeed).
+            propLocations[propIdx].x = x;
+            propLocations[propIdx].z = z;
+        }
+        
         publicInterface.move_prop = function(propIdx, deltaX, deltaZ)
         {
             k_assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index is out of bounds.");
 
             propLocations[propIdx].x = this.clamped_to_track_prop_boundaries(propLocations[propIdx].x + deltaX);
-            propLocations[propIdx].z = this.clamped_to_track_prop_boundaries(propLocations[propIdx].z + deltaZ);;
+            propLocations[propIdx].z = this.clamped_to_track_prop_boundaries(propLocations[propIdx].z + deltaZ);
         }
 
         publicInterface.level_terrain = function()

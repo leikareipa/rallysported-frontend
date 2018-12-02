@@ -87,7 +87,7 @@ const manifesto_n = (function()
         const posX = Math.floor(((Number(args[1]) * 2) * maasto_n.tile_size()) + Number(args[3]));
         const posZ = Math.floor(((Number(args[2]) * 2) * maasto_n.tile_size()) + Number(args[4]));
 
-        maasto_n.move_prop(targetPropIdx, posX, posZ);
+        maasto_n.set_prop_position(targetPropIdx, posX, posZ);
     }
 
     // Command: move_starting_pos. Moves the starting line. Note that this doesn't move the
