@@ -292,6 +292,12 @@ const page_n = (function()
             ui_input_n.reset_mouse_hover_info();
         }
 
+        publicInterface.clear_prop_dropdown_menu = function()
+        {
+            const dropdown = document.getElementById("prop_dropdown");
+            while (dropdown.firstChild) dropdown.removeChild(dropdown.firstChild);
+        }
+
         publicInterface.add_prop_name_to_dropdown_menu = function(name = "")
         {
             /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.

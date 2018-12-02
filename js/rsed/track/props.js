@@ -31,6 +31,8 @@ const props_n = (function()
             propMeshes.length = 0;
             propNames.length = 0;
             propTextures.length = 0;
+
+            page_n.clear_prop_dropdown_menu();
         }
 
         publicInterface.add_prop_texture = function(texture = texture_n.texture_o)
