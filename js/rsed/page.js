@@ -46,9 +46,6 @@ window.onload = function(event)
         // corresponding to the eight tracks in the demo.
         else if (params.has("original"))
         {
-            args.fromOriginal = true;
-            args.trackId = parseInt(params.get("original"), 10);
-
             const trackId = parseInt(params.get("original"), 10);
             k_assert((trackId >= 1 && trackId <= 8), "The given track id is out of bounds.");
 
