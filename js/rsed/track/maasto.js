@@ -314,7 +314,7 @@ const maasto_n = (function()
         {
             const firstSpectatorTexIdx = 236;      // Index of the first PALA representing a (standing) spectator. Assumes consecutive arrangement.
             const numSkins = 4;
-            const sameRows = 16;                   // The game will repeat the same pattern of variants on the x axis this many times.
+            const sameRows = ((this.track_side_length() == 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
 
             const yOffs = (Math.floor(tileY / sameRows)) % numSkins;
             const texOffs = ((tileX + (numSkins - 1)) + (yOffs * (numSkins - 1))) % numSkins;
