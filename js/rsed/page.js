@@ -311,7 +311,7 @@ const page_n = (function()
                 const header = document.createElement("div");
 
                 header.appendChild(document.createTextNode("set prop type"));
-                header.style.backgroundColor = "white";
+                header.style.backgroundColor = "rgb(224, 224, 224)";
                 header.style.color = "black"
                 header.style.paddingBottom = "10px";
                 header.style.paddingTop = "10px";
