@@ -121,15 +121,18 @@ const ui_input_n = (function()
             {
                 if (hoverPickType !== publicInterface.mousePickingType.ground) return;
 
-                // Add a new prop.
                 if (shiftPressed)
                 {
-                    const x = maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * maasto_n.tile_size());
-                    const z = maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * maasto_n.tile_size());
+                    // Add a new prop.
+                    if (mouseLeftPressed)
+                    {
+                        const x = maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * maasto_n.tile_size());
+                        const z = maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * maasto_n.tile_size());
 
-                    maasto_n.add_prop_location(rsed_n.underlying_track_id(), "tree", x, 0, z);
+                        maasto_n.add_prop_location(rsed_n.underlying_track_id(), "tree", x, 0, z);
 
-                    mouseLock.hibernating = true;
+                        mouseLock.hibernating = true;
+                    }
                 }
                 // Edit/paint the terrain.
                 else
@@ -153,19 +156,22 @@ const ui_input_n = (function()
             {
                 k_assert((mouseLock.propTrackId != null), "Expected the prop track id as a parameter to prop grabs.");
 
-                // Remove the selected prop.
-                if (shiftPressed)
+                if (mouseLeftPressed)
                 {
-                    maasto_n.remove_prop(mouseLock.propTrackId);
-                    mouseLock.hibernating = true;
-                }
-                // Drag the prop.
-                else
-                {
-                    // For now, don't allow moving the starting line (prop #0).
-                    if (mouseLock.propTrackId !== 0)
+                    // Remove the selected prop.
+                    if (shiftPressed)
                     {
-                        maasto_n.move_prop(mouseLock.propTrackId, ui_input_n.mouse_pos_delta_x()*6, ui_input_n.mouse_pos_delta_y()*12)
+                        maasto_n.remove_prop(mouseLock.propTrackId);
+                        mouseLock.hibernating = true;
+                    }
+                    // Drag the prop.
+                    else
+                    {
+                        // For now, don't allow moving the starting line (prop #0).
+                        if (mouseLock.propTrackId !== 0)
+                        {
+                            maasto_n.move_prop(mouseLock.propTrackId, ui_input_n.mouse_pos_delta_x()*6, ui_input_n.mouse_pos_delta_y()*12)
+                        }
                     }
                 }
 
