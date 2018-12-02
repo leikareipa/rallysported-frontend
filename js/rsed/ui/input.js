@@ -415,7 +415,7 @@ const ui_input_n = (function()
             else
             {
                 /// FIXME: Depending on the browser, the correct code could be in .keyCode or .which.
-                const key = String.fromCharCode(event.keyCode).toLowerCase();
+                const key = String.fromCharCode(keyEvent.keyCode).toLowerCase();
                 keyDown[key] = isDown;
             }
         }
