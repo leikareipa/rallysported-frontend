@@ -3,7 +3,7 @@
     <head>
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" type="text/css" href="index.css">
-        <link href="https://fonts.googleapis.com/css?family=Proza+Libre|Knewave" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Proza+Libre|Knewave|Montserrat" rel="stylesheet">
         <title>RallySportED (beta) by Tarpeeksi Hyvae Soft</title>
         <?php include "stats.php"; ?>
     </head>
@@ -30,6 +30,11 @@
         <div id="render_container" class="canvas_container"
              ondrop="page_n.ondrop(event);" ondragover="event.preventDefault();">
             <!-- The rendering goes here.-->
+        </div>
+
+        <div id="prop_dropdown"
+             class="dropdown_list">
+            <!-- Menu items for props will be generated here.-->
         </div>
 
         <!-- Third-party JavaScript.-->

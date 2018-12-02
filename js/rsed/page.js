@@ -9,6 +9,15 @@
 
 "use strict"
 
+/// Temp hack. Set to true when a dropdown list is visible. We do this to prevent the editor from
+/// receiving mouse events in the meantime, so there won't be accidental terrain edits etc. that
+/// might otherwise fall through the dropdown menu.
+let RSED_DROPDOWN_ACTIVATED = false;
+
+/// Temp hack. Gets updated with onmousemove, and stores the mouse's position relative to the
+/// canvas.
+const RSED_MOUSE_POS = {x:0, y:0};
+
 // Parses any address bar parameters, then launches RallySportED.
 window.onload = function(event)
 {
@@ -71,10 +80,38 @@ window.onload = function(event)
 // Disable the right-click browser menu, since we want to use the right mouse button for other things.
 window.oncontextmenu = function(event)
 {
+    if (RSED_DROPDOWN_ACTIVATED)
+    {
+        page_n.close_dropdowns();
+        return false;
+    }
+
     if (event.target.id !== rsed_n.render_surface_id()) return;
 
+    // Display a right-click menu for changing the type of the prop under the cursor.
+    if (ui_input_n.mouse_hover_type() === ui_input_n.mousePickingType.prop &&
+        !props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+    {
+        const propDowndown = document.getElementById("prop_dropdown");
+        
+        propDowndown.style.transform = "translate(" + (RSED_MOUSE_POS.x - 40) + "px, " + (RSED_MOUSE_POS.y - 0) + "px)";
+        propDowndown.classList.toggle("show");
+
+        RSED_DROPDOWN_ACTIVATED = true;
+    }
+
     return false;
-    //event.preventDefault();
+}
+
+// The program uses onmousedown for primary click processing, but onclick is used here
+// to close any open dropdown lists.
+window.onclick = function(event)
+{
+    if (RSED_DROPDOWN_ACTIVATED)
+    {
+        page_n.close_dropdowns();
+        return false;
+    }
 }
 
 window.onmousedown = function(event)
@@ -101,10 +138,26 @@ window.onmouseup = function(event)
 
 window.onmousemove = function(event)
 {
-    if (event.target.id !== rsed_n.render_surface_id()) return;
+    if (event.target.id !== rsed_n.render_surface_id())
+    {
+        /// Temp hack. Prevent mouse clicks over prop dropdown dialogs from falling through and
+        /// inadvertently editing the terrain.
+        if (ui_input_n.mouse_hover_type() !== ui_input_n.mousePickingType.prop)
+        {
+            ui_input_n.reset_mouse_hover_info();
+        }
 
-    ui_input_n.set_mouse_pos(Math.floor((event.clientX - event.target.getBoundingClientRect().left) * rsed_n.scaling_multiplier()),
-                             Math.floor((event.clientY - event.target.getBoundingClientRect().top) * rsed_n.scaling_multiplier()));
+        return;
+    }
+
+    if (!RSED_DROPDOWN_ACTIVATED)
+    {
+        RSED_MOUSE_POS.x = (event.clientX - event.target.getBoundingClientRect().left);
+        RSED_MOUSE_POS.y = (event.clientY - event.target.getBoundingClientRect().top);
+
+        ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * rsed_n.scaling_multiplier()),
+                                Math.floor(RSED_MOUSE_POS.y * rsed_n.scaling_multiplier()));
+    }
 }
 
 window.onkeydown = function(event)
@@ -222,6 +275,56 @@ const page_n = (function()
             {
                 titleElement.appendChild(document.createTextNode(project.displayName + "."));
             }
+        }
+
+        publicInterface.close_dropdowns = function()
+        {
+            const dropdowns = document.getElementsByClassName("dropdown_list");
+            for (let i = 0; i < dropdowns.length; i++)
+            {
+                if (dropdowns[i].classList.contains("show"))
+                {
+                    dropdowns[i].classList.toggle("show");
+                }
+            }
+
+            RSED_DROPDOWN_ACTIVATED = false;
+            ui_input_n.reset_mouse_hover_info();
+        }
+
+        publicInterface.add_prop_name_to_dropdown_menu = function(name = "")
+        {
+            /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+            if (name.toLowerCase().startsWith("finish")) return;
+
+            const propDropdown = document.getElementById("prop_dropdown");
+            k_assert((propDropdown != null), "Received a null prop dropdown element.");
+
+            /// TODO: Test to make sure we're not adding duplicates, etc.
+
+            // Add a menu header, if none is present.
+            if (propDropdown.childElementCount === 0)
+            {
+                const header = document.createElement("div");
+
+                header.appendChild(document.createTextNode("set prop type"));
+                header.style.backgroundColor = "white";
+                header.style.color = "black"
+                header.style.paddingBottom = "10px";
+                header.style.paddingTop = "10px";
+                
+                propDropdown.appendChild(header);
+            }
+
+            // Add the menu entry.
+            const newEntry = document.createElement("div");
+            newEntry.onclick = function()
+            {
+                maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
+                publicInterface.close_dropdowns();
+            }
+            newEntry.appendChild(document.createTextNode(name));
+            propDropdown.appendChild(newEntry);
         }
     }
     return publicInterface;

@@ -299,6 +299,12 @@ const ui_input_n = (function()
             return (mousePickingValue & ((1 << numBitsForIndex) - 1));
         }
 
+        publicInterface.reset_mouse_hover_info = function()
+        {
+            hoverPickType = 0;
+            hoverArgs = {};
+        }
+
         publicInterface.get_mouse_picking_args = function(mousePickingValue = 0, pickType = 0)
         {
             const args = {};

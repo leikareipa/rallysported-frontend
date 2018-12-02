@@ -117,3 +117,37 @@ body
     color: rgb(134, 134, 134);
     text-decoration: underline;
 }
+
+/* For dropdown menus. Adapted from https://www.w3schools.com/howto/howto_js_dropdown.asp. */
+.dropdown_list
+{
+    cursor: url("rsed-cursor.png"), auto;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 90%;
+    font-variant: small-caps;
+    text-align: left;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: rgb(113, 196, 190);
+    z-index: 3;
+    display: none;
+}
+.dropdown_list div
+{
+    cursor: url("rsed-cursor.png"), auto;
+    color: rgb(0, 0, 0);
+    padding: 6px;
+    padding-left: 18px;
+    padding-right: 65px;
+    display: block;
+}
+.dropdown_list div:hover
+{
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+}
+.dropdown_list.show
+{
+    display: block;
+}
