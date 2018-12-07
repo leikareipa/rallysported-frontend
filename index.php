@@ -16,7 +16,7 @@
                 save to disk
             </span>
 
-            <a class="button" style="color: rgb(185, 185, 185); background-color: rgb(87, 87, 87);"
+            <a class="button" style="color: rgb(185, 185, 185); background-color: rgb(87, 87, 87); border-radius: 0px;"
                href="./tracklist/" target="_blank" rel="noopener">
                 track list
             </a>
