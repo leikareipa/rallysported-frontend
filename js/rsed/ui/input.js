@@ -96,9 +96,9 @@ const ui_input_n = (function()
                 case publicInterface.mousePickingType.ui:
                 {
                     mouseLock = {grab:"ui",
-                                    elementId:hoverArgs.elementId,
-                                    x:hoverArgs.x,
-                                    y:hoverArgs.y};  
+                                 elementId:hoverArgs.elementId,
+                                 x:hoverArgs.x,
+                                 y:hoverArgs.y};  
                     break;
                 }
                 case publicInterface.mousePickingType.void:
@@ -146,7 +146,7 @@ const ui_input_n = (function()
                     else if (mouseMiddlePressed)
                     {
                         ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changePala, ui_brush_n.brush_pala_idx(),
-                                                        hoverArgs.tileX, hoverArgs.tileZ);
+                                                          hoverArgs.tileX, hoverArgs.tileZ);
                     }
                 }
 
@@ -196,7 +196,7 @@ const ui_input_n = (function()
                         {
                             ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changePala, ui_brush_n.brush_pala_idx(),
                                                               mouseLock.x, mouseLock.y);
-                            
+                                               
                             // We want the user to be able to paint by dragging the cursor, so we release the mouse lock here
                             // and let it refresh itself next frame with a (potentially) new cursor position.
                             mouseLock = null;
