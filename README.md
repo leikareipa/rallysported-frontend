@@ -5,7 +5,7 @@ To-date, two versions of the game are known to exist. The initial release, in la
 
 This repo contains the source code for the web/browser version of RallySportED. Note that the repo tracks my local one with low granularity only.
 
-For more information, see the Github repo of the desktop version of RallySportED; and the documentation included with its binary distribution, available from [Tarpeeksi Hyvae Soft's website](http://tarpeeksihyvaesoft.com/soft).
+For more information (including technical documentation on Rally-Sport's data formats), see the Github repo of the desktop version of RallySportED; and the documentation included with its binary distribution, available from [Tarpeeksi Hyvae Soft's website](http://tarpeeksihyvaesoft.com/soft).
 
 Also see the [live version of RallySportED](http://tarpeeksihyvaesoft.com/rallysported/) on the web, and the [list of custom tracks](http://tarpeeksihyvaesoft.com/rallysported/tracklist/) made with it.
 
