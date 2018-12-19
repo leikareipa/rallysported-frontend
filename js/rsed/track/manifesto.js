@@ -165,13 +165,6 @@ const manifesto_n = (function()
         {
             const manifLines = manifestoString.split("\n").filter(Boolean);
 
-            // The last manifesto command in the file should always be 99.
-            if (manifLines[manifLines.length - 1] !== "99")
-            {
-                alert("RallySportED detected a possibly invalid manifesto file. Saving it anyway, but just a heads-up.");
-                return manifestoString;
-            }
-
             let newManifesto = "";
 
             // Copy verbatim any manifesto commands we won't update.
