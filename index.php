@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
     <head>
+		<meta name="viewport" content="width=device-width">
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" type="text/css" href="index.css">
-        <link href="https://fonts.googleapis.com/css?family=Proza+Libre|Knewave|Montserrat" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Catamaran|Permanent+Marker|Cabin|Montserrat" rel="stylesheet">
         <title>RallySportED (beta) by Tarpeeksi Hyvae Soft</title>
         <?php include "stats.php"; ?>
     </head>
@@ -16,13 +17,13 @@
                 save to disk
             </span>
 
-            <a class="button" style="color: rgb(185, 185, 185); background-color: rgb(87, 87, 87); border-radius: 0px;"
+            <a class="button" style="font-variant: small-caps; color: rgb(170, 170, 170); background-color: rgb(87, 87, 87);"
                href="./tracklist/" target="_blank" rel="noopener">
-                track list
+                track list &#9656;
             </a>
 
             <div class="disclaimer">
-                rallysported by tarpeeksi hyvae soft. rally-sport by jukka jäkälä. no endorsements or warranties.
+                rallysported by tarpeeksi hyvae soft. rally-sport by jukka jakala. no endorsements or warranties.
                 <a href="./userguide/" target="_blank" rel="noopener">user guide</a> &#9656;
             </div>
         </div>

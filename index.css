@@ -62,40 +62,36 @@ body
     z-index: 1;
     position:relative;
     letter-spacing: 1px;
-    font-family: 'Knewave', sans-serif;
+    font-family: 'Permanent Marker', sans-serif;
+	font-weight: bold;
     color: rgb(179, 112, 25);
-    font-size: 280%;
+    font-size: 260%;
 }
 
 .title_container .button
 {
     display: inline-block;
     vertical-align: text-bottom;
-    font-variant: small-caps;
-    font-family: 'Proza Libre', sans-serif;
-    font-size: 90%;
-    margin-left: 7px;
-    color: black;
+	font-variant: small-caps;
+    font-family: 'Catamaran', sans-serif;
+    font-size: 80%;
+    margin-left: 5px;
+    color: rgba(0,0,0,0.9);
     cursor: pointer;
-    font-weight: bold;
-    border-radius: 3px;
-    padding: 0px 11px;
+    border-radius: 2px;
+    padding: 0px 12px;
     text-decoration: none;
-}
-
-.title_container .button:hover
-{
-    color: rgb(241, 241, 241);
+	transition: 0.025s;
 }
 
 .title_container .button:active
 {
-    transform: translateY(2px);
+    transform: scale(0.9);
 }
 
 .disclaimer
 {
-    font-family: 'Proza Libre', sans-serif;
+    font-family: 'Cabin', sans-serif;
     font-variant: small-caps;
     margin-top: -10px;
     margin-bottom: 0px;
