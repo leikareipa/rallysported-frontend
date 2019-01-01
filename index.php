@@ -38,6 +38,8 @@
             <!-- Menu items for props will be generated here.-->
         </div>
 
+        <script src="js/polyfill.js" defer></script>
+
         <!-- Third-party JavaScript.-->
         <script src="js/filesaver/FileSaver.min.js" defer></script>
         <script src="js/jszip/jszip.min.js" defer></script>
