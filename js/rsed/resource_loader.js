@@ -186,7 +186,7 @@ const resource_loader_n = (function()
                         }
                     }
                 })
-                .catch((error)=>{k_assert(0, "Failed to extract project data.");});
+                .catch((error)=>{k_assert(0, "Failed to extract project data (JSZip error: '" + error + "').");});
             }
         }
 
