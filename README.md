@@ -5,12 +5,10 @@ To-date, two versions of the game are known to exist. The initial release, in la
 
 This repo contains the source code for the web/browser version of RallySportED. Note that the repo tracks my local one with low granularity only.
 
-For more information (including technical documentation on Rally-Sport's data formats), see the Github repo of the desktop version of RallySportED; and the documentation included with its binary distribution, available from [Tarpeeksi Hyvae Soft's website](http://tarpeeksihyvaesoft.com/soft).
-
-Also see the [live version of RallySportED](http://tarpeeksihyvaesoft.com/rallysported/) on the web, and the [list of custom tracks](http://tarpeeksihyvaesoft.com/rallysported/tracklist/) made with it.
+For more information (including technical documentation on Rally-Sport's data formats), see [RallySportED's umbrella repo](../../../rallysported). For a live demonstration of RallySportED in the browser, browse [here](http://tarpeeksihyvaesoft.com/rallysported/).
 
 ### Usage
-Verbose instructions to follow, but suffice to say for now that, to test RallySportED on your localhost, use ```localhost/?track=abc``` as the address. This will load the sample track from ```res/tracks/abc.zip```.
+Verbose instructions to follow, but suffice to say for now that, to test RallySportED on your localhost, use ```localhost/?track=abc``` as the address. This will load the sample track `abc` from [tracklist/files/](tracklist/files/).
 
 ### Todo
 - [ ] Editing of textures.
