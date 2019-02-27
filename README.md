@@ -7,10 +7,16 @@ This repo contains the source code for the web/browser version of RallySportED. 
 
 For more information (including technical documentation on Rally-Sport's data formats), see [RallySportED's umbrella repo](../../../rallysported). For a live demonstration of RallySportED in the browser, browse [here](http://tarpeeksihyvaesoft.com/rallysported/).
 
-### Usage
+### Features
+- Edit Rally-Sport's tracks in your browser!
+- Alter the heightmap, paint the ground, move and place 3d objects
+- Retro-style software-rendered 3d graphics
+- Texture distortion matches the game's, so WYSIWYG
+
+# Usage
 Verbose instructions to follow, but suffice to say for now that, to test RallySportED on your localhost, use ```localhost/?track=abc``` as the address. This will load the sample track `abc` from [tracklist/files/](tracklist/files/).
 
-### Todo
+# Todo
 - [ ] Editing of textures.
 - [ ] A user interface that works on mobile devices.
 - [ ] Highlight prop locations in the paint view.
@@ -21,7 +27,7 @@ Verbose instructions to follow, but suffice to say for now that, to test RallySp
 - [ ] Terrain shading.
 - [ ] An indicator rectangle in the texture pane around the texture that's currently selected.
 
-### Known issues
+# Known issues
 - [ ] Middle mouse button clicks, used to paint the terrain, may intermittently stop getting registered. Not sure that this isn't a browser/focus issue; and I might reassign the button to something else.
 - [ ] The paint view may be slow to draw, as it's sloppily implemented. One workaround for now is to zoom the page in your browser (e.g. with ctrl + wheel up), which results in lower-resolution, quicker rendering.
 - [ ] There are occasional rendering errors in the 3d view.
