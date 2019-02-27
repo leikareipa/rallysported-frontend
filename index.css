@@ -20,7 +20,7 @@ body
 /* For the HTML5 canvas that displays RallySportED's render output.*/
 .canvas
 {
-    cursor: url("rsed-cursor.png"), auto;
+    cursor: url("./assets/rsed-cursor.png"), auto;
     background-color: #101010;
     height: 100%;
     width: 100%;
@@ -131,7 +131,7 @@ body
 }
 .dropdown_list div
 {
-    cursor: url("rsed-cursor.png"), auto;
+    cursor: url("./assets/rsed-cursor.png"), auto;
     color: rgb(0, 0, 0);
     padding: 4px;
     padding-left: 15px;
