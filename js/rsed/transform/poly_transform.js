@@ -51,21 +51,18 @@ const polygon_transform_n = (function()
                     
                     transfPolys[k] = new geometry_n.polygon_o(polygons[i].v.length);
                     transfPolys[k].clone_from(polygons[i]);
-                    
-                    transfPolys[k].transform(toScreenSpace);
-                    transfPolys[k].perspective_divide();
 
-                    let notVisible = false;
-                    for (let v = 0; v < transfPolys[k].v.length; v++)
+                    transfPolys[k].transform(toScreenSpace);
+
+                    // Clip against the near plane. Instead of modulating the vertex positions,
+                    // we'll just cull the entire polygon if any of its vertices are behind the plane.
+                    if (transfPolys[k].v.some(v=>(v.w <= 0)))
                     {
-                        if (transfPolys[k].v[v].w <= 0)
-                        {
-                            transfPolys.pop();
-                            notVisible = true;
-                            break;
-                        }
+                        transfPolys.pop();
+                        continue;
                     }
-                    if (notVisible) continue;
+
+                    transfPolys[k].perspective_divide();
 
                     k++;
                 }
