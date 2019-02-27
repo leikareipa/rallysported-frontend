@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/resource_loader.js
+ * Most recent known filename: js/resource-loader.js
  *
  * Tarpeeksi Hyvae Soft 2018
  * 
