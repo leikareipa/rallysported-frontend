@@ -26,7 +26,7 @@ const resource_loader_n = (function()
             for (let p = 0; p < track.props.length; p++)
             {
                 const prop = track.props[p];
-                maasto_n.add_prop_location(track.id, prop.name, prop.x, prop.y, prop.z);
+                maasto_n.add_prop_location(track.trackId, prop.name, prop.x, prop.y, prop.z);
             }
         }
     }
@@ -59,7 +59,7 @@ const resource_loader_n = (function()
                 polys.push(polygon);
             }
 
-            props_n.add_prop_mesh(prop.name, polys);
+            props_n.add_prop_mesh(prop.displayName, polys);
         }
     }
 

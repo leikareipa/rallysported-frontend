@@ -1,0 +1,124 @@
+{
+    "hostProject": "rsed-js",
+    "collection": "prop-locations",
+    "comments": ["The locations of 3d track props on Rally-Sport's eight demo tracks, derived from hard-coded values",
+                 "found in RALLYE.EXE. The original data are probably (c) 1996 Jukka Jäkälä. This JSON conversion is (c)",
+                 "2018 Tarpeeksi Hyvae Soft."], 
+
+    "tracks":
+    [
+        {
+            "trackId": 1,
+            "props":
+            [
+                {"name": "finish(normal)", "x": 3328, "y": 0, "z": 2016},
+                {"name": "tree", "x": 3500, "y": 0, "z": 3872},
+                {"name": "tree", "x": 4400, "y": 0, "z": 6172},
+                {"name": "tree", "x": 1664, "y": 0, "z": 7072},
+                {"name": "tree", "x": 6000, "y": 0, "z": 1322},
+                {"name": "tree", "x": 3200, "y": 0, "z": 6722},
+                {"name": "fence(wire)", "x": 4358, "y": 0, "z": 2688},
+                {"name": "fence(wire)", "x": 4328, "y": 0, "z": 3456},
+                {"name": "fence(horse)", "x": 2688, "y": 0, "z": 6912},
+                {"name": "fence(horse)", "x": 6912, "y": 0, "z": 5600},
+                {"name": "sign(80)", "x": 6400, "y": 0, "z": 2048}
+            ]
+        },
+
+        {
+            "trackId": 2,
+            "props":
+            [
+                {"name": "finish(normal)", "x": 3200, "y": 0, "z": 2016}
+            ]
+        },
+
+        {
+            "trackId": 3,
+            "props":
+            [
+                {"name": "finish(normal)", "x": 3328, "y": 0, "z": 2016},
+                {"name": "tree", "x": 3200, "y": 0, "z": 6722},
+                {"name": "fence(wire)", "x": 6140, "y": 0, "z": 7136},
+                {"name": "fence(wire)", "x": 6652, "y": 0, "z": 7136}
+            ]
+        },
+
+        {
+            "trackId": 4,
+            "props":
+            [
+                {"name": "finish(normal)", "x": 3968, "y": 0, "z": 5248},
+                {"name": "arch(stone)", "x": 1216, "y": 0, "z": 4036},
+                {"name": "arch(stone)", "x": 12032, "y": 52, "z": 6450},
+                {"name": "sign(!)", "x": 5695, "y": 0, "z": 14144},
+                {"name": "post(stone)", "x": 3456, "y": 0, "z": 11232},
+                {"name": "post(stone)", "x": 4016, "y": 0, "z": 12622},
+                {"name": "post(stone)", "x": 7968, "y": 0, "z": 6304},
+                {"name": "rock(large)", "x": 1776, "y": 0, "z": 13720},
+                {"name": "rock(small)", "x": 1960, "y": 0, "z": 13523},
+                {"name": "billboard(large)", "x": 9736, "y": 0, "z": 8664},
+                {"name": "billboard(large)", "x": 10216, "y": 0, "z": 10344},
+                {"name": "billboard(small)", "x": 6000, "y": 0, "z": 11096},
+                {"name": "billboard(small)", "x": 6000, "y": 0, "z": 16200},
+                {"name": "billboard(large)", "x": 2540, "y": 0, "z": 13120}
+            ]
+        },
+
+        {
+            "trackId": 5,
+            "props":
+            [
+                {"name": "finish(normal)", "x": 4480, "y": 0, "z": 5888},
+                {"name": "house", "x": 3712, "y": 0, "z": 5120}
+            ]
+        },
+
+        {
+            "trackId": 6,
+            "props":
+            [
+                {"name": "finish(normal)", "x": 4736, "y": 0, "z": 4352}
+            ]
+        },
+
+        {
+            "trackId": 7,
+            "props":
+            [
+                {"name": "finish(normal)", "x": 4288, "y": 0, "z": 9792},
+                {"name": "sign(80)", "x": 6336, "y": 0, "z": 10176},
+                {"name": "pole(1)", "x": 4032, "y": 0, "z": 6336},
+                {"name": "pole(1)", "x": 5312, "y": 0, "z": 7616},
+                {"name": "pole(1)", "x": 6592, "y": 0, "z": 9664},
+                {"name": "pole(1)", "x": 8000, "y": 0, "z": 11200},
+                {"name": "pole(1)", "x": 9664, "y": 0, "z": 12608},
+                {"name": "pole(1)", "x": 11584, "y": 0, "z": 13376},
+                {"name": "house", "x": 12000, "y": 0, "z": 12600},
+                {"name": "house", "x": 9200, "y": 0, "z": 8600},
+                {"name": "tree", "x": 6668, "y": 0, "z": 14500},
+                {"name": "tree", "x": 4060, "y": 0, "z": 12460},
+                {"name": "tree", "x": 2390, "y": 0, "z": 14220}
+            ]
+        },
+
+        {
+            "trackId": 8,
+            "props":
+            [
+                {"name": "finish(arch)", "x": 2048, "y": -30, "z": 3812},
+                {"name": "fence(wire)", "x": 3526, "y": 0, "z": 7130},
+                {"name": "fence(wire)", "x": 4026, "y": 0, "z": 7130},
+                {"name": "post(stone)", "x": 3968, "y": 0, "z": 928},
+                {"name": "tree", "x": 6535, "y": 0, "z": 3542},
+                {"name": "tree", "x": 6981, "y": 0, "z": 6632},
+                {"name": "tree", "x": 6481, "y": 30, "z": 8704},
+                {"name": "pole(2)", "x": 6080, "y": 0, "z": 1472},
+                {"name": "pole(2)", "x": 5184, "y": 0, "z": 3392},
+                {"name": "pole(2)", "x": 4160, "y": 0, "z": 5440},
+                {"name": "pole(2)", "x": 3392, "y": 0, "z": 7232},
+                {"name": "pole(2)", "x": 2368, "y": 0, "z": 9024}
+            ]
+        }        
+    ]
+}
