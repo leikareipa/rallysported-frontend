@@ -19,7 +19,7 @@ const rsed_n = (function()
 
     // Strings with which to build URLs to track assets.
     const tracksFileExtension = ".zip";
-    const tracksDirectory = "tracklist/files/";
+    const tracksDirectory = "track-list/files/";
 
     const renderScalingMultiplier = 0.25;
 

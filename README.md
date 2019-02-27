@@ -14,7 +14,7 @@ For more information (including technical documentation on Rally-Sport's data fo
 - Texture distortion matches the game's, so WYSIWYG
 
 # Usage
-Verbose instructions to follow, but suffice to say for now that, to test RallySportED on your localhost, use ```localhost/?track=abc``` as the address. This will load the sample track `abc` from [tracklist/files/](tracklist/files/).
+Verbose instructions to follow, but suffice to say for now that, to test RallySportED on your localhost, use ```localhost/?track=abc``` as the address. This will load the sample track `abc` from [track-list/files/](track-list/files/).
 
 # Todo
 - [ ] Editing of textures.

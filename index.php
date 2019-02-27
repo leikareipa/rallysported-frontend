@@ -18,7 +18,7 @@
             </span>
 
             <a class="button" style="font-variant: small-caps; color: rgb(170, 170, 170); background-color: rgb(87, 87, 87);"
-               href="./tracklist/" target="_blank" rel="noopener">
+               href="./track-list/" target="_blank" rel="noopener">
                 track list &#9656;
             </a>
 
