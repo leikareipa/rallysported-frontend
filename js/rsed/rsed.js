@@ -127,7 +127,7 @@ const rsed_n = (function()
 
             return new Promise((resolve, reject) =>
             {
-                const exeAssetDir = "assets/rallye_exe/";
+                const exeAssetDir = "assets/rallye-exe/";
 
                 // Reset/empty all data buffers.
                 props_n.clear_prop_data();
