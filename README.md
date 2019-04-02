@@ -1,7 +1,7 @@
-`A note to the recruiter!` This was only my second-ever project in JavaScript, and will by that nature contain some decisions of design and/or implementation that I might make differently today. That said, it's still a pretty cool single-page app and I continue to maintain it.
+`A note to the recruiter!` This was my second-ever project in JavaScript, and will by that nature contain some decisions of design and/or implementation that I might or would make differently today. That said, it's still a pretty cool and unique single-page app!
 
 # RallySportED-JS
-A version of [RallySportED](../../../rallysported)'s track editor for browsers, written in JavaScript. You should find it capable of running in a modern browser on a desktop system. Mobile support is on the cards but not yet available.
+A version of [RallySportED](../../../rallysported)'s track editor for browsers, written in JavaScript. You should find it capable of running in a modern browser on a desktop system. (Mobile support is on the cards but not yet available.)
 
 You can find more information about RallySportED in general, including more technically-oriented documentation, in [RallySportED's umbrella repo](../../../rallysported).
 
@@ -14,6 +14,8 @@ A live page of RallySportED-JS is available [here](http://tarpeeksihyvaesoft.com
 - Written in vanilla JavaScript
 
 ![](images/screenshots/beta.3/yleisoek.png)
+![](images/screenshots/beta.3/lumitaso.png)
+![](images/screenshots/beta.3/hakkuu-yla.png)
 
 # How to use
 ### User's guide
