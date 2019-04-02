@@ -1,3 +1,5 @@
+`A note to the recruiter!` This was only my second-ever project in JavaScript, and will by that nature contain some decisions of design and/or implementation that I might make differently today. That said, it's still a pretty cool single-page app and I continue to maintain it.
+
 # RallySportED-JS
 A version of [RallySportED](../../../rallysported)'s track editor for browsers, written in JavaScript. You should find it capable of running in a modern browser on a desktop system. Mobile support is on the cards but not yet available.
 
