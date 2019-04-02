@@ -59,6 +59,43 @@ const rsed_n = (function()
         });
     }
 
+    const htmlUI = (function()
+    {
+        const uiContainer = new Vue(
+        {
+            el:"#html-ui",
+            data:
+            {
+                // The display name of the track that's currently open in the editor.
+                trackName:"",
+
+                // Whether the UI should be displayed or kept invisible at this time.
+                uiVisible:false,
+            },
+            methods:
+            {
+                refresh:function()
+                {
+                    this.trackName = project.displayName;
+                }
+            }
+        });
+
+        const publicInterface = {};
+        {
+            publicInterface.refresh = function()
+            {
+                uiContainer.refresh();
+            };
+    
+            publicInterface.set_visible = function(isVisible)
+            {
+                uiContainer.uiVisible = isVisible;
+            };
+        }
+        return publicInterface;
+    })();
+
     const publicInterface = {};
     {
         // Set to false if you want to incapacitate the program, e.g. as a result of an error throwing.
@@ -70,7 +107,7 @@ const rsed_n = (function()
     
         publicInterface.load_project = function(args = {})
         {
-            page_n.hide_project_info_display();
+            htmlUI.set_visible(false);
 
             if (args.fromZip)
             {
@@ -81,13 +118,13 @@ const rsed_n = (function()
                                                                {
                                                                    project = newProject;
                                                                    rsed_project_n.verify_project_validity(project);
-                                                                   page_n.update_project_info_display(project);
-                                                                   page_n.unhide_project_info_display();
+                                                                   htmlUI.refresh();
+                                                                   htmlUI.set_visible(true);
                                                                });
             }
             else
             {
-                page_n.unhide_project_info_display();
+                htmlUI.set_visible(true);
 
                 k_assert(0, "Was given no project no load. There should've been one.");
             }

@@ -192,12 +192,6 @@ window.onkeyup = function(event)
 
 const page_n = (function()
 {
-    // The id of the html element which displays information about the current RallySportED project.
-    const trackInfoDisplayElement = "track_info_display";
-
-    // The id of the html element which displays the current RallySportED project's name.
-    const trackTitleElemendId = "track_title";
-
     const publicInterface = {};
     {
         // Gets called when something is dropped onto whichever container. We expect the drop to be a zip
@@ -238,40 +232,6 @@ const page_n = (function()
             // Clear the address bar's parameters to reflect the fact that the user has loaded a local
             // track resource instead of specifying a server-side resource via the address bar.
             window.history.replaceState({}, document.title, "/");
-        }
-
-        publicInterface.hide_project_info_display = function()
-        {
-            const titleElement = document.getElementById(trackInfoDisplayElement);
-            k_assert((titleElement != null), "Couldn't find the project info element.");
-
-            titleElement.style.visibility = "hidden";
-        }
-
-        publicInterface.unhide_project_info_display = function()
-        {
-            const titleElement = document.getElementById(trackInfoDisplayElement);
-            k_assert((titleElement != null), "Couldn't find the project info element.");
-
-            titleElement.style.visibility = "visible";
-        }
-
-        // Updates the page's project display with information from the given project.
-        publicInterface.update_project_info_display = function(project)
-        {
-            // Clear out any previous project information.
-            const titleElement = document.getElementById(trackTitleElemendId);
-            k_assert((titleElement != null), "Couldn't find the track title element.");
-            while(titleElement.firstChild)
-            {
-                titleElement.removeChild(titleElement.firstChild);
-            }
-
-            // Fill in the new project information.
-            if (project != null)
-            {
-                titleElement.appendChild(document.createTextNode(project.displayName + "."));
-            }
         }
 
         publicInterface.close_dropdowns = function()

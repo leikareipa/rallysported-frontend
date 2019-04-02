@@ -43,10 +43,8 @@ body
     margin: 0;
 }
 
-/* For the track info display, at the top of the page.*/
-.title_container
+#html-ui
 {
-    visibility: hidden;
     background-color: #101010;
     display: inline-block;
     line-height: 200%;
@@ -57,18 +55,16 @@ body
     padding-top: 20px;
 }
 
-.title_container .track_name
+#html-ui #track-name-display
 {
-    z-index: 1;
-    position:relative;
     letter-spacing: 1px;
     font-family: 'Permanent Marker', sans-serif;
-	font-weight: bold;
+    font-weight: bold;
     color: rgb(179, 112, 25);
     font-size: 260%;
 }
 
-.title_container .button
+#html-ui .button
 {
     display: inline-block;
     vertical-align: text-bottom;
@@ -81,15 +77,14 @@ body
     border-radius: 2px;
     padding: 0px 12px;
     text-decoration: none;
-	transition: 0.025s;
 }
 
-.title_container .button:active
+#html-ui .button:active
 {
-    transform: scale(0.9);
+    transform: translateY(2px) scale(0.99);
 }
 
-.disclaimer
+#html-ui .disclaimer
 {
     font-family: 'Cabin', sans-serif;
     font-variant: small-caps;
@@ -102,13 +97,13 @@ body
     position:relative;
 }
 
-.disclaimer a
+#html-ui .disclaimer a
 {
     color: rgb(134, 134, 134);
     text-decoration: none;
 }
 
-.disclaimer a:hover
+#html-ui .disclaimer a:hover
 {
     color: rgb(134, 134, 134);
     text-decoration: underline;
@@ -146,4 +141,9 @@ body
 .dropdown_list.show
 {
     display: block;
+}
+
+[v-cloak]
+{
+    display: none !important;
 }
