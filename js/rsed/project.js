@@ -137,8 +137,10 @@ const rsed_project_n = (function()
                 {
                     resource_loader_n.get_project_data({fromZip:true,zipFile:zip}, (projectData)=>
                     {
+                        /// Temp hack. Project loading will be redesigned in the future.
                         const project = new publicInterface.rsed_project_o(projectData);
-                        broadcastFn(project);
+                        manifesto_n.apply_manifesto(project.manifestoFileContents)
+                        .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
                         return;
                     });
 
@@ -151,8 +153,10 @@ const rsed_project_n = (function()
                     {
                         resource_loader_n.get_project_data({fromZip:true,zipFile}, (projectData)=>
                         {
+                            /// Temp hack. Project loading will be redesigned in the future.
                             const project = new publicInterface.rsed_project_o(projectData);
-                            broadcastFn(project);
+                            manifesto_n.apply_manifesto(project.manifestoFileContents)
+                            .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
                             return;
                         });
                     });
@@ -204,7 +208,8 @@ const rsed_project_n = (function()
             .catch((error)=>{k_assert(0, error);});
         }
 
-        // Returns a project object of the given project data. Note that this will overwrite 
+        // Returns a project object of the given project data. Note that this will overwrite
+        // any existing project data.
         publicInterface.rsed_project_o = function(projectData = {})
         {
             // The name of this project. Will be shown to the user on the page, and also in Rally-Sport
@@ -226,9 +231,6 @@ const rsed_project_n = (function()
             this.manifestoFileContents = projectData.manifestoData;
 
             this.isValidProject = true;
-
-            manifesto_n.apply_manifesto(this.manifestoFileContents)
-            .then(()=>{override_track_assets(projectData.dtaData);});
         }
     }
     return publicInterface;

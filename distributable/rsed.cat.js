@@ -2051,8 +2051,6 @@ const props_n = (function()
             propMeshes.length = 0;
             propNames.length = 0;
             propTextures.length = 0;
-
-            page_n.clear_prop_dropdown_menu();
         }
 
         publicInterface.add_prop_texture = function(texture = texture_n.texture_o)
@@ -2071,8 +2069,6 @@ const props_n = (function()
             
             propMeshes.push(polygons);
             propNames.push(name);
-
-            page_n.add_prop_name_to_dropdown_menu(name);
         }
 
         publicInterface.prop_name_for_idx = function(propIdx)
@@ -4961,8 +4957,10 @@ const rsed_project_n = (function()
                 {
                     resource_loader_n.get_project_data({fromZip:true,zipFile:zip}, (projectData)=>
                     {
+                        /// Temp hack. Project loading will be redesigned in the future.
                         const project = new publicInterface.rsed_project_o(projectData);
-                        broadcastFn(project);
+                        manifesto_n.apply_manifesto(project.manifestoFileContents)
+                        .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
                         return;
                     });
 
@@ -4975,8 +4973,10 @@ const rsed_project_n = (function()
                     {
                         resource_loader_n.get_project_data({fromZip:true,zipFile}, (projectData)=>
                         {
+                            /// Temp hack. Project loading will be redesigned in the future.
                             const project = new publicInterface.rsed_project_o(projectData);
-                            broadcastFn(project);
+                            manifesto_n.apply_manifesto(project.manifestoFileContents)
+                            .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
                             return;
                         });
                     });
@@ -5028,7 +5028,8 @@ const rsed_project_n = (function()
             .catch((error)=>{k_assert(0, error);});
         }
 
-        // Returns a project object of the given project data. Note that this will overwrite 
+        // Returns a project object of the given project data. Note that this will overwrite
+        // any existing project data.
         publicInterface.rsed_project_o = function(projectData = {})
         {
             // The name of this project. Will be shown to the user on the page, and also in Rally-Sport
@@ -5050,9 +5051,6 @@ const rsed_project_n = (function()
             this.manifestoFileContents = projectData.manifestoData;
 
             this.isValidProject = true;
-
-            manifesto_n.apply_manifesto(this.manifestoFileContents)
-            .then(()=>{override_track_assets(projectData.dtaData);});
         }
     }
     return publicInterface;
@@ -5128,14 +5126,31 @@ const rsed_n = (function()
                 // The display name of the track that's currently open in the editor.
                 trackName:"",
 
+                propList:[],
+
                 // Whether the UI should be displayed or kept invisible at this time.
                 uiVisible:false,
             },
             methods:
             {
+                // Called when the user selects a prop from the prop dropdown menu.
+                /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
+                activate_prop:function(name = "")
+                {
+                    maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
+                    page_n.close_dropdowns();
+
+                    return;
+                },
+                
                 refresh:function()
                 {
                     this.trackName = project.displayName;
+                    this.propList = props_n.prop_names()
+                                           .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
+                                           .map(propName=>({propName}));
+
+                    return;
                 }
             }
         });
@@ -5145,11 +5160,15 @@ const rsed_n = (function()
             publicInterface.refresh = function()
             {
                 uiContainer.refresh();
+
+                return;
             };
     
             publicInterface.set_visible = function(isVisible)
             {
                 uiContainer.uiVisible = isVisible;
+
+                return;
             };
         }
         return publicInterface;
@@ -5354,7 +5373,7 @@ window.oncontextmenu = function(event)
     if (ui_input_n.mouse_hover_type() === ui_input_n.mousePickingType.prop &&
         !props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
-        const propDowndown = document.getElementById("prop_dropdown");
+        const propDowndown = document.getElementById("prop-dropdown");
         
         propDowndown.style.transform = "translate(" + (RSED_MOUSE_POS.x - 40) + "px, " + (RSED_MOUSE_POS.y - 0) + "px)";
         propDowndown.classList.toggle("show");
@@ -5512,47 +5531,6 @@ const page_n = (function()
 
             RSED_DROPDOWN_ACTIVATED = false;
             ui_input_n.reset_mouse_hover_info();
-        }
-
-        publicInterface.clear_prop_dropdown_menu = function()
-        {
-            const dropdown = document.getElementById("prop_dropdown");
-            while (dropdown.firstChild) dropdown.removeChild(dropdown.firstChild);
-        }
-
-        publicInterface.add_prop_name_to_dropdown_menu = function(name = "")
-        {
-            /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
-            if (name.toLowerCase().startsWith("finish")) return;
-
-            const propDropdown = document.getElementById("prop_dropdown");
-            k_assert((propDropdown != null), "Received a null prop dropdown element.");
-
-            /// TODO: Test to make sure we're not adding duplicates, etc.
-
-            // Add a menu header, if none is present.
-            if (propDropdown.childElementCount === 0)
-            {
-                const header = document.createElement("div");
-
-                header.appendChild(document.createTextNode("set prop type"));
-                header.style.backgroundColor = "rgb(224, 224, 224)";
-                header.style.color = "black"
-                header.style.paddingBottom = "10px";
-                header.style.paddingTop = "10px";
-                
-                propDropdown.appendChild(header);
-            }
-
-            // Add the menu entry.
-            const newEntry = document.createElement("div");
-            newEntry.onclick = function()
-            {
-                maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
-                publicInterface.close_dropdowns();
-            }
-            newEntry.appendChild(document.createTextNode(name));
-            propDropdown.appendChild(newEntry);
         }
     }
     return publicInterface;

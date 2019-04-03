@@ -89,7 +89,7 @@ window.oncontextmenu = function(event)
     if (ui_input_n.mouse_hover_type() === ui_input_n.mousePickingType.prop &&
         !props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
-        const propDowndown = document.getElementById("prop_dropdown");
+        const propDowndown = document.getElementById("prop-dropdown");
         
         propDowndown.style.transform = "translate(" + (RSED_MOUSE_POS.x - 40) + "px, " + (RSED_MOUSE_POS.y - 0) + "px)";
         propDowndown.classList.toggle("show");
@@ -247,47 +247,6 @@ const page_n = (function()
 
             RSED_DROPDOWN_ACTIVATED = false;
             ui_input_n.reset_mouse_hover_info();
-        }
-
-        publicInterface.clear_prop_dropdown_menu = function()
-        {
-            const dropdown = document.getElementById("prop_dropdown");
-            while (dropdown.firstChild) dropdown.removeChild(dropdown.firstChild);
-        }
-
-        publicInterface.add_prop_name_to_dropdown_menu = function(name = "")
-        {
-            /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
-            if (name.toLowerCase().startsWith("finish")) return;
-
-            const propDropdown = document.getElementById("prop_dropdown");
-            k_assert((propDropdown != null), "Received a null prop dropdown element.");
-
-            /// TODO: Test to make sure we're not adding duplicates, etc.
-
-            // Add a menu header, if none is present.
-            if (propDropdown.childElementCount === 0)
-            {
-                const header = document.createElement("div");
-
-                header.appendChild(document.createTextNode("set prop type"));
-                header.style.backgroundColor = "rgb(224, 224, 224)";
-                header.style.color = "black"
-                header.style.paddingBottom = "10px";
-                header.style.paddingTop = "10px";
-                
-                propDropdown.appendChild(header);
-            }
-
-            // Add the menu entry.
-            const newEntry = document.createElement("div");
-            newEntry.onclick = function()
-            {
-                maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
-                publicInterface.close_dropdowns();
-            }
-            newEntry.appendChild(document.createTextNode(name));
-            propDropdown.appendChild(newEntry);
         }
     }
     return publicInterface;

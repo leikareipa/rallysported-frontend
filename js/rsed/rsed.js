@@ -69,14 +69,31 @@ const rsed_n = (function()
                 // The display name of the track that's currently open in the editor.
                 trackName:"",
 
+                propList:[],
+
                 // Whether the UI should be displayed or kept invisible at this time.
                 uiVisible:false,
             },
             methods:
             {
+                // Called when the user selects a prop from the prop dropdown menu.
+                /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
+                activate_prop:function(name = "")
+                {
+                    maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
+                    page_n.close_dropdowns();
+
+                    return;
+                },
+                
                 refresh:function()
                 {
                     this.trackName = project.displayName;
+                    this.propList = props_n.prop_names()
+                                           .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
+                                           .map(propName=>({propName}));
+
+                    return;
                 }
             }
         });
@@ -86,11 +103,15 @@ const rsed_n = (function()
             publicInterface.refresh = function()
             {
                 uiContainer.refresh();
+
+                return;
             };
     
             publicInterface.set_visible = function(isVisible)
             {
                 uiContainer.uiVisible = isVisible;
+
+                return;
             };
         }
         return publicInterface;

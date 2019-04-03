@@ -31,8 +31,6 @@ const props_n = (function()
             propMeshes.length = 0;
             propNames.length = 0;
             propTextures.length = 0;
-
-            page_n.clear_prop_dropdown_menu();
         }
 
         publicInterface.add_prop_texture = function(texture = texture_n.texture_o)
@@ -51,8 +49,6 @@ const props_n = (function()
             
             propMeshes.push(polygons);
             propNames.push(name);
-
-            page_n.add_prop_name_to_dropdown_menu(name);
         }
 
         publicInterface.prop_name_for_idx = function(propIdx)
