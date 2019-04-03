@@ -231,7 +231,8 @@ const page_n = (function()
 
             // Clear the address bar's parameters to reflect the fact that the user has loaded a local
             // track resource instead of specifying a server-side resource via the address bar.
-            window.history.replaceState({}, document.title, "/");
+            const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/")+1));
+            window.history.replaceState({}, document.title, basePath);
         }
 
         publicInterface.close_dropdowns = function()

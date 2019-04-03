@@ -128,7 +128,7 @@ body
 {
     cursor: url("./distributable/assets/rsed-cursor.png"), auto;
     color: rgb(0, 0, 0);
-    padding: 4px;
+    padding: 0px;
     padding-left: 15px;
     padding-right: 70px;
     display: block;
