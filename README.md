@@ -10,8 +10,8 @@ A live page of RallySportED-JS is available [here](http://tarpeeksihyvaesoft.com
 ### Features!
 - Edit Rally-Sport's tracks in your browser!
 - Change the heightmap, paint the ground, move and place 3d objects
-- Software-rendered 3d graphics with chunky pixels, just like in the game
-- Written in vanilla JavaScript
+- Software-rendered 3d graphics with chunky pixels, just like in Rally-Sport
+- Written in vanilla JavaScript (with a bit of Vue sprinkled in for the UI)
 
 ![](images/screenshots/beta.3/yleisoek.png)
 ![](images/screenshots/beta.3/lumitaso.png)
