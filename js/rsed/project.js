@@ -135,7 +135,7 @@ const rsed_project_n = (function()
             {
                 case "local":
                 {
-                    resource_loader_n.get_project_data({fromZip:true,zipFile:zip}, (projectData)=>
+                    resource_loader_n.load_project_data({fromZip:true,zipFile:zip}, (projectData)=>
                     {
                         /// Temp hack. Project loading will be redesigned in the future.
                         const project = new publicInterface.rsed_project_o(projectData);
@@ -151,7 +151,7 @@ const rsed_project_n = (function()
                     resource_loader_n.load_binary_resource(zip, "rsed-project-zip",
                     function(zipFile)
                     {
-                        resource_loader_n.get_project_data({fromZip:true,zipFile}, (projectData)=>
+                        resource_loader_n.load_project_data({fromZip:true,zipFile}, (projectData)=>
                         {
                             /// Temp hack. Project loading will be redesigned in the future.
                             const project = new publicInterface.rsed_project_o(projectData);

@@ -4397,7 +4397,8 @@ const polygon_fill_canvas_n = (function()
 /*
  * Most recent known filename: js/file/resource-loader.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018, 2019 /
+ * RallySportED-js
  * 
  * Loads data from various resource files related to Rally-Sport and RallySportED.
  *
@@ -4407,81 +4408,169 @@ const polygon_fill_canvas_n = (function()
 
 const resource_loader_n = (function()
 {
-    // The names of the types of resources we recognize. Any resource we're asked to load must be one
-    // of these types.
-    const binaryResourceTypes = Object.freeze(["rsed-project-zip", "palat", "maasto", "varimaa", "kierros", "prop-textures", "track-header"]);
-    const jsonResourceTypes = Object.freeze(["prop-meshes", "prop-locations"]);
+    // The names of the types of binary resources we recognize.
+    // Any binary resource we're asked to load must be one of these types.
+    const binaryResourceTypes = Object.freeze(["palat",
+                                               "maasto",
+                                               "varimaa",
+                                               "kierros",
+                                               "track-header",
+                                               "prop-textures",
+                                               "rsed-project-zip"]);
 
-    function load_prop_locations(data, receptacle)
+    // The names of the types of JSON resources we recognize.
+    // Any JSON resource we're asked to load must be one of these types.
+    const jsonResourceTypes = Object.freeze(["prop-meshes",
+                                             "prop-locations"]);
+
+    // Takes in a JSON object describing the locations of each track's props; for instance,
+    //
+    //   "tracks":
+    //   [
+    //      {
+    //         "trackId": 1,
+    //         "props":
+    //         [
+    //            {"name": "finish(normal)", "x": 3328, "y": 0, "z": 2016},
+    //            {"name": "tree", "x": 3500, "y": 0, "z": 3872}
+    //         ]
+    //      }
+    //   ]
+    //
+    // and adds them into RallySportED.
+    //
+    function load_prop_locations(data = Object)
     {
-        k_assert((data.tracks != null), "Expected data with track props info.");
-
-        for (let i = 0; i < data.tracks.length; i++)
+        k_assert((data.tracks != null), "Expected a JSON object containing track prop locations.");
+        data.tracks.forEach(track=>
         {
-            const track = data.tracks[i];
-            for (let p = 0; p < track.props.length; p++)
+            k_assert((track.props != null), "Expected a JSON object containing track prop locations.");
+            track.props.forEach(prop=>
             {
-                const prop = track.props[p];
                 maasto_n.add_prop_location(track.trackId, prop.name, prop.x, prop.y, prop.z);
-            }
+            });
+        });
+    }
+
+    // Takes in a JSON object describing the 3d mesh data of each track's props; for instance,
+    //
+    //   "props":
+    //   [
+    //      {
+    //         "displayName": "tree",
+    //         "propId": 3492597896,
+    //         "polygons":
+    //         [
+    //            {"texture": null, "color": 15, "verts": [-21, -500, 12, 21, -500, -12, 60, -550, -38, -15, -550, -63]},
+    //            {"texture": null, "color": 14, "verts": [-15, -550, -63, 60, -550, -38, 0, -425, -138]}
+    //         ]
+    //      }
+    //   ]
+    //
+    // and converts these meshes into RallySportED's mesh format for rendering.
+    //
+    function load_prop_meshes(data = Object)
+    {
+        k_assert((data.props != null), "Expected a JSON object containing prop meshes.");
+        data.props.forEach(prop=>
+        {
+            const convertedPolygons = [];
+
+            k_assert((prop.polygons != null), "Encountered a track prop with no polygons.");
+            prop.polygons.forEach(propPoly=>
+            {
+                const numVertices = (propPoly.verts.length / 3);
+                const convertedPoly = new geometry_n.polygon_o(numVertices);
+
+                convertedPoly.texture = props_n.prop_texture(propPoly.texture);
+                convertedPoly.color = palette_n.palette_idx_to_rgba(propPoly.color);
+
+                k_assert((convertedPoly.v.length === numVertices), "Incorrect number of vertices in prop polygon.");
+                convertedPoly.v.forEach((vertex, idx)=>
+                {
+                    vertex.x = propPoly.verts[idx*3];
+                    vertex.y = -propPoly.verts[idx*3+1];
+                    vertex.z = -propPoly.verts[idx*3+2];
+                });
+
+                convertedPolygons.push(convertedPoly);
+            });
+
+            props_n.add_prop_mesh(prop.displayName, convertedPolygons);
+        });
+    }
+
+    // Takes in a byte array describing the current track's header; and loads it into
+    // RallySportED. For information about Rally-Sport's track headers, refer to the
+    // documentation on Rally-Sport's data formats at github.com/leikareipa/rallysported/tree/master/docs.
+    function load_track_header(data = Uint8Array)
+    {
+        // Track checkpoint.
+        {
+            const byteOffs = ((rsed_n.underlying_track_id() - 1) * 18);
+            const checkpointX = (data[byteOffs + 13] * 2);
+            const checkpointY = (data[byteOffs + 15] * 2);
+            maasto_n.set_checkpoint_pos(checkpointX, checkpointY);
         }
     }
 
-    function load_prop_meshes(data)
+    // Takes in a byte array providing track prop textures' pixel data; and creates a copy
+    // of the data converted into RallySportED's texture format for use in rendering. For
+    // information about Rally-Sport's prop textures, refer to the documentation on Rally-
+    // Sport's data formats at github.com/leikareipa/rallysported/tree/master/docs.
+    function load_prop_textures(data = Uint8Array)
     {
-        k_assert((data.props != null), "Expected data with prop meshes.");
+        let idx = 0;
+        const numTextures = data[idx++];
 
-        for (let i = 0; i < data.props.length; i++)
+        for (let i = 0; i < numTextures; i++)
         {
-            const prop = data.props[i];
-            
-            const polys = [];
-            for (let p = 0; p < prop.polygons.length; p++)
+            const texture = new texture_n.texture_o();
+            texture.width = data[idx++];
+            texture.height = data[idx++];
+
+            for (let t = 0; t < (texture.width * texture.height); t++)
             {
-                const jsonPoly = prop.polygons[p];
+                let paletteIdx = data[idx++];
+                if (paletteIdx < 0 || paletteIdx > 31) paletteIdx = 0;
 
-                const numVertices = (jsonPoly.verts.length / 3);
-                const polygon = new geometry_n.polygon_o(numVertices);
-                polygon.texture = props_n.prop_texture(jsonPoly.texture);
-                polygon.color = palette_n.palette_idx_to_rgba(jsonPoly.color);
-
-                for (let v = 0; v < numVertices; v++)
-                {
-                    polygon.v[v].x = jsonPoly.verts[v*3];
-                    polygon.v[v].y = -jsonPoly.verts[v*3+1];
-                    polygon.v[v].z = -jsonPoly.verts[v*3+2];
-                }
-
-                polys.push(polygon);
+                texture.pixels.push(palette_n.palette_idx_to_rgba(paletteIdx));
+                texture.paletteIndices.push(paletteIdx);
             }
 
-            props_n.add_prop_mesh(prop.displayName, polys);
+            props_n.add_prop_texture(texture);
         }
     }
 
     const publicInterface = {};
     {
-        publicInterface.get_project_data = function(args = {}, callbackFn)
+        // Loads a RallySportED project's data from file, and feeds it to the given callback
+        // function.
+        publicInterface.load_project_data = function(args = {}, returnCallback)
         {
-            k_assert((callbackFn instanceof Function), "Expected a callback function.");
+            k_assert((returnCallback instanceof Function), "Expected to receive a callback function.");
 
             const projectData = {};
 
+            // Get the data from a zip file.
             if (args.fromZip)
             {
                 const zipContents = new JSZip();
+
                 zipContents.loadAsync(args.zipFile)
                 .then(()=>
                 {
                     // Parse the zip file's contents. We'll require that it contains exactly one directory, which stores
-                    // the project's manifesto and dta files.
+                    // the project's $FT and DTA files.
                     const files = [];
                     {
                         const dirs = [];
-
-                        zipContents.forEach(function(path, entry)
+                        zipContents.forEach((path, entry)=>
                         {
-                            if (entry.dir) dirs.push(entry);
+                            if (entry.dir)
+                            {
+                                dirs.push(entry);
+                            }
                             else files.push(entry);
                         });
 
@@ -4493,9 +4582,10 @@ const resource_loader_n = (function()
 
                         projectData.name = dirs[0].name.slice(0, -1).toLowerCase();
 
-                        // For original Rally-Sport tracks, have a display names that reflect the tracks' in-game names.
                         switch (projectData.name)
                         {
+                            // For the original Rally-Sport tracks, have display names that reflect the in-game names
+                            // rather than the project names (like "demoa", "demob", ...).
                             case "demoa": projectData.displayName = "Nurtsi-cruising"; break;
                             case "demob": projectData.displayName = "Vesistövedätys"; break;
                             case "democ": projectData.displayName = "Ralli-cross"; break;
@@ -4504,142 +4594,86 @@ const resource_loader_n = (function()
                             case "demof": projectData.displayName = "You asked it.."; break;
                             case "demog": projectData.displayName = "Bumps and jumps"; break;
                             case "demoh": projectData.displayName = "Short and easy"; break;
+
+                            // Otherwise, use the project name as the display name.
                             default: projectData.displayName = (projectData.name.charAt(0).toUpperCase() + projectData.name.slice(1));
                         }
 
-                        // Grab the required project files.
+                        // Find the project's $FT and DTA files inside the zip file.
                         let manifestoFile = null, dtaFile = null;
                         {
-                            for (let i = 0; i < files.length; i++)
+                            files.forEach(file=>
                             {
-                                const file = files[i];
+                                if (manifestoFile && dtaFile) return;
 
-                                // Decide the type of the file based on its suffix.
                                 const suffix = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
-                                const baseName = file.name.slice(0, file.name.lastIndexOf(".")).toLowerCase();
+                                const basePath = file.name.slice(0, file.name.lastIndexOf(".")).toLowerCase();
+                                const baseName = basePath.slice(basePath.lastIndexOf("/") + 1);
+
+                                // Each resource file is expected to hold the same name as the project itself.
+                                if (baseName !== projectData.name) return;
+
                                 switch (suffix)
                                 {
-                                    case "$ft":
-                                    {
-                                        if (manifestoFile != null)
-                                        {
-                                            alert("The given RallySportED project zip file contains more then one .$FT file. That's not good.");
-                                            return;
-                                        }
-
-                                        manifestoFile = file;
-                                        manifestoFile.baseName = baseName;
-
-                                        break;
-                                    }
-                                    case "dta":
-                                    {
-                                        if (dtaFile != null)
-                                        {
-                                            alert("The given RallySportED project zip file contains more than one .DTA file. That's not good.");
-                                            return;
-                                        }
-
-                                        dtaFile = file;
-                                        dtaFile.baseName = baseName
-                                        
-                                        break;
-                                    }
+                                    case "$ft": manifestoFile = file; break;
+                                    case "dta": dtaFile = file; break;
                                     default: break;
                                 }
-                            }
-
-                            if ((manifestoFile == null) && (dtaFile == null))
-                            {
-                                alert("The given RallySportED project zip file didn't contain the required .DTA and .$FT files.");
-                                return;
-                            }
-
-                            if (!(manifestoFile.name.toLowerCase().startsWith(projectData.name) &&
-                                dtaFile.name.toLowerCase().startsWith(projectData.name)))
-                            {
-                                alert("The given RallySportED project has mismatched file names. Can't load it.");
-                                return;
-                            }
-                        }
-
-                        // Extract the project data from the zip file.
-                        /// FIXME: This code's pretty unsightly.
-                        {
-                            manifestoFile.async("string")
-                            .then((manifestoData)=>
-                            {
-                                projectData.manifestoData = manifestoData;
-
-                                dtaFile.async("arraybuffer")
-                                .then((dtaData)=>
-                                {
-                                    projectData.dtaData = dtaData;
-
-                                    callbackFn(projectData);
-                                });
                             });
+
+                            if (!manifestoFile || !dtaFile)
+                            {
+                                alert("The given RallySportED project zip file didn't contain all of the required .DTA and .$FT files.");
+                                return;
+                            }
                         }
+
+                        // Extract the project's $FT and DTA files from the zip file.
+                        (async()=>
+                        {
+                            projectData.manifestoData = await manifestoFile.async("string");
+                            projectData.dtaData = await dtaFile.async("arraybuffer");
+
+                            returnCallback(projectData);
+                        })();
                     }
                 })
                 .catch((error)=>{k_assert(0, "Failed to extract project data (JSZip error: '" + error + "').");});
             }
-        }
-
-        publicInterface.load_track_header = function(bytes)
-        {
-            // Track checkpoint.
-            const byteOffs = ((rsed_n.underlying_track_id() - 1) * 18);
-            const checkpointX = (bytes[byteOffs + 13] * 2);
-            const checkpointY = (bytes[byteOffs + 15] * 2);
-            maasto_n.set_checkpoint_pos(checkpointX, checkpointY);
-        }
-
-        publicInterface.load_prop_textures = function(bytes)
-        {
-            let idx = 0;
-            const numTextures = bytes[idx++];
-    
-            // Add each PALA as an individual texture.
-            for (let i = 0; i < numTextures; i++)
+            else
             {
-                const texture = new texture_n.texture_o();
-                texture.width = bytes[idx++];
-                texture.height = bytes[idx++];
-    
-                for (let t = 0; t < (texture.width * texture.height); t++)
-                {
-                    let paletteIdx = bytes[idx++];
-                    if (paletteIdx < 0 || paletteIdx > 31) paletteIdx = 0;
-    
-                    texture.pixels.push(palette_n.palette_idx_to_rgba(paletteIdx));
-                    texture.paletteIndices.push(paletteIdx);
-                }
-    
-                props_n.add_prop_texture(texture);
+                k_assert(0, "Unknown file format for loading project data.");
             }
         }
 
-        publicInterface.load_palat_data = function(bytes, receptacle)
+        // Takes in a byte array containing a Rally-Sport's track textures' pixel data; and
+        // loads it into RallySportED. For information about Rally-Sport's track textures,
+        // refer to the documentation on Rally-Sport's data formats at github.com/leikareipa/rallysported/tree/master/docs.
+        publicInterface.load_palat_data = function(bytes)
         {
-            const palaW = 16;
-            const palaH = 16;
+            // The dimensions of a single texture.
+            const palaWidth = 16;
+            const palaHeight = 16;
+
+            // How many textures we expect to receive.
             const numPalas = 256;
-            k_assert((bytes.byteLength === (numPalas * palaW * palaH)), "Incorrect number of bytes for PALA data.");
+
+            k_assert((bytes.byteLength === (numPalas * palaWidth * palaHeight)), "Incorrect number of bytes for PALA data.");
 
             // Add each PALA as an individual texture.
             for (let i = 0; i < numPalas; i++)
             {
                 const texture = new texture_n.texture_o();
-                texture.width = palaW;
-                texture.height = palaH;
 
-                for (let y = (palaH - 1); y >= 0; y--) // Iterate backward to flip the image on y.
+                texture.width = palaWidth;
+                texture.height = palaHeight;
+
+                for (let y = (palaHeight - 1); y >= 0; y--) // Iterate backwards to flip the texture on y.
                 {
-                    for (let x = 0; x < palaW; x++)
+                    for (let x = 0; x < palaWidth; x++)
                     {
-                        let paletteIdx = bytes[(x + y * palaW) + (i * (palaW * palaH))];
-                        if (paletteIdx < 0 || paletteIdx > 31) paletteIdx = 0;
+                        let paletteIdx = bytes[(x + y * palaWidth) + (i * (palaWidth * palaHeight))];
+                        if ((paletteIdx < 0) || (paletteIdx > 31)) paletteIdx = 0;
 
                         texture.pixels.push(palette_n.palette_idx_to_rgba(paletteIdx));
                         texture.paletteIndices.push(paletteIdx);
@@ -4649,15 +4683,17 @@ const resource_loader_n = (function()
                 palat_n.add_pala(texture);
             }
 
+            // Create an image containing thumbnails of all the textures we loaded.
             ui_draw_n.prebake_palat_pane();
         }
 
-        publicInterface.load_varimaa_data = function(bytes, receptacle)
+        // Takes in a byte array containing a track's tilemap; and loads it into RallySportED.
+        // For information about Rally-Sport's track tilemaps, refer to the documentation on
+        // Rally-Sport's data formats at github.com/leikareipa/rallysported/tree/master/docs.
+        publicInterface.load_varimaa_data = function(bytes)
         {
-            // How many tiles there are per side on the MAASTO. The game should only have maps where
-            // the vertical and horizontal sides are equal.
-            const sideLen = Math.sqrt(bytes.byteLength);
-            k_assert(((sideLen === 64) || (sideLen === 128)), "Unsupported VARIMAA dimensions");
+            const tilesPerSide = Math.sqrt(bytes.byteLength);
+            k_assert(((tilesPerSide === 64) || (tilesPerSide === 128)), "Unsupported VARIMAA size.");
 
             // Verify the data.
             for (let i = 0; i < bytes.byteLength; i++)
@@ -4666,18 +4702,19 @@ const resource_loader_n = (function()
                 k_assert((bytes[i] >= 0 && bytes[i] <= 255), "Detected invalid VARIMAA data.");
             }
 
-            maasto_n.set_varimaa(sideLen, bytes);
+            maasto_n.set_varimaa(tilesPerSide, bytes);
         }
 
-        publicInterface.load_maasto_data = function(bytes, receptacle)
+        // Takes in a byte array containing a track's heightmap; and loads it into RallySportED.
+        // For information about Rally-Sport's track heightmaps, refer to the documentation on
+        // Rally-Sport's data formats at github.com/leikareipa/rallysported/tree/master/docs.
+        publicInterface.load_maasto_data = function(bytes)
         {
-            // How many tiles there are per side on the MAASTO. The game should only have maps where
-            // the vertical and horizontal sides are equal.
-            const sideLen = Math.sqrt(bytes.byteLength / 2);
-            k_assert(((sideLen === 64) || (sideLen === 128)), "Unsupported MAASTO dimensions");
+            const tilesPerSide = Math.sqrt(bytes.byteLength / 2);
+            k_assert(((tilesPerSide === 64) || (tilesPerSide === 128)), "Unsupported MAASTO size.");
 
-            // Convert Rally-Sport's two-byte height format into single values.
-            const heightPoints = [];
+            // Convert Rally-Sport's two-byte height format into RallySportED's single values.
+            const convertedHeightmap = [];
             for (let i = 0; i < (bytes.byteLength / 2); i++)
             {
                 const b1 = bytes[i*2];
@@ -4685,13 +4722,13 @@ const resource_loader_n = (function()
 
                 const height = (b2 === 1)? (-256 - b1)  // More than -255 below ground level.
                                          : (b2 - b1);   // Above ground when b2 == 255, otherwise below ground.
-                k_assert((Number.isInteger(height)), "Detected invalid height data.");
 
-                heightPoints.push(height);
+                convertedHeightmap.push(height);
             }
 
-            k_assert((heightPoints.length === (sideLen * sideLen)), "Incorrect MAASTO height conversion.");
-            maasto_n.set_maasto(sideLen, heightPoints);
+            k_assert((convertedHeightmap.length === (tilesPerSide * tilesPerSide)), "Detected an invalid MAASTO height conversion.");
+
+            maasto_n.set_maasto(tilesPerSide, convertedHeightmap);
         }
 
         // Loads from a JSON file resources of the given type.
@@ -4708,17 +4745,9 @@ const resource_loader_n = (function()
                 {
                     switch (resourceType)
                     {
-                        case "prop-meshes":
-                        {
-                            load_prop_meshes(data);
-                            break;
-                        }
-                        case "prop-locations":
-                        {
-                            load_prop_locations(data);
-                            break;
-                        }
-                        default: k_assert(0, "Unknown resource type."); reject();
+                        case "prop-meshes": load_prop_meshes(data); break;
+                        case "prop-locations": load_prop_locations(data); break;
+                        default: k_assert(0, "Unknown resource type."); reject(); break;
                     }
                     
                     resolve();
@@ -4747,37 +4776,13 @@ const resource_loader_n = (function()
 
                     switch (resourceType)
                     {
-                        case "palat":
-                        {
-                            publicInterface.load_palat_data(bytes);
-                            break;
-                        }
-                        case "maasto":
-                        {
-                            publicInterface.load_maasto_data(bytes);
-                            break;
-                        }
-                        case "varimaa":
-                        {
-                            publicInterface.load_varimaa_data(bytes);
-                            break;
-                        }
-                        case "rsed-project-zip":
-                        {
-                            receptacle(bytes);
-                            break;
-                        }
-                        case "prop-textures":
-                        {
-                            publicInterface.load_prop_textures(bytes);
-                            break;
-                        }
-                        case "track-header":
-                        {
-                            publicInterface.load_track_header(bytes);
-                            break;
-                        }
-                        default: k_assert(0, "Unknown resource type."); reject();
+                        case "rsed-project-zip": receptacle(bytes); break;
+                        case "track-header": load_track_header(bytes); break;
+                        case "prop-textures": load_prop_textures(bytes); break;
+                        case "palat": publicInterface.load_palat_data(bytes); break;
+                        case "maasto": publicInterface.load_maasto_data(bytes); break;
+                        case "varimaa": publicInterface.load_varimaa_data(bytes); break;
+                        default: k_assert(0, "Unknown resource type."); reject(); break;
                     }
 
                     resolve();
@@ -4925,7 +4930,7 @@ const rsed_project_n = (function()
             {
                 case "local":
                 {
-                    resource_loader_n.get_project_data({fromZip:true,zipFile:zip}, (projectData)=>
+                    resource_loader_n.load_project_data({fromZip:true,zipFile:zip}, (projectData)=>
                     {
                         /// Temp hack. Project loading will be redesigned in the future.
                         const project = new publicInterface.rsed_project_o(projectData);
@@ -4941,7 +4946,7 @@ const rsed_project_n = (function()
                     resource_loader_n.load_binary_resource(zip, "rsed-project-zip",
                     function(zipFile)
                     {
-                        resource_loader_n.get_project_data({fromZip:true,zipFile}, (projectData)=>
+                        resource_loader_n.load_project_data({fromZip:true,zipFile}, (projectData)=>
                         {
                             /// Temp hack. Project loading will be redesigned in the future.
                             const project = new publicInterface.rsed_project_o(projectData);
