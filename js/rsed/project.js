@@ -148,7 +148,7 @@ const rsed_project_n = (function()
                 }
                 case "server":
                 {
-                    resource_loader_n.fetch_binary_resource(zip, "rsed-project-zip",
+                    resource_loader_n.load_binary_resource(zip, "rsed-project-zip",
                     function(zipFile)
                     {
                         resource_loader_n.get_project_data({fromZip:true,zipFile}, (projectData)=>

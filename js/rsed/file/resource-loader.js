@@ -14,7 +14,7 @@ const resource_loader_n = (function()
     // The names of the types of resources we recognize. Any resource we're asked to load must be one
     // of these types.
     const binaryResourceTypes = Object.freeze(["rsed-project-zip", "palat", "maasto", "varimaa", "kierros", "prop-textures", "track-header"]);
-    const jsonResourceTypes = Object.freeze(["prop-meshes", "prop-locations", "track-database"]);
+    const jsonResourceTypes = Object.freeze(["prop-meshes", "prop-locations"]);
 
     function load_prop_locations(data, receptacle)
     {
@@ -298,29 +298,18 @@ const resource_loader_n = (function()
             maasto_n.set_maasto(sideLen, heightPoints);
         }
 
-        publicInterface.fetch_json_resource = function(filename = "", resourceType = "")
+        // Loads from a JSON file resources of the given type.
+        publicInterface.load_json_resource = function(filename = "", resourceType = "")
         {
-            k_assert((filename.length > 0), "Expected a non-empty string.");
+            k_assert(((typeof filename === "string") && (filename.length > 0)), "Expected a non-null filename string.");
             k_assert(jsonResourceTypes.includes(resourceType), "Expected a valid resource type.");
 
-            const request = new XMLHttpRequest();
-            function make_file_request()
+            return new Promise((resolve, reject)=>
             {
-                return new Promise((resolve, reject) =>
-                                    {
-                                        request.open("GET", filename);
-                                        request.responseType = "json";
-                                        request.onload = ()=>resolve();
-                                        request.onerror = ()=>{k_assert(0, "Failed to get resource '" + filename + "'.")};
-                                        request.send();
-                                    });
-            };
-            function parse_file_data()
-            {
-                return new Promise((resolve, reject) =>
+                fetch(filename)
+                .then((response)=>response.json())
+                .then((data)=>
                 {
-                    const data = request.response;
-
                     switch (resourceType)
                     {
                         case "prop-meshes":
@@ -333,48 +322,31 @@ const resource_loader_n = (function()
                             load_prop_locations(data);
                             break;
                         }
-                        case "track-database":
-                        {
-                            receptacle(data);
-                            break;
-                        }
                         default: k_assert(0, "Unknown resource type."); reject();
                     }
-
-                    //console.log("Finished loading JSON resource", filename, "(type '" + resourceType +"')");
+                    
                     resolve();
                 })
-            };
-
-            return make_file_request().then(()=>parse_file_data());
+                .catch((error)=>{k_assert(0, "Failed to fetch resource file " + filename + ". Error: " + error)});
+            });
         }
 
-        // Attempts to load the given file's data as a binary array buffer. Returns a promise
-        // of full completion, i.e. fetching the file's contents, and parsing them into the
-        // receptacle. The receptacle is an optional object containing suitable methods for inserting
-        // the data once it's been loaded.
-        publicInterface.fetch_binary_resource = function(filename = "", resourceType = "", receptacle)
+        // Loads from a binary file resources of the given type; returning a promise resolved once the
+        // data has been loaded and processed. The receptacle is an object that can receive from this
+        // function the raw data loaded from file (without subsequent processing by this function), and
+        // is required for some of the resource types.
+        publicInterface.load_binary_resource = function(filename = "", resourceType = "", receptacle)
         {
             k_assert((filename.length > 0), "Expected a non-empty string.");
             k_assert(binaryResourceTypes.includes(resourceType), "Expected a valid resource type.");
 
-            const request = new XMLHttpRequest();
-            function make_file_request()
+            return new Promise((resolve, reject)=>
             {
-                return new Promise((resolve, reject) =>
+                fetch(filename)
+                .then((response)=>response.arrayBuffer())
+                .then((dataBuffer)=>
                 {
-                    request.open("GET", filename);
-                    request.responseType = "arraybuffer";
-                    request.onload = ()=>resolve();
-                    request.onerror = ()=>{k_assert(0, "Failed to get resource '" + filename + "'.")};
-                    request.send();
-                });
-            };
-            function parse_file_data()
-            {
-                return new Promise((resolve, reject) =>
-                {
-                    const bytes = new Uint8Array(request.response);
+                    const bytes = new Uint8Array(dataBuffer);
                     k_assert((bytes != null), "Received invalid binary file data.");
 
                     switch (resourceType)
@@ -412,12 +384,10 @@ const resource_loader_n = (function()
                         default: k_assert(0, "Unknown resource type."); reject();
                     }
 
-                   // console.log("Finished loading binary resource", filename, "(type '" + resourceType +"')");
                     resolve();
                 })
-            };
-
-            return make_file_request().then(()=>parse_file_data());
+                .catch((error)=>{k_assert(0, "Failed to fetch resource file " + filename + ". Error: " + error)});
+            });
         }
     }
     return publicInterface;

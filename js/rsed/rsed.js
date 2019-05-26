@@ -195,10 +195,10 @@ const rsed_n = (function()
                 palette_n.reset_palettes();
                 palette_n.set_palette_for_track(underlyingTrackId);
 
-                resource_loader_n.fetch_binary_resource(exeAssetDir + "prop-textures.dta", "prop-textures")
-                .then(()=>resource_loader_n.fetch_json_resource(exeAssetDir + "prop-meshes.json", "prop-meshes"))
-                .then(()=>resource_loader_n.fetch_json_resource(exeAssetDir + "prop-locations.json", "prop-locations"))
-                .then(()=>resource_loader_n.fetch_binary_resource(exeAssetDir + "track-header.dta", "track-header"))
+                resource_loader_n.load_binary_resource(exeAssetDir + "prop-textures.dta", "prop-textures")
+                .then(()=>resource_loader_n.load_json_resource(exeAssetDir + "prop-meshes.json", "prop-meshes"))
+                .then(()=>resource_loader_n.load_json_resource(exeAssetDir + "prop-locations.json", "prop-locations"))
+                .then(()=>resource_loader_n.load_binary_resource(exeAssetDir + "track-header.dta", "track-header"))
                 .then(()=>{resolve();});
             });
         }
