@@ -81,7 +81,7 @@ const rsed_n = (function()
                 activate_prop:function(name = "")
                 {
                     maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
-                    page_n.close_dropdowns();
+                    window.close_dropdowns();
 
                     return;
                 },
@@ -187,19 +187,21 @@ const rsed_n = (function()
             {
                 const exeAssetDir = "distributable/assets/rallye-exe/";
 
-                // Reset/empty all data buffers.
                 props_n.clear_prop_data();
-                maasto_n.clear_maasto_data(true);
                 palat_n.clear_palat_data();
-                camera_n.reset_camera_position();
                 palette_n.reset_palettes();
+                camera_n.reset_camera_position();
+                maasto_n.clear_maasto_data(true);
                 palette_n.set_palette_for_track(underlyingTrackId);
 
-                resource_loader_n.load_binary_resource(exeAssetDir + "prop-textures.dta", "prop-textures")
-                .then(()=>resource_loader_n.load_json_resource(exeAssetDir + "prop-meshes.json", "prop-meshes"))
-                .then(()=>resource_loader_n.load_json_resource(exeAssetDir + "prop-locations.json", "prop-locations"))
-                .then(()=>resource_loader_n.load_binary_resource(exeAssetDir + "track-header.dta", "track-header"))
-                .then(()=>{resolve();});
+                (async()=>
+                {
+                    await resource_loader_n.load_binary_resource(exeAssetDir + "prop-textures.dta", "prop-textures");
+                    await resource_loader_n.load_json_resource(exeAssetDir + "prop-meshes.json", "prop-meshes");
+                    await resource_loader_n.load_json_resource(exeAssetDir + "prop-locations.json", "prop-locations");
+                    await resource_loader_n.load_binary_resource(exeAssetDir + "track-header.dta", "track-header");
+                    resolve();
+                })();
             });
         }
 
@@ -212,21 +214,11 @@ const rsed_n = (function()
             event.preventDefault();
 
             // See if we received a zip file that we could load.
-            let zipFile = null;
-            for (let i = 0; i < event.dataTransfer.items.length; i++)
-            {
-                const file = event.dataTransfer.items[i].getAsFile();
-                if (!file) continue;
-
-                const fileSuffix = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
-
-                if (fileSuffix === "zip")
-                {
-                    zipFile = file;
-                    break;
-                }
-            }
-
+            const zipFile = [].map.call(event.dataTransfer.items, (item)=>{return item.getAsFile()})
+                                  .filter(file=>(file != null))
+                                  .filter(file=>(file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase() === "zip"))
+                                  [0] || null;
+ 
             if (!zipFile)
             {
                 k_message("The drag contained no RallySportED zip files. Ignoring it.");
