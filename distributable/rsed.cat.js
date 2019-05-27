@@ -5235,6 +5235,46 @@ const rsed_n = (function()
             });
         }
 
+        // Gets called when something is dropped onto RallySportED's render canvas. We expect
+        // the drop to be a zip file containing the files of a RallySportED project for us to
+        // load up. If it's not, we'll ignore the drop.
+        publicInterface.drop_handler = function(event)
+        {
+            // Don't let the browser handle the drop.
+            event.preventDefault();
+
+            // See if we received a zip file that we could load.
+            let zipFile = null;
+            for (let i = 0; i < event.dataTransfer.items.length; i++)
+            {
+                const file = event.dataTransfer.items[i].getAsFile();
+                if (!file) continue;
+
+                const fileSuffix = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
+
+                if (fileSuffix === "zip")
+                {
+                    zipFile = file;
+                    break;
+                }
+            }
+
+            if (!zipFile)
+            {
+                k_message("The drag contained no RallySportED zip files. Ignoring it.");
+                return;
+            }
+
+            // We now presumably have a zipped RallySportED project that we can load, so ket's do that.
+            rsed_n.load_project({fromZip:true,locality:"local",zipFile});
+            /// TODO: .then(()=>{//cleanup.});
+
+            // Clear the address bar's parameters to reflect the fact that the user has loaded a local
+            // track resource instead of specifying a server-side resource via the address bar.
+            const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
+            window.history.replaceState({}, document.title, basePath);
+        }
+
         publicInterface.incapacitate_rallysported = function(message)
         {
             renderer.indicate_error(message);
@@ -5453,47 +5493,6 @@ const page_n = (function()
 {
     const publicInterface = {};
     {
-        // Gets called when something is dropped onto whichever container. We expect the drop to be a zip
-        // file containing the files of a RallySportED project for us to load up. If it's not, we ignore
-        // the drop.
-        publicInterface.ondrop = function(event)
-        {
-            // Don't let the browser handle the drop.
-            event.preventDefault();
-
-            // See if we received a zip file that we could load.
-            let zipFile = null;
-            for (let i = 0; i < event.dataTransfer.items.length; i++)
-            {
-                const file = event.dataTransfer.items[i].getAsFile();
-                if (file == null) continue;
-                if (file.name.lastIndexOf(".") <= 0) continue;  // If no suffix or base name, ignore.
-
-                const fileSuffix = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
-
-                if (fileSuffix === "zip")
-                {
-                    zipFile = file;
-                    break;
-                }
-            }
-
-            if (!zipFile)
-            {
-                k_message("The drag contained no RallySportED zip files. Ignoring it.");
-                return;
-            }
-
-            // We now presumably have a zipped RallySportED project that we can load, so do that.
-            rsed_n.load_project({fromZip:true,locality:"local",zipFile});
-            /// TODO: .then(()=>{//cleanup.});
-
-            // Clear the address bar's parameters to reflect the fact that the user has loaded a local
-            // track resource instead of specifying a server-side resource via the address bar.
-            const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/")+1));
-            window.history.replaceState({}, document.title, basePath);
-        }
-
         publicInterface.close_dropdowns = function()
         {
             const dropdowns = document.getElementsByClassName("dropdown_list");

@@ -39,7 +39,7 @@
         </div>
 
         <div id="render_container" class="canvas_container"
-             ondrop="page_n.ondrop(event);" ondragover="event.preventDefault();">
+             ondrop="rsed_n.drop_handler(event);" ondragover="event.preventDefault();">
              <!-- The rendering goes here.-->
         </div>
 
