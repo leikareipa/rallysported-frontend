@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/common.js
+ * Most recent known filename: js/misc/common.js
  *
  * Tarpeeksi Hyvae Soft 2018
  *

@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/project.js
+ * Most recent known filename: js/misc/project.js
  *
  * Tarpeeksi Hyvae Soft 2018
  *

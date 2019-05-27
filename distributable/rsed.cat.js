@@ -4,7 +4,7 @@
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // FILES:
 //	../distributable/assets/hitable.txt.js
-//	../js/rsed/common.js
+//	../js/rsed/misc/common.js
 //	../js/rsed/visual/color.js
 //	../js/rsed/visual/texture.js
 //	../js/rsed/visual/palette.js
@@ -27,9 +27,9 @@
 //	../js/rsed/render/line-draw.js
 //	../js/rsed/render/ngon-fill.js
 //	../js/rsed/file/resource-loader.js
-//	../js/rsed/project.js
+//	../js/rsed/misc/project.js
 //	../js/rsed/rsed.js
-//	../js/rsed/window.js
+//	../js/rsed/misc/window.js
 /////////////////////////////////////////////////
 
 /*
@@ -250,7 +250,7 @@ const lut_hitable_txt =[0x41,0x2d,0x4a,0x75,0x6e,0x69,0x6f,0x72,0x69,0x00,0x20,0
                         0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,
                         0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x0d,0x0a];
   /*
- * Most recent known filename: js/common.js
+ * Most recent known filename: js/misc/common.js
  *
  * Tarpeeksi Hyvae Soft 2018
  *
@@ -4794,7 +4794,7 @@ const resource_loader_n = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/project.js
+ * Most recent known filename: js/misc/project.js
  *
  * Tarpeeksi Hyvae Soft 2018
  *
@@ -5290,7 +5290,7 @@ const rsed_n = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/window.js
+ * Most recent known filename: js/misc/window.js
  *
  * Tarpeeksi Hyvae Soft 2018
  *
