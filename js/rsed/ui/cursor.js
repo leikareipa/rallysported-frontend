@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/ui/mouse_cursor.js
+ * Most recent known filename: js/ui/cursor.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED for the browser.
@@ -10,7 +10,7 @@
 
 "use strict"
 
-const ui_mouse_cursor_n = (function()
+const ui_cursor_n = (function()
 {
     const cursorWidth = 16;
     const cursorHeight = 16;

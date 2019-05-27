@@ -19,7 +19,7 @@
 //	../js/rsed/track/props.js
 //	../js/rsed/track/manifesto.js
 //	../js/rsed/ui/font.js
-//	../js/rsed/ui/mouse-cursor.js
+//	../js/rsed/ui/cursor.js
 //	../js/rsed/ui/view.js
 //	../js/rsed/ui/brush.js
 //	../js/rsed/ui/draw.js
@@ -2983,7 +2983,7 @@ const ui_font_n = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/ui/mouse_cursor.js
+ * Most recent known filename: js/ui/cursor.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED for the browser.
@@ -2994,7 +2994,7 @@ const ui_font_n = (function()
 
 "use strict"
 
-const ui_mouse_cursor_n = (function()
+const ui_cursor_n = (function()
 {
     const cursorWidth = 16;
     const cursorHeight = 16;
@@ -3303,9 +3303,9 @@ const ui_draw_n = (function()
     function draw_mouse_cursor()
     {
         /// Drawing the mouse cursors directly into the canvas is disabled for performance reasons.
-        /*const graphic = ui_mouse_cursor_n.graphic();
-        const width = ui_mouse_cursor_n.cursor_width();
-        const height = ui_mouse_cursor_n.cursor_height();
+        /*const graphic = ui_cursor_n.graphic();
+        const width = ui_cursor_n.cursor_width();
+        const height = ui_cursor_n.cursor_height();
         draw_image(graphic, null, width, height, ui_input_n.mouse_pos_x(), ui_input_n.mouse_pos_y(), true);*/
 
         if (ui_input_n.mouse_hover_type() === ui_input_n.mousePickingType.ui &&

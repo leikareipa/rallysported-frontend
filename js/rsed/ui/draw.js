@@ -115,9 +115,9 @@ const ui_draw_n = (function()
     function draw_mouse_cursor()
     {
         /// Drawing the mouse cursors directly into the canvas is disabled for performance reasons.
-        /*const graphic = ui_mouse_cursor_n.graphic();
-        const width = ui_mouse_cursor_n.cursor_width();
-        const height = ui_mouse_cursor_n.cursor_height();
+        /*const graphic = ui_cursor_n.graphic();
+        const width = ui_cursor_n.cursor_width();
+        const height = ui_cursor_n.cursor_height();
         draw_image(graphic, null, width, height, ui_input_n.mouse_pos_x(), ui_input_n.mouse_pos_y(), true);*/
 
         if (ui_input_n.mouse_hover_type() === ui_input_n.mousePickingType.ui &&
