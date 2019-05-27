@@ -29,7 +29,7 @@
 //	../js/rsed/file/resource-loader.js
 //	../js/rsed/project.js
 //	../js/rsed/rsed.js
-//	../js/rsed/page.js
+//	../js/rsed/window.js
 /////////////////////////////////////////////////
 
 /*
@@ -5290,7 +5290,7 @@ const rsed_n = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/page.js
+ * Most recent known filename: js/window.js
  *
  * Tarpeeksi Hyvae Soft 2018
  *

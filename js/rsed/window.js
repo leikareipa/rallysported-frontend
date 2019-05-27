@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/page.js
+ * Most recent known filename: js/window.js
  *
  * Tarpeeksi Hyvae Soft 2018
  *
