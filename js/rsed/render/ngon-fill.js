@@ -11,7 +11,7 @@
 
 "use strict";
 
-const polygon_fill_canvas_n = (function()
+const ngon_fill_n = (function()
 {
     const publicInterface = {};
     {
