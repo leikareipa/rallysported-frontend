@@ -165,12 +165,12 @@ Rsed.ui_draw_n = (function()
             }
         }
 
-        draw_string(str, 0, Rsed.rsed_n.render_height() - Rsed.ui_font_n.font_height()-0);
+        draw_string(str, 0, Rsed.main_n.render_height() - Rsed.ui_font_n.font_height()-0);
     }
 
     function draw_fps()
     {
-        const fpsString = "FPS: " + Math.round((1000 / (Rsed.rsed_n.render_latency() || 1)));
+        const fpsString = "FPS: " + Math.round((1000 / (Rsed.main_n.render_latency() || 1)));
         draw_string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui_font_n.font_width()/2) - 73, 3);
     }
 
@@ -258,8 +258,8 @@ Rsed.ui_draw_n = (function()
     function draw_paint_view()
     {
         // Draw a large minimap of the track in the middle of the screen.
-        const width = Math.floor(Rsed.rsed_n.render_width() * 0.81);
-        const height = Math.floor(Rsed.rsed_n.render_height() * 0.72);
+        const width = Math.floor(Rsed.main_n.render_width() * 0.81);
+        const height = Math.floor(Rsed.main_n.render_height() * 0.72);
         {
             const xMul = (Rsed.maasto_n.track_side_length() / width);
             const zMul = (Rsed.maasto_n.track_side_length() / height);
@@ -374,7 +374,7 @@ Rsed.ui_draw_n = (function()
 
             // Recompute the pane's dimensions based on the current display size.
             /// FIXME: Leaves unnecessary empty rows for some resolutions.
-            numPalatPaneRows = (Math.floor(Rsed.rsed_n.render_height() / 8) - 1);
+            numPalatPaneRows = (Math.floor(Rsed.main_n.render_height() / 8) - 1);
             numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
             palatPaneWidth = ((numPalatPaneCols * (Rsed.palat_n.pala_width() / 2)) + 1);
             palatPaneHeight = ((numPalatPaneRows * (Rsed.palat_n.pala_height() / 2)) + 1);

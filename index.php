@@ -11,7 +11,7 @@
         <div id="html-ui" v-if="uiVisible" v-cloak>
             <span id="track-name-display">{{trackName.length? (trackName + ".") : ""}}</span>
 
-            <span class="button" onclick="Rsed.rsed_n.save_project_to_disk();"
+            <span class="button" onclick="Rsed.main_n.save_project_to_disk();"
                   style="color: rgb(0, 0, 0);
                          background-color: rgb(179, 112, 25);">
                 save to disk
@@ -39,7 +39,7 @@
         </div>
 
         <div id="render_container" class="canvas_container"
-             ondrop="Rsed.rsed_n.drop_handler(event);" ondragover="event.preventDefault();">
+             ondrop="Rsed.main_n.drop_handler(event);" ondragover="event.preventDefault();">
              <!-- The rendering goes here.-->
         </div>
 

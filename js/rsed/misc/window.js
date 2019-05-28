@@ -69,9 +69,9 @@ window.onload = function(event)
         }
     }
 
-    args.zipFile = (Rsed.rsed_n.tracks_directory() + args.zipFile + Rsed.rsed_n.tracks_file_extension());
+    args.zipFile = (Rsed.main_n.tracks_directory() + args.zipFile + Rsed.main_n.tracks_file_extension());
     
-    Rsed.rsed_n.launch_rallysported(args);
+    Rsed.main_n.launch_rallysported(args);
 }
 
 // Disable the right-click browser menu, since we want to use the right mouse button for other things.
@@ -83,7 +83,7 @@ window.oncontextmenu = function(event)
         return false;
     }
 
-    if (event.target.id !== Rsed.rsed_n.render_surface_id()) return;
+    if (event.target.id !== Rsed.main_n.render_surface_id()) return;
 
     // Display a right-click menu for changing the type of the prop under the cursor.
     if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop &&
@@ -147,7 +147,7 @@ window.onmouseup = function(event)
 
 window.onmousemove = function(event)
 {
-    if (event.target.id !== Rsed.rsed_n.render_surface_id())
+    if (event.target.id !== Rsed.main_n.render_surface_id())
     {
         /// Temp hack. Prevent mouse clicks over prop dropdown dialogs from falling through and
         /// inadvertently editing the terrain.
@@ -164,8 +164,8 @@ window.onmousemove = function(event)
         RSED_MOUSE_POS.x = (event.clientX - event.target.getBoundingClientRect().left);
         RSED_MOUSE_POS.y = (event.clientY - event.target.getBoundingClientRect().top);
 
-        Rsed.ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * Rsed.rsed_n.scaling_multiplier()),
-                                      Math.floor(RSED_MOUSE_POS.y * Rsed.rsed_n.scaling_multiplier()));
+        Rsed.ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * Rsed.main_n.scaling_multiplier()),
+                                      Math.floor(RSED_MOUSE_POS.y * Rsed.main_n.scaling_multiplier()));
     }
 }
 

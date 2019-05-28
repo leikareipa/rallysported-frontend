@@ -231,7 +231,7 @@ Rsed.maasto_n = (function()
             k_assert((propName.length > 0), "Expected a non-empty prop name.");
 
             /// Temp hack.
-            if (trackId !== Rsed.rsed_n.underlying_track_id()) return;
+            if (trackId !== Rsed.main_n.underlying_track_id()) return;
 
             if (propLocations.length >= maxNumProps)
             {

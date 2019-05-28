@@ -13,7 +13,7 @@ function k_assert(condition = false, explanation = "(no reason given)")
 {
     if (!condition)
     {
-        Rsed.rsed_n.incapacitate_rallysported(explanation);
+        Rsed.main_n.incapacitate_rallysported(explanation);
         alert("RallySportED assertion failure. " + explanation);
         throw Error("RallySportED assertion failure: " + explanation);
     }

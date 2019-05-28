@@ -129,7 +129,7 @@ Rsed.ui_input_n = (function()
                         const x = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * Rsed.maasto_n.tile_size());
                         const z = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * Rsed.maasto_n.tile_size());
 
-                        Rsed.maasto_n.add_prop_location(Rsed.rsed_n.underlying_track_id(), "tree", x, 0, z);
+                        Rsed.maasto_n.add_prop_location(Rsed.main_n.underlying_track_id(), "tree", x, 0, z);
 
                         mouseLock.hibernating = true;
                     }
@@ -360,8 +360,8 @@ Rsed.ui_input_n = (function()
         publicInterface.set_mouse_pos = function(x = 0, y = 0)
         {
             // Don't set the mouse position out of bounds.
-            if ((x < 0 || x >= Rsed.rsed_n.render_width()) ||
-                (y < 0 || y >= Rsed.rsed_n.render_height()))
+            if ((x < 0 || x >= Rsed.main_n.render_width()) ||
+                (y < 0 || y >= Rsed.main_n.render_height()))
             {
                 return;
             }
@@ -376,7 +376,7 @@ Rsed.ui_input_n = (function()
             {
                 reset_mouse_hover_info();
 
-                const mousePickValue = Rsed.rsed_n.mouse_pick_buffer_value_at(x, y);
+                const mousePickValue = Rsed.main_n.mouse_pick_buffer_value_at(x, y);
                 hoverPickType = this.get_mouse_picking_type(mousePickValue);
                 hoverArgs = this.get_mouse_picking_args(mousePickValue, hoverPickType);
 
