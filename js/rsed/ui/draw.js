@@ -122,6 +122,7 @@ Rsed.ui_draw_n = (function()
             const character = Rsed.ui_font_n.character(string[i]);
             const width = Rsed.ui_font_n.font_width();
             const height = Rsed.ui_font_n.font_height();
+            
             draw_image(character, null, width, height, x, y, false);
             
             x += ((Rsed.ui_font_n.font_width() / 2) + 0.3);

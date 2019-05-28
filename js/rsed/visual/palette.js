@@ -194,6 +194,7 @@ Rsed.palette_n = (function()
             switch (idx)
             {
                 // UI colors.
+                case "background": return new Rsed.color_n.rgba_o(16, 16, 16, 255);
                 case "black": return new Rsed.color_n.rgba_o(0, 0, 0, 255);
                 case "gray": case "grey": return new Rsed.color_n.rgba_o(127, 127, 127, 255);
                 case "lightgray": case "lightgrey": return new Rsed.color_n.rgba_o(192, 192, 192, 255);
