@@ -18,7 +18,7 @@ Rsed.ngon_fill_n = (function()
         publicInterface.fill_polygons = function(polygons = [])
         {
             k_assert((this instanceof Rsed.render_surface_n.render_surface_o), "Expected the function to be bound to a render surface.");
-            k_assert((polygons[0] instanceof geometry_n.polygon_o), "Expected polygons.");
+            k_assert((polygons[0] instanceof Rsed.geometry_n.polygon_o), "Expected polygons.");
             k_assert((polygons.length > 0), "Received an empty list of triangles to rasterize.");
 
             const surface = this;
@@ -30,9 +30,9 @@ Rsed.ngon_fill_n = (function()
 
             for (let i = 0; i < polygons.length; i++)
             {
-                k_assert((polygons[i] instanceof geometry_n.polygon_o), "Expected a polygon");
+                k_assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon");
 
-                const poly = new geometry_n.polygon_o(polygons[i].v.length);
+                const poly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
                 poly.clone_from(polygons[i]);
 
                 // Find which of the polygon's vertices form the polygon's left side and which the right.

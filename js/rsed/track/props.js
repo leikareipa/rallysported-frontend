@@ -41,9 +41,9 @@ Rsed.props_n = (function()
             propTextures.push(texture);
         }
 
-        publicInterface.add_prop_mesh = function(name = "", polygons = [geometry_n.polygon_o])
+        publicInterface.add_prop_mesh = function(name = "", polygons = [Rsed.geometry_n.polygon_o])
         {
-            k_assert((polygons[0] instanceof geometry_n.polygon_o), "Expected a polygon mesh.");
+            k_assert((polygons[0] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon mesh.");
             k_assert((name.length > 0), "Expected a non-empty prop name string.");
             k_assert((polygons.length > 0), "Expectd a non-empty mesh.");
             
@@ -77,7 +77,7 @@ Rsed.props_n = (function()
             const copyMesh = [];
             for (let i = 0; i < sourceMesh.length; i++)
             {
-                copyMesh.push(new geometry_n.polygon_o(sourceMesh[i].v.length));
+                copyMesh.push(new Rsed.geometry_n.polygon_o(sourceMesh[i].v.length));
                 copyMesh[i].clone_from(sourceMesh[i]);
 
                 copyMesh[i].hasWireframe = wireframeEnabled;

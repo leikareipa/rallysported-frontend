@@ -18,7 +18,7 @@ Rsed.maasto_n = (function()
 
     // The checkpoint is a point on the track next to which the player's car must pass for the
     // lap to be counted as valid.
-    const trackCheckpoint = new geometry_n.vector2_o();
+    const trackCheckpoint = new Rsed.geometry_n.vector2_o();
 
     // The side length, in world units, of a single ground tile.
     const tileSize = 128;
@@ -239,7 +239,7 @@ Rsed.maasto_n = (function()
                 return;
             }
             
-            const pos = new geometry_n.vector3_o(x, y, z);
+            const pos = new Rsed.geometry_n.vector3_o(x, y, z);
             propLocations.push(pos);
             propNames.push(propName);
         }
@@ -360,7 +360,7 @@ Rsed.maasto_n = (function()
                     }
 
                     // Constuct the ground quad polygon.
-                    const quad = new geometry_n.polygon_o(4);
+                    const quad = new Rsed.geometry_n.polygon_o(4);
                     {
                         // The heights of the ground quad's corner points.
                         const height1 = trackOffsetY + this.maasto_height_at( tileX,       tileZ);
@@ -368,10 +368,10 @@ Rsed.maasto_n = (function()
                         const height3 = trackOffsetY + this.maasto_height_at((tileX + 1), (tileZ - 1));
                         const height4 = trackOffsetY + this.maasto_height_at( tileX,      (tileZ - 1));
                         
-                        quad.v[0] = new geometry_n.vertex_o( vertX,             height1, vertZ);
-                        quad.v[1] = new geometry_n.vertex_o((vertX + tileSize), height2, vertZ);
-                        quad.v[2] = new geometry_n.vertex_o((vertX + tileSize), height3, (vertZ + tileSize));
-                        quad.v[3] = new geometry_n.vertex_o( vertX,             height4, (vertZ + tileSize));
+                        quad.v[0] = new Rsed.geometry_n.vertex_o( vertX,             height1, vertZ);
+                        quad.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height2, vertZ);
+                        quad.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height3, (vertZ + tileSize));
+                        quad.v[3] = new Rsed.geometry_n.vertex_o( vertX,             height4, (vertZ + tileSize));
                         
                         quad.hasWireframe = wireframeOnRequest;
                         quad.texture = Rsed.palat_n.pala_texture(tilePala);
@@ -391,11 +391,11 @@ Rsed.maasto_n = (function()
                     {
                         const baseHeight = trackOffsetY + this.maasto_height_at(tileX, (tileZ - 1));
 
-                        const bill = new geometry_n.polygon_o(4);
-                        bill.v[0] = new geometry_n.vertex_o( vertX,             baseHeight,          vertZ);
-                        bill.v[1] = new geometry_n.vertex_o((vertX + tileSize), baseHeight,          vertZ);
-                        bill.v[2] = new geometry_n.vertex_o((vertX + tileSize), baseHeight+tileSize, vertZ);
-                        bill.v[3] = new geometry_n.vertex_o( vertX,             baseHeight+tileSize, vertZ);
+                        const bill = new Rsed.geometry_n.polygon_o(4);
+                        bill.v[0] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight,          vertZ);
+                        bill.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight,          vertZ);
+                        bill.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight+tileSize, vertZ);
+                        bill.v[3] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight+tileSize, vertZ);
 
                         switch (tilePala)
                         {
@@ -423,11 +423,11 @@ Rsed.maasto_n = (function()
                     // If the tile has a bridge, add that.
                     else if (tilePala === 248 || tilePala === 249)
                     {
-                        const bridge = new geometry_n.polygon_o(4);
-                        bridge.v[0] = new geometry_n.vertex_o( vertX,             trackOffsetY, vertZ);
-                        bridge.v[1] = new geometry_n.vertex_o((vertX + tileSize), trackOffsetY, vertZ);
-                        bridge.v[2] = new geometry_n.vertex_o((vertX + tileSize), trackOffsetY, (vertZ+tileSize));
-                        bridge.v[3] = new geometry_n.vertex_o( vertX,             trackOffsetY, (vertZ+tileSize));
+                        const bridge = new Rsed.geometry_n.polygon_o(4);
+                        bridge.v[0] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, vertZ);
+                        bridge.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, vertZ);
+                        bridge.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, (vertZ+tileSize));
+                        bridge.v[3] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, (vertZ+tileSize));
 
                         bridge.texture = Rsed.palat_n.pala_texture(177, true);
 
@@ -458,8 +458,8 @@ Rsed.maasto_n = (function()
             /// Temp hack. We're tilting down all the ground elements to get the viewing angle we want,
             /// but really it should be the camera's view vector that's pointed down and not the objects
             /// themselves.
-            return new geometry_n.polygon_mesh_o(polys, new geometry_n.vector3_o(0, 0, 0),
-                                                        new geometry_n.vector3_o(topdown? (-Math.PI / 2) : -0.45, 0, 0));
+            return new Rsed.geometry_n.polygon_mesh_o(polys, new Rsed.geometry_n.vector3_o(0, 0, 0),
+                                                        new Rsed.geometry_n.vector3_o(topdown? (-Math.PI / 2) : -0.45, 0, 0));
         }
 
         publicInterface.prop_locations = function() { return propLocations.slice(0); }

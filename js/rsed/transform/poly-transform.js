@@ -47,9 +47,9 @@ const polygon_transform_n = (function()
                 let k = 0;
                 for (let i = 0; i < polygons.length; i++)
                 {
-                    k_assert((polygons[i] instanceof geometry_n.polygon_o), "Expected a polygon.");
+                    k_assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon.");
                     
-                    transfPolys[k] = new geometry_n.polygon_o(polygons[i].v.length);
+                    transfPolys[k] = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
                     transfPolys[k].clone_from(polygons[i]);
 
                     transfPolys[k].transform(toScreenSpace);

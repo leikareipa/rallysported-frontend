@@ -9,25 +9,25 @@
 
  "use strict";
 
-const geometry_n = {};
+Rsed.geometry_n = {};
 {
-    geometry_n.vector2_o = function(x = 0, y = 0)
+    Rsed.geometry_n.vector2_o = function(x = 0, y = 0)
     {
         this.x = x;
         this.y = y;
     }
 
-    geometry_n.vector3_o = function(x = 0, y = 0, z = 0)
+    Rsed.geometry_n.vector3_o = function(x = 0, y = 0, z = 0)
     {
         this.x = x;
         this.y = y;
         this.z = z;
 
-        this.cross = function(other = geometry_n.vector3_o)
+        this.cross = function(other = Rsed.geometry_n.vector3_o)
         {
-            k_assert((other instanceof geometry_n.vector3_o), "Expected a vector.");
+            k_assert((other instanceof Rsed.geometry_n.vector3_o), "Expected a vector.");
 
-            const c = new geometry_n.vector3_o();
+            const c = new Rsed.geometry_n.vector3_o();
 
             c.x = ((this.y * other.z) - (this.z * other.y));
             c.y = ((this.z * other.x) - (this.x * other.z));
@@ -49,7 +49,7 @@ const geometry_n = {};
         }
     }
 
-    geometry_n.vertex_o = function(x = 0, y = 0, z = 0, w = 1, u = 0, v = 0)
+    Rsed.geometry_n.vertex_o = function(x = 0, y = 0, z = 0, w = 1, u = 0, v = 0)
     {
         this.x = x;
         this.y = y;
@@ -77,14 +77,14 @@ const geometry_n = {};
         };
     }
 
-    geometry_n.polygon_o = function(numVertices = 3)
+    Rsed.geometry_n.polygon_o = function(numVertices = 3)
     {
         k_assert((numVertices > 2) && (numVertices < 10), "Bad vertex count.");
 
         this.v = [];
         for (let i = 0; i < numVertices; i++)
         {
-            this.v.push(new geometry_n.vertex_o());
+            this.v.push(new Rsed.geometry_n.vertex_o());
         }
         
         this.color = new color_n.rgba_o();
@@ -103,7 +103,7 @@ const geometry_n = {};
         // Duplicates the given polygon's relevant properties onto this one.
         this.clone_from = function(otherPolygon = {})
         {
-            k_assert(((otherPolygon instanceof geometry_n.polygon_o) &&
+            k_assert(((otherPolygon instanceof Rsed.geometry_n.polygon_o) &&
                       (this.v.length === otherPolygon.v.length)), "Incompatible polygons for cloning.");
 
             // Vertices.
@@ -174,20 +174,20 @@ const geometry_n = {};
         };
     }
 
-    geometry_n.polygon_mesh_o = function(polygons = [geometry_n.polygon_o],
-                                         translation = new geometry_n.vector3_o(0, 0, 0),
-                                         rotation = new geometry_n.vector3_o(0, 0, 0))
+    Rsed.geometry_n.polygon_mesh_o = function(polygons = [Rsed.geometry_n.polygon_o],
+                                         translation = new Rsed.geometry_n.vector3_o(0, 0, 0),
+                                         rotation = new Rsed.geometry_n.vector3_o(0, 0, 0))
     {
         k_assert((polygons.length > 0), "Expected a non-empty list of polygons.");
-        k_assert((translation instanceof geometry_n.vector3_o), "Expected a translation vector.");
-        k_assert((rotation instanceof geometry_n.vector3_o), "Expected a rotation vector.");
+        k_assert((translation instanceof Rsed.geometry_n.vector3_o), "Expected a translation vector.");
+        k_assert((rotation instanceof Rsed.geometry_n.vector3_o), "Expected a rotation vector.");
 
         this.polygons = [];
         for (let i = 0; i < polygons.length; i++)
         {
-            k_assert((polygons[i] instanceof geometry_n.polygon_o), "Expected a polygon.");
+            k_assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon.");
 
-            const newPoly = new geometry_n.polygon_o(polygons[i].v.length);
+            const newPoly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
             newPoly.clone_from(polygons[i]);
 
             this.polygons.push(newPoly);

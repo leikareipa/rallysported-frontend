@@ -84,7 +84,7 @@ const resource_loader_n = (function()
             prop.polygons.forEach(propPoly=>
             {
                 const numVertices = (propPoly.verts.length / 3);
-                const convertedPoly = new geometry_n.polygon_o(numVertices);
+                const convertedPoly = new Rsed.geometry_n.polygon_o(numVertices);
 
                 convertedPoly.texture = Rsed.props_n.prop_texture(propPoly.textureIdx);
                 convertedPoly.color = palette_n.palette_idx_to_rgba(propPoly.paletteIdx);

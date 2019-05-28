@@ -606,25 +606,25 @@ const palette_n = (function()
 
  "use strict";
 
-const geometry_n = {};
+Rsed.geometry_n = {};
 {
-    geometry_n.vector2_o = function(x = 0, y = 0)
+    Rsed.geometry_n.vector2_o = function(x = 0, y = 0)
     {
         this.x = x;
         this.y = y;
     }
 
-    geometry_n.vector3_o = function(x = 0, y = 0, z = 0)
+    Rsed.geometry_n.vector3_o = function(x = 0, y = 0, z = 0)
     {
         this.x = x;
         this.y = y;
         this.z = z;
 
-        this.cross = function(other = geometry_n.vector3_o)
+        this.cross = function(other = Rsed.geometry_n.vector3_o)
         {
-            k_assert((other instanceof geometry_n.vector3_o), "Expected a vector.");
+            k_assert((other instanceof Rsed.geometry_n.vector3_o), "Expected a vector.");
 
-            const c = new geometry_n.vector3_o();
+            const c = new Rsed.geometry_n.vector3_o();
 
             c.x = ((this.y * other.z) - (this.z * other.y));
             c.y = ((this.z * other.x) - (this.x * other.z));
@@ -646,7 +646,7 @@ const geometry_n = {};
         }
     }
 
-    geometry_n.vertex_o = function(x = 0, y = 0, z = 0, w = 1, u = 0, v = 0)
+    Rsed.geometry_n.vertex_o = function(x = 0, y = 0, z = 0, w = 1, u = 0, v = 0)
     {
         this.x = x;
         this.y = y;
@@ -674,14 +674,14 @@ const geometry_n = {};
         };
     }
 
-    geometry_n.polygon_o = function(numVertices = 3)
+    Rsed.geometry_n.polygon_o = function(numVertices = 3)
     {
         k_assert((numVertices > 2) && (numVertices < 10), "Bad vertex count.");
 
         this.v = [];
         for (let i = 0; i < numVertices; i++)
         {
-            this.v.push(new geometry_n.vertex_o());
+            this.v.push(new Rsed.geometry_n.vertex_o());
         }
         
         this.color = new color_n.rgba_o();
@@ -700,7 +700,7 @@ const geometry_n = {};
         // Duplicates the given polygon's relevant properties onto this one.
         this.clone_from = function(otherPolygon = {})
         {
-            k_assert(((otherPolygon instanceof geometry_n.polygon_o) &&
+            k_assert(((otherPolygon instanceof Rsed.geometry_n.polygon_o) &&
                       (this.v.length === otherPolygon.v.length)), "Incompatible polygons for cloning.");
 
             // Vertices.
@@ -771,20 +771,20 @@ const geometry_n = {};
         };
     }
 
-    geometry_n.polygon_mesh_o = function(polygons = [geometry_n.polygon_o],
-                                         translation = new geometry_n.vector3_o(0, 0, 0),
-                                         rotation = new geometry_n.vector3_o(0, 0, 0))
+    Rsed.geometry_n.polygon_mesh_o = function(polygons = [Rsed.geometry_n.polygon_o],
+                                         translation = new Rsed.geometry_n.vector3_o(0, 0, 0),
+                                         rotation = new Rsed.geometry_n.vector3_o(0, 0, 0))
     {
         k_assert((polygons.length > 0), "Expected a non-empty list of polygons.");
-        k_assert((translation instanceof geometry_n.vector3_o), "Expected a translation vector.");
-        k_assert((rotation instanceof geometry_n.vector3_o), "Expected a rotation vector.");
+        k_assert((translation instanceof Rsed.geometry_n.vector3_o), "Expected a translation vector.");
+        k_assert((rotation instanceof Rsed.geometry_n.vector3_o), "Expected a rotation vector.");
 
         this.polygons = [];
         for (let i = 0; i < polygons.length; i++)
         {
-            k_assert((polygons[i] instanceof geometry_n.polygon_o), "Expected a polygon.");
+            k_assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon.");
 
-            const newPoly = new geometry_n.polygon_o(polygons[i].v.length);
+            const newPoly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
             newPoly.clone_from(polygons[i]);
 
             this.polygons.push(newPoly);
@@ -1011,9 +1011,9 @@ const polygon_transform_n = (function()
                 let k = 0;
                 for (let i = 0; i < polygons.length; i++)
                 {
-                    k_assert((polygons[i] instanceof geometry_n.polygon_o), "Expected a polygon.");
+                    k_assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon.");
                     
-                    transfPolys[k] = new geometry_n.polygon_o(polygons[i].v.length);
+                    transfPolys[k] = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
                     transfPolys[k].clone_from(polygons[i]);
 
                     transfPolys[k].transform(toScreenSpace);
@@ -1050,9 +1050,9 @@ const polygon_transform_n = (function()
 Rsed.camera_n = (function()
 {
     // The camera's position, in track tile units.
-    const position = new geometry_n.vector3_o(15, 0, 13);
+    const position = new Rsed.geometry_n.vector3_o(15, 0, 13);
     
-    const direction = new geometry_n.vector3_o(0, 0, 0);
+    const direction = new Rsed.geometry_n.vector3_o(0, 0, 0);
 
     const moveSpeed = 0.4;
 
@@ -1134,8 +1134,8 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
     // An array of textures that the renderer has access to.
     this.textures = [];
 
-    this.cameraDirection = new geometry_n.vector3_o(0, 0, 0);
-    this.cameraPosition = new geometry_n.vector3_o(0, 0, 260);
+    this.cameraDirection = new Rsed.geometry_n.vector3_o(0, 0, 0);
+    this.cameraPosition = new Rsed.geometry_n.vector3_o(0, 0, 260);
 
     // The function to call before rendering a frame. This might, for instance,
     // be a function that processes user input.
@@ -1241,9 +1241,9 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 
     // Adds a mesh to be rendered. Meshes don't need to be added for each frame - add it
     // once and you're good.
-    this.register_mesh = function(mesh = geometry_n.polygon_mesh_o)
+    this.register_mesh = function(mesh = Rsed.geometry_n.polygon_mesh_o)
     {
-        k_assert((mesh instanceof geometry_n.polygon_mesh_o), "Expected a polygon mesh.");
+        k_assert((mesh instanceof Rsed.geometry_n.polygon_mesh_o), "Expected a polygon mesh.");
         this.meshes.push(mesh);
     }
 
@@ -1474,7 +1474,7 @@ Rsed.maasto_n = (function()
 
     // The checkpoint is a point on the track next to which the player's car must pass for the
     // lap to be counted as valid.
-    const trackCheckpoint = new geometry_n.vector2_o();
+    const trackCheckpoint = new Rsed.geometry_n.vector2_o();
 
     // The side length, in world units, of a single ground tile.
     const tileSize = 128;
@@ -1695,7 +1695,7 @@ Rsed.maasto_n = (function()
                 return;
             }
             
-            const pos = new geometry_n.vector3_o(x, y, z);
+            const pos = new Rsed.geometry_n.vector3_o(x, y, z);
             propLocations.push(pos);
             propNames.push(propName);
         }
@@ -1816,7 +1816,7 @@ Rsed.maasto_n = (function()
                     }
 
                     // Constuct the ground quad polygon.
-                    const quad = new geometry_n.polygon_o(4);
+                    const quad = new Rsed.geometry_n.polygon_o(4);
                     {
                         // The heights of the ground quad's corner points.
                         const height1 = trackOffsetY + this.maasto_height_at( tileX,       tileZ);
@@ -1824,10 +1824,10 @@ Rsed.maasto_n = (function()
                         const height3 = trackOffsetY + this.maasto_height_at((tileX + 1), (tileZ - 1));
                         const height4 = trackOffsetY + this.maasto_height_at( tileX,      (tileZ - 1));
                         
-                        quad.v[0] = new geometry_n.vertex_o( vertX,             height1, vertZ);
-                        quad.v[1] = new geometry_n.vertex_o((vertX + tileSize), height2, vertZ);
-                        quad.v[2] = new geometry_n.vertex_o((vertX + tileSize), height3, (vertZ + tileSize));
-                        quad.v[3] = new geometry_n.vertex_o( vertX,             height4, (vertZ + tileSize));
+                        quad.v[0] = new Rsed.geometry_n.vertex_o( vertX,             height1, vertZ);
+                        quad.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height2, vertZ);
+                        quad.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height3, (vertZ + tileSize));
+                        quad.v[3] = new Rsed.geometry_n.vertex_o( vertX,             height4, (vertZ + tileSize));
                         
                         quad.hasWireframe = wireframeOnRequest;
                         quad.texture = Rsed.palat_n.pala_texture(tilePala);
@@ -1847,11 +1847,11 @@ Rsed.maasto_n = (function()
                     {
                         const baseHeight = trackOffsetY + this.maasto_height_at(tileX, (tileZ - 1));
 
-                        const bill = new geometry_n.polygon_o(4);
-                        bill.v[0] = new geometry_n.vertex_o( vertX,             baseHeight,          vertZ);
-                        bill.v[1] = new geometry_n.vertex_o((vertX + tileSize), baseHeight,          vertZ);
-                        bill.v[2] = new geometry_n.vertex_o((vertX + tileSize), baseHeight+tileSize, vertZ);
-                        bill.v[3] = new geometry_n.vertex_o( vertX,             baseHeight+tileSize, vertZ);
+                        const bill = new Rsed.geometry_n.polygon_o(4);
+                        bill.v[0] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight,          vertZ);
+                        bill.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight,          vertZ);
+                        bill.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight+tileSize, vertZ);
+                        bill.v[3] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight+tileSize, vertZ);
 
                         switch (tilePala)
                         {
@@ -1879,11 +1879,11 @@ Rsed.maasto_n = (function()
                     // If the tile has a bridge, add that.
                     else if (tilePala === 248 || tilePala === 249)
                     {
-                        const bridge = new geometry_n.polygon_o(4);
-                        bridge.v[0] = new geometry_n.vertex_o( vertX,             trackOffsetY, vertZ);
-                        bridge.v[1] = new geometry_n.vertex_o((vertX + tileSize), trackOffsetY, vertZ);
-                        bridge.v[2] = new geometry_n.vertex_o((vertX + tileSize), trackOffsetY, (vertZ+tileSize));
-                        bridge.v[3] = new geometry_n.vertex_o( vertX,             trackOffsetY, (vertZ+tileSize));
+                        const bridge = new Rsed.geometry_n.polygon_o(4);
+                        bridge.v[0] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, vertZ);
+                        bridge.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, vertZ);
+                        bridge.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, (vertZ+tileSize));
+                        bridge.v[3] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, (vertZ+tileSize));
 
                         bridge.texture = Rsed.palat_n.pala_texture(177, true);
 
@@ -1914,8 +1914,8 @@ Rsed.maasto_n = (function()
             /// Temp hack. We're tilting down all the ground elements to get the viewing angle we want,
             /// but really it should be the camera's view vector that's pointed down and not the objects
             /// themselves.
-            return new geometry_n.polygon_mesh_o(polys, new geometry_n.vector3_o(0, 0, 0),
-                                                        new geometry_n.vector3_o(topdown? (-Math.PI / 2) : -0.45, 0, 0));
+            return new Rsed.geometry_n.polygon_mesh_o(polys, new Rsed.geometry_n.vector3_o(0, 0, 0),
+                                                        new Rsed.geometry_n.vector3_o(topdown? (-Math.PI / 2) : -0.45, 0, 0));
         }
 
         publicInterface.prop_locations = function() { return propLocations.slice(0); }
@@ -2074,9 +2074,9 @@ Rsed.props_n = (function()
             propTextures.push(texture);
         }
 
-        publicInterface.add_prop_mesh = function(name = "", polygons = [geometry_n.polygon_o])
+        publicInterface.add_prop_mesh = function(name = "", polygons = [Rsed.geometry_n.polygon_o])
         {
-            k_assert((polygons[0] instanceof geometry_n.polygon_o), "Expected a polygon mesh.");
+            k_assert((polygons[0] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon mesh.");
             k_assert((name.length > 0), "Expected a non-empty prop name string.");
             k_assert((polygons.length > 0), "Expectd a non-empty mesh.");
             
@@ -2110,7 +2110,7 @@ Rsed.props_n = (function()
             const copyMesh = [];
             for (let i = 0; i < sourceMesh.length; i++)
             {
-                copyMesh.push(new geometry_n.polygon_o(sourceMesh[i].v.length));
+                copyMesh.push(new Rsed.geometry_n.polygon_o(sourceMesh[i].v.length));
                 copyMesh[i].clone_from(sourceMesh[i]);
 
                 copyMesh[i].hasWireframe = wireframeEnabled;
@@ -3640,13 +3640,13 @@ const ui_input_n = (function()
     const publicInterface = {};
 
     // The current x,y pixel position of the mouse on the screen.
-    const mousePos = new geometry_n.vector2_o(0, 0);
+    const mousePos = new Rsed.geometry_n.vector2_o(0, 0);
 
     // The number of pixels the mouse has moved since the last time set_mouse_pos() was called.
-    const mousePosDelta = new geometry_n.vector2_o(0, 0);
+    const mousePosDelta = new Rsed.geometry_n.vector2_o(0, 0);
 
     // The x,y coordinates of the ground tile the mouse is currently hovering over.
-    const mouseTileHover = new geometry_n.vector2_o(-1, -1);
+    const mouseTileHover = new Rsed.geometry_n.vector2_o(-1, -1);
 
     // Whenever the user presses down a mouse button, this object gets filled with relevant information
     // about the click's target (e.g. track prop), so we can maintain that information across frames.
@@ -3682,7 +3682,7 @@ const ui_input_n = (function()
 
     function enact_key_presses()
     {
-        const movement = new geometry_n.vector3_o(0, 0, 0);
+        const movement = new Rsed.geometry_n.vector3_o(0, 0, 0);
 
         if (keyDown["s"]) movement.x += -1;
         if (keyDown["f"]) movement.x += 1;
@@ -4082,12 +4082,12 @@ Rsed.draw_line_n = (function()
     {
         // 'Draw' a Bresenham line between the two points into a 1d array. In other words, each element
         // in the array represents the y coordinate, and each value at that element the x coordinate.
-        publicInterface.line_into_array = function(vert1 = geometry_n.vertex_o,
-                                                   vert2 = geometry_n.vertex_o,
+        publicInterface.line_into_array = function(vert1 = Rsed.geometry_n.vertex_o,
+                                                   vert2 = Rsed.geometry_n.vertex_o,
                                                    array = [], yOffset = 0)
         {
-            k_assert((vert1 instanceof geometry_n.vertex_o), "Expected a vertex.");
-            k_assert((vert2 instanceof geometry_n.vertex_o), "Expected a vertex.");
+            k_assert((vert1 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
+            k_assert((vert2 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
 
             yOffset = Math.floor(yOffset);
 
@@ -4141,13 +4141,13 @@ Rsed.draw_line_n = (function()
             }
         }
 
-        publicInterface.line_onto_canvas = function(vert1 = geometry_n.vertex_o, vert2 = geometry_n.vertex_o,
+        publicInterface.line_onto_canvas = function(vert1 = Rsed.geometry_n.vertex_o, vert2 = Rsed.geometry_n.vertex_o,
                                                     canvas = [], width = 0, height = 0,
                                                     r = 0, g = 0, b = 0)
         {
             k_assert((canvas.length > 0), "Expected the canvas to be a non-zero-length array.");
-            k_assert((vert1 instanceof geometry_n.vertex_o), "Expected a vertex.");
-            k_assert((vert2 instanceof geometry_n.vertex_o), "Expected a vertex.");
+            k_assert((vert1 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
+            k_assert((vert2 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
 
             function put_pixel(x = 0, y = 0)
             {
@@ -4221,7 +4221,7 @@ Rsed.ngon_fill_n = (function()
         publicInterface.fill_polygons = function(polygons = [])
         {
             k_assert((this instanceof Rsed.render_surface_n.render_surface_o), "Expected the function to be bound to a render surface.");
-            k_assert((polygons[0] instanceof geometry_n.polygon_o), "Expected polygons.");
+            k_assert((polygons[0] instanceof Rsed.geometry_n.polygon_o), "Expected polygons.");
             k_assert((polygons.length > 0), "Received an empty list of triangles to rasterize.");
 
             const surface = this;
@@ -4233,9 +4233,9 @@ Rsed.ngon_fill_n = (function()
 
             for (let i = 0; i < polygons.length; i++)
             {
-                k_assert((polygons[i] instanceof geometry_n.polygon_o), "Expected a polygon");
+                k_assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon");
 
-                const poly = new geometry_n.polygon_o(polygons[i].v.length);
+                const poly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
                 poly.clone_from(polygons[i]);
 
                 // Find which of the polygon's vertices form the polygon's left side and which the right.
@@ -4493,7 +4493,7 @@ const resource_loader_n = (function()
             prop.polygons.forEach(propPoly=>
             {
                 const numVertices = (propPoly.verts.length / 3);
-                const convertedPoly = new geometry_n.polygon_o(numVertices);
+                const convertedPoly = new Rsed.geometry_n.polygon_o(numVertices);
 
                 convertedPoly.texture = Rsed.props_n.prop_texture(propPoly.textureIdx);
                 convertedPoly.color = palette_n.palette_idx_to_rgba(propPoly.paletteIdx);

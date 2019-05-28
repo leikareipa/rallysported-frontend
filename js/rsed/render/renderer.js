@@ -35,8 +35,8 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
     // An array of textures that the renderer has access to.
     this.textures = [];
 
-    this.cameraDirection = new geometry_n.vector3_o(0, 0, 0);
-    this.cameraPosition = new geometry_n.vector3_o(0, 0, 260);
+    this.cameraDirection = new Rsed.geometry_n.vector3_o(0, 0, 0);
+    this.cameraPosition = new Rsed.geometry_n.vector3_o(0, 0, 260);
 
     // The function to call before rendering a frame. This might, for instance,
     // be a function that processes user input.
@@ -142,9 +142,9 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 
     // Adds a mesh to be rendered. Meshes don't need to be added for each frame - add it
     // once and you're good.
-    this.register_mesh = function(mesh = geometry_n.polygon_mesh_o)
+    this.register_mesh = function(mesh = Rsed.geometry_n.polygon_mesh_o)
     {
-        k_assert((mesh instanceof geometry_n.polygon_mesh_o), "Expected a polygon mesh.");
+        k_assert((mesh instanceof Rsed.geometry_n.polygon_mesh_o), "Expected a polygon mesh.");
         this.meshes.push(mesh);
     }
 

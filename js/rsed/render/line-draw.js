@@ -13,12 +13,12 @@ Rsed.draw_line_n = (function()
     {
         // 'Draw' a Bresenham line between the two points into a 1d array. In other words, each element
         // in the array represents the y coordinate, and each value at that element the x coordinate.
-        publicInterface.line_into_array = function(vert1 = geometry_n.vertex_o,
-                                                   vert2 = geometry_n.vertex_o,
+        publicInterface.line_into_array = function(vert1 = Rsed.geometry_n.vertex_o,
+                                                   vert2 = Rsed.geometry_n.vertex_o,
                                                    array = [], yOffset = 0)
         {
-            k_assert((vert1 instanceof geometry_n.vertex_o), "Expected a vertex.");
-            k_assert((vert2 instanceof geometry_n.vertex_o), "Expected a vertex.");
+            k_assert((vert1 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
+            k_assert((vert2 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
 
             yOffset = Math.floor(yOffset);
 
@@ -72,13 +72,13 @@ Rsed.draw_line_n = (function()
             }
         }
 
-        publicInterface.line_onto_canvas = function(vert1 = geometry_n.vertex_o, vert2 = geometry_n.vertex_o,
+        publicInterface.line_onto_canvas = function(vert1 = Rsed.geometry_n.vertex_o, vert2 = Rsed.geometry_n.vertex_o,
                                                     canvas = [], width = 0, height = 0,
                                                     r = 0, g = 0, b = 0)
         {
             k_assert((canvas.length > 0), "Expected the canvas to be a non-zero-length array.");
-            k_assert((vert1 instanceof geometry_n.vertex_o), "Expected a vertex.");
-            k_assert((vert2 instanceof geometry_n.vertex_o), "Expected a vertex.");
+            k_assert((vert1 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
+            k_assert((vert2 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
 
             function put_pixel(x = 0, y = 0)
             {

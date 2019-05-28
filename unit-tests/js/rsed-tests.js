@@ -7,7 +7,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
         // Movement.
         {
             Rsed.camera_n.reset_camera_position();
-            const camPos = new geometry_n.vector3_o(Rsed.camera_n.pos_x(), Rsed.camera_n.pos_y(), Rsed.camera_n.pos_z());
+            const camPos = new Rsed.geometry_n.vector3_o(Rsed.camera_n.pos_x(), Rsed.camera_n.pos_y(), Rsed.camera_n.pos_z());
 
             Rsed.camera_n.move_camera(11, 12, 13, false);
             expect_true([()=>((camPos.x + 11 * Rsed.camera_n.movement_speed()) === Rsed.camera_n.pos_x()),
@@ -25,8 +25,8 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
     {
         // Diagonal line into array.
         {
-            const vert1 = new geometry_n.vertex_o(0, 0, 0);
-            const vert2 = new geometry_n.vertex_o(2, 2, 0);
+            const vert1 = new Rsed.geometry_n.vertex_o(0, 0, 0);
+            const vert2 = new Rsed.geometry_n.vertex_o(2, 2, 0);
             const array = [];
 
             Rsed.draw_line_n.line_into_array(vert1, vert2, array, 0);
@@ -38,8 +38,8 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
 
         // Horizontal line into array.
         {
-            const vert1 = new geometry_n.vertex_o(0, 0, 0);
-            const vert2 = new geometry_n.vertex_o(2, 0, 0);
+            const vert1 = new Rsed.geometry_n.vertex_o(0, 0, 0);
+            const vert2 = new Rsed.geometry_n.vertex_o(2, 0, 0);
             const array = [];
 
             Rsed.draw_line_n.line_into_array(vert1, vert2, array, 0);
@@ -49,8 +49,8 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
 
         // Vertical line into array.
         {
-            const vert1 = new geometry_n.vertex_o(15, 0, 0);
-            const vert2 = new geometry_n.vertex_o(15, 2, 0);
+            const vert1 = new Rsed.geometry_n.vertex_o(15, 0, 0);
+            const vert2 = new Rsed.geometry_n.vertex_o(15, 2, 0);
             const array = [];
 
             Rsed.draw_line_n.line_into_array(vert1, vert2, array, 0);
@@ -104,30 +104,30 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
     {
         // Creation.
         {
-            expect_fail([()=>{new geometry_n.polygon_o(-54852);}, // Too few vertices.
-                         ()=>{new geometry_n.polygon_o(-1);}, // Too few vertices.
-                         ()=>{new geometry_n.polygon_o(0);}, // Too few vertices.
-                         ()=>{new geometry_n.polygon_o(1);}, // Too few vertices.
-                         ()=>{new geometry_n.polygon_o(2);}, // Too few vertices.
-                         ()=>{new geometry_n.polygon_o(12);}, // Too many vertices.
-                         ()=>{new geometry_n.polygon_o(988853);}]); // Too many vertices.
+            expect_fail([()=>{new Rsed.geometry_n.polygon_o(-54852);}, // Too few vertices.
+                         ()=>{new Rsed.geometry_n.polygon_o(-1);}, // Too few vertices.
+                         ()=>{new Rsed.geometry_n.polygon_o(0);}, // Too few vertices.
+                         ()=>{new Rsed.geometry_n.polygon_o(1);}, // Too few vertices.
+                         ()=>{new Rsed.geometry_n.polygon_o(2);}, // Too few vertices.
+                         ()=>{new Rsed.geometry_n.polygon_o(12);}, // Too many vertices.
+                         ()=>{new Rsed.geometry_n.polygon_o(988853);}]); // Too many vertices.
         }
 
         // Cloning.
         {
-            const tri1 = new geometry_n.polygon_o(3);
-            const tri2 = new geometry_n.polygon_o(3);
-            const quad = new geometry_n.polygon_o(4);
+            const tri1 = new Rsed.geometry_n.polygon_o(3);
+            const tri2 = new Rsed.geometry_n.polygon_o(3);
+            const quad = new Rsed.geometry_n.polygon_o(4);
 
-            tri1.v[0] = new geometry_n.vertex_o(123, 456, 789);
-            tri2.v[0] = new geometry_n.vertex_o(987, 654, 321);
+            tri1.v[0] = new Rsed.geometry_n.vertex_o(123, 456, 789);
+            tri2.v[0] = new Rsed.geometry_n.vertex_o(987, 654, 321);
             tri1.clone_from(tri2);
             expect_true([()=>(tri1.v[0].x === tri2.v[0].x),
                          ()=>(tri1.v[0].y === tri2.v[0].y),
                          ()=>(tri1.v[0].z === tri2.v[0].z)]);
 
             // See that the cloning is by value, not by reference.
-            tri1.v[0] = new geometry_n.vertex_o(111, 222, 333);
+            tri1.v[0] = new Rsed.geometry_n.vertex_o(111, 222, 333);
             expect_true([()=>(tri2.v[0].x === 987),
                          ()=>(tri2.v[0].y === 654),
                          ()=>(tri2.v[0].z === 321),
@@ -143,12 +143,12 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
         {
             // Creating polygon meshes.
             {
-                const poly1 = new geometry_n.polygon_o(3);
-                const poly2 = new geometry_n.polygon_o(6);
+                const poly1 = new Rsed.geometry_n.polygon_o(3);
+                const poly2 = new Rsed.geometry_n.polygon_o(6);
                 poly1.v[0].x = 321;
                 
                 const polyList = [poly1, poly2];
-                const mesh = new geometry_n.polygon_mesh_o(polyList);
+                const mesh = new Rsed.geometry_n.polygon_mesh_o(polyList);
 
                 // See that all polys and vertices were imported.
                 expect_true([()=>(mesh.polygons.length === polyList.length),
@@ -160,7 +160,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
                 expect_true([()=>(mesh.polygons[0].v[0].x !== poly1.v[0].x)]);
 
                 // Reject creating a null polygon mesh.
-                expect_fail([()=>{new geometry_n.polygon_mesh_o();}])
+                expect_fail([()=>{new Rsed.geometry_n.polygon_mesh_o();}])
             }
         }
     });
