@@ -311,7 +311,7 @@ const ui_draw_n = (function()
         // NOTE: Avoid calling k_assert in this function, since the function itself may be called on asserts.
         publicInterface.draw_crash_message = function(renderSurface, message)
         {
-            if (!(renderSurface instanceof render_surface_n.render_surface_o)) return;
+            if (!(renderSurface instanceof Rsed.render_surface_n.render_surface_o)) return;
 
             pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
 
@@ -321,9 +321,9 @@ const ui_draw_n = (function()
             pixelSurface = null;
         }
 
-        publicInterface.draw_ui = function(renderSurface = render_surface_n.render_surface_o)
+        publicInterface.draw_ui = function(renderSurface = Rsed.render_surface_n.render_surface_o)
         {
-            k_assert((renderSurface instanceof render_surface_n.render_surface_o), "Expected to receive the render surface.");
+            k_assert((renderSurface instanceof Rsed.render_surface_n.render_surface_o), "Expected to receive the render surface.");
 
             // Draw the UI.
             pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);

@@ -10,7 +10,7 @@
 
 "use strict";
 
-const render_surface_n = (function()
+Rsed.render_surface_n = (function()
 {
     const publicInterface = {};
     {

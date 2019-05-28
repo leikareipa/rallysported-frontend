@@ -17,7 +17,7 @@ Rsed.ngon_fill_n = (function()
     {
         publicInterface.fill_polygons = function(polygons = [])
         {
-            k_assert((this instanceof render_surface_n.render_surface_o), "Expected the function to be bound to a render surface.");
+            k_assert((this instanceof Rsed.render_surface_n.render_surface_o), "Expected the function to be bound to a render surface.");
             k_assert((polygons[0] instanceof geometry_n.polygon_o), "Expected polygons.");
             k_assert((polygons.length > 0), "Received an empty list of triangles to rasterize.");
 

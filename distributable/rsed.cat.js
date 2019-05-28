@@ -1119,8 +1119,10 @@ const rsed_renderer_n = {}
         this.renderSurfaceId = "render_surface_canvas";
 
         k_assert((document.getElementById(containerElementId) !== null), "Can't find this element.")
-        this.renderSurface = new render_surface_n.render_surface_o(this.renderSurfaceId, "canvas", containerElementId,
-                                                                   Rsed.ngon_fill_n.fill_polygons);
+        this.renderSurface = new Rsed.render_surface_n.render_surface_o(this.renderSurfaceId,
+                                                                        "canvas",
+                                                                        containerElementId,
+                                                                        Rsed.ngon_fill_n.fill_polygons);
 
         // The size of the render surface will match the size of its HTML container element, but
         // rasterization into the render surface will down/upscale by this scaling factor. For instance,
@@ -1277,7 +1279,7 @@ const rsed_renderer_n = {}
 
 "use strict";
 
-const render_surface_n = (function()
+Rsed.render_surface_n = (function()
 {
     const publicInterface = {};
     {
@@ -3512,7 +3514,7 @@ const ui_draw_n = (function()
         // NOTE: Avoid calling k_assert in this function, since the function itself may be called on asserts.
         publicInterface.draw_crash_message = function(renderSurface, message)
         {
-            if (!(renderSurface instanceof render_surface_n.render_surface_o)) return;
+            if (!(renderSurface instanceof Rsed.render_surface_n.render_surface_o)) return;
 
             pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
 
@@ -3522,9 +3524,9 @@ const ui_draw_n = (function()
             pixelSurface = null;
         }
 
-        publicInterface.draw_ui = function(renderSurface = render_surface_n.render_surface_o)
+        publicInterface.draw_ui = function(renderSurface = Rsed.render_surface_n.render_surface_o)
         {
-            k_assert((renderSurface instanceof render_surface_n.render_surface_o), "Expected to receive the render surface.");
+            k_assert((renderSurface instanceof Rsed.render_surface_n.render_surface_o), "Expected to receive the render surface.");
 
             // Draw the UI.
             pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
@@ -4220,7 +4222,7 @@ Rsed.ngon_fill_n = (function()
     {
         publicInterface.fill_polygons = function(polygons = [])
         {
-            k_assert((this instanceof render_surface_n.render_surface_o), "Expected the function to be bound to a render surface.");
+            k_assert((this instanceof Rsed.render_surface_n.render_surface_o), "Expected the function to be bound to a render surface.");
             k_assert((polygons[0] instanceof geometry_n.polygon_o), "Expected polygons.");
             k_assert((polygons.length > 0), "Received an empty list of triangles to rasterize.");
 

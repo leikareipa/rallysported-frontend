@@ -77,11 +77,11 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
             containerElement.setAttribute("id", containerName);
             document.body.appendChild(containerElement)
 
-            const surface = new render_surface_n.render_surface_o(surfaceName, surfaceType, containerName, function(){});
-            expect_true([()=>(surface instanceof render_surface_n.render_surface_o)]);
+            const surface = new Rsed.render_surface_n.render_surface_o(surfaceName, surfaceType, containerName, function(){});
+            expect_true([()=>(surface instanceof Rsed.render_surface_n.render_surface_o)]);
 
             // Shouldn't be able to create a render surface with a null polyfill function.
-            expect_fail([()=>{new render_surface_n.render_surface_o(surfaceName, surfaceType, containerName, null);}]);
+            expect_fail([()=>{new Rsed.render_surface_n.render_surface_o(surfaceName, surfaceType, containerName, null);}]);
 
             // See that the HTML id tags are correct.
             expect_true([()=>(surface.containerId === containerName),
