@@ -7,7 +7,7 @@
 
 "use strict"
 
-const line_draw_n = (function()
+const draw_line_n = (function()
 {
     const publicInterface = {};
     {

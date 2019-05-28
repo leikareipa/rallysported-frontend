@@ -4063,7 +4063,7 @@ const ui_input_n = (function()
 
 "use strict"
 
-const line_draw_n = (function()
+const draw_line_n = (function()
 {
     const publicInterface = {};
     {
@@ -4282,17 +4282,17 @@ const polygon_fill_canvas_n = (function()
                     let prevVert = leftVerts[0];
                     for (let l = 1; l < leftVerts.length; l++)
                     {
-                        line_draw_n.line_into_array(prevVert, leftVerts[l], leftEdge, poly.v[0].y);
+                        draw_line_n.line_into_array(prevVert, leftVerts[l], leftEdge, poly.v[0].y);
                         prevVert = leftVerts[l];
                     }
-                    line_draw_n.line_into_array(prevVert, rightVerts[0], leftEdge, poly.v[0].y);
+                    draw_line_n.line_into_array(prevVert, rightVerts[0], leftEdge, poly.v[0].y);
                     prevVert = rightVerts[0];
                     for (let r = 1; r < rightVerts.length; r++)
                     {
-                        line_draw_n.line_into_array(prevVert, rightVerts[r], rightEdge, poly.v[0].y);
+                        draw_line_n.line_into_array(prevVert, rightVerts[r], rightEdge, poly.v[0].y);
                         prevVert = rightVerts[r];
                     }
-                    line_draw_n.line_into_array(prevVert, leftVerts[0], rightEdge, poly.v[0].y);
+                    draw_line_n.line_into_array(prevVert, leftVerts[0], rightEdge, poly.v[0].y);
                 }
 
                 // Draw the polygon.
@@ -4374,17 +4374,17 @@ const polygon_fill_canvas_n = (function()
                         let prevVert = leftVerts[0];
                         for (let l = 1; l < leftVerts.length; l++)
                         {
-                            line_draw_n.line_onto_canvas(prevVert, leftVerts[l], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+                            draw_line_n.line_onto_canvas(prevVert, leftVerts[l], pixelMap.data, width, height, wireShade, wireShade, wireShade);
                             prevVert = leftVerts[l];
                         }
-                        line_draw_n.line_onto_canvas(prevVert, rightVerts[0], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+                        draw_line_n.line_onto_canvas(prevVert, rightVerts[0], pixelMap.data, width, height, wireShade, wireShade, wireShade);
                         prevVert = rightVerts[0];
                         for (let r = 1; r < rightVerts.length; r++)
                         {
-                            line_draw_n.line_onto_canvas(prevVert, rightVerts[r], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+                            draw_line_n.line_onto_canvas(prevVert, rightVerts[r], pixelMap.data, width, height, wireShade, wireShade, wireShade);
                             prevVert = rightVerts[r];
                         }
-                        line_draw_n.line_onto_canvas(prevVert, leftVerts[0], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+                        draw_line_n.line_onto_canvas(prevVert, leftVerts[0], pixelMap.data, width, height, wireShade, wireShade, wireShade);
                     }
                 }
             }
@@ -4943,8 +4943,7 @@ const rsed_project_n = (function()
                 }
                 case "server":
                 {
-                    resource_loader_n.load_binary_resource(zip, "rsed-project-zip",
-                    function(zipFile)
+                    resource_loader_n.load_binary_resource(zip, "rsed-project-zip", (zipFile)=>
                     {
                         resource_loader_n.load_project_data({fromZip:true,zipFile}, (projectData)=>
                         {
