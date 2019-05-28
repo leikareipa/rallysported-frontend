@@ -140,12 +140,12 @@ const ui_input_n = (function()
                     if (mouseLeftPressed | mouseRightPressed)
                     {
                         const delta = (mouseLeftPressed? 2 : (mouseRightPressed? -2 : 0));
-                        ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changeHeight, delta,
+                        Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changeHeight, delta,
                                                         hoverArgs.tileX, hoverArgs.tileZ);
                     }
                     else if (mouseMiddlePressed)
                     {
-                        ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changePala, ui_brush_n.brush_pala_idx(),
+                        Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala, Rsed.ui_brush_n.brush_pala_idx(),
                                                           hoverArgs.tileX, hoverArgs.tileZ);
                     }
                 }
@@ -186,7 +186,7 @@ const ui_input_n = (function()
                 {
                     case publicInterface.uiElement.palat_pane:
                     {
-                        if (mouseLeftPressed | mouseRightPressed) ui_brush_n.set_brush_pala_idx(mouseLock.x);
+                        if (mouseLeftPressed | mouseRightPressed) Rsed.ui_brush_n.set_brush_pala_idx(mouseLock.x);
 
                         break;
                     }
@@ -194,7 +194,7 @@ const ui_input_n = (function()
                     {
                         if (mouseMiddlePressed)
                         {
-                            ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changePala, ui_brush_n.brush_pala_idx(),
+                            Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala, Rsed.ui_brush_n.brush_pala_idx(),
                                                               mouseLock.x, mouseLock.y);
                                                
                             // We want the user to be able to paint by dragging the cursor, so we release the mouse lock here

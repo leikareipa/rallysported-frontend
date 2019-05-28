@@ -1812,7 +1812,7 @@ Rsed.maasto_n = (function()
                     if (tileX === ui_input_n.mouse_tile_hover_x() &&
                         (tileZ - 1) === ui_input_n.mouse_tile_hover_y())
                     {
-                        tilePala = ui_brush_n.brush_pala_idx();
+                        tilePala = Rsed.ui_brush_n.brush_pala_idx();
                     }
 
                     // Constuct the ground quad polygon.
@@ -3106,7 +3106,7 @@ const ui_view_n = (function()
 
 "use strict";
 
-const ui_brush_n = (function()
+Rsed.ui_brush_n = (function()
 {
     // How large of a radius the brush paints with. A value of 0 means one tile.
     let brushSize = 0;
@@ -3326,7 +3326,7 @@ const ui_draw_n = (function()
         {
             draw_string("PALA:" + ui_input_n.mouse_hover_args().x, ui_input_n.mouse_pos_x() + 10, ui_input_n.mouse_pos_y() + 17);
         }
-        else if (ui_brush_n.brushSmoothens)
+        else if (Rsed.ui_brush_n.brushSmoothens)
         {
             draw_string("SMOOTHING", ui_input_n.mouse_pos_x() + 10, ui_input_n.mouse_pos_y() + 17);
         }
@@ -3444,13 +3444,13 @@ const ui_draw_n = (function()
 
     function draw_active_pala()
     {
-        const currentPala = ui_brush_n.brush_pala_idx();
+        const currentPala = Rsed.ui_brush_n.brush_pala_idx();
         const pala = Rsed.palat_n.pala_texture(currentPala);
 
         if (pala != null)
         {
             draw_image(pala.paletteIndices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false);
-            draw_string((ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
+            draw_string((Rsed.ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
         }
     }
 
@@ -3765,12 +3765,12 @@ const ui_input_n = (function()
                     if (mouseLeftPressed | mouseRightPressed)
                     {
                         const delta = (mouseLeftPressed? 2 : (mouseRightPressed? -2 : 0));
-                        ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changeHeight, delta,
+                        Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changeHeight, delta,
                                                         hoverArgs.tileX, hoverArgs.tileZ);
                     }
                     else if (mouseMiddlePressed)
                     {
-                        ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changePala, ui_brush_n.brush_pala_idx(),
+                        Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala, Rsed.ui_brush_n.brush_pala_idx(),
                                                           hoverArgs.tileX, hoverArgs.tileZ);
                     }
                 }
@@ -3811,7 +3811,7 @@ const ui_input_n = (function()
                 {
                     case publicInterface.uiElement.palat_pane:
                     {
-                        if (mouseLeftPressed | mouseRightPressed) ui_brush_n.set_brush_pala_idx(mouseLock.x);
+                        if (mouseLeftPressed | mouseRightPressed) Rsed.ui_brush_n.set_brush_pala_idx(mouseLock.x);
 
                         break;
                     }
@@ -3819,7 +3819,7 @@ const ui_input_n = (function()
                     {
                         if (mouseMiddlePressed)
                         {
-                            ui_brush_n.apply_brush_to_terrain(ui_brush_n.brushAction.changePala, ui_brush_n.brush_pala_idx(),
+                            Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala, Rsed.ui_brush_n.brush_pala_idx(),
                                                               mouseLock.x, mouseLock.y);
                                                
                             // We want the user to be able to paint by dragging the cursor, so we release the mouse lock here
@@ -5488,12 +5488,12 @@ window.onkeydown = function(event)
             case "r": case 82: ui_view_n.toggle_view("3d", "3d-topdown"); break;
             case "l": case 76: Rsed.maasto_n.level_terrain(); break;
             case "b": case 66: ui_view_n.hideProps = !ui_view_n.hideProps; break;
-            case "spacebar": case 32: ui_brush_n.brushSmoothens = !ui_brush_n.brushSmoothens; event.preventDefault(); break;
-            case "1": case 49: ui_brush_n.set_brush_size(0); break;
-            case "2": case 50: ui_brush_n.set_brush_size(1); break;
-            case "3": case 51: ui_brush_n.set_brush_size(2); break;
-            case "4": case 52: ui_brush_n.set_brush_size(3); break;
-            case "5": case 53: ui_brush_n.set_brush_size(8); break;
+            case "spacebar": case 32: Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens; event.preventDefault(); break;
+            case "1": case 49: Rsed.ui_brush_n.set_brush_size(0); break;
+            case "2": case 50: Rsed.ui_brush_n.set_brush_size(1); break;
+            case "3": case 51: Rsed.ui_brush_n.set_brush_size(2); break;
+            case "4": case 52: Rsed.ui_brush_n.set_brush_size(3); break;
+            case "5": case 53: Rsed.ui_brush_n.set_brush_size(8); break;
             case "tab": case 9: event.preventDefault(); break;
             default: break;
         }

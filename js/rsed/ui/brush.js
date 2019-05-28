@@ -8,7 +8,7 @@
 
 "use strict";
 
-const ui_brush_n = (function()
+Rsed.ui_brush_n = (function()
 {
     // How large of a radius the brush paints with. A value of 0 means one tile.
     let brushSize = 0;

@@ -125,7 +125,7 @@ const ui_draw_n = (function()
         {
             draw_string("PALA:" + ui_input_n.mouse_hover_args().x, ui_input_n.mouse_pos_x() + 10, ui_input_n.mouse_pos_y() + 17);
         }
-        else if (ui_brush_n.brushSmoothens)
+        else if (Rsed.ui_brush_n.brushSmoothens)
         {
             draw_string("SMOOTHING", ui_input_n.mouse_pos_x() + 10, ui_input_n.mouse_pos_y() + 17);
         }
@@ -243,13 +243,13 @@ const ui_draw_n = (function()
 
     function draw_active_pala()
     {
-        const currentPala = ui_brush_n.brush_pala_idx();
+        const currentPala = Rsed.ui_brush_n.brush_pala_idx();
         const pala = Rsed.palat_n.pala_texture(currentPala);
 
         if (pala != null)
         {
             draw_image(pala.paletteIndices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false);
-            draw_string((ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
+            draw_string((Rsed.ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
         }
     }
 

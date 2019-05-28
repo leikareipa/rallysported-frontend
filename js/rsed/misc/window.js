@@ -185,12 +185,12 @@ window.onkeydown = function(event)
             case "r": case 82: ui_view_n.toggle_view("3d", "3d-topdown"); break;
             case "l": case 76: Rsed.maasto_n.level_terrain(); break;
             case "b": case 66: ui_view_n.hideProps = !ui_view_n.hideProps; break;
-            case "spacebar": case 32: ui_brush_n.brushSmoothens = !ui_brush_n.brushSmoothens; event.preventDefault(); break;
-            case "1": case 49: ui_brush_n.set_brush_size(0); break;
-            case "2": case 50: ui_brush_n.set_brush_size(1); break;
-            case "3": case 51: ui_brush_n.set_brush_size(2); break;
-            case "4": case 52: ui_brush_n.set_brush_size(3); break;
-            case "5": case 53: ui_brush_n.set_brush_size(8); break;
+            case "spacebar": case 32: Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens; event.preventDefault(); break;
+            case "1": case 49: Rsed.ui_brush_n.set_brush_size(0); break;
+            case "2": case 50: Rsed.ui_brush_n.set_brush_size(1); break;
+            case "3": case 51: Rsed.ui_brush_n.set_brush_size(2); break;
+            case "4": case 52: Rsed.ui_brush_n.set_brush_size(3); break;
+            case "5": case 53: Rsed.ui_brush_n.set_brush_size(8); break;
             case "tab": case 9: event.preventDefault(); break;
             default: break;
         }

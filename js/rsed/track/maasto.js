@@ -356,7 +356,7 @@ Rsed.maasto_n = (function()
                     if (tileX === ui_input_n.mouse_tile_hover_x() &&
                         (tileZ - 1) === ui_input_n.mouse_tile_hover_y())
                     {
-                        tilePala = ui_brush_n.brush_pala_idx();
+                        tilePala = Rsed.ui_brush_n.brush_pala_idx();
                     }
 
                     // Constuct the ground quad polygon.
