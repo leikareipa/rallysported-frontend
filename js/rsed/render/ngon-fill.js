@@ -11,7 +11,7 @@
 
 "use strict";
 
-const ngon_fill_n = (function()
+Rsed.ngon_fill_n = (function()
 {
     const publicInterface = {};
     {

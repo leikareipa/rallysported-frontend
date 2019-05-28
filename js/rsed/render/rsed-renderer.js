@@ -21,7 +21,7 @@ const rsed_renderer_n = {}
 
         k_assert((document.getElementById(containerElementId) !== null), "Can't find this element.")
         this.renderSurface = new render_surface_n.render_surface_o(this.renderSurfaceId, "canvas", containerElementId,
-                                                                   ngon_fill_n.fill_polygons);
+                                                                   Rsed.ngon_fill_n.fill_polygons);
 
         // The size of the render surface will match the size of its HTML container element, but
         // rasterization into the render surface will down/upscale by this scaling factor. For instance,
