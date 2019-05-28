@@ -330,14 +330,14 @@ Rsed.maasto_n = (function()
             // The list of polygons that make up the track mesh.
             const polys = [];
 
-            const topdown = (ui_view_n.current_view() === "3d-topdown");
+            const topdown = (Rsed.ui_view_n.current_view() === "3d-topdown");
 
             // We'll center the track on the screen with these.
             const trackOffsetX = topdown? -1152 : -1088;
             const trackOffsetY = topdown? -1800 : -680;
             const trackOffsetZ = topdown? 700 : 2612;
 
-            const wireframeOnRequest = ui_view_n.show3dWireframe;
+            const wireframeOnRequest = Rsed.ui_view_n.show3dWireframe;
 
             // Add the ground tiles.
             for (let z = 0; z < Rsed.camera_n.view_height(); z++)

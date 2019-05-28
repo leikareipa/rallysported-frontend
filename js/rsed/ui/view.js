@@ -8,7 +8,7 @@
 
 "use strict";
 
-const ui_view_n = (function()
+Rsed.ui_view_n = (function()
 {
     const availableViews = Object.freeze(["3d", "3d-topdown", "2d-topdown"]);
 

@@ -43,7 +43,7 @@ const rsed_n = (function()
             {
                 renderer.meshes = [];
 
-                if (ui_view_n.current_view() !== "2d-topdown")
+                if (Rsed.ui_view_n.current_view() !== "2d-topdown")
                 {
                     renderer.register_mesh(Rsed.maasto_n.maasto_mesh(Math.floor(Rsed.camera_n.pos_x()), Math.floor(Rsed.camera_n.pos_z())));
                 }

@@ -1786,14 +1786,14 @@ Rsed.maasto_n = (function()
             // The list of polygons that make up the track mesh.
             const polys = [];
 
-            const topdown = (ui_view_n.current_view() === "3d-topdown");
+            const topdown = (Rsed.ui_view_n.current_view() === "3d-topdown");
 
             // We'll center the track on the screen with these.
             const trackOffsetX = topdown? -1152 : -1088;
             const trackOffsetY = topdown? -1800 : -680;
             const trackOffsetZ = topdown? 700 : 2612;
 
-            const wireframeOnRequest = ui_view_n.show3dWireframe;
+            const wireframeOnRequest = Rsed.ui_view_n.show3dWireframe;
 
             // Add the ground tiles.
             for (let z = 0; z < Rsed.camera_n.view_height(); z++)
@@ -2115,7 +2115,7 @@ Rsed.props_n = (function()
 
                 copyMesh[i].hasWireframe = wireframeEnabled;
 
-                copyMesh[i].isEthereal = ui_view_n.hideProps;
+                copyMesh[i].isEthereal = Rsed.ui_view_n.hideProps;
 
                 copyMesh[i].mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
                                                                              {propIdx:idx, propTrackId:idOnTrack});
@@ -3055,7 +3055,7 @@ Rsed.ui_cursor_n = (function()
 
 "use strict";
 
-const ui_view_n = (function()
+Rsed.ui_view_n = (function()
 {
     const availableViews = Object.freeze(["3d", "3d-topdown", "2d-topdown"]);
 
@@ -3531,7 +3531,7 @@ Rsed.ui_draw_n = (function()
             mousePickBuffer = renderSurface.mousePickBuffer;
             k_assert((mousePickBuffer.length === (pixelSurface.width * pixelSurface.height)), "Incompatible mouse-picking buffer.");
             {
-                switch (ui_view_n.current_view())
+                switch (Rsed.ui_view_n.current_view())
                 {
                     case "3d":
                     case "3d-topdown":
@@ -3541,7 +3541,7 @@ Rsed.ui_draw_n = (function()
                         draw_minimap();
                         draw_active_pala();
                         draw_footer_info();
-                        if (ui_view_n.showPalatPane) draw_palat_pane();
+                        if (Rsed.ui_view_n.showPalatPane) draw_palat_pane();
 
                         break;
                     }
@@ -3549,7 +3549,7 @@ Rsed.ui_draw_n = (function()
                     {
                         draw_paint_view();
                         draw_active_pala();
-                        if (ui_view_n.showPalatPane) draw_palat_pane();
+                        if (Rsed.ui_view_n.showPalatPane) draw_palat_pane();
                         
                         break;
                     }
@@ -5087,7 +5087,7 @@ const rsed_n = (function()
             {
                 renderer.meshes = [];
 
-                if (ui_view_n.current_view() !== "2d-topdown")
+                if (Rsed.ui_view_n.current_view() !== "2d-topdown")
                 {
                     renderer.register_mesh(Rsed.maasto_n.maasto_mesh(Math.floor(Rsed.camera_n.pos_x()), Math.floor(Rsed.camera_n.pos_z())));
                 }
@@ -5468,7 +5468,7 @@ window.onmousemove = function(event)
         RSED_MOUSE_POS.y = (event.clientY - event.target.getBoundingClientRect().top);
 
         Rsed.ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * rsed_n.scaling_multiplier()),
-                                Math.floor(RSED_MOUSE_POS.y * rsed_n.scaling_multiplier()));
+                                      Math.floor(RSED_MOUSE_POS.y * rsed_n.scaling_multiplier()));
     }
 }
 
@@ -5482,12 +5482,12 @@ window.onkeydown = function(event)
 
         switch (event.keyCode)
         {
-            case "q": case 81: ui_view_n.toggle_view("2d-topdown", "3d"); break;
-            case "w": case 87: ui_view_n.show3dWireframe = !ui_view_n.show3dWireframe; break;
-            case "a": case 65: ui_view_n.showPalatPane = !ui_view_n.showPalatPane; break;
-            case "r": case 82: ui_view_n.toggle_view("3d", "3d-topdown"); break;
+            case "q": case 81: Rsed.ui_view_n.toggle_view("2d-topdown", "3d"); break;
+            case "w": case 87: Rsed.ui_view_n.show3dWireframe = !Rsed.ui_view_n.show3dWireframe; break;
+            case "a": case 65: Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane; break;
+            case "r": case 82: Rsed.ui_view_n.toggle_view("3d", "3d-topdown"); break;
             case "l": case 76: Rsed.maasto_n.level_terrain(); break;
-            case "b": case 66: ui_view_n.hideProps = !ui_view_n.hideProps; break;
+            case "b": case 66: Rsed.ui_view_n.hideProps = !Rsed.ui_view_n.hideProps; break;
             case "spacebar": case 32: Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens; event.preventDefault(); break;
             case "1": case 49: Rsed.ui_brush_n.set_brush_size(0); break;
             case "2": case 50: Rsed.ui_brush_n.set_brush_size(1); break;

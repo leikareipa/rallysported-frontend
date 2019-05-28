@@ -330,7 +330,7 @@ Rsed.ui_draw_n = (function()
             mousePickBuffer = renderSurface.mousePickBuffer;
             k_assert((mousePickBuffer.length === (pixelSurface.width * pixelSurface.height)), "Incompatible mouse-picking buffer.");
             {
-                switch (ui_view_n.current_view())
+                switch (Rsed.ui_view_n.current_view())
                 {
                     case "3d":
                     case "3d-topdown":
@@ -340,7 +340,7 @@ Rsed.ui_draw_n = (function()
                         draw_minimap();
                         draw_active_pala();
                         draw_footer_info();
-                        if (ui_view_n.showPalatPane) draw_palat_pane();
+                        if (Rsed.ui_view_n.showPalatPane) draw_palat_pane();
 
                         break;
                     }
@@ -348,7 +348,7 @@ Rsed.ui_draw_n = (function()
                     {
                         draw_paint_view();
                         draw_active_pala();
-                        if (ui_view_n.showPalatPane) draw_palat_pane();
+                        if (Rsed.ui_view_n.showPalatPane) draw_palat_pane();
                         
                         break;
                     }

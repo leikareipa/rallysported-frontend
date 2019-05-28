@@ -82,7 +82,7 @@ Rsed.props_n = (function()
 
                 copyMesh[i].hasWireframe = wireframeEnabled;
 
-                copyMesh[i].isEthereal = ui_view_n.hideProps;
+                copyMesh[i].isEthereal = Rsed.ui_view_n.hideProps;
 
                 copyMesh[i].mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
                                                                              {propIdx:idx, propTrackId:idOnTrack});
