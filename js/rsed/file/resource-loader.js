@@ -111,7 +111,7 @@ const resource_loader_n = (function()
     {
         // Track checkpoint.
         {
-            const byteOffs = ((rsed_n.underlying_track_id() - 1) * 18);
+            const byteOffs = ((Rsed.rsed_n.underlying_track_id() - 1) * 18);
             const checkpointX = (data[byteOffs + 13] * 2);
             const checkpointY = (data[byteOffs + 15] * 2);
             Rsed.maasto_n.set_checkpoint_pos(checkpointX, checkpointY);

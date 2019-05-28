@@ -277,7 +277,7 @@ function k_assert(condition = false, explanation = "(no reason given)")
 {
     if (!condition)
     {
-        rsed_n.incapacitate_rallysported(explanation);
+        Rsed.rsed_n.incapacitate_rallysported(explanation);
         alert("RallySportED assertion failure. " + explanation);
         throw Error("RallySportED assertion failure: " + explanation);
     }
@@ -1175,7 +1175,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
     // The render loop. This will run continuously once called.
     this.run_renderer = function(timestamp = 0)
     {
-        if (!rsed_n.isOperational) return;
+        if (!Rsed.rsed_n.isOperational) return;
         
         this.previousFrameLatencyMs = (timestamp - this.previousRenderTimestamp);
         this.previousRenderTimestamp = timestamp; 
@@ -1687,7 +1687,7 @@ Rsed.maasto_n = (function()
             k_assert((propName.length > 0), "Expected a non-empty prop name.");
 
             /// Temp hack.
-            if (trackId !== rsed_n.underlying_track_id()) return;
+            if (trackId !== Rsed.rsed_n.underlying_track_id()) return;
 
             if (propLocations.length >= maxNumProps)
             {
@@ -2181,7 +2181,7 @@ Rsed.manifesto_n = (function()
             const palatId = Math.floor(Number(args[1]));
             const minRSEDLoaderVersion = Number(args[2]);
 
-            rsed_n.initialize_track_data(trackId).then(()=>{resolve();});
+            Rsed.rsed_n.initialize_track_data(trackId).then(()=>{resolve();});
         });
     }
 
@@ -2210,7 +2210,7 @@ Rsed.manifesto_n = (function()
         const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
         const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[4]));
 
-        Rsed.maasto_n.add_prop_location(rsed_n.underlying_track_id(), Rsed.props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
+        Rsed.maasto_n.add_prop_location(Rsed.rsed_n.underlying_track_id(), Rsed.props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
     }
 
     // Command: change_obj_type. Changes the type of the given prop.
@@ -3366,12 +3366,12 @@ Rsed.ui_draw_n = (function()
             }
         }
 
-        draw_string(str, 0, rsed_n.render_height() - Rsed.ui_font_n.font_height()-0);
+        draw_string(str, 0, Rsed.rsed_n.render_height() - Rsed.ui_font_n.font_height()-0);
     }
 
     function draw_fps()
     {
-        const fpsString = "FPS: " + Math.round((1000 / (rsed_n.render_latency() || 1)));
+        const fpsString = "FPS: " + Math.round((1000 / (Rsed.rsed_n.render_latency() || 1)));
         draw_string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui_font_n.font_width()/2) - 73, 3);
     }
 
@@ -3459,8 +3459,8 @@ Rsed.ui_draw_n = (function()
     function draw_paint_view()
     {
         // Draw a large minimap of the track in the middle of the screen.
-        const width = Math.floor(rsed_n.render_width() * 0.81);
-        const height = Math.floor(rsed_n.render_height() * 0.72);
+        const width = Math.floor(Rsed.rsed_n.render_width() * 0.81);
+        const height = Math.floor(Rsed.rsed_n.render_height() * 0.72);
         {
             const xMul = (Rsed.maasto_n.track_side_length() / width);
             const zMul = (Rsed.maasto_n.track_side_length() / height);
@@ -3575,7 +3575,7 @@ Rsed.ui_draw_n = (function()
 
             // Recompute the pane's dimensions based on the current display size.
             /// FIXME: Leaves unnecessary empty rows for some resolutions.
-            numPalatPaneRows = (Math.floor(rsed_n.render_height() / 8) - 1);
+            numPalatPaneRows = (Math.floor(Rsed.rsed_n.render_height() / 8) - 1);
             numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
             palatPaneWidth = ((numPalatPaneCols * (Rsed.palat_n.pala_width() / 2)) + 1);
             palatPaneHeight = ((numPalatPaneRows * (Rsed.palat_n.pala_height() / 2)) + 1);
@@ -3754,7 +3754,7 @@ Rsed.ui_input_n = (function()
                         const x = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * Rsed.maasto_n.tile_size());
                         const z = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * Rsed.maasto_n.tile_size());
 
-                        Rsed.maasto_n.add_prop_location(rsed_n.underlying_track_id(), "tree", x, 0, z);
+                        Rsed.maasto_n.add_prop_location(Rsed.rsed_n.underlying_track_id(), "tree", x, 0, z);
 
                         mouseLock.hibernating = true;
                     }
@@ -3985,8 +3985,8 @@ Rsed.ui_input_n = (function()
         publicInterface.set_mouse_pos = function(x = 0, y = 0)
         {
             // Don't set the mouse position out of bounds.
-            if ((x < 0 || x >= rsed_n.render_width()) ||
-                (y < 0 || y >= rsed_n.render_height()))
+            if ((x < 0 || x >= Rsed.rsed_n.render_width()) ||
+                (y < 0 || y >= Rsed.rsed_n.render_height()))
             {
                 return;
             }
@@ -4001,7 +4001,7 @@ Rsed.ui_input_n = (function()
             {
                 reset_mouse_hover_info();
 
-                const mousePickValue = rsed_n.mouse_pick_buffer_value_at(x, y);
+                const mousePickValue = Rsed.rsed_n.mouse_pick_buffer_value_at(x, y);
                 hoverPickType = this.get_mouse_picking_type(mousePickValue);
                 hoverArgs = this.get_mouse_picking_args(mousePickValue, hoverPickType);
 
@@ -4520,7 +4520,7 @@ const resource_loader_n = (function()
     {
         // Track checkpoint.
         {
-            const byteOffs = ((rsed_n.underlying_track_id() - 1) * 18);
+            const byteOffs = ((Rsed.rsed_n.underlying_track_id() - 1) * 18);
             const checkpointX = (data[byteOffs + 13] * 2);
             const checkpointY = (data[byteOffs + 15] * 2);
             Rsed.maasto_n.set_checkpoint_pos(checkpointX, checkpointY);
@@ -5052,7 +5052,7 @@ Rsed.project_n = (function()
 
 "use strict";
 
-const rsed_n = (function()
+Rsed.rsed_n = (function()
 {
     // The project we've currently got loaded. When the user makes edits or requests a save,
     // this is the target project.
@@ -5270,7 +5270,7 @@ const rsed_n = (function()
             }
 
             // We now presumably have a zipped RallySportED project that we can load, so ket's do that.
-            rsed_n.load_project({fromZip:true,locality:"local",zipFile});
+            Rsed.rsed_n.load_project({fromZip:true,locality:"local",zipFile});
             /// TODO: .then(()=>{//cleanup.});
 
             // Clear the address bar's parameters to reflect the fact that the user has loaded a local
@@ -5372,9 +5372,9 @@ window.onload = function(event)
         }
     }
 
-    args.zipFile = (rsed_n.tracks_directory() + args.zipFile + rsed_n.tracks_file_extension());
+    args.zipFile = (Rsed.rsed_n.tracks_directory() + args.zipFile + Rsed.rsed_n.tracks_file_extension());
     
-    rsed_n.launch_rallysported(args);
+    Rsed.rsed_n.launch_rallysported(args);
 }
 
 // Disable the right-click browser menu, since we want to use the right mouse button for other things.
@@ -5386,7 +5386,7 @@ window.oncontextmenu = function(event)
         return false;
     }
 
-    if (event.target.id !== rsed_n.render_surface_id()) return;
+    if (event.target.id !== Rsed.rsed_n.render_surface_id()) return;
 
     // Display a right-click menu for changing the type of the prop under the cursor.
     if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop &&
@@ -5450,7 +5450,7 @@ window.onmouseup = function(event)
 
 window.onmousemove = function(event)
 {
-    if (event.target.id !== rsed_n.render_surface_id())
+    if (event.target.id !== Rsed.rsed_n.render_surface_id())
     {
         /// Temp hack. Prevent mouse clicks over prop dropdown dialogs from falling through and
         /// inadvertently editing the terrain.
@@ -5467,8 +5467,8 @@ window.onmousemove = function(event)
         RSED_MOUSE_POS.x = (event.clientX - event.target.getBoundingClientRect().left);
         RSED_MOUSE_POS.y = (event.clientY - event.target.getBoundingClientRect().top);
 
-        Rsed.ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * rsed_n.scaling_multiplier()),
-                                      Math.floor(RSED_MOUSE_POS.y * rsed_n.scaling_multiplier()));
+        Rsed.ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * Rsed.rsed_n.scaling_multiplier()),
+                                      Math.floor(RSED_MOUSE_POS.y * Rsed.rsed_n.scaling_multiplier()));
     }
 }
 

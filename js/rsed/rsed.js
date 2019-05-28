@@ -8,7 +8,7 @@
 
 "use strict";
 
-const rsed_n = (function()
+Rsed.rsed_n = (function()
 {
     // The project we've currently got loaded. When the user makes edits or requests a save,
     // this is the target project.
@@ -226,7 +226,7 @@ const rsed_n = (function()
             }
 
             // We now presumably have a zipped RallySportED project that we can load, so ket's do that.
-            rsed_n.load_project({fromZip:true,locality:"local",zipFile});
+            Rsed.rsed_n.load_project({fromZip:true,locality:"local",zipFile});
             /// TODO: .then(()=>{//cleanup.});
 
             // Clear the address bar's parameters to reflect the fact that the user has loaded a local

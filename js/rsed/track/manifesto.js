@@ -35,7 +35,7 @@ Rsed.manifesto_n = (function()
             const palatId = Math.floor(Number(args[1]));
             const minRSEDLoaderVersion = Number(args[2]);
 
-            rsed_n.initialize_track_data(trackId).then(()=>{resolve();});
+            Rsed.rsed_n.initialize_track_data(trackId).then(()=>{resolve();});
         });
     }
 
@@ -64,7 +64,7 @@ Rsed.manifesto_n = (function()
         const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
         const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[4]));
 
-        Rsed.maasto_n.add_prop_location(rsed_n.underlying_track_id(), Rsed.props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
+        Rsed.maasto_n.add_prop_location(Rsed.rsed_n.underlying_track_id(), Rsed.props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
     }
 
     // Command: change_obj_type. Changes the type of the given prop.
