@@ -10,7 +10,7 @@
 
 "use strict";
 
-const ui_cursor_n = (function()
+Rsed.ui_cursor_n = (function()
 {
     const cursorWidth = 16;
     const cursorHeight = 16;
