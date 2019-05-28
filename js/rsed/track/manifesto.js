@@ -10,7 +10,7 @@
 
 "use strict";
 
-const manifesto_n = (function()
+Rsed.manifesto_n = (function()
 {
     const manifestoCommands = Object.freeze({"0": apply_0,
                                              "1": apply_1,

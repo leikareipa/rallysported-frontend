@@ -139,7 +139,7 @@ Rsed.project_n = (function()
                     {
                         /// Temp hack. Project loading will be redesigned in the future.
                         const project = new publicInterface.project_o(projectData);
-                        manifesto_n.apply_manifesto(project.manifestoFileContents)
+                        Rsed.manifesto_n.apply_manifesto(project.manifestoFileContents)
                         .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
                         return;
                     });
@@ -154,7 +154,7 @@ Rsed.project_n = (function()
                         {
                             /// Temp hack. Project loading will be redesigned in the future.
                             const project = new publicInterface.project_o(projectData);
-                            manifesto_n.apply_manifesto(project.manifestoFileContents)
+                            Rsed.manifesto_n.apply_manifesto(project.manifestoFileContents)
                             .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
                             return;
                         });
@@ -196,7 +196,7 @@ Rsed.project_n = (function()
 
            //zip.file(saveName + ".TXT", lut_readme_txt.replace(/%TRACK/g, project.name.toUpperCase()));
             zip.file(saveName + "/" + saveName + ".DTA", project.projectFileContents);
-            zip.file(saveName + "/" + saveName + ".$FT", manifesto_n.get_saveable_manifesto(project.manifestoFileContents));
+            zip.file(saveName + "/" + saveName + ".$FT", Rsed.manifesto_n.get_saveable_manifesto(project.manifestoFileContents));
             zip.file(saveName + "/" + "HITABLE.TXT", lut_hitable_txt);
 
             zip.generateAsync({type:"blob", compression:"DEFLATE", compressionOptions:{level: 1}})
