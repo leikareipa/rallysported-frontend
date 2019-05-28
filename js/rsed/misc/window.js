@@ -183,7 +183,7 @@ window.onkeydown = function(event)
             case "w": case 87: ui_view_n.show3dWireframe = !ui_view_n.show3dWireframe; break;
             case "a": case 65: ui_view_n.showPalatPane = !ui_view_n.showPalatPane; break;
             case "r": case 82: ui_view_n.toggle_view("3d", "3d-topdown"); break;
-            case "l": case 76: maasto_n.level_terrain(); break;
+            case "l": case 76: Rsed.maasto_n.level_terrain(); break;
             case "b": case 66: ui_view_n.hideProps = !ui_view_n.hideProps; break;
             case "spacebar": case 32: ui_brush_n.brushSmoothens = !ui_brush_n.brushSmoothens; event.preventDefault(); break;
             case "1": case 49: ui_brush_n.set_brush_size(0); break;

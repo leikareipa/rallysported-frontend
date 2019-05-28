@@ -45,7 +45,7 @@ const rsed_n = (function()
 
                 if (ui_view_n.current_view() !== "2d-topdown")
                 {
-                    renderer.register_mesh(maasto_n.maasto_mesh(Math.floor(Rsed.camera_n.pos_x()), Math.floor(Rsed.camera_n.pos_z())));
+                    renderer.register_mesh(Rsed.maasto_n.maasto_mesh(Math.floor(Rsed.camera_n.pos_x()), Math.floor(Rsed.camera_n.pos_z())));
                 }
             }
 
@@ -80,7 +80,7 @@ const rsed_n = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop:function(name = "")
                 {
-                    maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
+                    Rsed.maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
                     window.close_dropdowns();
 
                     return;
@@ -191,7 +191,7 @@ const rsed_n = (function()
                 palat_n.clear_palat_data();
                 palette_n.reset_palettes();
                 Rsed.camera_n.reset_camera_position();
-                maasto_n.clear_maasto_data(true);
+                Rsed.maasto_n.clear_maasto_data(true);
                 palette_n.set_palette_for_track(underlyingTrackId);
 
                 (async()=>

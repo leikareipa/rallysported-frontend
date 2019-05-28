@@ -150,9 +150,9 @@ const ui_draw_n = (function()
             {
                 const xStr = String(x).padStart(3, "0");
                 const yStr = String(y).padStart(3, "0");
-                const heightStr = (maasto_n.maasto_height_at(x, y) < 0? "-" : "+") +
-                                  String(Math.abs(maasto_n.maasto_height_at(x, y))).padStart(3, "0");
-                const palaStr = String(maasto_n.varimaa_tile_at(x, y)).padStart(3, "0");
+                const heightStr = (Rsed.maasto_n.maasto_height_at(x, y) < 0? "-" : "+") +
+                                  String(Math.abs(Rsed.maasto_n.maasto_height_at(x, y))).padStart(3, "0");
+                const palaStr = String(Rsed.maasto_n.varimaa_tile_at(x, y)).padStart(3, "0");
 
                 str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
 
@@ -189,8 +189,8 @@ const ui_draw_n = (function()
         /// TODO: You can pre-generate the image rather than re-generating it each frame.
         const width = 64;
         const height = 32;
-        const xMul = (maasto_n.track_side_length() / width);
-        const yMul = (maasto_n.track_side_length() / height);
+        const xMul = (Rsed.maasto_n.track_side_length() / width);
+        const yMul = (Rsed.maasto_n.track_side_length() / height);
         const image = [];   // An array of palette indices that forms the minimap image.
         const mousePick = [];
         for (let y = 0; y < height; y++)
@@ -200,7 +200,7 @@ const ui_draw_n = (function()
                 const tileX = (x * xMul);
                 const tileZ = (y * yMul);
 
-                const pala = palat_n.pala_texture(maasto_n.varimaa_tile_at(tileX, tileZ));
+                const pala = palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
                 let color = ((pala == null)? 0 : pala.paletteIndices[1]);
 
                 // Have a black outline.
@@ -261,8 +261,8 @@ const ui_draw_n = (function()
         const width = Math.floor(rsed_n.render_width() * 0.81);
         const height = Math.floor(rsed_n.render_height() * 0.72);
         {
-            const xMul = (maasto_n.track_side_length() / width);
-            const zMul = (maasto_n.track_side_length() / height);
+            const xMul = (Rsed.maasto_n.track_side_length() / width);
+            const zMul = (Rsed.maasto_n.track_side_length() / height);
             const image = [];   // An array of palette indices that forms the minimap image.
             const mousePick = [];
 
@@ -273,7 +273,7 @@ const ui_draw_n = (function()
                     const tileX = Math.floor(x * xMul);
                     const tileZ = Math.floor(z * zMul);
 
-                    const pala = palat_n.pala_texture(maasto_n.varimaa_tile_at(tileX, tileZ));
+                    const pala = palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
                     let color = ((pala == null)? 0 : pala.paletteIndices[1]);
 
                     // Create an outline.
@@ -281,8 +281,8 @@ const ui_draw_n = (function()
                     if (x % (width - 1) === 0) color = "gray";
 
                     // Indicate the location of the track's checkpoint.
-                    if ((tileX === maasto_n.track_checkpoint_x()) &&
-                        (tileZ === maasto_n.track_checkpoint_y()))
+                    if ((tileX === Rsed.maasto_n.track_checkpoint_x()) &&
+                        (tileZ === Rsed.maasto_n.track_checkpoint_y()))
                     {
                         color = "white";
                     }
@@ -299,7 +299,7 @@ const ui_draw_n = (function()
             draw_image(image, mousePick, width, height, ((pixelSurface.width / 2) - (width / 2)), ((pixelSurface.height / 2) - (height / 2)), false);
         }
 
-        draw_string("TRACK SIZE:" + maasto_n.track_side_length() + "," + maasto_n.track_side_length(),
+        draw_string("TRACK SIZE:" + Rsed.maasto_n.track_side_length() + "," + Rsed.maasto_n.track_side_length(),
                     ((pixelSurface.width / 2) - (width / 2)),
                     ((pixelSurface.height / 2) - (height / 2)) - ui_font_n.font_height());
     }

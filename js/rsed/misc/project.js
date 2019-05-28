@@ -49,7 +49,7 @@ Rsed.project_n = (function()
     {
         k_assert((dtaData instanceof ArrayBuffer), "Expected the project assets to come in as an array buffer.");
     
-        maasto_n.clear_maasto_data();
+        Rsed.maasto_n.clear_maasto_data();
         palat_n.clear_palat_data();
         Rsed.camera_n.reset_camera_position();
 
@@ -66,8 +66,8 @@ Rsed.project_n = (function()
                 const maastoBytes = new Uint8Array(dtaData.slice(i, i + maastoBytesize));
                 i+=maastoBytesize;
 
-                maasto_n.set_maasto_bytesize(maastoBytesize);
-                resource_loader_n.load_maasto_data(maastoBytes, maasto_n.set_maasto);
+                Rsed.maasto_n.set_maasto_bytesize(maastoBytesize);
+                resource_loader_n.load_maasto_data(maastoBytes, Rsed.maasto_n.set_maasto);
             }
 
             // VARIMAA data.
@@ -78,8 +78,8 @@ Rsed.project_n = (function()
                 const varimaaBytes = new Uint8Array(dtaData.slice(i, i+varimaaBytesize));
                 i+=varimaaBytesize;
 
-                maasto_n.set_varimaa_bytesize(varimaaBytesize);
-                resource_loader_n.load_varimaa_data(varimaaBytes, maasto_n.set_varimaa);
+                Rsed.maasto_n.set_varimaa_bytesize(varimaaBytesize);
+                resource_loader_n.load_varimaa_data(varimaaBytes, Rsed.maasto_n.set_varimaa);
             }
 
             // PALAT data.
@@ -182,8 +182,8 @@ Rsed.project_n = (function()
 
             // Replace the existing project bytes with the current data.
             {
-                const maastoBytes = maasto_n.get_saveable_maasto();
-                const varimaaBytes = maasto_n.get_saveable_varimaa();
+                const maastoBytes = Rsed.maasto_n.get_saveable_maasto();
+                const varimaaBytes = Rsed.maasto_n.get_saveable_varimaa();
                 const palatBytes = palat_n.get_saveable_palat();
 
                 project.projectFileContents.set(maastoBytes, 4);

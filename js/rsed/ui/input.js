@@ -126,10 +126,10 @@ const ui_input_n = (function()
                     // Add a new prop.
                     if (mouseLeftPressed)
                     {
-                        const x = maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * maasto_n.tile_size());
-                        const z = maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * maasto_n.tile_size());
+                        const x = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * Rsed.maasto_n.tile_size());
+                        const z = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * Rsed.maasto_n.tile_size());
 
-                        maasto_n.add_prop_location(rsed_n.underlying_track_id(), "tree", x, 0, z);
+                        Rsed.maasto_n.add_prop_location(rsed_n.underlying_track_id(), "tree", x, 0, z);
 
                         mouseLock.hibernating = true;
                     }
@@ -161,7 +161,7 @@ const ui_input_n = (function()
                     // Remove the selected prop.
                     if (shiftPressed)
                     {
-                        maasto_n.remove_prop(mouseLock.propTrackId);
+                        Rsed.maasto_n.remove_prop(mouseLock.propTrackId);
                         mouseLock.hibernating = true;
                     }
                     // Drag the prop.
@@ -170,7 +170,7 @@ const ui_input_n = (function()
                         // For now, don't allow moving the starting line (prop #0).
                         if (mouseLock.propTrackId !== 0)
                         {
-                            maasto_n.move_prop(mouseLock.propTrackId, ui_input_n.mouse_pos_delta_x()*6, ui_input_n.mouse_pos_delta_y()*12)
+                            Rsed.maasto_n.move_prop(mouseLock.propTrackId, ui_input_n.mouse_pos_delta_x()*6, ui_input_n.mouse_pos_delta_y()*12)
                         }
                     }
                 }
@@ -278,8 +278,8 @@ const ui_input_n = (function()
                     // The tile coordinates can be out of bounds when the camera is moved outside of the
                     // track's boundaries. In that case, simply ignore them, since there's no interactible
                     // ground elements outside of the track.
-                    if ((args.tileX < 0) || (args.tileX >= maasto_n.track_side_length()) ||
-                        (args.tileZ < 0) || (args.tileZ >= maasto_n.track_side_length()))
+                    if ((args.tileX < 0) || (args.tileX >= Rsed.maasto_n.track_side_length()) ||
+                        (args.tileZ < 0) || (args.tileZ >= Rsed.maasto_n.track_side_length()))
                     {
                         return null;
                     }

@@ -52,7 +52,7 @@ const manifesto_n = (function()
 
         const numObjs = Math.floor(Number(args[0]));
 
-        maasto_n.set_prop_count(numObjs);
+        Rsed.maasto_n.set_prop_count(numObjs);
     }
 
     // Command: add_obj. Adds a new prop to the track.
@@ -61,10 +61,10 @@ const manifesto_n = (function()
         k_assert((args.length === 5), "Invalid number of arguments to manifesto command 3. Expected 5 but received " + args.length + ".");
 
         const propTypeIdx = Math.floor(Number(args[0]) - 1);
-        const posX = Math.floor(((Number(args[1]) * 2) * maasto_n.tile_size()) + Number(args[3]));
-        const posZ = Math.floor(((Number(args[2]) * 2) * maasto_n.tile_size()) + Number(args[4]));
+        const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
+        const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[4]));
 
-        maasto_n.add_prop_location(rsed_n.underlying_track_id(), props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
+        Rsed.maasto_n.add_prop_location(rsed_n.underlying_track_id(), props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
     }
 
     // Command: change_obj_type. Changes the type of the given prop.
@@ -75,7 +75,7 @@ const manifesto_n = (function()
         const targetPropIdx = Math.floor(Number(args[0]) - 1);
         const newType = Math.floor(Number(args[1]) - 1);
 
-        maasto_n.change_prop_type(targetPropIdx, newType);
+        Rsed.maasto_n.change_prop_type(targetPropIdx, newType);
     }
 
     // Command: move_obj. Moves the position of the given prop.
@@ -84,10 +84,10 @@ const manifesto_n = (function()
         k_assert((args.length === 5), "Invalid number of arguments to manifesto command 5. Expected 5 but received " + args.length + ".");
 
         const targetPropIdx = Math.floor(Number(args[0]) - 1);
-        const posX = Math.floor(((Number(args[1]) * 2) * maasto_n.tile_size()) + Number(args[3]));
-        const posZ = Math.floor(((Number(args[2]) * 2) * maasto_n.tile_size()) + Number(args[4]));
+        const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
+        const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[4]));
 
-        maasto_n.set_prop_position(targetPropIdx, posX, posZ);
+        Rsed.maasto_n.set_prop_position(targetPropIdx, posX, posZ);
     }
 
     // Command: move_starting_pos. Moves the starting line. Note that this doesn't move the
@@ -183,20 +183,20 @@ const manifesto_n = (function()
             }
 
             // Add command 2 to set the number of props.
-            newManifesto += ("2 " + maasto_n.num_props() + "\n");
+            newManifesto += ("2 " + Rsed.maasto_n.num_props() + "\n");
             
             // Add command 5 for all props on the track, except for the starting line (first prop in the list), so they
             // get put in their correct places.
             {
-                const propLocations = maasto_n.prop_locations();
+                const propLocations = Rsed.maasto_n.prop_locations();
 
                 for (let i = 1; i < propLocations.length; i++)
                 {
-                    const globalX = Math.floor((propLocations[i].x / maasto_n.tile_size()) / 2);
-                    const globalZ = Math.floor((propLocations[i].z / maasto_n.tile_size()) / 2);
+                    const globalX = Math.floor((propLocations[i].x / Rsed.maasto_n.tile_size()) / 2);
+                    const globalZ = Math.floor((propLocations[i].z / Rsed.maasto_n.tile_size()) / 2);
 
-                    const localX = Math.floor((((propLocations[i].x / maasto_n.tile_size()) / 2) - globalX) * 256);
-                    const localZ = Math.floor((((propLocations[i].z / maasto_n.tile_size()) / 2) - globalZ) * 256);
+                    const localX = Math.floor((((propLocations[i].x / Rsed.maasto_n.tile_size()) / 2) - globalX) * 256);
+                    const localZ = Math.floor((((propLocations[i].z / Rsed.maasto_n.tile_size()) / 2) - globalZ) * 256);
 
                     newManifesto += ("5 " + (i + 1) + " " + globalX + " " + globalZ + " " + localX + " " + localZ + "\n");
                 }
@@ -204,7 +204,7 @@ const manifesto_n = (function()
 
             // Add command 4 for all props, except for the starting line, to make sure they're the right type.
             {
-                const propNames = maasto_n.prop_names();
+                const propNames = Rsed.maasto_n.prop_names();
                 
                 for (let i = 1; i < propNames.length; i++)
                 {

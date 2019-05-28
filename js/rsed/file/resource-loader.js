@@ -51,7 +51,7 @@ const resource_loader_n = (function()
             k_assert((track.props != null), "Expected a JSON object containing track prop locations.");
             track.props.forEach(prop=>
             {
-                maasto_n.add_prop_location(track.trackId, prop.name, prop.x, prop.y, prop.z);
+                Rsed.maasto_n.add_prop_location(track.trackId, prop.name, prop.x, prop.y, prop.z);
             });
         });
     }
@@ -114,7 +114,7 @@ const resource_loader_n = (function()
             const byteOffs = ((rsed_n.underlying_track_id() - 1) * 18);
             const checkpointX = (data[byteOffs + 13] * 2);
             const checkpointY = (data[byteOffs + 15] * 2);
-            maasto_n.set_checkpoint_pos(checkpointX, checkpointY);
+            Rsed.maasto_n.set_checkpoint_pos(checkpointX, checkpointY);
         }
     }
 
@@ -306,7 +306,7 @@ const resource_loader_n = (function()
                 k_assert((bytes[i] >= 0 && bytes[i] <= 255), "Detected invalid VARIMAA data.");
             }
 
-            maasto_n.set_varimaa(tilesPerSide, bytes);
+            Rsed.maasto_n.set_varimaa(tilesPerSide, bytes);
         }
 
         // Takes in a byte array containing a track's heightmap; and loads it into RallySportED.
@@ -332,7 +332,7 @@ const resource_loader_n = (function()
 
             k_assert((convertedHeightmap.length === (tilesPerSide * tilesPerSide)), "Detected an invalid MAASTO height conversion.");
 
-            maasto_n.set_maasto(tilesPerSide, convertedHeightmap);
+            Rsed.maasto_n.set_maasto(tilesPerSide, convertedHeightmap);
         }
 
         // Loads from a JSON file resources of the given type.

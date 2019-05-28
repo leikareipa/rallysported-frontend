@@ -1076,8 +1076,8 @@ Rsed.camera_n = (function()
             {
                 if (position.x < 0) position.x = 0;
                 if (position.z < 1) position.z = 1;
-                if (position.x > (maasto_n.track_side_length() - this.view_width())) position.x = (maasto_n.track_side_length() - this.view_width());
-                if (position.z > (maasto_n.track_side_length() - this.view_height()+1)) position.z = (maasto_n.track_side_length() - this.view_height()+1);
+                if (position.x > (Rsed.maasto_n.track_side_length() - this.view_width())) position.x = (Rsed.maasto_n.track_side_length() - this.view_width());
+                if (position.z > (Rsed.maasto_n.track_side_length() - this.view_height()+1)) position.z = (Rsed.maasto_n.track_side_length() - this.view_height()+1);
             }
         }
 
@@ -1464,7 +1464,7 @@ Rsed.render_surface_n = (function()
 
 "use strict";
 
-const maasto_n = (function()
+Rsed.maasto_n = (function()
 {
     // The number of tiles per side on this MAASTO.
     let maastoSideLength = 0
@@ -2198,7 +2198,7 @@ const manifesto_n = (function()
 
         const numObjs = Math.floor(Number(args[0]));
 
-        maasto_n.set_prop_count(numObjs);
+        Rsed.maasto_n.set_prop_count(numObjs);
     }
 
     // Command: add_obj. Adds a new prop to the track.
@@ -2207,10 +2207,10 @@ const manifesto_n = (function()
         k_assert((args.length === 5), "Invalid number of arguments to manifesto command 3. Expected 5 but received " + args.length + ".");
 
         const propTypeIdx = Math.floor(Number(args[0]) - 1);
-        const posX = Math.floor(((Number(args[1]) * 2) * maasto_n.tile_size()) + Number(args[3]));
-        const posZ = Math.floor(((Number(args[2]) * 2) * maasto_n.tile_size()) + Number(args[4]));
+        const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
+        const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[4]));
 
-        maasto_n.add_prop_location(rsed_n.underlying_track_id(), props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
+        Rsed.maasto_n.add_prop_location(rsed_n.underlying_track_id(), props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
     }
 
     // Command: change_obj_type. Changes the type of the given prop.
@@ -2221,7 +2221,7 @@ const manifesto_n = (function()
         const targetPropIdx = Math.floor(Number(args[0]) - 1);
         const newType = Math.floor(Number(args[1]) - 1);
 
-        maasto_n.change_prop_type(targetPropIdx, newType);
+        Rsed.maasto_n.change_prop_type(targetPropIdx, newType);
     }
 
     // Command: move_obj. Moves the position of the given prop.
@@ -2230,10 +2230,10 @@ const manifesto_n = (function()
         k_assert((args.length === 5), "Invalid number of arguments to manifesto command 5. Expected 5 but received " + args.length + ".");
 
         const targetPropIdx = Math.floor(Number(args[0]) - 1);
-        const posX = Math.floor(((Number(args[1]) * 2) * maasto_n.tile_size()) + Number(args[3]));
-        const posZ = Math.floor(((Number(args[2]) * 2) * maasto_n.tile_size()) + Number(args[4]));
+        const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
+        const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[4]));
 
-        maasto_n.set_prop_position(targetPropIdx, posX, posZ);
+        Rsed.maasto_n.set_prop_position(targetPropIdx, posX, posZ);
     }
 
     // Command: move_starting_pos. Moves the starting line. Note that this doesn't move the
@@ -2329,20 +2329,20 @@ const manifesto_n = (function()
             }
 
             // Add command 2 to set the number of props.
-            newManifesto += ("2 " + maasto_n.num_props() + "\n");
+            newManifesto += ("2 " + Rsed.maasto_n.num_props() + "\n");
             
             // Add command 5 for all props on the track, except for the starting line (first prop in the list), so they
             // get put in their correct places.
             {
-                const propLocations = maasto_n.prop_locations();
+                const propLocations = Rsed.maasto_n.prop_locations();
 
                 for (let i = 1; i < propLocations.length; i++)
                 {
-                    const globalX = Math.floor((propLocations[i].x / maasto_n.tile_size()) / 2);
-                    const globalZ = Math.floor((propLocations[i].z / maasto_n.tile_size()) / 2);
+                    const globalX = Math.floor((propLocations[i].x / Rsed.maasto_n.tile_size()) / 2);
+                    const globalZ = Math.floor((propLocations[i].z / Rsed.maasto_n.tile_size()) / 2);
 
-                    const localX = Math.floor((((propLocations[i].x / maasto_n.tile_size()) / 2) - globalX) * 256);
-                    const localZ = Math.floor((((propLocations[i].z / maasto_n.tile_size()) / 2) - globalZ) * 256);
+                    const localX = Math.floor((((propLocations[i].x / Rsed.maasto_n.tile_size()) / 2) - globalX) * 256);
+                    const localZ = Math.floor((((propLocations[i].z / Rsed.maasto_n.tile_size()) / 2) - globalZ) * 256);
 
                     newManifesto += ("5 " + (i + 1) + " " + globalX + " " + globalZ + " " + localX + " " + localZ + "\n");
                 }
@@ -2350,7 +2350,7 @@ const manifesto_n = (function()
 
             // Add command 4 for all props, except for the starting line, to make sure they're the right type.
             {
-                const propNames = maasto_n.prop_names();
+                const propNames = Rsed.maasto_n.prop_names();
                 
                 for (let i = 1; i < propNames.length; i++)
                 {
@@ -3127,12 +3127,12 @@ const ui_brush_n = (function()
             for (let by = -brushSize; by <= brushSize; by++)
             {
                 const tileZ = (y + by);
-                if (tileZ < 0 || tileZ >= maasto_n.track_side_length()) continue;
+                if (tileZ < 0 || tileZ >= Rsed.maasto_n.track_side_length()) continue;
 
                 for (let bx = -brushSize; bx <= brushSize; bx++)
                 {
                     const tileX = (x + bx);
-                    if (tileX < 0 || tileX >= maasto_n.track_side_length()) continue;
+                    if (tileX < 0 || tileX >= Rsed.maasto_n.track_side_length()) continue;
 
                     switch (brushAction)
                     {
@@ -3140,32 +3140,32 @@ const ui_brush_n = (function()
                         {
                             if (this.brushSmoothens)
                             {
-                                if (tileX < 1 || tileX >=  (maasto_n.track_side_length() - 1)) continue;
-                                if (tileZ < 1 || tileZ >= (maasto_n.track_side_length() - 1)) continue;
+                                if (tileX < 1 || tileX >=  (Rsed.maasto_n.track_side_length() - 1)) continue;
+                                if (tileZ < 1 || tileZ >= (Rsed.maasto_n.track_side_length() - 1)) continue;
     
                                 let avgHeight = 0;
-                                avgHeight += maasto_n.maasto_height_at(tileX+1, tileZ);
-                                avgHeight += maasto_n.maasto_height_at(tileX-1, tileZ);
-                                avgHeight += maasto_n.maasto_height_at(tileX, tileZ+1);
-                                avgHeight += maasto_n.maasto_height_at(tileX, tileZ-1);
-                                avgHeight += maasto_n.maasto_height_at(tileX+1, tileZ+1);
-                                avgHeight += maasto_n.maasto_height_at(tileX+1, tileZ-1);
-                                avgHeight += maasto_n.maasto_height_at(tileX-1, tileZ+1);
-                                avgHeight += maasto_n.maasto_height_at(tileX-1, tileZ-1);
+                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX+1, tileZ);
+                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX-1, tileZ);
+                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX, tileZ+1);
+                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX, tileZ-1);
+                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX+1, tileZ+1);
+                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX+1, tileZ-1);
+                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX-1, tileZ+1);
+                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX-1, tileZ-1);
                                 avgHeight /= 8;
                                     
-                                maasto_n.set_maasto_height_at(tileX, tileZ, Math.floor(((avgHeight + maasto_n.maasto_height_at(tileX, tileZ) * 7) / 8)));
+                                Rsed.maasto_n.set_maasto_height_at(tileX, tileZ, Math.floor(((avgHeight + Rsed.maasto_n.maasto_height_at(tileX, tileZ) * 7) / 8)));
                             }
                             else
                             {
-                                maasto_n.set_maasto_height_at(tileX, tileZ, (maasto_n.maasto_height_at(tileX, tileZ) + value));
+                                Rsed.maasto_n.set_maasto_height_at(tileX, tileZ, (Rsed.maasto_n.maasto_height_at(tileX, tileZ) + value));
                             }
 
                             break;
                         }
                         case this.brushAction.changePala:
                         {
-                            maasto_n.set_varimaa_tile_at(tileX, tileZ, value);
+                            Rsed.maasto_n.set_varimaa_tile_at(tileX, tileZ, value);
 
                             break;
                         }
@@ -3351,9 +3351,9 @@ const ui_draw_n = (function()
             {
                 const xStr = String(x).padStart(3, "0");
                 const yStr = String(y).padStart(3, "0");
-                const heightStr = (maasto_n.maasto_height_at(x, y) < 0? "-" : "+") +
-                                  String(Math.abs(maasto_n.maasto_height_at(x, y))).padStart(3, "0");
-                const palaStr = String(maasto_n.varimaa_tile_at(x, y)).padStart(3, "0");
+                const heightStr = (Rsed.maasto_n.maasto_height_at(x, y) < 0? "-" : "+") +
+                                  String(Math.abs(Rsed.maasto_n.maasto_height_at(x, y))).padStart(3, "0");
+                const palaStr = String(Rsed.maasto_n.varimaa_tile_at(x, y)).padStart(3, "0");
 
                 str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
 
@@ -3390,8 +3390,8 @@ const ui_draw_n = (function()
         /// TODO: You can pre-generate the image rather than re-generating it each frame.
         const width = 64;
         const height = 32;
-        const xMul = (maasto_n.track_side_length() / width);
-        const yMul = (maasto_n.track_side_length() / height);
+        const xMul = (Rsed.maasto_n.track_side_length() / width);
+        const yMul = (Rsed.maasto_n.track_side_length() / height);
         const image = [];   // An array of palette indices that forms the minimap image.
         const mousePick = [];
         for (let y = 0; y < height; y++)
@@ -3401,7 +3401,7 @@ const ui_draw_n = (function()
                 const tileX = (x * xMul);
                 const tileZ = (y * yMul);
 
-                const pala = palat_n.pala_texture(maasto_n.varimaa_tile_at(tileX, tileZ));
+                const pala = palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
                 let color = ((pala == null)? 0 : pala.paletteIndices[1]);
 
                 // Have a black outline.
@@ -3462,8 +3462,8 @@ const ui_draw_n = (function()
         const width = Math.floor(rsed_n.render_width() * 0.81);
         const height = Math.floor(rsed_n.render_height() * 0.72);
         {
-            const xMul = (maasto_n.track_side_length() / width);
-            const zMul = (maasto_n.track_side_length() / height);
+            const xMul = (Rsed.maasto_n.track_side_length() / width);
+            const zMul = (Rsed.maasto_n.track_side_length() / height);
             const image = [];   // An array of palette indices that forms the minimap image.
             const mousePick = [];
 
@@ -3474,7 +3474,7 @@ const ui_draw_n = (function()
                     const tileX = Math.floor(x * xMul);
                     const tileZ = Math.floor(z * zMul);
 
-                    const pala = palat_n.pala_texture(maasto_n.varimaa_tile_at(tileX, tileZ));
+                    const pala = palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
                     let color = ((pala == null)? 0 : pala.paletteIndices[1]);
 
                     // Create an outline.
@@ -3482,8 +3482,8 @@ const ui_draw_n = (function()
                     if (x % (width - 1) === 0) color = "gray";
 
                     // Indicate the location of the track's checkpoint.
-                    if ((tileX === maasto_n.track_checkpoint_x()) &&
-                        (tileZ === maasto_n.track_checkpoint_y()))
+                    if ((tileX === Rsed.maasto_n.track_checkpoint_x()) &&
+                        (tileZ === Rsed.maasto_n.track_checkpoint_y()))
                     {
                         color = "white";
                     }
@@ -3500,7 +3500,7 @@ const ui_draw_n = (function()
             draw_image(image, mousePick, width, height, ((pixelSurface.width / 2) - (width / 2)), ((pixelSurface.height / 2) - (height / 2)), false);
         }
 
-        draw_string("TRACK SIZE:" + maasto_n.track_side_length() + "," + maasto_n.track_side_length(),
+        draw_string("TRACK SIZE:" + Rsed.maasto_n.track_side_length() + "," + Rsed.maasto_n.track_side_length(),
                     ((pixelSurface.width / 2) - (width / 2)),
                     ((pixelSurface.height / 2) - (height / 2)) - ui_font_n.font_height());
     }
@@ -3751,10 +3751,10 @@ const ui_input_n = (function()
                     // Add a new prop.
                     if (mouseLeftPressed)
                     {
-                        const x = maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * maasto_n.tile_size());
-                        const z = maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * maasto_n.tile_size());
+                        const x = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * Rsed.maasto_n.tile_size());
+                        const z = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * Rsed.maasto_n.tile_size());
 
-                        maasto_n.add_prop_location(rsed_n.underlying_track_id(), "tree", x, 0, z);
+                        Rsed.maasto_n.add_prop_location(rsed_n.underlying_track_id(), "tree", x, 0, z);
 
                         mouseLock.hibernating = true;
                     }
@@ -3786,7 +3786,7 @@ const ui_input_n = (function()
                     // Remove the selected prop.
                     if (shiftPressed)
                     {
-                        maasto_n.remove_prop(mouseLock.propTrackId);
+                        Rsed.maasto_n.remove_prop(mouseLock.propTrackId);
                         mouseLock.hibernating = true;
                     }
                     // Drag the prop.
@@ -3795,7 +3795,7 @@ const ui_input_n = (function()
                         // For now, don't allow moving the starting line (prop #0).
                         if (mouseLock.propTrackId !== 0)
                         {
-                            maasto_n.move_prop(mouseLock.propTrackId, ui_input_n.mouse_pos_delta_x()*6, ui_input_n.mouse_pos_delta_y()*12)
+                            Rsed.maasto_n.move_prop(mouseLock.propTrackId, ui_input_n.mouse_pos_delta_x()*6, ui_input_n.mouse_pos_delta_y()*12)
                         }
                     }
                 }
@@ -3903,8 +3903,8 @@ const ui_input_n = (function()
                     // The tile coordinates can be out of bounds when the camera is moved outside of the
                     // track's boundaries. In that case, simply ignore them, since there's no interactible
                     // ground elements outside of the track.
-                    if ((args.tileX < 0) || (args.tileX >= maasto_n.track_side_length()) ||
-                        (args.tileZ < 0) || (args.tileZ >= maasto_n.track_side_length()))
+                    if ((args.tileX < 0) || (args.tileX >= Rsed.maasto_n.track_side_length()) ||
+                        (args.tileZ < 0) || (args.tileZ >= Rsed.maasto_n.track_side_length()))
                     {
                         return null;
                     }
@@ -4460,7 +4460,7 @@ const resource_loader_n = (function()
             k_assert((track.props != null), "Expected a JSON object containing track prop locations.");
             track.props.forEach(prop=>
             {
-                maasto_n.add_prop_location(track.trackId, prop.name, prop.x, prop.y, prop.z);
+                Rsed.maasto_n.add_prop_location(track.trackId, prop.name, prop.x, prop.y, prop.z);
             });
         });
     }
@@ -4523,7 +4523,7 @@ const resource_loader_n = (function()
             const byteOffs = ((rsed_n.underlying_track_id() - 1) * 18);
             const checkpointX = (data[byteOffs + 13] * 2);
             const checkpointY = (data[byteOffs + 15] * 2);
-            maasto_n.set_checkpoint_pos(checkpointX, checkpointY);
+            Rsed.maasto_n.set_checkpoint_pos(checkpointX, checkpointY);
         }
     }
 
@@ -4715,7 +4715,7 @@ const resource_loader_n = (function()
                 k_assert((bytes[i] >= 0 && bytes[i] <= 255), "Detected invalid VARIMAA data.");
             }
 
-            maasto_n.set_varimaa(tilesPerSide, bytes);
+            Rsed.maasto_n.set_varimaa(tilesPerSide, bytes);
         }
 
         // Takes in a byte array containing a track's heightmap; and loads it into RallySportED.
@@ -4741,7 +4741,7 @@ const resource_loader_n = (function()
 
             k_assert((convertedHeightmap.length === (tilesPerSide * tilesPerSide)), "Detected an invalid MAASTO height conversion.");
 
-            maasto_n.set_maasto(tilesPerSide, convertedHeightmap);
+            Rsed.maasto_n.set_maasto(tilesPerSide, convertedHeightmap);
         }
 
         // Loads from a JSON file resources of the given type.
@@ -4857,7 +4857,7 @@ Rsed.project_n = (function()
     {
         k_assert((dtaData instanceof ArrayBuffer), "Expected the project assets to come in as an array buffer.");
     
-        maasto_n.clear_maasto_data();
+        Rsed.maasto_n.clear_maasto_data();
         palat_n.clear_palat_data();
         Rsed.camera_n.reset_camera_position();
 
@@ -4874,8 +4874,8 @@ Rsed.project_n = (function()
                 const maastoBytes = new Uint8Array(dtaData.slice(i, i + maastoBytesize));
                 i+=maastoBytesize;
 
-                maasto_n.set_maasto_bytesize(maastoBytesize);
-                resource_loader_n.load_maasto_data(maastoBytes, maasto_n.set_maasto);
+                Rsed.maasto_n.set_maasto_bytesize(maastoBytesize);
+                resource_loader_n.load_maasto_data(maastoBytes, Rsed.maasto_n.set_maasto);
             }
 
             // VARIMAA data.
@@ -4886,8 +4886,8 @@ Rsed.project_n = (function()
                 const varimaaBytes = new Uint8Array(dtaData.slice(i, i+varimaaBytesize));
                 i+=varimaaBytesize;
 
-                maasto_n.set_varimaa_bytesize(varimaaBytesize);
-                resource_loader_n.load_varimaa_data(varimaaBytes, maasto_n.set_varimaa);
+                Rsed.maasto_n.set_varimaa_bytesize(varimaaBytesize);
+                resource_loader_n.load_varimaa_data(varimaaBytes, Rsed.maasto_n.set_varimaa);
             }
 
             // PALAT data.
@@ -4990,8 +4990,8 @@ Rsed.project_n = (function()
 
             // Replace the existing project bytes with the current data.
             {
-                const maastoBytes = maasto_n.get_saveable_maasto();
-                const varimaaBytes = maasto_n.get_saveable_varimaa();
+                const maastoBytes = Rsed.maasto_n.get_saveable_maasto();
+                const varimaaBytes = Rsed.maasto_n.get_saveable_varimaa();
                 const palatBytes = palat_n.get_saveable_palat();
 
                 project.projectFileContents.set(maastoBytes, 4);
@@ -5089,7 +5089,7 @@ const rsed_n = (function()
 
                 if (ui_view_n.current_view() !== "2d-topdown")
                 {
-                    renderer.register_mesh(maasto_n.maasto_mesh(Math.floor(Rsed.camera_n.pos_x()), Math.floor(Rsed.camera_n.pos_z())));
+                    renderer.register_mesh(Rsed.maasto_n.maasto_mesh(Math.floor(Rsed.camera_n.pos_x()), Math.floor(Rsed.camera_n.pos_z())));
                 }
             }
 
@@ -5124,7 +5124,7 @@ const rsed_n = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop:function(name = "")
                 {
-                    maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
+                    Rsed.maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
                     window.close_dropdowns();
 
                     return;
@@ -5235,7 +5235,7 @@ const rsed_n = (function()
                 palat_n.clear_palat_data();
                 palette_n.reset_palettes();
                 Rsed.camera_n.reset_camera_position();
-                maasto_n.clear_maasto_data(true);
+                Rsed.maasto_n.clear_maasto_data(true);
                 palette_n.set_palette_for_track(underlyingTrackId);
 
                 (async()=>
@@ -5486,7 +5486,7 @@ window.onkeydown = function(event)
             case "w": case 87: ui_view_n.show3dWireframe = !ui_view_n.show3dWireframe; break;
             case "a": case 65: ui_view_n.showPalatPane = !ui_view_n.showPalatPane; break;
             case "r": case 82: ui_view_n.toggle_view("3d", "3d-topdown"); break;
-            case "l": case 76: maasto_n.level_terrain(); break;
+            case "l": case 76: Rsed.maasto_n.level_terrain(); break;
             case "b": case 66: ui_view_n.hideProps = !ui_view_n.hideProps; break;
             case "spacebar": case 32: ui_brush_n.brushSmoothens = !ui_brush_n.brushSmoothens; event.preventDefault(); break;
             case "1": case 49: ui_brush_n.set_brush_size(0); break;

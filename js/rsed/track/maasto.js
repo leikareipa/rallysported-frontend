@@ -8,7 +8,7 @@
 
 "use strict";
 
-const maasto_n = (function()
+Rsed.maasto_n = (function()
 {
     // The number of tiles per side on this MAASTO.
     let maastoSideLength = 0
