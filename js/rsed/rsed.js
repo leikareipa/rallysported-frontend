@@ -189,10 +189,10 @@ const rsed_n = (function()
 
                 Rsed.props_n.clear_prop_data();
                 Rsed.palat_n.clear_palat_data();
-                palette_n.reset_palettes();
+                Rsed.palette_n.reset_palettes();
                 Rsed.camera_n.reset_camera_position();
                 Rsed.maasto_n.clear_maasto_data(true);
-                palette_n.set_palette_for_track(underlyingTrackId);
+                Rsed.palette_n.set_palette_for_track(underlyingTrackId);
 
                 (async()=>
                 {

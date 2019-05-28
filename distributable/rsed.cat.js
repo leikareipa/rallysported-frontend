@@ -394,7 +394,7 @@ const texture_n = (function()
 
 "use strict";
 
-const palette_n = (function()
+Rsed.palette_n = (function()
 {
     // There are four palettes in the game. This decides which of them is currently active.
     let currentPalette = 0;
@@ -2254,7 +2254,7 @@ Rsed.manifesto_n = (function()
         const g = Math.floor(Number(args[2] * 4));
         const b = Math.floor(Number(args[3] * 4));
         
-        palette_n.modify_palette_entry(targetPaletteIdx, r, g, b);
+        Rsed.palette_n.modify_palette_entry(targetPaletteIdx, r, g, b);
     }
 
     // Command: stop. Stops parsing the manifesto file.
@@ -3275,7 +3275,7 @@ Rsed.ui_draw_n = (function()
                 const pixel = pixels[cx + cy * width];
                 if (alpha && (pixel === 0)) continue;
 
-                const color = ((pixel instanceof Rsed.color_n.rgba_o)? pixel : palette_n.palette_idx_to_rgba(pixel));
+                const color = ((pixel instanceof Rsed.color_n.rgba_o)? pixel : Rsed.palette_n.palette_idx_to_rgba(pixel));
                 put_pixel((x + cx), (y + cy), color.r, color.g, color.b);
 
                 if (mousePick != null)
@@ -3596,7 +3596,7 @@ Rsed.ui_draw_n = (function()
                             const bufferTexel = Math.floor((Math.floor(x * Rsed.palat_n.pala_width() + px) / 2) +
                                                             Math.floor((y * Rsed.palat_n.pala_height() + py) / 2) * palatPaneWidth);
 
-                            palatPaneBuffer[bufferTexel] = palette_n.palette_idx_to_rgba(pala.paletteIndices[palaTexel]);
+                            palatPaneBuffer[bufferTexel] = Rsed.palette_n.palette_idx_to_rgba(pala.paletteIndices[palaTexel]);
                             palatPaneMousePick[bufferTexel] = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
                                                                                                  {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
                         }
@@ -4496,7 +4496,7 @@ const resource_loader_n = (function()
                 const convertedPoly = new Rsed.geometry_n.polygon_o(numVertices);
 
                 convertedPoly.texture = Rsed.props_n.prop_texture(propPoly.textureIdx);
-                convertedPoly.color = palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
+                convertedPoly.color = Rsed.palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
 
                 k_assert((convertedPoly.v.length === numVertices), "Incorrect number of vertices in prop polygon.");
                 convertedPoly.v.forEach((vertex, idx)=>
@@ -4547,7 +4547,7 @@ const resource_loader_n = (function()
                 let paletteIdx = data[idx++];
                 if (paletteIdx < 0 || paletteIdx > 31) paletteIdx = 0;
 
-                texture.pixels.push(palette_n.palette_idx_to_rgba(paletteIdx));
+                texture.pixels.push(Rsed.palette_n.palette_idx_to_rgba(paletteIdx));
                 texture.paletteIndices.push(paletteIdx);
             }
 
@@ -4688,7 +4688,7 @@ const resource_loader_n = (function()
                         let paletteIdx = bytes[(x + y * palaWidth) + (i * (palaWidth * palaHeight))];
                         if ((paletteIdx < 0) || (paletteIdx > 31)) paletteIdx = 0;
 
-                        texture.pixels.push(palette_n.palette_idx_to_rgba(paletteIdx));
+                        texture.pixels.push(Rsed.palette_n.palette_idx_to_rgba(paletteIdx));
                         texture.paletteIndices.push(paletteIdx);
                     }
                 }
@@ -5233,10 +5233,10 @@ const rsed_n = (function()
 
                 Rsed.props_n.clear_prop_data();
                 Rsed.palat_n.clear_palat_data();
-                palette_n.reset_palettes();
+                Rsed.palette_n.reset_palettes();
                 Rsed.camera_n.reset_camera_position();
                 Rsed.maasto_n.clear_maasto_data(true);
-                palette_n.set_palette_for_track(underlyingTrackId);
+                Rsed.palette_n.set_palette_for_track(underlyingTrackId);
 
                 (async()=>
                 {

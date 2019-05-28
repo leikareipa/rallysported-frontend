@@ -9,7 +9,7 @@
 
 "use strict";
 
-const palette_n = (function()
+Rsed.palette_n = (function()
 {
     // There are four palettes in the game. This decides which of them is currently active.
     let currentPalette = 0;

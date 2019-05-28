@@ -108,7 +108,7 @@ Rsed.manifesto_n = (function()
         const g = Math.floor(Number(args[2] * 4));
         const b = Math.floor(Number(args[3] * 4));
         
-        palette_n.modify_palette_entry(targetPaletteIdx, r, g, b);
+        Rsed.palette_n.modify_palette_entry(targetPaletteIdx, r, g, b);
     }
 
     // Command: stop. Stops parsing the manifesto file.

@@ -87,7 +87,7 @@ const resource_loader_n = (function()
                 const convertedPoly = new Rsed.geometry_n.polygon_o(numVertices);
 
                 convertedPoly.texture = Rsed.props_n.prop_texture(propPoly.textureIdx);
-                convertedPoly.color = palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
+                convertedPoly.color = Rsed.palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
 
                 k_assert((convertedPoly.v.length === numVertices), "Incorrect number of vertices in prop polygon.");
                 convertedPoly.v.forEach((vertex, idx)=>
@@ -138,7 +138,7 @@ const resource_loader_n = (function()
                 let paletteIdx = data[idx++];
                 if (paletteIdx < 0 || paletteIdx > 31) paletteIdx = 0;
 
-                texture.pixels.push(palette_n.palette_idx_to_rgba(paletteIdx));
+                texture.pixels.push(Rsed.palette_n.palette_idx_to_rgba(paletteIdx));
                 texture.paletteIndices.push(paletteIdx);
             }
 
@@ -279,7 +279,7 @@ const resource_loader_n = (function()
                         let paletteIdx = bytes[(x + y * palaWidth) + (i * (palaWidth * palaHeight))];
                         if ((paletteIdx < 0) || (paletteIdx > 31)) paletteIdx = 0;
 
-                        texture.pixels.push(palette_n.palette_idx_to_rgba(paletteIdx));
+                        texture.pixels.push(Rsed.palette_n.palette_idx_to_rgba(paletteIdx));
                         texture.paletteIndices.push(paletteIdx);
                     }
                 }
