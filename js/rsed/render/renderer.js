@@ -110,7 +110,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 
                     mesh.tick_function_f();
 
-                    const transformedPolys = polygon_transform_n.transform_polygons(mesh.polygons, mesh.object_space_matrix(),
+                    const transformedPolys = Rsed.polygon_transform_n.transform_polygons(mesh.polygons, mesh.object_space_matrix(),
                                                                                     viewMatrix, surface.width, surface.height);
 
                     polyList.push(...transformedPolys);

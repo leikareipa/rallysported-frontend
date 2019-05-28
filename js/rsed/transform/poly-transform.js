@@ -9,7 +9,7 @@
 
 "use strict";
 
-const polygon_transform_n = (function()
+Rsed.polygon_transform_n = (function()
 {
     const publicInterface = {};
     {
