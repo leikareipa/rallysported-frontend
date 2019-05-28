@@ -1047,7 +1047,7 @@ const polygon_transform_n = (function()
 
 "use strict";
 
-const camera_n = (function()
+Rsed.camera_n = (function()
 {
     // The camera's position, in track tile units.
     const position = new geometry_n.vector3_o(15, 0, 13);
@@ -1796,9 +1796,9 @@ const maasto_n = (function()
             const wireframeOnRequest = ui_view_n.show3dWireframe;
 
             // Add the ground tiles.
-            for (let z = 0; z < camera_n.view_height(); z++)
+            for (let z = 0; z < Rsed.camera_n.view_height(); z++)
             {
-                for (let x = 0; x < camera_n.view_width(); x++)
+                for (let x = 0; x < Rsed.camera_n.view_width(); x++)
                 {
                     const tileX = (x + viewOffsetX);
                     const tileZ = (z + viewOffsetZ);
@@ -1896,10 +1896,10 @@ const maasto_n = (function()
             for (let i = 0; i < propLocations.length; i++)
             {
                 const pos = propLocations[i];
-                if ((pos.x >= (camera_n.pos_x() * tileSize)) &&
-                    (pos.x <= ((camera_n.pos_x() + camera_n.view_width()) * tileSize)) &&
-                    (pos.z >= (camera_n.pos_z() * tileSize)) &&
-                    (pos.z <= ((camera_n.pos_z() + camera_n.view_height()) * tileSize)))
+                if ((pos.x >= (Rsed.camera_n.pos_x() * tileSize)) &&
+                    (pos.x <= ((Rsed.camera_n.pos_x() + Rsed.camera_n.view_width()) * tileSize)) &&
+                    (pos.z >= (Rsed.camera_n.pos_z() * tileSize)) &&
+                    (pos.z <= ((Rsed.camera_n.pos_z() + Rsed.camera_n.view_height()) * tileSize)))
                 {
                     const x = (pos.x + trackOffsetX - (viewOffsetX * tileSize));
                     const z = (trackOffsetZ - pos.z + (viewOffsetZ * tileSize));
@@ -3421,8 +3421,8 @@ const ui_draw_n = (function()
         if (image && xMul && yMul)
         {
             const frame = [];
-            const frameWidth = Math.round((camera_n.view_width() / xMul));
-            const frameHeight = Math.floor((camera_n.view_height() / yMul));
+            const frameWidth = Math.round((Rsed.camera_n.view_width() / xMul));
+            const frameHeight = Math.floor((Rsed.camera_n.view_height() / yMul));
             
             for (let y = 0; y < frameHeight; y++)
             {
@@ -3436,8 +3436,8 @@ const ui_draw_n = (function()
                 }
             }
 
-            const camX = (camera_n.pos_x() / xMul);
-            const camZ = (camera_n.pos_z() / yMul);
+            const camX = (Rsed.camera_n.pos_x() / xMul);
+            const camZ = (Rsed.camera_n.pos_z() / yMul);
             draw_image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 3 + camZ, true);
         }
     }
@@ -3690,7 +3690,7 @@ const ui_input_n = (function()
         if (keyDown["d"]) movement.z += 1;
 
         //movement.normalize(); /// TODO: Disabled for now, since diagonal movement is too jerky without the double movement speed.
-        camera_n.move_camera(movement.x, movement.y, movement.z);
+        Rsed.camera_n.move_camera(movement.x, movement.y, movement.z);
     }
 
     // Depending on which mouse button (if any) the user has pressed, make corresponding things happen.
@@ -4859,7 +4859,7 @@ const rsed_project_n = (function()
     
         maasto_n.clear_maasto_data();
         palat_n.clear_palat_data();
-        camera_n.reset_camera_position();
+        Rsed.camera_n.reset_camera_position();
 
         // Extract the data from the project file.
         {
@@ -5089,7 +5089,7 @@ const rsed_n = (function()
 
                 if (ui_view_n.current_view() !== "2d-topdown")
                 {
-                    renderer.register_mesh(maasto_n.maasto_mesh(Math.floor(camera_n.pos_x()), Math.floor(camera_n.pos_z())));
+                    renderer.register_mesh(maasto_n.maasto_mesh(Math.floor(Rsed.camera_n.pos_x()), Math.floor(Rsed.camera_n.pos_z())));
                 }
             }
 
@@ -5234,7 +5234,7 @@ const rsed_n = (function()
                 props_n.clear_prop_data();
                 palat_n.clear_palat_data();
                 palette_n.reset_palettes();
-                camera_n.reset_camera_position();
+                Rsed.camera_n.reset_camera_position();
                 maasto_n.clear_maasto_data(true);
                 palette_n.set_palette_for_track(underlyingTrackId);
 

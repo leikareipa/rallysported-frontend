@@ -8,7 +8,7 @@
 
 "use strict";
 
-const camera_n = (function()
+Rsed.camera_n = (function()
 {
     // The camera's position, in track tile units.
     const position = new geometry_n.vector3_o(15, 0, 13);

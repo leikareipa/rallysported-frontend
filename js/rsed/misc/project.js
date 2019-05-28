@@ -51,7 +51,7 @@ const rsed_project_n = (function()
     
         maasto_n.clear_maasto_data();
         palat_n.clear_palat_data();
-        camera_n.reset_camera_position();
+        Rsed.camera_n.reset_camera_position();
 
         // Extract the data from the project file.
         {

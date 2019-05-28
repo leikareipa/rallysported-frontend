@@ -45,7 +45,7 @@ const rsed_n = (function()
 
                 if (ui_view_n.current_view() !== "2d-topdown")
                 {
-                    renderer.register_mesh(maasto_n.maasto_mesh(Math.floor(camera_n.pos_x()), Math.floor(camera_n.pos_z())));
+                    renderer.register_mesh(maasto_n.maasto_mesh(Math.floor(Rsed.camera_n.pos_x()), Math.floor(Rsed.camera_n.pos_z())));
                 }
             }
 
@@ -190,7 +190,7 @@ const rsed_n = (function()
                 props_n.clear_prop_data();
                 palat_n.clear_palat_data();
                 palette_n.reset_palettes();
-                camera_n.reset_camera_position();
+                Rsed.camera_n.reset_camera_position();
                 maasto_n.clear_maasto_data(true);
                 palette_n.set_palette_for_track(underlyingTrackId);
 

@@ -340,9 +340,9 @@ const maasto_n = (function()
             const wireframeOnRequest = ui_view_n.show3dWireframe;
 
             // Add the ground tiles.
-            for (let z = 0; z < camera_n.view_height(); z++)
+            for (let z = 0; z < Rsed.camera_n.view_height(); z++)
             {
-                for (let x = 0; x < camera_n.view_width(); x++)
+                for (let x = 0; x < Rsed.camera_n.view_width(); x++)
                 {
                     const tileX = (x + viewOffsetX);
                     const tileZ = (z + viewOffsetZ);
@@ -440,10 +440,10 @@ const maasto_n = (function()
             for (let i = 0; i < propLocations.length; i++)
             {
                 const pos = propLocations[i];
-                if ((pos.x >= (camera_n.pos_x() * tileSize)) &&
-                    (pos.x <= ((camera_n.pos_x() + camera_n.view_width()) * tileSize)) &&
-                    (pos.z >= (camera_n.pos_z() * tileSize)) &&
-                    (pos.z <= ((camera_n.pos_z() + camera_n.view_height()) * tileSize)))
+                if ((pos.x >= (Rsed.camera_n.pos_x() * tileSize)) &&
+                    (pos.x <= ((Rsed.camera_n.pos_x() + Rsed.camera_n.view_width()) * tileSize)) &&
+                    (pos.z >= (Rsed.camera_n.pos_z() * tileSize)) &&
+                    (pos.z <= ((Rsed.camera_n.pos_z() + Rsed.camera_n.view_height()) * tileSize)))
                 {
                     const x = (pos.x + trackOffsetX - (viewOffsetX * tileSize));
                     const z = (trackOffsetZ - pos.z + (viewOffsetZ * tileSize));

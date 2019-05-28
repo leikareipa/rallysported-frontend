@@ -65,7 +65,7 @@ const ui_input_n = (function()
         if (keyDown["d"]) movement.z += 1;
 
         //movement.normalize(); /// TODO: Disabled for now, since diagonal movement is too jerky without the double movement speed.
-        camera_n.move_camera(movement.x, movement.y, movement.z);
+        Rsed.camera_n.move_camera(movement.x, movement.y, movement.z);
     }
 
     // Depending on which mouse button (if any) the user has pressed, make corresponding things happen.
