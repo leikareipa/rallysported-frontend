@@ -7,7 +7,7 @@
 
 "use strict";
 
-const rsed_project_n = (function()
+Rsed.rsed_project_n = (function()
 {
     // Maximum number of characters allowed in the project file name.
     const maxProjectNameLen = 8;
@@ -116,7 +116,7 @@ const rsed_project_n = (function()
         // Will return true if the given project is valid. Otherwise, will throw an error.
         publicInterface.verify_project_validity = function(projectToVerify)
         {
-            k_assert((projectToVerify instanceof rsed_project_n.rsed_project_o), "Was asked to test the validity of a non-RallySportED project.");
+            k_assert((projectToVerify instanceof Rsed.rsed_project_n.rsed_project_o), "Was asked to test the validity of a non-RallySportED project.");
 
             k_assert(((projectToVerify != null) && (projectToVerify.isValidProject)), "Failed to load the given zipped RallySportED project file.");
             k_assert((projectToVerify.name != null && projectToVerify.displayName != null), "Failed to load the given zipped RallySportED project file.");
@@ -166,9 +166,9 @@ const rsed_project_n = (function()
             }
         }
 
-        publicInterface.generate_download_of_project = function(project = rsed_project_n.rsed_project_o)
+        publicInterface.generate_download_of_project = function(project = Rsed.rsed_project_n.rsed_project_o)
         {
-            k_assert((project instanceof rsed_project_n.rsed_project_o), "Expected a RallySportED project object.");
+            k_assert((project instanceof Rsed.rsed_project_n.rsed_project_o), "Expected a RallySportED project object.");
 
             const saveName = project.name.toUpperCase();
 
