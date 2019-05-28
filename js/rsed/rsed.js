@@ -80,7 +80,7 @@ const rsed_n = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop:function(name = "")
                 {
-                    Rsed.maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
+                    Rsed.maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, Rsed.props_n.prop_idx_for_name(name));
                     window.close_dropdowns();
 
                     return;
@@ -89,9 +89,9 @@ const rsed_n = (function()
                 refresh:function()
                 {
                     this.trackName = project.displayName;
-                    this.propList = props_n.prop_names()
-                                           .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
-                                           .map(propName=>({propName}));
+                    this.propList = Rsed.props_n.prop_names()
+                                                .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
+                                                .map(propName=>({propName}));
 
                     return;
                 }
@@ -187,8 +187,8 @@ const rsed_n = (function()
             {
                 const exeAssetDir = "distributable/assets/rallye-exe/";
 
-                props_n.clear_prop_data();
-                palat_n.clear_palat_data();
+                Rsed.props_n.clear_prop_data();
+                Rsed.palat_n.clear_palat_data();
                 palette_n.reset_palettes();
                 Rsed.camera_n.reset_camera_position();
                 Rsed.maasto_n.clear_maasto_data(true);

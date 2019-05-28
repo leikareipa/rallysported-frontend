@@ -8,7 +8,7 @@
 
 "use strict";
 
-const palat_n = (function()
+Rsed.palat_n = (function()
 {
     // Resolution of a single PALA.
     const palaWidth = 16;

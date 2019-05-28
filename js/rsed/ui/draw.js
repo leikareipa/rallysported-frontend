@@ -25,8 +25,8 @@ const ui_draw_n = (function()
     const palatPaneMousePick = [];
     let numPalatPaneCols = 9;
     let numPalatPaneRows = 29;
-    let palatPaneWidth = ((numPalatPaneCols * (palat_n.pala_width() / 2)) + 1);
-    let palatPaneHeight = ((numPalatPaneRows * (palat_n.pala_height() / 2)) + 1);
+    let palatPaneWidth = ((numPalatPaneCols * (Rsed.palat_n.pala_width() / 2)) + 1);
+    let palatPaneHeight = ((numPalatPaneRows * (Rsed.palat_n.pala_height() / 2)) + 1);
     
     function put_pixel(x = 0, y = 0, r = 255, g = 255, b = 255)
     {
@@ -160,7 +160,7 @@ const ui_draw_n = (function()
             }
             case ui_input_n.mousePickingType.prop:
             {
-                str = "PROP:" + props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx) +
+                str = "PROP:" + Rsed.props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx) +
                       " IDX:" + ui_input_n.mouse_hover_args().idx + "(" + ui_input_n.mouse_hover_args().trackId + ")";
             }
         }
@@ -200,7 +200,7 @@ const ui_draw_n = (function()
                 const tileX = (x * xMul);
                 const tileZ = (y * yMul);
 
-                const pala = palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
+                const pala = Rsed.palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
                 let color = ((pala == null)? 0 : pala.paletteIndices[1]);
 
                 // Have a black outline.
@@ -244,7 +244,7 @@ const ui_draw_n = (function()
     function draw_active_pala()
     {
         const currentPala = ui_brush_n.brush_pala_idx();
-        const pala = palat_n.pala_texture(currentPala);
+        const pala = Rsed.palat_n.pala_texture(currentPala);
 
         if (pala != null)
         {
@@ -273,7 +273,7 @@ const ui_draw_n = (function()
                     const tileX = Math.floor(x * xMul);
                     const tileZ = Math.floor(z * zMul);
 
-                    const pala = palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
+                    const pala = Rsed.palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
                     let color = ((pala == null)? 0 : pala.paletteIndices[1]);
 
                     // Create an outline.
@@ -367,7 +367,7 @@ const ui_draw_n = (function()
         publicInterface.prebake_palat_pane = function()
         {
             const maxNumPalas = 253;
-            if (palat_n.num_palas() < maxNumPalas) return;
+            if (Rsed.palat_n.num_palas() < maxNumPalas) return;
 
             palatPaneBuffer.length = 0;
             palatPaneMousePick.length = 0;
@@ -376,8 +376,8 @@ const ui_draw_n = (function()
             /// FIXME: Leaves unnecessary empty rows for some resolutions.
             numPalatPaneRows = (Math.floor(rsed_n.render_height() / 8) - 1);
             numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
-            palatPaneWidth = ((numPalatPaneCols * (palat_n.pala_width() / 2)) + 1);
-            palatPaneHeight = ((numPalatPaneRows * (palat_n.pala_height() / 2)) + 1);
+            palatPaneWidth = ((numPalatPaneCols * (Rsed.palat_n.pala_width() / 2)) + 1);
+            palatPaneHeight = ((numPalatPaneRows * (Rsed.palat_n.pala_height() / 2)) + 1);
         
             let palaIdx = 0;
             for (let y = 0; y < numPalatPaneRows; y++)
@@ -386,14 +386,14 @@ const ui_draw_n = (function()
                 {
                     if (palaIdx > maxNumPalas) break;
 
-                    const pala = palat_n.pala_texture(palaIdx);
-                    for (let py = 0; py < palat_n.pala_height(); py++)
+                    const pala = Rsed.palat_n.pala_texture(palaIdx);
+                    for (let py = 0; py < Rsed.palat_n.pala_height(); py++)
                     {
-                        for (let px = 0; px < palat_n.pala_width(); px++)
+                        for (let px = 0; px < Rsed.palat_n.pala_width(); px++)
                         {
-                            const palaTexel = Math.floor(px + py * palat_n.pala_width());
-                            const bufferTexel = Math.floor((Math.floor(x * palat_n.pala_width() + px) / 2) +
-                                                            Math.floor((y * palat_n.pala_height() + py) / 2) * palatPaneWidth);
+                            const palaTexel = Math.floor(px + py * Rsed.palat_n.pala_width());
+                            const bufferTexel = Math.floor((Math.floor(x * Rsed.palat_n.pala_width() + px) / 2) +
+                                                            Math.floor((y * Rsed.palat_n.pala_height() + py) / 2) * palatPaneWidth);
 
                             palatPaneBuffer[bufferTexel] = palette_n.palette_idx_to_rgba(pala.paletteIndices[palaTexel]);
                             palatPaneMousePick[bufferTexel] = ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.ui,
@@ -404,18 +404,18 @@ const ui_draw_n = (function()
             }
 
             // Draw a grid over the PALA thumbnails.
-            for (let i = 0; i < numPalatPaneRows * palat_n.pala_height()/2; i++)
+            for (let i = 0; i < numPalatPaneRows * Rsed.palat_n.pala_height()/2; i++)
             {
                 for (let x = 0; x < numPalatPaneCols; x++)
                 {
-                    palatPaneBuffer[(x * palat_n.pala_width()/2) + i * palatPaneWidth] = "black";
+                    palatPaneBuffer[(x * Rsed.palat_n.pala_width()/2) + i * palatPaneWidth] = "black";
                 }
             }
-            for (let i = 0; i < numPalatPaneCols * palat_n.pala_width()/2; i++)
+            for (let i = 0; i < numPalatPaneCols * Rsed.palat_n.pala_width()/2; i++)
             {
                 for (let y = 0; y < numPalatPaneRows; y++)
                 {
-                    palatPaneBuffer[i + (y * palat_n.pala_height()/2) * palatPaneWidth] = "black";
+                    palatPaneBuffer[i + (y * Rsed.palat_n.pala_height()/2) * palatPaneWidth] = "black";
                 }
             }
         }

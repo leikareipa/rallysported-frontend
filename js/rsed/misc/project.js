@@ -50,7 +50,7 @@ Rsed.project_n = (function()
         k_assert((dtaData instanceof ArrayBuffer), "Expected the project assets to come in as an array buffer.");
     
         Rsed.maasto_n.clear_maasto_data();
-        palat_n.clear_palat_data();
+        Rsed.palat_n.clear_palat_data();
         Rsed.camera_n.reset_camera_position();
 
         // Extract the data from the project file.
@@ -105,8 +105,8 @@ Rsed.project_n = (function()
                     k_assert(0, "Unexpected number of PALA bytes in the project file.");
                 }
 
-                palat_n.set_palat_bytesize(palatBytesize);
-                resource_loader_n.load_palat_data(palatBytes, palat_n.add_pala);
+                Rsed.palat_n.set_palat_bytesize(palatBytesize);
+                resource_loader_n.load_palat_data(palatBytes, Rsed.palat_n.add_pala);
             }
         }
     }
@@ -184,7 +184,7 @@ Rsed.project_n = (function()
             {
                 const maastoBytes = Rsed.maasto_n.get_saveable_maasto();
                 const varimaaBytes = Rsed.maasto_n.get_saveable_varimaa();
-                const palatBytes = palat_n.get_saveable_palat();
+                const palatBytes = Rsed.palat_n.get_saveable_palat();
 
                 project.projectFileContents.set(maastoBytes, 4);
                 project.projectFileContents.set(varimaaBytes, (maastoBytes.byteLength + 4*2));

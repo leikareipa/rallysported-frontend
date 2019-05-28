@@ -86,7 +86,7 @@ const resource_loader_n = (function()
                 const numVertices = (propPoly.verts.length / 3);
                 const convertedPoly = new geometry_n.polygon_o(numVertices);
 
-                convertedPoly.texture = props_n.prop_texture(propPoly.textureIdx);
+                convertedPoly.texture = Rsed.props_n.prop_texture(propPoly.textureIdx);
                 convertedPoly.color = palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
 
                 k_assert((convertedPoly.v.length === numVertices), "Incorrect number of vertices in prop polygon.");
@@ -100,7 +100,7 @@ const resource_loader_n = (function()
                 convertedPolygons.push(convertedPoly);
             });
 
-            props_n.add_prop_mesh(prop.displayName, convertedPolygons);
+            Rsed.props_n.add_prop_mesh(prop.displayName, convertedPolygons);
         });
     }
 
@@ -142,7 +142,7 @@ const resource_loader_n = (function()
                 texture.paletteIndices.push(paletteIdx);
             }
 
-            props_n.add_prop_texture(texture);
+            Rsed.props_n.add_prop_texture(texture);
         }
     }
 
@@ -284,7 +284,7 @@ const resource_loader_n = (function()
                     }
                 }
 
-                palat_n.add_pala(texture);
+                Rsed.palat_n.add_pala(texture);
             }
 
             // Create an image containing thumbnails of all the textures we loaded.

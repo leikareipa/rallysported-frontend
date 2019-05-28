@@ -1655,7 +1655,7 @@ Rsed.maasto_n = (function()
         publicInterface.change_prop_type = function(propIdx, newPropIdx)
         {
             k_assert((propIdx >= 0 && propIdx < propNames.length), "Attempting to change prop type out of bounds.");
-            propNames[propIdx] = props_n.prop_name_for_idx(newPropIdx);
+            propNames[propIdx] = Rsed.props_n.prop_name_for_idx(newPropIdx);
         }
 
         publicInterface.set_prop_count = function(numProps = 0)
@@ -1830,7 +1830,7 @@ Rsed.maasto_n = (function()
                         quad.v[3] = new geometry_n.vertex_o( vertX,             height4, (vertZ + tileSize));
                         
                         quad.hasWireframe = wireframeOnRequest;
-                        quad.texture = palat_n.pala_texture(tilePala);
+                        quad.texture = Rsed.palat_n.pala_texture(tilePala);
                     }
 
                     // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
@@ -1858,18 +1858,18 @@ Rsed.maasto_n = (function()
                             // Spectators.
                             case 240:
                             case 241:
-                            case 242: bill.texture = palat_n.pala_texture(this.spectator_texture_at(tileX, (tileZ - 1)), true);
+                            case 242: bill.texture = Rsed.palat_n.pala_texture(this.spectator_texture_at(tileX, (tileZ - 1)), true);
                             break;
         
                             // Shrubs.
-                            case 243: bill.texture = palat_n.pala_texture(208, true); break;
-                            case 244: bill.texture = palat_n.pala_texture(209, true); break;
-                            case 245: bill.texture = palat_n.pala_texture(210, true); break;
+                            case 243: bill.texture = Rsed.palat_n.pala_texture(208, true); break;
+                            case 244: bill.texture = Rsed.palat_n.pala_texture(209, true); break;
+                            case 245: bill.texture = Rsed.palat_n.pala_texture(210, true); break;
         
                             // Small poles.
                             case 246:
-                            case 247: bill.texture = palat_n.pala_texture(211, true); break;
-                            case 250: bill.texture = palat_n.pala_texture(212, true); break;
+                            case 247: bill.texture = Rsed.palat_n.pala_texture(211, true); break;
+                            case 250: bill.texture = Rsed.palat_n.pala_texture(212, true); break;
         
                             default: k_assert(0, "Unrecognized billboard texture."); continue;
                         }
@@ -1885,7 +1885,7 @@ Rsed.maasto_n = (function()
                         bridge.v[2] = new geometry_n.vertex_o((vertX + tileSize), trackOffsetY, (vertZ+tileSize));
                         bridge.v[3] = new geometry_n.vertex_o( vertX,             trackOffsetY, (vertZ+tileSize));
 
-                        bridge.texture = palat_n.pala_texture(177, true);
+                        bridge.texture = Rsed.palat_n.pala_texture(177, true);
 
                         polys.push(bridge);
                     }
@@ -1906,7 +1906,7 @@ Rsed.maasto_n = (function()
                     const groundHeight = trackOffsetY + this.maasto_height_at((pos.x / tileSize), (pos.z / tileSize));
                     const y = (groundHeight + pos.y);
 
-                    const mesh = props_n.prop_mesh(propNames[i], i, x, y, z, wireframeOnRequest);
+                    const mesh = Rsed.props_n.prop_mesh(propNames[i], i, x, y, z, wireframeOnRequest);
                     polys.push(...mesh);
                 }
             }
@@ -1943,7 +1943,7 @@ Rsed.maasto_n = (function()
 
 "use strict";
 
-const palat_n = (function()
+Rsed.palat_n = (function()
 {
     // Resolution of a single PALA.
     const palaWidth = 16;
@@ -2041,7 +2041,7 @@ const palat_n = (function()
 
 "use strict";
 
-const props_n = (function()
+Rsed.props_n = (function()
 {
     // The collection of prop meshes we know about, as an array of vertices for each mesh.
     const propMeshes = [];
@@ -2210,7 +2210,7 @@ Rsed.manifesto_n = (function()
         const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
         const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[4]));
 
-        Rsed.maasto_n.add_prop_location(rsed_n.underlying_track_id(), props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
+        Rsed.maasto_n.add_prop_location(rsed_n.underlying_track_id(), Rsed.props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
     }
 
     // Command: change_obj_type. Changes the type of the given prop.
@@ -2354,7 +2354,7 @@ Rsed.manifesto_n = (function()
                 
                 for (let i = 1; i < propNames.length; i++)
                 {
-                    const typeId = props_n.prop_idx_for_name(propNames[i]);
+                    const typeId = Rsed.props_n.prop_idx_for_name(propNames[i]);
 
                     newManifesto += ("4 " + (i + 1) + " " + (typeId + 1) + "\n");
                 }
@@ -3226,8 +3226,8 @@ const ui_draw_n = (function()
     const palatPaneMousePick = [];
     let numPalatPaneCols = 9;
     let numPalatPaneRows = 29;
-    let palatPaneWidth = ((numPalatPaneCols * (palat_n.pala_width() / 2)) + 1);
-    let palatPaneHeight = ((numPalatPaneRows * (palat_n.pala_height() / 2)) + 1);
+    let palatPaneWidth = ((numPalatPaneCols * (Rsed.palat_n.pala_width() / 2)) + 1);
+    let palatPaneHeight = ((numPalatPaneRows * (Rsed.palat_n.pala_height() / 2)) + 1);
     
     function put_pixel(x = 0, y = 0, r = 255, g = 255, b = 255)
     {
@@ -3361,7 +3361,7 @@ const ui_draw_n = (function()
             }
             case ui_input_n.mousePickingType.prop:
             {
-                str = "PROP:" + props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx) +
+                str = "PROP:" + Rsed.props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx) +
                       " IDX:" + ui_input_n.mouse_hover_args().idx + "(" + ui_input_n.mouse_hover_args().trackId + ")";
             }
         }
@@ -3401,7 +3401,7 @@ const ui_draw_n = (function()
                 const tileX = (x * xMul);
                 const tileZ = (y * yMul);
 
-                const pala = palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
+                const pala = Rsed.palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
                 let color = ((pala == null)? 0 : pala.paletteIndices[1]);
 
                 // Have a black outline.
@@ -3445,7 +3445,7 @@ const ui_draw_n = (function()
     function draw_active_pala()
     {
         const currentPala = ui_brush_n.brush_pala_idx();
-        const pala = palat_n.pala_texture(currentPala);
+        const pala = Rsed.palat_n.pala_texture(currentPala);
 
         if (pala != null)
         {
@@ -3474,7 +3474,7 @@ const ui_draw_n = (function()
                     const tileX = Math.floor(x * xMul);
                     const tileZ = Math.floor(z * zMul);
 
-                    const pala = palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
+                    const pala = Rsed.palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
                     let color = ((pala == null)? 0 : pala.paletteIndices[1]);
 
                     // Create an outline.
@@ -3568,7 +3568,7 @@ const ui_draw_n = (function()
         publicInterface.prebake_palat_pane = function()
         {
             const maxNumPalas = 253;
-            if (palat_n.num_palas() < maxNumPalas) return;
+            if (Rsed.palat_n.num_palas() < maxNumPalas) return;
 
             palatPaneBuffer.length = 0;
             palatPaneMousePick.length = 0;
@@ -3577,8 +3577,8 @@ const ui_draw_n = (function()
             /// FIXME: Leaves unnecessary empty rows for some resolutions.
             numPalatPaneRows = (Math.floor(rsed_n.render_height() / 8) - 1);
             numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
-            palatPaneWidth = ((numPalatPaneCols * (palat_n.pala_width() / 2)) + 1);
-            palatPaneHeight = ((numPalatPaneRows * (palat_n.pala_height() / 2)) + 1);
+            palatPaneWidth = ((numPalatPaneCols * (Rsed.palat_n.pala_width() / 2)) + 1);
+            palatPaneHeight = ((numPalatPaneRows * (Rsed.palat_n.pala_height() / 2)) + 1);
         
             let palaIdx = 0;
             for (let y = 0; y < numPalatPaneRows; y++)
@@ -3587,14 +3587,14 @@ const ui_draw_n = (function()
                 {
                     if (palaIdx > maxNumPalas) break;
 
-                    const pala = palat_n.pala_texture(palaIdx);
-                    for (let py = 0; py < palat_n.pala_height(); py++)
+                    const pala = Rsed.palat_n.pala_texture(palaIdx);
+                    for (let py = 0; py < Rsed.palat_n.pala_height(); py++)
                     {
-                        for (let px = 0; px < palat_n.pala_width(); px++)
+                        for (let px = 0; px < Rsed.palat_n.pala_width(); px++)
                         {
-                            const palaTexel = Math.floor(px + py * palat_n.pala_width());
-                            const bufferTexel = Math.floor((Math.floor(x * palat_n.pala_width() + px) / 2) +
-                                                            Math.floor((y * palat_n.pala_height() + py) / 2) * palatPaneWidth);
+                            const palaTexel = Math.floor(px + py * Rsed.palat_n.pala_width());
+                            const bufferTexel = Math.floor((Math.floor(x * Rsed.palat_n.pala_width() + px) / 2) +
+                                                            Math.floor((y * Rsed.palat_n.pala_height() + py) / 2) * palatPaneWidth);
 
                             palatPaneBuffer[bufferTexel] = palette_n.palette_idx_to_rgba(pala.paletteIndices[palaTexel]);
                             palatPaneMousePick[bufferTexel] = ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.ui,
@@ -3605,18 +3605,18 @@ const ui_draw_n = (function()
             }
 
             // Draw a grid over the PALA thumbnails.
-            for (let i = 0; i < numPalatPaneRows * palat_n.pala_height()/2; i++)
+            for (let i = 0; i < numPalatPaneRows * Rsed.palat_n.pala_height()/2; i++)
             {
                 for (let x = 0; x < numPalatPaneCols; x++)
                 {
-                    palatPaneBuffer[(x * palat_n.pala_width()/2) + i * palatPaneWidth] = "black";
+                    palatPaneBuffer[(x * Rsed.palat_n.pala_width()/2) + i * palatPaneWidth] = "black";
                 }
             }
-            for (let i = 0; i < numPalatPaneCols * palat_n.pala_width()/2; i++)
+            for (let i = 0; i < numPalatPaneCols * Rsed.palat_n.pala_width()/2; i++)
             {
                 for (let y = 0; y < numPalatPaneRows; y++)
                 {
-                    palatPaneBuffer[i + (y * palat_n.pala_height()/2) * palatPaneWidth] = "black";
+                    palatPaneBuffer[i + (y * Rsed.palat_n.pala_height()/2) * palatPaneWidth] = "black";
                 }
             }
         }
@@ -4495,7 +4495,7 @@ const resource_loader_n = (function()
                 const numVertices = (propPoly.verts.length / 3);
                 const convertedPoly = new geometry_n.polygon_o(numVertices);
 
-                convertedPoly.texture = props_n.prop_texture(propPoly.textureIdx);
+                convertedPoly.texture = Rsed.props_n.prop_texture(propPoly.textureIdx);
                 convertedPoly.color = palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
 
                 k_assert((convertedPoly.v.length === numVertices), "Incorrect number of vertices in prop polygon.");
@@ -4509,7 +4509,7 @@ const resource_loader_n = (function()
                 convertedPolygons.push(convertedPoly);
             });
 
-            props_n.add_prop_mesh(prop.displayName, convertedPolygons);
+            Rsed.props_n.add_prop_mesh(prop.displayName, convertedPolygons);
         });
     }
 
@@ -4551,7 +4551,7 @@ const resource_loader_n = (function()
                 texture.paletteIndices.push(paletteIdx);
             }
 
-            props_n.add_prop_texture(texture);
+            Rsed.props_n.add_prop_texture(texture);
         }
     }
 
@@ -4693,7 +4693,7 @@ const resource_loader_n = (function()
                     }
                 }
 
-                palat_n.add_pala(texture);
+                Rsed.palat_n.add_pala(texture);
             }
 
             // Create an image containing thumbnails of all the textures we loaded.
@@ -4858,7 +4858,7 @@ Rsed.project_n = (function()
         k_assert((dtaData instanceof ArrayBuffer), "Expected the project assets to come in as an array buffer.");
     
         Rsed.maasto_n.clear_maasto_data();
-        palat_n.clear_palat_data();
+        Rsed.palat_n.clear_palat_data();
         Rsed.camera_n.reset_camera_position();
 
         // Extract the data from the project file.
@@ -4913,8 +4913,8 @@ Rsed.project_n = (function()
                     k_assert(0, "Unexpected number of PALA bytes in the project file.");
                 }
 
-                palat_n.set_palat_bytesize(palatBytesize);
-                resource_loader_n.load_palat_data(palatBytes, palat_n.add_pala);
+                Rsed.palat_n.set_palat_bytesize(palatBytesize);
+                resource_loader_n.load_palat_data(palatBytes, Rsed.palat_n.add_pala);
             }
         }
     }
@@ -4992,7 +4992,7 @@ Rsed.project_n = (function()
             {
                 const maastoBytes = Rsed.maasto_n.get_saveable_maasto();
                 const varimaaBytes = Rsed.maasto_n.get_saveable_varimaa();
-                const palatBytes = palat_n.get_saveable_palat();
+                const palatBytes = Rsed.palat_n.get_saveable_palat();
 
                 project.projectFileContents.set(maastoBytes, 4);
                 project.projectFileContents.set(varimaaBytes, (maastoBytes.byteLength + 4*2));
@@ -5124,7 +5124,7 @@ const rsed_n = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop:function(name = "")
                 {
-                    Rsed.maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, props_n.prop_idx_for_name(name));
+                    Rsed.maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, Rsed.props_n.prop_idx_for_name(name));
                     window.close_dropdowns();
 
                     return;
@@ -5133,9 +5133,9 @@ const rsed_n = (function()
                 refresh:function()
                 {
                     this.trackName = project.displayName;
-                    this.propList = props_n.prop_names()
-                                           .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
-                                           .map(propName=>({propName}));
+                    this.propList = Rsed.props_n.prop_names()
+                                                .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
+                                                .map(propName=>({propName}));
 
                     return;
                 }
@@ -5231,8 +5231,8 @@ const rsed_n = (function()
             {
                 const exeAssetDir = "distributable/assets/rallye-exe/";
 
-                props_n.clear_prop_data();
-                palat_n.clear_palat_data();
+                Rsed.props_n.clear_prop_data();
+                Rsed.palat_n.clear_palat_data();
                 palette_n.reset_palettes();
                 Rsed.camera_n.reset_camera_position();
                 Rsed.maasto_n.clear_maasto_data(true);
@@ -5390,7 +5390,7 @@ window.oncontextmenu = function(event)
 
     // Display a right-click menu for changing the type of the prop under the cursor.
     if (ui_input_n.mouse_hover_type() === ui_input_n.mousePickingType.prop &&
-        !props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+        !Rsed.props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const propDowndown = document.getElementById("prop-dropdown");
         

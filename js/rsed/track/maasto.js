@@ -199,7 +199,7 @@ Rsed.maasto_n = (function()
         publicInterface.change_prop_type = function(propIdx, newPropIdx)
         {
             k_assert((propIdx >= 0 && propIdx < propNames.length), "Attempting to change prop type out of bounds.");
-            propNames[propIdx] = props_n.prop_name_for_idx(newPropIdx);
+            propNames[propIdx] = Rsed.props_n.prop_name_for_idx(newPropIdx);
         }
 
         publicInterface.set_prop_count = function(numProps = 0)
@@ -374,7 +374,7 @@ Rsed.maasto_n = (function()
                         quad.v[3] = new geometry_n.vertex_o( vertX,             height4, (vertZ + tileSize));
                         
                         quad.hasWireframe = wireframeOnRequest;
-                        quad.texture = palat_n.pala_texture(tilePala);
+                        quad.texture = Rsed.palat_n.pala_texture(tilePala);
                     }
 
                     // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
@@ -402,18 +402,18 @@ Rsed.maasto_n = (function()
                             // Spectators.
                             case 240:
                             case 241:
-                            case 242: bill.texture = palat_n.pala_texture(this.spectator_texture_at(tileX, (tileZ - 1)), true);
+                            case 242: bill.texture = Rsed.palat_n.pala_texture(this.spectator_texture_at(tileX, (tileZ - 1)), true);
                             break;
         
                             // Shrubs.
-                            case 243: bill.texture = palat_n.pala_texture(208, true); break;
-                            case 244: bill.texture = palat_n.pala_texture(209, true); break;
-                            case 245: bill.texture = palat_n.pala_texture(210, true); break;
+                            case 243: bill.texture = Rsed.palat_n.pala_texture(208, true); break;
+                            case 244: bill.texture = Rsed.palat_n.pala_texture(209, true); break;
+                            case 245: bill.texture = Rsed.palat_n.pala_texture(210, true); break;
         
                             // Small poles.
                             case 246:
-                            case 247: bill.texture = palat_n.pala_texture(211, true); break;
-                            case 250: bill.texture = palat_n.pala_texture(212, true); break;
+                            case 247: bill.texture = Rsed.palat_n.pala_texture(211, true); break;
+                            case 250: bill.texture = Rsed.palat_n.pala_texture(212, true); break;
         
                             default: k_assert(0, "Unrecognized billboard texture."); continue;
                         }
@@ -429,7 +429,7 @@ Rsed.maasto_n = (function()
                         bridge.v[2] = new geometry_n.vertex_o((vertX + tileSize), trackOffsetY, (vertZ+tileSize));
                         bridge.v[3] = new geometry_n.vertex_o( vertX,             trackOffsetY, (vertZ+tileSize));
 
-                        bridge.texture = palat_n.pala_texture(177, true);
+                        bridge.texture = Rsed.palat_n.pala_texture(177, true);
 
                         polys.push(bridge);
                     }
@@ -450,7 +450,7 @@ Rsed.maasto_n = (function()
                     const groundHeight = trackOffsetY + this.maasto_height_at((pos.x / tileSize), (pos.z / tileSize));
                     const y = (groundHeight + pos.y);
 
-                    const mesh = props_n.prop_mesh(propNames[i], i, x, y, z, wireframeOnRequest);
+                    const mesh = Rsed.props_n.prop_mesh(propNames[i], i, x, y, z, wireframeOnRequest);
                     polys.push(...mesh);
                 }
             }

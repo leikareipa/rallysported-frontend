@@ -8,7 +8,7 @@
 
 "use strict";
 
-const props_n = (function()
+Rsed.props_n = (function()
 {
     // The collection of prop meshes we know about, as an array of vertices for each mesh.
     const propMeshes = [];

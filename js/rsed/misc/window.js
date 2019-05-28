@@ -87,7 +87,7 @@ window.oncontextmenu = function(event)
 
     // Display a right-click menu for changing the type of the prop under the cursor.
     if (ui_input_n.mouse_hover_type() === ui_input_n.mousePickingType.prop &&
-        !props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+        !Rsed.props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const propDowndown = document.getElementById("prop-dropdown");
         

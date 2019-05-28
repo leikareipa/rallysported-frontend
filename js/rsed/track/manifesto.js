@@ -64,7 +64,7 @@ Rsed.manifesto_n = (function()
         const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
         const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[4]));
 
-        Rsed.maasto_n.add_prop_location(rsed_n.underlying_track_id(), props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
+        Rsed.maasto_n.add_prop_location(rsed_n.underlying_track_id(), Rsed.props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
     }
 
     // Command: change_obj_type. Changes the type of the given prop.
@@ -208,7 +208,7 @@ Rsed.manifesto_n = (function()
                 
                 for (let i = 1; i < propNames.length; i++)
                 {
-                    const typeId = props_n.prop_idx_for_name(propNames[i]);
+                    const typeId = Rsed.props_n.prop_idx_for_name(propNames[i]);
 
                     newManifesto += ("4 " + (i + 1) + " " + (typeId + 1) + "\n");
                 }
