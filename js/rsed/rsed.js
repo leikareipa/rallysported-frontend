@@ -34,7 +34,7 @@ const rsed_n = (function()
     }
 
     // Initialize the renderer.
-    const renderer = new Rsed.rsed_renderer_n.rsed_renderer_o("render_container", renderScalingMultiplier);
+    const renderer = new Rsed.renderer_o("render_container", renderScalingMultiplier);
     {
         // This function will run before each frame is painted.
         renderer.set_prerefresh_callback(function()
