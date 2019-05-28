@@ -102,12 +102,12 @@ Rsed.ui_draw_n = (function()
         // Draw the string, one character at a time.
         for (let i = 0; i < string.length; i++)
         {
-            const character = ui_font_n.character(string[i]);
-            const width = ui_font_n.font_width();
-            const height = ui_font_n.font_height();
+            const character = Rsed.ui_font_n.character(string[i]);
+            const width = Rsed.ui_font_n.font_width();
+            const height = Rsed.ui_font_n.font_height();
             draw_image(character, null, width, height, x, y, false);
             
-            x += ((ui_font_n.font_width() / 2) + 0.3);
+            x += ((Rsed.ui_font_n.font_width() / 2) + 0.3);
         }
     }
 
@@ -134,8 +134,8 @@ Rsed.ui_draw_n = (function()
     function draw_watermark()
     {
         draw_string("RALLY", -.012, 3);
-        draw_string("SPORT", -.012, 3 + ui_font_n.font_height()-1);
-        draw_string("ED%", -.012, 3 + ((ui_font_n.font_height()-1) * 2));
+        draw_string("SPORT", -.012, 3 + Rsed.ui_font_n.font_height()-1);
+        draw_string("ED%", -.012, 3 + ((Rsed.ui_font_n.font_height()-1) * 2));
     }
 
     function draw_footer_info()
@@ -165,13 +165,13 @@ Rsed.ui_draw_n = (function()
             }
         }
 
-        draw_string(str, 0, rsed_n.render_height() - ui_font_n.font_height()-0);
+        draw_string(str, 0, rsed_n.render_height() - Rsed.ui_font_n.font_height()-0);
     }
 
     function draw_fps()
     {
         const fpsString = "FPS: " + Math.round((1000 / (rsed_n.render_latency() || 1)));
-        draw_string(fpsString, pixelSurface.width - (fpsString.length * ui_font_n.font_width()/2) - 73, 3);
+        draw_string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui_font_n.font_width()/2) - 73, 3);
     }
 
     function draw_palat_pane()
@@ -301,7 +301,7 @@ Rsed.ui_draw_n = (function()
 
         draw_string("TRACK SIZE:" + Rsed.maasto_n.track_side_length() + "," + Rsed.maasto_n.track_side_length(),
                     ((pixelSurface.width / 2) - (width / 2)),
-                    ((pixelSurface.height / 2) - (height / 2)) - ui_font_n.font_height());
+                    ((pixelSurface.height / 2) - (height / 2)) - Rsed.ui_font_n.font_height());
     }
 
     const publicInterface = {};
@@ -315,7 +315,7 @@ Rsed.ui_draw_n = (function()
 
             pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
 
-            draw_string(">RALLYSPORTED CRASHED. SORRY ABOUT THAT!", 2, ui_font_n.font_height());
+            draw_string(">RALLYSPORTED CRASHED. SORRY ABOUT THAT!", 2, Rsed.ui_font_n.font_height());
 
             renderSurface.exposed().putImageData(pixelSurface, 0, 0);
             pixelSurface = null;

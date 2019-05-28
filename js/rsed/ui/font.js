@@ -10,7 +10,7 @@
 
 "use strict";
 
-const ui_font_n = (function()
+Rsed.ui_font_n = (function()
 {
     const charWidth = 8;
     const charHeight = 8;
