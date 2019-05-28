@@ -17,9 +17,14 @@ Rsed.ngon_fill_n = (function()
     {
         publicInterface.fill_polygons = function(polygons = [])
         {
-            Rsed.assert((this instanceof Rsed.render_surface_n.render_surface_o), "Expected the function to be bound to a render surface.");
-            Rsed.assert((polygons[0] instanceof Rsed.geometry_n.polygon_o), "Expected polygons.");
-            Rsed.assert((polygons.length > 0), "Received an empty list of triangles to rasterize.");
+            Rsed.assert && (this instanceof Rsed.render_surface_n.render_surface_o)
+                        || Rsed.throw("Expected the function to be bound to a render surface.");
+
+            Rsed.assert && (polygons[0] instanceof Rsed.geometry_n.polygon_o)
+                        || Rsed.throw("Expected polygons.");
+
+            Rsed.assert && (polygons.length > 0)
+                        || Rsed.throw("Received an empty list of triangles to rasterize.");
 
             const surface = this;
             const width = surface.width;
@@ -30,7 +35,8 @@ Rsed.ngon_fill_n = (function()
 
             for (let i = 0; i < polygons.length; i++)
             {
-                Rsed.assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon");
+                Rsed.assert && (polygons[i] instanceof Rsed.geometry_n.polygon_o)
+                            || Rsed.throw("Expected a polygon");
 
                 const poly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
                 poly.clone_from(polygons[i]);
@@ -80,8 +86,11 @@ Rsed.ngon_fill_n = (function()
                     leftVerts.sort(function(a, b){ return (a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1); });
                     rightVerts.sort(function(a, b){ return (a.y === b.y)? 0 : ((a.y > b.y)? -1 : 1); });
 
-                    Rsed.assert(((leftVerts.length !== 0) && (rightVerts.length !== 0)), "Expected each side list to have at least one vertex.");
-                    Rsed.assert(((leftVerts.length + rightVerts.length) === poly.v.length), "Vertices appear to have gone missing.");
+                    Rsed.assert && ((leftVerts.length !== 0) && (rightVerts.length !== 0))
+                                || Rsed.throw("Expected each side list to have at least one vertex.");
+
+                    Rsed.assert && ((leftVerts.length + rightVerts.length) === poly.v.length)
+                                || Rsed.throw("Vertices appear to have gone missing.");
                 }
 
                 // Create arrays where the index represents the y coordinate and the values x

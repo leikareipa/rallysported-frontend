@@ -44,7 +44,7 @@ Rsed.camera_n = (function()
 
         publicInterface.rotate_camera = function(rotX, rotY, rotZ)
         {
-            Rsed.assert(0, "This function has not yet been prepared for use.");
+            Rsed.throw("This function has not yet been prepared for use.");
         }
 
         publicInterface.pos_x = function() { return position.x; }

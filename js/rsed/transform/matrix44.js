@@ -42,7 +42,9 @@ Rsed.matrix44_n = (function()
     {
         publicInterface.multiply_matrices = function(m1 = [], m2 = [])
         {
-            Rsed.assert(((m1.length === 16) && (m2.length === 16)), "Expected 4 x 4 matrices.");
+            Rsed.assert && ((m1.length === 16) &&
+                            (m2.length === 16))
+                        || Rsed.throw("Expected 4 x 4 matrices.");
 
             let mResult = [];
             for (let i = 0; i < 4; i++)
@@ -56,7 +58,9 @@ Rsed.matrix44_n = (function()
                 }
             }
 
-            Rsed.assert((mResult.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert && (mResult.length === 16)
+                        || Rsed.throw("Expected a 4 x 4 matrix.");
+
             return mResult;
         }
 
@@ -68,7 +72,9 @@ Rsed.matrix44_n = (function()
             m[2]=0; m[6]=0; m[10]=1; m[14]=z;
             m[3]=0; m[7]=0; m[11]=0; m[15]=1;
 
-            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert && (m.length === 16)
+                        || Rsed.throw("Expected a 4 x 4 matrix.");
+
             return m;
         }
 
@@ -94,7 +100,9 @@ Rsed.matrix44_n = (function()
             const temp = Rsed.matrix44_n.multiply_matrices(m2, m3);
             const mResult = Rsed.matrix44_n.multiply_matrices(m1, temp);
 
-            Rsed.assert((mResult.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert && (mResult.length === 16)
+                        || Rsed.throw("Expected a 4 x 4 matrix.");
+
             return mResult;
         }
 
@@ -109,7 +117,9 @@ Rsed.matrix44_n = (function()
             m[2]=0;                             m[6]=0;             m[10]=((-zNear - zFar) / zRange); m[14]=(2 * zFar * (zNear / zRange));
             m[3]=0;                             m[7]=0;             m[11]=1;                          m[15]=0;
 
-            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert && (m.length === 16)
+                        || Rsed.throw("Expected a 4 x 4 matrix.");
+
             return m;
         }
 
@@ -121,7 +131,9 @@ Rsed.matrix44_n = (function()
             m[2]=0;           m[6]=0;             m[10]=1; m[14]=0;
             m[3]=0;           m[7]=0;             m[11]=0; m[15]=1;
 
-            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert && (m.length === 16)
+                        || Rsed.throw("Expected a 4 x 4 matrix.");
+
             return m;
         }
 
@@ -133,7 +145,9 @@ Rsed.matrix44_n = (function()
             m[2]=0; m[6]=0; m[10]=1; m[14]=0;
             m[3]=0; m[7]=0; m[11]=0; m[15]=1;
 
-            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert && (m.length === 16)
+                        || Rsed.throw("Expected a 4 x 4 matrix.");
+
             return m;
         }
     }

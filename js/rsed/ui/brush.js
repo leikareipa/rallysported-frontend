@@ -71,7 +71,7 @@ Rsed.ui_brush_n = (function()
 
                             break;
                         }
-                        default: Rsed.assert(0, "Unknown brush action.");
+                        default: Rsed.throw("Unknown brush action.");
                     }
                 }
             }
@@ -79,7 +79,9 @@ Rsed.ui_brush_n = (function()
 
         publicInterface.set_brush_size = function(newSize = 0)
         {
-            Rsed.assert((newSize >= 0), "Attempted to set an invalid brush size.");
+            Rsed.assert && (newSize >= 0)
+                        || Rsed.throw("Attempted to set an invalid brush size.");
+
             brushSize = newSize;
         }
 
@@ -90,7 +92,9 @@ Rsed.ui_brush_n = (function()
 
         publicInterface.set_brush_pala_idx = function(newPalaIdx = 0)
         {
-            Rsed.assert((newPalaIdx >= 0), "Attempted to set an invalid brush PALA index.");
+            Rsed.assert && (newPalaIdx >= 0)
+                        || Rsed.throw("Attempted to set an invalid brush PALA index.");
+
             brushPalaIdx = newPalaIdx;
         }
         

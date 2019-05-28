@@ -17,7 +17,9 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 {
     this.renderSurfaceId = "render_surface_canvas";
 
-    Rsed.assert((document.getElementById(containerElementId) !== null), "Can't find this element.")
+    Rsed.assert && (document.getElementById(containerElementId) !== null)
+                || Rsed.throw("Can't find this element.")
+
     this.renderSurface = new Rsed.render_surface_n.render_surface_o(this.renderSurfaceId,
                                                                     "canvas",
                                                                     containerElementId,
@@ -52,13 +54,17 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 
     this.set_prerefresh_callback = function(preRefreshFn)
     {
-        Rsed.assert((preRefreshFn instanceof Function), "Expected a function for the refresh callback.");
+        Rsed.assert && (preRefreshFn instanceof Function)
+                    || Rsed.throw("Expected a function for the refresh callback.");
+
         this.preRefreshCallbackFn = preRefreshFn;
     }
 
     this.set_resize_callback = function(resizeFn)
     {
-        Rsed.assert((resizeFn instanceof Function), "Expected a function. for the resize callback.");
+        Rsed.assert && (resizeFn instanceof Function)
+                    || Rsed.throw("Expected a function. for the resize callback.");
+
         this.resizeCallbackFn = resizeFn;
     }
 
@@ -144,7 +150,9 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
     // once and you're good.
     this.register_mesh = function(mesh = Rsed.geometry_n.polygon_mesh_o)
     {
-        Rsed.assert((mesh instanceof Rsed.geometry_n.polygon_mesh_o), "Expected a polygon mesh.");
+        Rsed.assert && (mesh instanceof Rsed.geometry_n.polygon_mesh_o)
+                    || Rsed.throw("Expected a polygon mesh.");
+
         this.meshes.push(mesh);
     }
 

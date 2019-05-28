@@ -158,7 +158,9 @@ Rsed.palette_n = (function()
         // Set new r,g,b values for the given palette entry in the currently-active palette.
         publicInterface.modify_palette_entry = function(paletteIdx, r, g, b)
         {
-            Rsed.assert((paletteIdx >= 0 && paletteIdx < palettes[currentPalette].length));
+            Rsed.assert && ((paletteIdx >= 0) &&
+                            (paletteIdx < palettes[currentPalette].length))
+                        || Rsed.throw("Invalid palette index.");
 
             palettes[currentPalette][paletteIdx].r = r;
             palettes[currentPalette][paletteIdx].g = g;
@@ -167,7 +169,9 @@ Rsed.palette_n = (function()
 
         publicInterface.set_palette_for_track = function(trackId = 0)
         {
-            Rsed.assert(((trackId >= 1) && (trackId <= 8)), "Trying to set palette for a track index out of bounds.");
+            Rsed.assert && ((trackId >= 1) &&
+                            (trackId <= 8))
+                        || Rsed.throw("Trying to set palette for a track index out of bounds.");
 
             switch (trackId)
             {
@@ -179,7 +183,7 @@ Rsed.palette_n = (function()
                 case 7: currentPalette = 0; break;
                 case 5: currentPalette = 1; break;
                 case 8: currentPalette = 3; break;
-                default: Rsed.assert(0, "Unknown track id for setting a palette."); break;
+                default: Rsed.throw("Unknown track id for setting a palette."); break;
             }
         }
 

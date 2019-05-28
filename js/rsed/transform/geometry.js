@@ -25,7 +25,8 @@ Rsed.geometry_n = {};
 
         this.cross = function(other = Rsed.geometry_n.vector3_o)
         {
-            Rsed.assert((other instanceof Rsed.geometry_n.vector3_o), "Expected a vector.");
+            Rsed.assert && (other instanceof Rsed.geometry_n.vector3_o)
+                        || Rsed.throw("Expected a vector.");
 
             const c = new Rsed.geometry_n.vector3_o();
 
@@ -63,7 +64,8 @@ Rsed.geometry_n = {};
         // Transform the vertices by the given matrix.
         this.transform = function(m = [])
         {
-            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix to transform the vertex by.");
+            Rsed.assert && (m.length === 16)
+                        || Rsed.throw("Expected a 4 x 4 matrix to transform the vertex by.");
             
             const x_ = ((m[0] * this.x) + (m[4] * this.y) + (m[ 8] * this.z) + (m[12] * this.w));
             const y_ = ((m[1] * this.x) + (m[5] * this.y) + (m[ 9] * this.z) + (m[13] * this.w));
@@ -79,7 +81,9 @@ Rsed.geometry_n = {};
 
     Rsed.geometry_n.polygon_o = function(numVertices = 3)
     {
-        Rsed.assert((numVertices > 2) && (numVertices < 10), "Bad vertex count.");
+        Rsed.assert && ((numVertices > 2) &&
+                        (numVertices < 10))
+                    || Rsed.throw("Bad vertex count.");
 
         this.v = [];
         for (let i = 0; i < numVertices; i++)
@@ -103,8 +107,9 @@ Rsed.geometry_n = {};
         // Duplicates the given polygon's relevant properties onto this one.
         this.clone_from = function(otherPolygon = {})
         {
-            Rsed.assert(((otherPolygon instanceof Rsed.geometry_n.polygon_o) &&
-                      (this.v.length === otherPolygon.v.length)), "Incompatible polygons for cloning.");
+            Rsed.assert && ((otherPolygon instanceof Rsed.geometry_n.polygon_o) &&
+                            (this.v.length === otherPolygon.v.length))
+                        || Rsed.throw("Incompatible polygons for cloning.");
 
             // Vertices.
             for (let i = 0; i < otherPolygon.v.length; i++)
@@ -147,7 +152,6 @@ Rsed.geometry_n = {};
             }
             else
             {
-                //Rsed.assert(0, "Unsupported number of vertices for backface culling.");
                 return true;
             }
         };
@@ -155,7 +159,8 @@ Rsed.geometry_n = {};
         // Transform the polygon's vertices by the given matrix.
         this.transform = function(m = [])
         {
-            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix to transform the polygon by.");
+            Rsed.assert && (m.length === 16)
+                        || Rsed.throw("Expected a 4 x 4 matrix to transform the polygon by.");
             
             for (let i = 0; i < this.v.length; i++)
             {
@@ -178,14 +183,20 @@ Rsed.geometry_n = {};
                                          translation = new Rsed.geometry_n.vector3_o(0, 0, 0),
                                          rotation = new Rsed.geometry_n.vector3_o(0, 0, 0))
     {
-        Rsed.assert((polygons.length > 0), "Expected a non-empty list of polygons.");
-        Rsed.assert((translation instanceof Rsed.geometry_n.vector3_o), "Expected a translation vector.");
-        Rsed.assert((rotation instanceof Rsed.geometry_n.vector3_o), "Expected a rotation vector.");
+        Rsed.assert && (polygons.length > 0)
+                    || Rsed.throw("Expected a non-empty list of polygons.");
+
+        Rsed.assert && (translation instanceof Rsed.geometry_n.vector3_o)
+                    || Rsed.throw("Expected a translation vector.");
+
+        Rsed.assert && (rotation instanceof Rsed.geometry_n.vector3_o)
+                    || Rsed.throw("Expected a rotation vector.");
 
         this.polygons = [];
         for (let i = 0; i < polygons.length; i++)
         {
-            Rsed.assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon.");
+            Rsed.assert && (polygons[i] instanceof Rsed.geometry_n.polygon_o)
+                        || Rsed.throw("Expected a polygon.");
 
             const newPoly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
             newPoly.clone_from(polygons[i]);
@@ -205,7 +216,9 @@ Rsed.geometry_n = {};
             const m = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(this.translationVec.x, this.translationVec.y, this.translationVec.z),
                                                    Rsed.matrix44_n.rotation_matrix(this.rotationVec.x, this.rotationVec.y, this.rotationVec.z));
 
-            Rsed.assert((m.length === 16), "Expected to return a 4 x 4 object space matrix.");
+            Rsed.assert && (m.length === 16)
+                        || Rsed.throw("Expected to return a 4 x 4 object space matrix.");
+                        
             return m;
         }
 

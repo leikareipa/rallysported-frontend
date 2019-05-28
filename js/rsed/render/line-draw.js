@@ -17,8 +17,9 @@ Rsed.draw_line_n = (function()
                                                    vert2 = Rsed.geometry_n.vertex_o,
                                                    array = [], yOffset = 0)
         {
-            Rsed.assert((vert1 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
-            Rsed.assert((vert2 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
+            Rsed.assert && ((vert1 instanceof Rsed.geometry_n.vertex_o) &&
+                            (vert2 instanceof Rsed.geometry_n.vertex_o))
+                        || Rsed.throw("Expected a vertex.");
 
             yOffset = Math.floor(yOffset);
 
@@ -76,9 +77,12 @@ Rsed.draw_line_n = (function()
                                                     canvas = [], width = 0, height = 0,
                                                     r = 0, g = 0, b = 0)
         {
-            Rsed.assert((canvas.length > 0), "Expected the canvas to be a non-zero-length array.");
-            Rsed.assert((vert1 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
-            Rsed.assert((vert2 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
+            Rsed.assert && (canvas.length > 0)
+                        || Rsed.throw("Expected the canvas to be a non-zero-length array.");
+            
+            Rsed.assert && ((vert1 instanceof Rsed.geometry_n.vertex_o) &&
+                            (vert2 instanceof Rsed.geometry_n.vertex_o))
+                        || Rsed.throw("Expected a vertex.");
 
             function put_pixel(x = 0, y = 0)
             {

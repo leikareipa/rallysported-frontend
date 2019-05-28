@@ -61,14 +61,16 @@ Rsed.maasto_n = (function()
 
         publicInterface.num_props = function()
         {
-            Rsed.assert((propLocations.length === propNames.length), "Detected mismatched prop data.");
+            Rsed.assert && (propLocations.length === propNames.length)
+                        || Rsed.throw("Detected mismatched prop data.");
 
             return propLocations.length;
         }
 
         publicInterface.remove_prop = function(propIdx)
         {
-            Rsed.assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to delete a prop whose index is out of bounds.");
+            Rsed.assert && (propIdx >= 0 && propIdx < propLocations.length)
+                        || Rsed.throw("Trying to delete a prop whose index is out of bounds.");
 
             // Don't allow removing the finish line, since a track needs to have one at all times. But if you
             // really want to remove it, and you know what you're doing, you need to call some other function,
@@ -92,7 +94,8 @@ Rsed.maasto_n = (function()
 
         publicInterface.set_prop_position = function(propIdx, x, z)
         {
-            Rsed.assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index is out of bounds.");
+            Rsed.assert && (propIdx >= 0 && propIdx < propLocations.length)
+                        || Rsed.throw("Trying to move a prop whose index is out of bounds.");
 
             /// TODO: For now, this doesn't clamp the values to track boundaries, as some tracks made with
             /// old versions of RallySportED may try to put props outside of those boundaries (and expect
@@ -103,7 +106,8 @@ Rsed.maasto_n = (function()
         
         publicInterface.move_prop = function(propIdx, deltaX, deltaZ)
         {
-            Rsed.assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index is out of bounds.");
+            Rsed.assert && (propIdx >= 0 && propIdx < propLocations.length)
+                        || Rsed.throw("Trying to move a prop whose index is out of bounds.");
 
             propLocations[propIdx].x = this.clamped_to_track_prop_boundaries(propLocations[propIdx].x + deltaX);
             propLocations[propIdx].z = this.clamped_to_track_prop_boundaries(propLocations[propIdx].z + deltaZ);
@@ -162,7 +166,8 @@ Rsed.maasto_n = (function()
                 bytes[i*2+1] = b2;
             }
 
-            Rsed.assert((bytes.length === originalMaastoBytesize), "Returning too many/few bytes in the saveable MAASTO buffer.");
+            Rsed.assert && (bytes.length === originalMaastoBytesize)
+                        || Rsed.throw("Returning too many/few bytes in the saveable MAASTO buffer.");
 
             return bytes;
         }
@@ -177,7 +182,8 @@ Rsed.maasto_n = (function()
                 bytes[i] = tilemap[i];
             }
 
-            Rsed.assert((bytes.length === originalVarimaaBytesize), "Returning too many/few bytes in the saveable MAASTO buffer.");
+            Rsed.assert && (bytes.length === originalVarimaaBytesize)
+                        || Rsed.throw("Returning too many/few bytes in the saveable MAASTO buffer.");
 
             return bytes;
         }
@@ -185,27 +191,34 @@ Rsed.maasto_n = (function()
         // Returns the x,y,z track coordinates of the given prop.
         publicInterface.position_of_prop = function(propId)
         {
-            Rsed.assert((propId >= 0 && propId < propLocations.length), "Querying prop position out of bounds.");
+            Rsed.assert && (propId >= 0 && propId < propLocations.length)
+                        || Rsed.throw("Querying prop position out of bounds.");
+
             return propLocations[propId];
         }
 
         // Returns the name of the given prop.
         publicInterface.name_of_prop = function(propId)
         {
-            Rsed.assert((propId >= 0 && propId < propNames.length), "Querying prop position out of bounds.");
+            Rsed.assert && (propId >= 0 && propId < propNames.length)
+                        || Rsed.throw("Querying prop position out of bounds.");
+
             return propNames[propId].slice(0);
         }
 
         publicInterface.change_prop_type = function(propIdx, newPropIdx)
         {
-            Rsed.assert((propIdx >= 0 && propIdx < propNames.length), "Attempting to change prop type out of bounds.");
+            Rsed.assert && (propIdx >= 0 && propIdx < propNames.length)
+                        || Rsed.throw("Attempting to change prop type out of bounds.");
+
             propNames[propIdx] = Rsed.props_n.prop_name_for_idx(newPropIdx);
         }
 
         publicInterface.set_prop_count = function(numProps = 0)
         {
             // Each track needs at least one prop, i.e. the starting line.
-            Rsed.assert(((numProps >= 1) && (numProps <= propLocations.length)), "Attempting to set prop count out of bounds (" + numProps + ").");
+            Rsed.assert && ((numProps >= 1) && (numProps <= propLocations.length))
+                        || Rsed.throw("Attempting to set prop count out of bounds (" + numProps + ").");
 
             propLocations.length = numProps;
             propNames.length = numProps;
@@ -227,8 +240,11 @@ Rsed.maasto_n = (function()
 
         publicInterface.add_prop_location = function(trackId = 0, propName = "", x = 0, y = 0, z = 0)
         {
-            Rsed.assert((trackId >= 0 && trackId <= 8), "Track id is out of bounds.");
-            Rsed.assert((propName.length > 0), "Expected a non-empty prop name.");
+            Rsed.assert && (trackId >= 0 && trackId <= 8)
+                        || Rsed.throw("Track id is out of bounds.");
+
+            Rsed.assert && (propName.length > 0)
+                        || Rsed.throw("Expected a non-empty prop name.");
 
             /// Temp hack.
             if (trackId !== Rsed.main_n.underlying_track_id()) return;
@@ -247,8 +263,11 @@ Rsed.maasto_n = (function()
         // Call this with a n array of height points (sideLength * sideLength) long.
         publicInterface.set_maasto = function(sideLength = 0, heights = [])
         {
-            Rsed.assert((heights[0] != null), "Can't set the MAASTO with potentially bad data.");
-            Rsed.assert((heights.length === (sideLength * sideLength)), "Incorrect number of height points for MAASTO.");
+            Rsed.assert && (heights[0] != null)
+                        || Rsed.throw("Can't set the MAASTO with potentially bad data.");
+
+            Rsed.assert && (heights.length === (sideLength * sideLength))
+                        || Rsed.throw("Incorrect number of height points for MAASTO.");
 
             maastoSideLength = sideLength;
             heightmap.push(...heights);
@@ -256,8 +275,9 @@ Rsed.maasto_n = (function()
 
         publicInterface.set_maasto_height_at = function(x = 0, y = 0, newHeight = 0)
         {
-            Rsed.assert(((x >= 0 && x < maastoSideLength) &&
-                      (y >= 0 && y < maastoSideLength)), "Attempting to set MAASTO height out of bounds (" + x + "," + y + ").");
+            Rsed.assert && ((x >= 0 && x < maastoSideLength) &&
+                            (y >= 0 && y < maastoSideLength))
+                        || Rsed.throw("Attempting to set MAASTO height out of bounds (" + x + "," + y + ").");
 
             if (newHeight > maxHeightmapValue) newHeight = maxHeightmapValue;
             else if (newHeight < minHeightmapValue) newHeight = minHeightmapValue;
@@ -267,15 +287,18 @@ Rsed.maasto_n = (function()
 
         publicInterface.set_varimaa_tile_at = function(x = 0, y = 0, palaIdx = 0)
         {
-            Rsed.assert(((x >= 0 && x < maastoSideLength) &&
-                      (y >= 0 && y < maastoSideLength)), "Attempting to set a VARIMAA tile out of bounds (" + x + "," + y + ").");
+            Rsed.assert &&((x >= 0 && x < maastoSideLength) &&
+                           (y >= 0 && y < maastoSideLength))
+                        || Rsed.throw("Attempting to set a VARIMAA tile out of bounds (" + x + "," + y + ").");
 
             tilemap[x + y * maastoSideLength] = palaIdx;
         }
 
         publicInterface.set_varimaa = function(sideLength = 0, tiles = [])
         {
-            Rsed.assert((sideLength === maastoSideLength), "Expected the MAASTO side length to be set and identical to that of the VARIMAA.");
+            Rsed.assert && (sideLength === maastoSideLength)
+                        || Rsed.throw("Expected the MAASTO side length to be set and identical to that of the VARIMAA.");
+
             tilemap.push(...tiles);
         }
 
@@ -415,7 +438,7 @@ Rsed.maasto_n = (function()
                             case 247: bill.texture = Rsed.palat_n.pala_texture(211, true); break;
                             case 250: bill.texture = Rsed.palat_n.pala_texture(212, true); break;
         
-                            default: Rsed.assert(0, "Unrecognized billboard texture."); continue;
+                            default: Rsed.throw("Unrecognized billboard texture."); continue;
                         }
 
                         polys.push(bill);

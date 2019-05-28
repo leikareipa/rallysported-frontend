@@ -45,10 +45,10 @@ const resource_loader_n = (function()
     //
     function load_prop_locations(data = Object)
     {
-        Rsed.assert((data.tracks != null), "Expected a JSON object containing track prop locations.");
+        Rsed.assert && (data.tracks != null) || "Expected a JSON object containing track prop locations.";
         data.tracks.forEach(track=>
         {
-            Rsed.assert((track.props != null), "Expected a JSON object containing track prop locations.");
+            Rsed.assert && (track.props != null) || "Expected a JSON object containing track prop locations.";
             track.props.forEach(prop=>
             {
                 Rsed.maasto_n.add_prop_location(track.trackId, prop.name, prop.x, prop.y, prop.z);
@@ -75,12 +75,16 @@ const resource_loader_n = (function()
     //
     function load_prop_meshes(data = Object)
     {
-        Rsed.assert((data.props != null), "Expected a JSON object containing prop meshes.");
+        Rsed.assert && (data.props != null)
+                    || Rsed.throw("Expected a JSON object containing prop meshes.");
+
         data.props.forEach(prop=>
         {
             const convertedPolygons = [];
 
-            Rsed.assert((prop.polygons != null), "Encountered a track prop with no polygons.");
+            Rsed.assert && (prop.polygons != null)
+                        || Rsed.throw("Encountered a track prop with no polygons.");
+
             prop.polygons.forEach(propPoly=>
             {
                 const numVertices = (propPoly.verts.length / 3);
@@ -89,7 +93,9 @@ const resource_loader_n = (function()
                 convertedPoly.texture = Rsed.props_n.prop_texture(propPoly.textureIdx);
                 convertedPoly.color = Rsed.palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
 
-                Rsed.assert((convertedPoly.v.length === numVertices), "Incorrect number of vertices in prop polygon.");
+                Rsed.assert && (convertedPoly.v.length === numVertices)
+                            || Rsed.throw("Incorrect number of vertices in prop polygon.");
+
                 convertedPoly.v.forEach((vertex, idx)=>
                 {
                     vertex.x = propPoly.verts[idx*3];
@@ -152,7 +158,8 @@ const resource_loader_n = (function()
         // function.
         publicInterface.load_project_data = function(args = {}, returnCallback)
         {
-            Rsed.assert((returnCallback instanceof Function), "Expected to receive a callback function.");
+            Rsed.assert && (returnCallback instanceof Function)
+                        || Rsed.throw("Expected to receive a callback function.");
 
             const projectData = {};
 
@@ -242,11 +249,11 @@ const resource_loader_n = (function()
                         })();
                     }
                 })
-                .catch((error)=>{Rsed.assert(0, "Failed to extract project data (JSZip error: '" + error + "').");});
+                .catch((error)=>{Rsed.throw("Failed to extract project data (JSZip error: '" + error + "').");});
             }
             else
             {
-                Rsed.assert(0, "Unknown file format for loading project data.");
+                Rsed.throw("Unknown file format for loading project data.");
             }
         }
 
@@ -262,7 +269,8 @@ const resource_loader_n = (function()
             // How many textures we expect to receive.
             const numPalas = 256;
 
-            Rsed.assert((bytes.byteLength === (numPalas * palaWidth * palaHeight)), "Incorrect number of bytes for PALA data.");
+            Rsed.assert && (bytes.byteLength === (numPalas * palaWidth * palaHeight))
+                        || Rsed.throw("Incorrect number of bytes for PALA data.");
 
             // Add each PALA as an individual texture.
             for (let i = 0; i < numPalas; i++)
@@ -297,13 +305,18 @@ const resource_loader_n = (function()
         publicInterface.load_varimaa_data = function(bytes)
         {
             const tilesPerSide = Math.sqrt(bytes.byteLength);
-            Rsed.assert(((tilesPerSide === 64) || (tilesPerSide === 128)), "Unsupported VARIMAA size.");
+
+            Rsed.assert && ((tilesPerSide === 64) || (tilesPerSide === 128))
+                        || Rsed.throw("Unsupported VARIMAA size.");
 
             // Verify the data.
             for (let i = 0; i < bytes.byteLength; i++)
             {
-                Rsed.assert((Number.isInteger(bytes[i])), "Detected invalid VARIMAA data.");
-                Rsed.assert((bytes[i] >= 0 && bytes[i] <= 255), "Detected invalid VARIMAA data.");
+                Rsed.assert && (Number.isInteger(bytes[i]))
+                            || Rsed.throw("Detected invalid VARIMAA data.");
+
+                Rsed.assert && (bytes[i] >= 0 && bytes[i] <= 255)
+                            || Rsed.throw("Detected invalid VARIMAA data.");
             }
 
             Rsed.maasto_n.set_varimaa(tilesPerSide, bytes);
@@ -315,7 +328,9 @@ const resource_loader_n = (function()
         publicInterface.load_maasto_data = function(bytes)
         {
             const tilesPerSide = Math.sqrt(bytes.byteLength / 2);
-            Rsed.assert(((tilesPerSide === 64) || (tilesPerSide === 128)), "Unsupported MAASTO size.");
+            Rsed.assert && ((tilesPerSide === 64) ||
+                            (tilesPerSide === 128))
+                        || Rsed.throw("Unsupported MAASTO size.");
 
             // Convert Rally-Sport's two-byte height format into RallySportED's single values.
             const convertedHeightmap = [];
@@ -330,7 +345,8 @@ const resource_loader_n = (function()
                 convertedHeightmap.push(height);
             }
 
-            Rsed.assert((convertedHeightmap.length === (tilesPerSide * tilesPerSide)), "Detected an invalid MAASTO height conversion.");
+            Rsed.assert && (convertedHeightmap.length === (tilesPerSide * tilesPerSide))
+                        || Rsed.throw("Detected an invalid MAASTO height conversion.");
 
             Rsed.maasto_n.set_maasto(tilesPerSide, convertedHeightmap);
         }
@@ -338,8 +354,11 @@ const resource_loader_n = (function()
         // Loads from a JSON file resources of the given type.
         publicInterface.load_json_resource = function(filename = "", resourceType = "")
         {
-            Rsed.assert(((typeof filename === "string") && (filename.length > 0)), "Expected a non-null filename string.");
-            Rsed.assert(jsonResourceTypes.includes(resourceType), "Expected a valid resource type.");
+            Rsed.assert && ((typeof filename === "string") && (filename.length > 0))
+                        || Rsed.throw("Expected a non-null filename string.");
+
+            Rsed.assert && (jsonResourceTypes.includes(resourceType))
+                        || Rsed.throw("Expected a valid resource type.");
 
             return new Promise((resolve, reject)=>
             {
@@ -351,12 +370,12 @@ const resource_loader_n = (function()
                     {
                         case "prop-meshes": load_prop_meshes(data); break;
                         case "prop-locations": load_prop_locations(data); break;
-                        default: Rsed.assert(0, "Unknown resource type."); reject(); break;
+                        default: Rsed.throw("Unknown resource type."); reject(); break;
                     }
                     
                     resolve();
                 })
-                .catch((error)=>{Rsed.assert(0, "Failed to fetch resource file " + filename + ". Error: " + error)});
+                .catch((error)=>{Rsed.throw("Failed to fetch resource file " + filename + ". Error: " + error)});
             });
         }
 
@@ -366,8 +385,11 @@ const resource_loader_n = (function()
         // is required for some of the resource types.
         publicInterface.load_binary_resource = function(filename = "", resourceType = "", receptacle)
         {
-            Rsed.assert((filename.length > 0), "Expected a non-empty string.");
-            Rsed.assert(binaryResourceTypes.includes(resourceType), "Expected a valid resource type.");
+            Rsed.assert && (filename.length > 0)
+                        || Rsed.throw("Expected a non-empty string.");
+
+            Rsed.assert && (binaryResourceTypes.includes(resourceType))
+                        || Rsed.throw("Expected a valid resource type.");
 
             return new Promise((resolve, reject)=>
             {
@@ -376,7 +398,9 @@ const resource_loader_n = (function()
                 .then((dataBuffer)=>
                 {
                     const bytes = new Uint8Array(dataBuffer);
-                    Rsed.assert((bytes != null), "Received invalid binary file data.");
+
+                    Rsed.assert && (bytes != null)
+                                || Rsed.throw("Received invalid binary file data.");
 
                     switch (resourceType)
                     {
@@ -386,12 +410,12 @@ const resource_loader_n = (function()
                         case "palat": publicInterface.load_palat_data(bytes); break;
                         case "maasto": publicInterface.load_maasto_data(bytes); break;
                         case "varimaa": publicInterface.load_varimaa_data(bytes); break;
-                        default: Rsed.assert(0, "Unknown resource type."); reject(); break;
+                        default: Rsed.throw("Unknown resource type."); reject(); break;
                     }
 
                     resolve();
                 })
-                .catch((error)=>{Rsed.assert(0, "Failed to fetch resource file " + filename + ". Error: " + error)});
+                .catch((error)=>{Rsed.throw("Failed to fetch resource file " + filename + ". Error: " + error)});
             });
         }
     }

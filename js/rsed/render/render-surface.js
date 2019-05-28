@@ -21,10 +21,17 @@ Rsed.render_surface_n = (function()
                                                     containerId = "",
                                                     polyFillFn = Function)
         {
-            Rsed.assert((surfaceElementId.length > 0), "Expected a non-null string.");
-            Rsed.assert((surfaceElementName.length > 0), "Expected a non-null string.");
-            Rsed.assert((containerId.length > 0), "Expected a non-null string.");
-            Rsed.assert((polyFillFn != null), "Expected a non-null polyfill function.");
+            Rsed.assert && (surfaceElementId.length > 0)
+                        || Rsed.throw("Expected a non-null string.");
+
+            Rsed.assert && (surfaceElementName.length > 0)
+                        || Rsed.throw("Expected a non-null string.");
+
+            Rsed.assert && (containerId.length > 0)
+                        || Rsed.throw("Expected a non-null string.");
+
+            Rsed.assert && (polyFillFn != null)
+                        || Rsed.throw("Expected a non-null polyfill function.");
 
             this.elementId = surfaceElementId;
             this.elementName = surfaceElementName;
@@ -35,7 +42,8 @@ Rsed.render_surface_n = (function()
             this.height = null;
             
             this.containerElement = document.getElementById(this.containerId);
-            Rsed.assert((this.containerElement != null), "Couldn't find a render surface element with the given id.");
+            Rsed.assert && (this.containerElement != null)
+                        || Rsed.throw("Couldn't find a render surface element with the given id.");
 
             this.element = document.getElementById(this.elementId);
 
@@ -62,7 +70,7 @@ Rsed.render_surface_n = (function()
                     }
                     default:
                     {
-                        Rsed.assert(0, "Unknown render surface element id.");
+                        Rsed.throw("Unknown render surface element id.");
                         break;
                     }
                 }
@@ -71,9 +79,14 @@ Rsed.render_surface_n = (function()
                 this.element.setAttribute("class", "canvas");
                 this.containerElement.appendChild(this.element);
             }
-            Rsed.assert((this.element.parentNode === this.containerElement), "The render surface element doesn't appear to be embedded in the given container element.");
-            Rsed.assert((this.element != null), "Couldn't find a render surface element with the given id.");
-            Rsed.assert((this.element.tagName.toLowerCase() === this.elementName), "The element by the given id is not compatible with the given element name.");
+            Rsed.assert && (this.element.parentNode === this.containerElement)
+                        || Rsed.throw("The render surface element doesn't appear to be embedded in the given container element.");
+
+            Rsed.assert && (this.element != null)
+                        || Rsed.throw("Couldn't find a render surface element with the given id.");
+
+            Rsed.assert && (this.element.tagName.toLowerCase() === this.elementName)
+                        || Rsed.throw("The element by the given id is not compatible with the given element name.");
 
             // A function that can be called by the render surface to draw polygons onto
             // itself.
@@ -111,7 +124,9 @@ Rsed.render_surface_n = (function()
                 this.width = targetWidth;
                 this.height = targetHeight;
                 
-                Rsed.assert(!isNaN(this.width) && !isNaN(this.height), "Failed to extract the canvas size.");
+                Rsed.assert && (!isNaN(this.width) &&
+                                !isNaN(this.height))
+                            || Rsed.throw("Failed to extract the canvas size.");
 
                 this.element.setAttribute("width", this.width);
                 this.element.setAttribute("height", this.height);
@@ -144,7 +159,7 @@ Rsed.render_surface_n = (function()
                     }
                     default:
                     {
-                        Rsed.assert(0, "Unknown render surface element id.");
+                        Rsed.throw("Unknown render surface element id.");
                     }
                 }
             }
@@ -179,7 +194,7 @@ Rsed.render_surface_n = (function()
                     }
                     default:
                     {
-                        Rsed.assert(0, "Unknown render surface element id.");
+                        Rsed.throw("Unknown render surface element id.");
                     }
                 }
             }

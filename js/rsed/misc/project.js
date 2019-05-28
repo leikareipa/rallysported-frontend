@@ -47,7 +47,8 @@ Rsed.project_n = (function()
     // Inserts the project's custom assets over any previous ones.
     function override_track_assets(dtaData)
     {
-        Rsed.assert((dtaData instanceof ArrayBuffer), "Expected the project assets to come in as an array buffer.");
+        Rsed.assert && (dtaData instanceof ArrayBuffer)
+                    || Rsed.throw("Expected the project assets to come in as an array buffer.");
     
         Rsed.maasto_n.clear_maasto_data();
         Rsed.palat_n.clear_palat_data();
@@ -62,7 +63,8 @@ Rsed.project_n = (function()
             {
                 const maastoBytesize = (new DataView(dtaData, i, 4).getUint32(0, endianness));
                 i+=4;
-                Rsed.assert(((i + maastoBytesize) <= dtaData.byteLength), "Was about to read project data out of bounds.");
+                Rsed.assert && ((i + maastoBytesize) <= dtaData.byteLength)
+                            || Rsed.throw("Was about to read project data out of bounds.");
                 const maastoBytes = new Uint8Array(dtaData.slice(i, i + maastoBytesize));
                 i+=maastoBytesize;
 
@@ -74,7 +76,8 @@ Rsed.project_n = (function()
             {
                 const varimaaBytesize = (new DataView(dtaData, i, 4).getUint32(0, endianness));
                 i+=4;
-                Rsed.assert(((i + varimaaBytesize) <= dtaData.byteLength), "Was about to read project data out of bounds.");
+                Rsed.assert && ((i + varimaaBytesize) <= dtaData.byteLength)
+                            || Rsed.throw("Was about to read project data out of bounds.");
                 const varimaaBytes = new Uint8Array(dtaData.slice(i, i+varimaaBytesize));
                 i+=varimaaBytesize;
 
@@ -86,7 +89,8 @@ Rsed.project_n = (function()
             {
                 const palatBytesize = (new DataView(dtaData, i, 4).getUint32(0, endianness));
                 i+=4;
-                Rsed.assert(((i + palatBytesize) <= dtaData.byteLength), "Was about to read project data out of bounds.");
+                Rsed.assert && ((i + palatBytesize) <= dtaData.byteLength)
+                            || Rsed.throw("Was about to read project data out of bounds.");
                 let palatBytes = new Uint8Array(dtaData.slice(i, i+palatBytesize));
                 i+=palatBytesize;
 
@@ -102,7 +106,7 @@ Rsed.project_n = (function()
                 }
                 else if (palatBytesize !== 65536)
                 {
-                    Rsed.assert(0, "Unexpected number of PALA bytes in the project file.");
+                    Rsed.throw("Unexpected number of PALA bytes in the project file.");
                 }
 
                 Rsed.palat_n.set_palat_bytesize(palatBytesize);
@@ -116,10 +120,14 @@ Rsed.project_n = (function()
         // Will return true if the given project is valid. Otherwise, will throw an error.
         publicInterface.verify_project_validity = function(projectToVerify)
         {
-            Rsed.assert((projectToVerify instanceof Rsed.project_n.project_o), "Was asked to test the validity of a non-RallySportED project.");
+            Rsed.assert && (projectToVerify instanceof Rsed.project_n.project_o)
+                        || Rsed.throw("Was asked to test the validity of a non-RallySportED project.");
 
-            Rsed.assert(((projectToVerify != null) && (projectToVerify.isValidProject)), "Failed to load the given zipped RallySportED project file.");
-            Rsed.assert((projectToVerify.name != null && projectToVerify.displayName != null), "Failed to load the given zipped RallySportED project file.");
+            Rsed.assert && ((projectToVerify != null) && (projectToVerify.isValidProject))
+                        || Rsed.throw("Failed to load the given zipped RallySportED project file.");
+            
+            Rsed.assert && (projectToVerify.name != null && projectToVerify.displayName != null)
+                        || Rsed.throw("Failed to load the given zipped RallySportED project file.");
 
             console.log("'" + projectToVerify.displayName + "' is a valid RallySportED project.");
 
@@ -162,13 +170,14 @@ Rsed.project_n = (function()
 
                     break;
                 }
-                default: Rsed.assert(0, "Unknown RallySportED project zip file locality."); return null;
+                default: Rsed.throw("Unknown RallySportED project zip file locality."); return null;
             }
         }
 
         publicInterface.generate_download_of_project = function(project = Rsed.project_n.project_o)
         {
-            Rsed.assert((project instanceof Rsed.project_n.project_o), "Expected a RallySportED project object.");
+            Rsed.assert && (project instanceof Rsed.project_n.project_o)
+                        || Rsed.throw("Expected a RallySportED project object.");
 
             const saveName = project.name.toUpperCase();
 
@@ -204,7 +213,7 @@ Rsed.project_n = (function()
             {
                 saveAs(blob, saveName + ".ZIP");
             })
-            .catch((error)=>{Rsed.assert(0, error);});
+            .catch((error)=>{Rsed.throw(error);});
         }
 
         // Returns a project object of the given project data. Note that this will overwrite

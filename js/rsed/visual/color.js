@@ -14,10 +14,11 @@ Rsed.color_n = (function()
         // Red, green, blue, alpha.
         publicInterface.rgba_o = function(r = 55, g = 55, b = 55, a = 255)
         {
-            Rsed.assert((((r >= 0) && (r <= 255)) &&
-                      ((g >= 0) && (g <= 255)) &&
-                      ((b >= 0) && (b <= 255)) &&
-                      ((a >= 0) && (a <= 255))), "The given color values are out of range.");
+            Rsed.assert && (((r >= 0) && (r <= 255)) &&
+                            ((g >= 0) && (g <= 255)) &&
+                            ((b >= 0) && (b <= 255)) &&
+                            ((a >= 0) && (a <= 255)))
+                        || Rsed.throw("The given color values are out of range.");
 
             this.r = r;
             this.g = g;
