@@ -13,7 +13,7 @@
 //	../js/rsed/transform/matrix44.js
 //	../js/rsed/transform/poly-transform.js
 //	../js/rsed/render/camera.js
-//	../js/rsed/render/rsed-renderer.js
+//	../js/rsed/render/renderer.js
 //	../js/rsed/render/render-surface.js
 //	../js/rsed/track/maasto.js
 //	../js/rsed/track/palat.js
@@ -1098,7 +1098,7 @@ Rsed.camera_n = (function()
     }
     return publicInterface;
 })();/*
- * Most recent known filename: js/render/rsed_renderer.js
+ * Most recent known filename: js/render/renderer.js
  *
  * Tarpeeksi Hyvae Soft 2018
  * 

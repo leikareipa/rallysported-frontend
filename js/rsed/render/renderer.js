@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/render/rsed_renderer.js
+ * Most recent known filename: js/render/renderer.js
  *
  * Tarpeeksi Hyvae Soft 2018
  * 
