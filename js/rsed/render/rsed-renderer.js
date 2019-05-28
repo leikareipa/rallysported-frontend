@@ -9,13 +9,13 @@
 
 "use strict";
 
-const rsed_renderer_n = {}
+Rsed.rsed_renderer_n = {}
 {
     // Takes as an argument the id string of the container (e.g. <div>) inside which to
     // create the render surface (<canvas>). The container must exist; the render surface
     // will be created automatically, if need be. Note that the container should contain
     // nothing beyond the render surface - its contents may get wiped by the renderer.
-    rsed_renderer_n.rsed_renderer_o = function(containerElementId = "", scaleFactor = 1)
+    Rsed.rsed_renderer_n.rsed_renderer_o = function(containerElementId = "", scaleFactor = 1)
     {
         this.renderSurfaceId = "render_surface_canvas";
 
