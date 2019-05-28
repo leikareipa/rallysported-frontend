@@ -4461,8 +4461,8 @@ const resource_loader_n = (function()
     //         "propId": 3492597896,
     //         "polygons":
     //         [
-    //            {"textureIdx": null, "colorIdx": 15, "verts": [-21, -500, 12, 21, -500, -12, 60, -550, -38, -15, -550, -63]},
-    //            {"textureIdx": null, "colorIdx": 14, "verts": [-15, -550, -63, 60, -550, -38, 0, -425, -138]}
+    //            {"textureIdx": null, "paletteIdx": 15, "verts": [-21, -500, 12, 21, -500, -12, 60, -550, -38, -15, -550, -63]},
+    //            {"textureIdx": null, "paletteIdx": 14, "verts": [-15, -550, -63, 60, -550, -38, 0, -425, -138]}
     //         ]
     //      }
     //   ]
@@ -4483,7 +4483,7 @@ const resource_loader_n = (function()
                 const convertedPoly = new geometry_n.polygon_o(numVertices);
 
                 convertedPoly.texture = props_n.prop_texture(propPoly.textureIdx);
-                convertedPoly.color = palette_n.palette_idx_to_rgba(propPoly.colorIdx);
+                convertedPoly.color = palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
 
                 k_assert((convertedPoly.v.length === numVertices), "Incorrect number of vertices in prop polygon.");
                 convertedPoly.v.forEach((vertex, idx)=>
