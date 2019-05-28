@@ -66,7 +66,6 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
         // Creation of a render surface.
         {
             const surfaceName = "render_surface";
-            const surfaceType = "svg";
             const containerName = "render_surface_test_container";
 
             // Make sure the element into which we'll create the render surface doesn't exist yet.
@@ -77,16 +76,15 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
             containerElement.setAttribute("id", containerName);
             document.body.appendChild(containerElement)
 
-            const surface = new Rsed.render_surface_n.render_surface_o(surfaceName, surfaceType, containerName, function(){});
+            const surface = new Rsed.render_surface_n.render_surface_o(surfaceName, containerName, function(){});
             expect_true([()=>(surface instanceof Rsed.render_surface_n.render_surface_o)]);
 
             // Shouldn't be able to create a render surface with a null polyfill function.
-            expect_fail([()=>{new Rsed.render_surface_n.render_surface_o(surfaceName, surfaceType, containerName, null);}]);
+            expect_fail([()=>{new Rsed.render_surface_n.render_surface_o(surfaceName, containerName, null);}]);
 
             // See that the HTML id tags are correct.
             expect_true([()=>(surface.containerId === containerName),
-                         ()=>(surface.elementId === surfaceName),
-                         ()=>(surface.elementName === surfaceType)]);
+                         ()=>(surface.elementId === surfaceName)]);
             
             // See that the surface container element was assigned correctly.
             expect_true([()=>(surface.containerElement === containerElement)]);

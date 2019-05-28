@@ -21,7 +21,6 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
                 || Rsed.throw("Can't find this element.")
 
     this.renderSurface = new Rsed.render_surface_n.render_surface_o(this.renderSurfaceId,
-                                                                    "canvas",
                                                                     containerElementId,
                                                                     Rsed.ngon_fill_n.fill_polygons);
 
@@ -102,11 +101,11 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
             if (this.meshes.length > 0)
             {
                 const viewMatrix = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(this.cameraPosition.x,
-                                                                                                this.cameraPosition.y,
-                                                                                                this.cameraPosition.z),
-                                                                Rsed.matrix44_n.rotation_matrix(this.cameraDirection.x,
-                                                                                            this.cameraDirection.y,
-                                                                                            this.cameraDirection.z));
+                                                                                                        this.cameraPosition.y,
+                                                                                                        this.cameraPosition.z),
+                                                                     Rsed.matrix44_n.rotation_matrix(this.cameraDirection.x,
+                                                                                                     this.cameraDirection.y,
+                                                                                                     this.cameraDirection.z));
 
                 let polyList = [];
                 const surface = this.renderSurface;

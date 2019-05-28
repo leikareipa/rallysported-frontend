@@ -17,25 +17,19 @@ Rsed.render_surface_n = (function()
         // The render surface is a HTML element of some kind - <svg> or <canvas>, for instance - embedded
         // in a container like <div>.
         publicInterface.render_surface_o = function(surfaceElementId = "",
-                                                    surfaceElementName = "",
                                                     containerId = "",
-                                                    polyFillFn = Function)
+                                                    polygonFillFn = Function)
         {
             Rsed.assert && (surfaceElementId.length > 0)
-                        || Rsed.throw("Expected a non-null string.");
-
-            Rsed.assert && (surfaceElementName.length > 0)
                         || Rsed.throw("Expected a non-null string.");
 
             Rsed.assert && (containerId.length > 0)
                         || Rsed.throw("Expected a non-null string.");
 
-            Rsed.assert && (polyFillFn != null)
+            Rsed.assert && (polygonFillFn != null)
                         || Rsed.throw("Expected a non-null polyfill function.");
 
             this.elementId = surfaceElementId;
-            this.elementName = surfaceElementName;
-
             this.containerId = containerId;
 
             this.width = null;
@@ -53,28 +47,7 @@ Rsed.render_surface_n = (function()
             {
                 this.containerElement.innerHTML = "";
 
-                switch(this.elementName)
-                {
-                    case "canvas":
-                    {
-                        this.element = document.createElement("canvas");
-                        break;
-                    }
-                    case "svg":
-                    {
-                        this.element = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                        this.element.style.backgroundColor = "transparent";
-                        this.element.style.pointerEvents = "none"; // Prevent polygons in the SVG from intercepting the mouse.
-                        
-                        break;
-                    }
-                    default:
-                    {
-                        Rsed.throw("Unknown render surface element id.");
-                        break;
-                    }
-                }
-
+                this.element = document.createElement("canvas");
                 this.element.setAttribute("id", this.elementId);
                 this.element.setAttribute("class", "canvas");
                 this.containerElement.appendChild(this.element);
@@ -85,12 +58,9 @@ Rsed.render_surface_n = (function()
             Rsed.assert && (this.element != null)
                         || Rsed.throw("Couldn't find a render surface element with the given id.");
 
-            Rsed.assert && (this.element.tagName.toLowerCase() === this.elementName)
-                        || Rsed.throw("The element by the given id is not compatible with the given element name.");
-
             // A function that can be called by the render surface to draw polygons onto
             // itself.
-            this.poly_filler = polyFillFn.bind(this);
+            this.poly_filler = polygonFillFn.bind(this);
 
             this.depthBuffer = [];
 
@@ -132,11 +102,8 @@ Rsed.render_surface_n = (function()
                 this.element.setAttribute("height", this.height);
 
                 // Initialize any auxiliary buffers.
-                if (this.elementName === "canvas")
-                {
-                    this.mousePickBuffer = new Array(this.width * this.height);
-                    //this.depthBuffer = new Array(this.width * this.height);
-                }
+                this.mousePickBuffer = new Array(this.width * this.height);
+                //this.depthBuffer = new Array(this.width * this.height);
 
                 return true;
             }
@@ -144,24 +111,7 @@ Rsed.render_surface_n = (function()
             // Exposes the relevant portion of the surface for rendering.
             this.exposed = function()
             {
-                switch (this.elementName)
-                {
-                    case "canvas":
-                    {
-                        return this.element.getContext("2d");
-                    }
-                    case "svg":
-                    {
-                        this.element.setAttribute("width", this.width);
-                        this.element.setAttribute("height", this.height);
-
-                        return this.element;
-                    }
-                    default:
-                    {
-                        Rsed.throw("Unknown render surface element id.");
-                    }
-                }
+                return this.element.getContext("2d");
             }
 
             // Cleans-up the render surface, to a state where it will display nothing but
@@ -170,33 +120,12 @@ Rsed.render_surface_n = (function()
             {
                 const surface = this.exposed();
 
-                switch (this.elementName)
-                {
-                    case "svg":
-                    {
-                        while (this.element.firstChild !== null)
-                        {
-                            this.element.removeChild(this.element.firstChild);
-                        }
+                surface.fillStyle = "#101010";
+                surface.fillRect(0, 0, this.width, this.height);
 
-                        break;
-                    }
-                    case "canvas":
-                    {
-                        surface.fillStyle = "#101010";
-                        surface.fillRect(0, 0, this.width, this.height);
-
-                        // Reset auxiliary buffers.
-                        this.mousePickBuffer.fill(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.void, {}));
-                        //this.depthBuffer.fill(Number.MAX_VALUE);
-
-                        break;
-                    }
-                    default:
-                    {
-                        Rsed.throw("Unknown render surface element id.");
-                    }
-                }
+                // Reset auxiliary buffers.
+                this.mousePickBuffer.fill(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.void, {}));
+                //this.depthBuffer.fill(Number.MAX_VALUE);
             }
         }
     }
