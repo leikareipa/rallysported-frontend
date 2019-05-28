@@ -11,7 +11,7 @@ const texture_n = (function()
 {
     const publicInterface = {};
     {
-        publicInterface.texture_o = function(width = 0, height = 0, pixels = [color_n.rgba_o])
+        publicInterface.texture_o = function(width = 0, height = 0, pixels = [Rsed.color_n.rgba_o])
         {
             this.width = width;
             this.height = height;
@@ -26,8 +26,8 @@ const texture_n = (function()
             this.pixels = [];
             for (let i = 0; i < (width * height); i++)
             {
-                k_assert((pixels[i] instanceof color_n.rgba_o), "Expected a color object.");
-                this.pixels.push(new color_n.rgba_o(pixels[i].r, pixels[i].g, pixels[i].b, pixels[i].a));
+                k_assert((pixels[i] instanceof Rsed.color_n.rgba_o), "Expected a color object.");
+                this.pixels.push(new Rsed.color_n.rgba_o(pixels[i].r, pixels[i].g, pixels[i].b, pixels[i].a));
             }
         }
     }

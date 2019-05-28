@@ -87,7 +87,7 @@ Rsed.geometry_n = {};
             this.v.push(new Rsed.geometry_n.vertex_o());
         }
         
-        this.color = new color_n.rgba_o();
+        this.color = new Rsed.color_n.rgba_o();
         this.texture = 0;
 
         // Whether to draw a wireframe around this polygon when rendering it.

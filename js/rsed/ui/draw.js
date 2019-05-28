@@ -74,7 +74,7 @@ Rsed.ui_draw_n = (function()
                 const pixel = pixels[cx + cy * width];
                 if (alpha && (pixel === 0)) continue;
 
-                const color = ((pixel instanceof color_n.rgba_o)? pixel : palette_n.palette_idx_to_rgba(pixel));
+                const color = ((pixel instanceof Rsed.color_n.rgba_o)? pixel : palette_n.palette_idx_to_rgba(pixel));
                 put_pixel((x + cx), (y + cy), color.r, color.g, color.b);
 
                 if (mousePick != null)

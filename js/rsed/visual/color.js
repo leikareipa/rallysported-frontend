@@ -7,7 +7,7 @@
 
 "use strict";
 
-const color_n = (function()
+Rsed.color_n = (function()
 {
     const publicInterface = {};
     {

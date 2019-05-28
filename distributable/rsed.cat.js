@@ -317,7 +317,7 @@ function k_clamp(value, min, max)
 
 "use strict";
 
-const color_n = (function()
+Rsed.color_n = (function()
 {
     const publicInterface = {};
     {
@@ -361,7 +361,7 @@ const texture_n = (function()
 {
     const publicInterface = {};
     {
-        publicInterface.texture_o = function(width = 0, height = 0, pixels = [color_n.rgba_o])
+        publicInterface.texture_o = function(width = 0, height = 0, pixels = [Rsed.color_n.rgba_o])
         {
             this.width = width;
             this.height = height;
@@ -376,8 +376,8 @@ const texture_n = (function()
             this.pixels = [];
             for (let i = 0; i < (width * height); i++)
             {
-                k_assert((pixels[i] instanceof color_n.rgba_o), "Expected a color object.");
-                this.pixels.push(new color_n.rgba_o(pixels[i].r, pixels[i].g, pixels[i].b, pixels[i].a));
+                k_assert((pixels[i] instanceof Rsed.color_n.rgba_o), "Expected a color object.");
+                this.pixels.push(new Rsed.color_n.rgba_o(pixels[i].r, pixels[i].g, pixels[i].b, pixels[i].a));
             }
         }
     }
@@ -408,137 +408,137 @@ const palette_n = (function()
         {
             palettes.length = 0;
 
-            palettes.push([ new color_n.rgba_o(0, 0, 0, 255),
-                            new color_n.rgba_o(8, 64, 16, 255),
-                            new color_n.rgba_o(16, 96, 36, 255),
-                            new color_n.rgba_o(24, 128, 48, 255),
-                            new color_n.rgba_o(252, 0, 0, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(192, 192, 192, 255),
-                            new color_n.rgba_o(128, 128, 128, 255),
-                            new color_n.rgba_o(64, 64, 64, 255),
-                            new color_n.rgba_o(0, 0, 252, 255),
-                            new color_n.rgba_o(72, 128, 252, 255),
-                            new color_n.rgba_o(208, 100, 252, 255),
-                            new color_n.rgba_o(208, 72, 44, 255),
-                            new color_n.rgba_o(252, 112, 76, 255),
-                            new color_n.rgba_o(16, 96, 32, 255),
-                            new color_n.rgba_o(32, 192, 64, 255),
-                            new color_n.rgba_o(228, 56, 244, 255),
-                            new color_n.rgba_o(132, 36, 172, 255),
-                            new color_n.rgba_o(68, 92, 252, 255),
-                            new color_n.rgba_o(252, 252, 48, 255),
-                            new color_n.rgba_o(32, 32, 32, 255),
-                            new color_n.rgba_o(152, 48, 24, 255),
-                            new color_n.rgba_o(80, 24, 12, 255),
-                            new color_n.rgba_o(124, 124, 24, 255),
-                            new color_n.rgba_o(128, 0, 0, 255),
-                            new color_n.rgba_o(12, 20, 132, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(136, 28, 128, 255),
-                            new color_n.rgba_o(16, 252, 8, 255)]);
+            palettes.push([ new Rsed.color_n.rgba_o(0, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(8, 64, 16, 255),
+                            new Rsed.color_n.rgba_o(16, 96, 36, 255),
+                            new Rsed.color_n.rgba_o(24, 128, 48, 255),
+                            new Rsed.color_n.rgba_o(252, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(192, 192, 192, 255),
+                            new Rsed.color_n.rgba_o(128, 128, 128, 255),
+                            new Rsed.color_n.rgba_o(64, 64, 64, 255),
+                            new Rsed.color_n.rgba_o(0, 0, 252, 255),
+                            new Rsed.color_n.rgba_o(72, 128, 252, 255),
+                            new Rsed.color_n.rgba_o(208, 100, 252, 255),
+                            new Rsed.color_n.rgba_o(208, 72, 44, 255),
+                            new Rsed.color_n.rgba_o(252, 112, 76, 255),
+                            new Rsed.color_n.rgba_o(16, 96, 32, 255),
+                            new Rsed.color_n.rgba_o(32, 192, 64, 255),
+                            new Rsed.color_n.rgba_o(228, 56, 244, 255),
+                            new Rsed.color_n.rgba_o(132, 36, 172, 255),
+                            new Rsed.color_n.rgba_o(68, 92, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 48, 255),
+                            new Rsed.color_n.rgba_o(32, 32, 32, 255),
+                            new Rsed.color_n.rgba_o(152, 48, 24, 255),
+                            new Rsed.color_n.rgba_o(80, 24, 12, 255),
+                            new Rsed.color_n.rgba_o(124, 124, 24, 255),
+                            new Rsed.color_n.rgba_o(128, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(12, 20, 132, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(136, 28, 128, 255),
+                            new Rsed.color_n.rgba_o(16, 252, 8, 255)]);
 
-            palettes.push([ new color_n.rgba_o(0, 0, 0, 255),
-                            new color_n.rgba_o(80, 88, 104, 255),
-                            new color_n.rgba_o(96, 104, 120, 255),
-                            new color_n.rgba_o(112, 128, 144, 255),
-                            new color_n.rgba_o(252, 0, 0, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(192, 192, 192, 255),
-                            new color_n.rgba_o(128, 128, 128, 255),
-                            new color_n.rgba_o(64, 64, 64, 255),
-                            new color_n.rgba_o(0, 0, 252, 255),
-                            new color_n.rgba_o(72, 128, 252, 255),
-                            new color_n.rgba_o(208, 100, 252, 255),
-                            new color_n.rgba_o(208, 72, 44, 255),
-                            new color_n.rgba_o(252, 112, 76, 255),
-                            new color_n.rgba_o(8, 136, 16, 255),
-                            new color_n.rgba_o(32, 192, 64, 255),
-                            new color_n.rgba_o(228, 56, 244, 255),
-                            new color_n.rgba_o(132, 36, 172, 255),
-                            new color_n.rgba_o(68, 92, 252, 255),
-                            new color_n.rgba_o(252, 252, 48, 255),
-                            new color_n.rgba_o(32, 32, 32, 255),
-                            new color_n.rgba_o(152, 48, 24, 255),
-                            new color_n.rgba_o(80, 24, 12, 255),
-                            new color_n.rgba_o(124, 124, 24, 255),
-                            new color_n.rgba_o(128, 0, 0, 255),
-                            new color_n.rgba_o(12, 20, 132, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(136, 28, 128, 255),
-                            new color_n.rgba_o(16, 252, 8, 255)]);
+            palettes.push([ new Rsed.color_n.rgba_o(0, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(80, 88, 104, 255),
+                            new Rsed.color_n.rgba_o(96, 104, 120, 255),
+                            new Rsed.color_n.rgba_o(112, 128, 144, 255),
+                            new Rsed.color_n.rgba_o(252, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(192, 192, 192, 255),
+                            new Rsed.color_n.rgba_o(128, 128, 128, 255),
+                            new Rsed.color_n.rgba_o(64, 64, 64, 255),
+                            new Rsed.color_n.rgba_o(0, 0, 252, 255),
+                            new Rsed.color_n.rgba_o(72, 128, 252, 255),
+                            new Rsed.color_n.rgba_o(208, 100, 252, 255),
+                            new Rsed.color_n.rgba_o(208, 72, 44, 255),
+                            new Rsed.color_n.rgba_o(252, 112, 76, 255),
+                            new Rsed.color_n.rgba_o(8, 136, 16, 255),
+                            new Rsed.color_n.rgba_o(32, 192, 64, 255),
+                            new Rsed.color_n.rgba_o(228, 56, 244, 255),
+                            new Rsed.color_n.rgba_o(132, 36, 172, 255),
+                            new Rsed.color_n.rgba_o(68, 92, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 48, 255),
+                            new Rsed.color_n.rgba_o(32, 32, 32, 255),
+                            new Rsed.color_n.rgba_o(152, 48, 24, 255),
+                            new Rsed.color_n.rgba_o(80, 24, 12, 255),
+                            new Rsed.color_n.rgba_o(124, 124, 24, 255),
+                            new Rsed.color_n.rgba_o(128, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(12, 20, 132, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(136, 28, 128, 255),
+                            new Rsed.color_n.rgba_o(16, 252, 8, 255)]);
 
-            palettes.push([ new color_n.rgba_o(0, 0, 0, 255),
-                            new color_n.rgba_o(72, 20, 12, 255),
-                            new color_n.rgba_o(144, 44, 20, 255),
-                            new color_n.rgba_o(168, 56, 28, 255),
-                            new color_n.rgba_o(252, 0, 0, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(192, 192, 192, 255),
-                            new color_n.rgba_o(128, 128, 128, 255),
-                            new color_n.rgba_o(64, 64, 64, 255),
-                            new color_n.rgba_o(0, 0, 252, 255),
-                            new color_n.rgba_o(72, 128, 252, 255),
-                            new color_n.rgba_o(208, 100, 252, 255),
-                            new color_n.rgba_o(208, 72, 44, 255),
-                            new color_n.rgba_o(252, 112, 76, 255),
-                            new color_n.rgba_o(16, 96, 32, 255),
-                            new color_n.rgba_o(32, 192, 64, 255),
-                            new color_n.rgba_o(228, 56, 244, 255),
-                            new color_n.rgba_o(132, 36, 172, 255),
-                            new color_n.rgba_o(68, 92, 252, 255),
-                            new color_n.rgba_o(252, 252, 48, 255),
-                            new color_n.rgba_o(32, 32, 32, 255),
-                            new color_n.rgba_o(152, 48, 24, 255),
-                            new color_n.rgba_o(80, 24, 12, 255),
-                            new color_n.rgba_o(124, 124, 24, 255),
-                            new color_n.rgba_o(128, 0, 0, 255),
-                            new color_n.rgba_o(12, 20, 132, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(136, 28, 128, 255),
-                            new color_n.rgba_o(16, 252, 8, 255)]);
+            palettes.push([ new Rsed.color_n.rgba_o(0, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(72, 20, 12, 255),
+                            new Rsed.color_n.rgba_o(144, 44, 20, 255),
+                            new Rsed.color_n.rgba_o(168, 56, 28, 255),
+                            new Rsed.color_n.rgba_o(252, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(192, 192, 192, 255),
+                            new Rsed.color_n.rgba_o(128, 128, 128, 255),
+                            new Rsed.color_n.rgba_o(64, 64, 64, 255),
+                            new Rsed.color_n.rgba_o(0, 0, 252, 255),
+                            new Rsed.color_n.rgba_o(72, 128, 252, 255),
+                            new Rsed.color_n.rgba_o(208, 100, 252, 255),
+                            new Rsed.color_n.rgba_o(208, 72, 44, 255),
+                            new Rsed.color_n.rgba_o(252, 112, 76, 255),
+                            new Rsed.color_n.rgba_o(16, 96, 32, 255),
+                            new Rsed.color_n.rgba_o(32, 192, 64, 255),
+                            new Rsed.color_n.rgba_o(228, 56, 244, 255),
+                            new Rsed.color_n.rgba_o(132, 36, 172, 255),
+                            new Rsed.color_n.rgba_o(68, 92, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 48, 255),
+                            new Rsed.color_n.rgba_o(32, 32, 32, 255),
+                            new Rsed.color_n.rgba_o(152, 48, 24, 255),
+                            new Rsed.color_n.rgba_o(80, 24, 12, 255),
+                            new Rsed.color_n.rgba_o(124, 124, 24, 255),
+                            new Rsed.color_n.rgba_o(128, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(12, 20, 132, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(136, 28, 128, 255),
+                            new Rsed.color_n.rgba_o(16, 252, 8, 255)]);
 
-            palettes.push([ new color_n.rgba_o(0, 0, 0, 255),
-                            new color_n.rgba_o(28, 52, 8, 255),
-                            new color_n.rgba_o(64, 64, 16, 255),
-                            new color_n.rgba_o(80, 84, 28, 255),
-                            new color_n.rgba_o(252, 0, 0, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(192, 192, 192, 255),
-                            new color_n.rgba_o(128, 128, 128, 255),
-                            new color_n.rgba_o(64, 64, 64, 255),
-                            new color_n.rgba_o(0, 0, 252, 255),
-                            new color_n.rgba_o(72, 128, 252, 255),
-                            new color_n.rgba_o(208, 100, 252, 255),
-                            new color_n.rgba_o(208, 72, 44, 255),
-                            new color_n.rgba_o(252, 112, 76, 255),
-                            new color_n.rgba_o(32, 64, 32, 255),
-                            new color_n.rgba_o(64, 128, 64, 255),
-                            new color_n.rgba_o(228, 56, 244, 255),
-                            new color_n.rgba_o(132, 36, 172, 255),
-                            new color_n.rgba_o(68, 92, 252, 255),
-                            new color_n.rgba_o(252, 252, 48, 255),
-                            new color_n.rgba_o(32, 32, 32, 255),
-                            new color_n.rgba_o(152, 48, 24, 255),
-                            new color_n.rgba_o(80, 24, 12, 255),
-                            new color_n.rgba_o(124, 124, 24, 255),
-                            new color_n.rgba_o(128, 0, 0, 255),
-                            new color_n.rgba_o(12, 20, 132, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(252, 252, 252, 255),
-                            new color_n.rgba_o(136, 28, 128, 255),
-                            new color_n.rgba_o(16, 252, 8, 255)]);
+            palettes.push([ new Rsed.color_n.rgba_o(0, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(28, 52, 8, 255),
+                            new Rsed.color_n.rgba_o(64, 64, 16, 255),
+                            new Rsed.color_n.rgba_o(80, 84, 28, 255),
+                            new Rsed.color_n.rgba_o(252, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(192, 192, 192, 255),
+                            new Rsed.color_n.rgba_o(128, 128, 128, 255),
+                            new Rsed.color_n.rgba_o(64, 64, 64, 255),
+                            new Rsed.color_n.rgba_o(0, 0, 252, 255),
+                            new Rsed.color_n.rgba_o(72, 128, 252, 255),
+                            new Rsed.color_n.rgba_o(208, 100, 252, 255),
+                            new Rsed.color_n.rgba_o(208, 72, 44, 255),
+                            new Rsed.color_n.rgba_o(252, 112, 76, 255),
+                            new Rsed.color_n.rgba_o(32, 64, 32, 255),
+                            new Rsed.color_n.rgba_o(64, 128, 64, 255),
+                            new Rsed.color_n.rgba_o(228, 56, 244, 255),
+                            new Rsed.color_n.rgba_o(132, 36, 172, 255),
+                            new Rsed.color_n.rgba_o(68, 92, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 48, 255),
+                            new Rsed.color_n.rgba_o(32, 32, 32, 255),
+                            new Rsed.color_n.rgba_o(152, 48, 24, 255),
+                            new Rsed.color_n.rgba_o(80, 24, 12, 255),
+                            new Rsed.color_n.rgba_o(124, 124, 24, 255),
+                            new Rsed.color_n.rgba_o(128, 0, 0, 255),
+                            new Rsed.color_n.rgba_o(12, 20, 132, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
+                            new Rsed.color_n.rgba_o(136, 28, 128, 255),
+                            new Rsed.color_n.rgba_o(16, 252, 8, 255)]);
         }
         // Set new r,g,b values for the given palette entry in the currently-active palette.
         publicInterface.modify_palette_entry = function(paletteIdx, r, g, b)
@@ -570,23 +570,23 @@ const palette_n = (function()
 
         publicInterface.palette_idx_to_rgba = function(idx = 0)
         {
-            if (palettes.length === 0) return new color_n.rgba_o(0, 0, 0, 0);
+            if (palettes.length === 0) return new Rsed.color_n.rgba_o(0, 0, 0, 0);
 
             switch (idx)
             {
                 // UI colors.
-                case "black": return new color_n.rgba_o(0, 0, 0, 255);
-                case "gray": case "grey": return new color_n.rgba_o(127, 127, 127, 255);
-                case "lightgray": case "lightgrey": return new color_n.rgba_o(192, 192, 192, 255);
-                case "dimgray": case "dimgrey": return new color_n.rgba_o(64, 64, 64, 255);
-                case "white": return new color_n.rgba_o(255, 255, 255, 255);
-                case "blue": return new color_n.rgba_o(0, 0, 255, 255);
-                case "darkorchid": return new color_n.rgba_o(153, 50, 204, 255);
-                case "paleorchid": return new color_n.rgba_o(158, 123, 176, 255);
-                case "yellow": return new color_n.rgba_o(255, 255, 0, 255);
-                case "red": return new color_n.rgba_o(255, 0, 0, 255);
-                case "green": return new color_n.rgba_o(0, 255, 0, 255);
-                case "gold": return new color_n.rgba_o(179, 112, 25, 255);
+                case "black": return new Rsed.color_n.rgba_o(0, 0, 0, 255);
+                case "gray": case "grey": return new Rsed.color_n.rgba_o(127, 127, 127, 255);
+                case "lightgray": case "lightgrey": return new Rsed.color_n.rgba_o(192, 192, 192, 255);
+                case "dimgray": case "dimgrey": return new Rsed.color_n.rgba_o(64, 64, 64, 255);
+                case "white": return new Rsed.color_n.rgba_o(255, 255, 255, 255);
+                case "blue": return new Rsed.color_n.rgba_o(0, 0, 255, 255);
+                case "darkorchid": return new Rsed.color_n.rgba_o(153, 50, 204, 255);
+                case "paleorchid": return new Rsed.color_n.rgba_o(158, 123, 176, 255);
+                case "yellow": return new Rsed.color_n.rgba_o(255, 255, 0, 255);
+                case "red": return new Rsed.color_n.rgba_o(255, 0, 0, 255);
+                case "green": return new Rsed.color_n.rgba_o(0, 255, 0, 255);
+                case "gold": return new Rsed.color_n.rgba_o(179, 112, 25, 255);
                 
                 // Rally-Sport's palettes.
                 default: return palettes[currentPalette][idx||0];
@@ -684,7 +684,7 @@ Rsed.geometry_n = {};
             this.v.push(new Rsed.geometry_n.vertex_o());
         }
         
-        this.color = new color_n.rgba_o();
+        this.color = new Rsed.color_n.rgba_o();
         this.texture = 0;
 
         // Whether to draw a wireframe around this polygon when rendering it.
@@ -3275,7 +3275,7 @@ Rsed.ui_draw_n = (function()
                 const pixel = pixels[cx + cy * width];
                 if (alpha && (pixel === 0)) continue;
 
-                const color = ((pixel instanceof color_n.rgba_o)? pixel : palette_n.palette_idx_to_rgba(pixel));
+                const color = ((pixel instanceof Rsed.color_n.rgba_o)? pixel : palette_n.palette_idx_to_rgba(pixel));
                 put_pixel((x + cx), (y + cy), color.r, color.g, color.b);
 
                 if (mousePick != null)
