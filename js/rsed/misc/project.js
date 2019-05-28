@@ -7,7 +7,7 @@
 
 "use strict";
 
-Rsed.rsed_project_n = (function()
+Rsed.project_n = (function()
 {
     // Maximum number of characters allowed in the project file name.
     const maxProjectNameLen = 8;
@@ -116,7 +116,7 @@ Rsed.rsed_project_n = (function()
         // Will return true if the given project is valid. Otherwise, will throw an error.
         publicInterface.verify_project_validity = function(projectToVerify)
         {
-            k_assert((projectToVerify instanceof Rsed.rsed_project_n.rsed_project_o), "Was asked to test the validity of a non-RallySportED project.");
+            k_assert((projectToVerify instanceof Rsed.project_n.project_o), "Was asked to test the validity of a non-RallySportED project.");
 
             k_assert(((projectToVerify != null) && (projectToVerify.isValidProject)), "Failed to load the given zipped RallySportED project file.");
             k_assert((projectToVerify.name != null && projectToVerify.displayName != null), "Failed to load the given zipped RallySportED project file.");
@@ -138,7 +138,7 @@ Rsed.rsed_project_n = (function()
                     resource_loader_n.load_project_data({fromZip:true,zipFile:zip}, (projectData)=>
                     {
                         /// Temp hack. Project loading will be redesigned in the future.
-                        const project = new publicInterface.rsed_project_o(projectData);
+                        const project = new publicInterface.project_o(projectData);
                         manifesto_n.apply_manifesto(project.manifestoFileContents)
                         .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
                         return;
@@ -153,7 +153,7 @@ Rsed.rsed_project_n = (function()
                         resource_loader_n.load_project_data({fromZip:true,zipFile}, (projectData)=>
                         {
                             /// Temp hack. Project loading will be redesigned in the future.
-                            const project = new publicInterface.rsed_project_o(projectData);
+                            const project = new publicInterface.project_o(projectData);
                             manifesto_n.apply_manifesto(project.manifestoFileContents)
                             .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
                             return;
@@ -166,9 +166,9 @@ Rsed.rsed_project_n = (function()
             }
         }
 
-        publicInterface.generate_download_of_project = function(project = Rsed.rsed_project_n.rsed_project_o)
+        publicInterface.generate_download_of_project = function(project = Rsed.project_n.project_o)
         {
-            k_assert((project instanceof Rsed.rsed_project_n.rsed_project_o), "Expected a RallySportED project object.");
+            k_assert((project instanceof Rsed.project_n.project_o), "Expected a RallySportED project object.");
 
             const saveName = project.name.toUpperCase();
 
@@ -209,7 +209,7 @@ Rsed.rsed_project_n = (function()
 
         // Returns a project object of the given project data. Note that this will overwrite
         // any existing project data.
-        publicInterface.rsed_project_o = function(projectData = {})
+        publicInterface.project_o = function(projectData = {})
         {
             // The name of this project. Will be shown to the user on the page, and also in Rally-Sport
             // when the track is loaded in. Will also be used as the track's base filename. Its length must be

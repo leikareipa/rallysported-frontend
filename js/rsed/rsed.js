@@ -134,11 +134,11 @@ const rsed_n = (function()
             {
                 k_assert((args.locality != null && args.zipFile != null), "Received invalid arguments for loading a project from a zip file.");
 
-                project = Rsed.rsed_project_n.make_project_from_zip(args.locality, args.zipFile,
+                project = Rsed.project_n.make_project_from_zip(args.locality, args.zipFile,
                                                                (newProject)=>
                                                                {
                                                                    project = newProject;
-                                                                   Rsed.rsed_project_n.verify_project_validity(project);
+                                                                   Rsed.project_n.verify_project_validity(project);
                                                                    htmlUI.refresh();
                                                                    htmlUI.set_visible(true);
                                                                });
@@ -169,7 +169,7 @@ const rsed_n = (function()
                 return;
             }
 
-            Rsed.rsed_project_n.generate_download_of_project(project);
+            Rsed.project_n.generate_download_of_project(project);
         }
 
         // Loads all relevant base assets for the given track, clearing away any such previously-loaded
