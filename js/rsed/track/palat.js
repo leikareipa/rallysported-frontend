@@ -59,11 +59,11 @@ Rsed.palat_n = (function()
         }
 
         // Adds the given texture as a known PALA.
-        publicInterface.add_pala = function(palaTexture = texture_n.texture_o)
+        publicInterface.add_pala = function(palaTexture = Rsed.texture_n.texture_o)
         {
-            k_assert((palaTexture instanceof texture_n.texture_o), "Expected a texture object.");
+            k_assert((palaTexture instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
 
-            let tex = new texture_n.texture_o;
+            let tex = new Rsed.texture_n.texture_o;
             tex.pixels = palaTexture.pixels.slice(0);
             tex.paletteIndices = palaTexture.paletteIndices.slice(0);
             tex.width = palaTexture.width;
@@ -71,7 +71,7 @@ Rsed.palat_n = (function()
             tex.hasAlpha = false;
             palat.push(tex);
     
-            tex = new texture_n.texture_o;
+            tex = new Rsed.texture_n.texture_o;
             tex.pixels = palaTexture.pixels.slice(0);
             tex.paletteIndices = palaTexture.paletteIndices.slice(0);
             tex.width = palaTexture.width;
@@ -85,7 +85,7 @@ Rsed.palat_n = (function()
         {
             const palaSource = (withAlpha? palatWithAlpha : palat);
            // k_assert((palaSource[palaIdx] != null), "Can't return a valid PALA texture.");
-            //k_assert((palaSource[palaIdx] instanceof texture_n.texture_o), "Expected a texture object.");
+            //k_assert((palaSource[palaIdx] instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
 
             return (palaSource[palaIdx] == null)? null : palaSource[palaIdx];
         }

@@ -33,9 +33,9 @@ Rsed.props_n = (function()
             propTextures.length = 0;
         }
 
-        publicInterface.add_prop_texture = function(texture = texture_n.texture_o)
+        publicInterface.add_prop_texture = function(texture = Rsed.texture_n.texture_o)
         {
-            k_assert((texture instanceof texture_n.texture_o), "Expected a texture object.");
+            k_assert((texture instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
 
             texture.hasAlpha = true;
             propTextures.push(texture);

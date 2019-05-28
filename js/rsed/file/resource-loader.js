@@ -129,7 +129,7 @@ const resource_loader_n = (function()
 
         for (let i = 0; i < numTextures; i++)
         {
-            const texture = new texture_n.texture_o();
+            const texture = new Rsed.texture_n.texture_o();
             texture.width = data[idx++];
             texture.height = data[idx++];
 
@@ -267,7 +267,7 @@ const resource_loader_n = (function()
             // Add each PALA as an individual texture.
             for (let i = 0; i < numPalas; i++)
             {
-                const texture = new texture_n.texture_o();
+                const texture = new Rsed.texture_n.texture_o();
 
                 texture.width = palaWidth;
                 texture.height = palaHeight;

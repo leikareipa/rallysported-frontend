@@ -357,7 +357,7 @@ Rsed.color_n = (function()
 
 "use strict";
 
-const texture_n = (function()
+Rsed.texture_n = (function()
 {
     const publicInterface = {};
     {
@@ -1994,11 +1994,11 @@ Rsed.palat_n = (function()
         }
 
         // Adds the given texture as a known PALA.
-        publicInterface.add_pala = function(palaTexture = texture_n.texture_o)
+        publicInterface.add_pala = function(palaTexture = Rsed.texture_n.texture_o)
         {
-            k_assert((palaTexture instanceof texture_n.texture_o), "Expected a texture object.");
+            k_assert((palaTexture instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
 
-            let tex = new texture_n.texture_o;
+            let tex = new Rsed.texture_n.texture_o;
             tex.pixels = palaTexture.pixels.slice(0);
             tex.paletteIndices = palaTexture.paletteIndices.slice(0);
             tex.width = palaTexture.width;
@@ -2006,7 +2006,7 @@ Rsed.palat_n = (function()
             tex.hasAlpha = false;
             palat.push(tex);
     
-            tex = new texture_n.texture_o;
+            tex = new Rsed.texture_n.texture_o;
             tex.pixels = palaTexture.pixels.slice(0);
             tex.paletteIndices = palaTexture.paletteIndices.slice(0);
             tex.width = palaTexture.width;
@@ -2020,7 +2020,7 @@ Rsed.palat_n = (function()
         {
             const palaSource = (withAlpha? palatWithAlpha : palat);
            // k_assert((palaSource[palaIdx] != null), "Can't return a valid PALA texture.");
-            //k_assert((palaSource[palaIdx] instanceof texture_n.texture_o), "Expected a texture object.");
+            //k_assert((palaSource[palaIdx] instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
 
             return (palaSource[palaIdx] == null)? null : palaSource[palaIdx];
         }
@@ -2066,9 +2066,9 @@ Rsed.props_n = (function()
             propTextures.length = 0;
         }
 
-        publicInterface.add_prop_texture = function(texture = texture_n.texture_o)
+        publicInterface.add_prop_texture = function(texture = Rsed.texture_n.texture_o)
         {
-            k_assert((texture instanceof texture_n.texture_o), "Expected a texture object.");
+            k_assert((texture instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
 
             texture.hasAlpha = true;
             propTextures.push(texture);
@@ -4538,7 +4538,7 @@ const resource_loader_n = (function()
 
         for (let i = 0; i < numTextures; i++)
         {
-            const texture = new texture_n.texture_o();
+            const texture = new Rsed.texture_n.texture_o();
             texture.width = data[idx++];
             texture.height = data[idx++];
 
@@ -4676,7 +4676,7 @@ const resource_loader_n = (function()
             // Add each PALA as an individual texture.
             for (let i = 0; i < numPalas; i++)
             {
-                const texture = new texture_n.texture_o();
+                const texture = new Rsed.texture_n.texture_o();
 
                 texture.width = palaWidth;
                 texture.height = palaHeight;

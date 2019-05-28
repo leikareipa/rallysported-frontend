@@ -240,7 +240,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
             const w = 1;
             const h = 2;
             const pixels = [new Rsed.color_n.rgba_o(1, 2, 3), new Rsed.color_n.rgba_o(4, 5, 6)];
-            const texture = new texture_n.texture_o(w, h, pixels);
+            const texture = new Rsed.texture_n.texture_o(w, h, pixels);
 
             // Resolution.
             expect_true([()=>(texture.width === w),

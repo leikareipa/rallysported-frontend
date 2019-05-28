@@ -7,7 +7,7 @@
 
 "use strict";
 
-const texture_n = (function()
+Rsed.texture_n = (function()
 {
     const publicInterface = {};
     {
