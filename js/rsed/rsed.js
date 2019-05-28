@@ -55,7 +55,7 @@ const rsed_n = (function()
         // This function will be called whenever the size of the render surface changes.
         renderer.set_resize_callback(function()
         {
-            ui_draw_n.prebake_palat_pane();
+            Rsed.ui_draw_n.prebake_palat_pane();
         });
     }
 

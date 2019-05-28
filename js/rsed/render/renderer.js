@@ -70,7 +70,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
         this.renderSurface.update_size(this.scalingFactor);
         this.renderSurface.wipe_clean();
 
-        ui_draw_n.draw_crash_message(this.renderSurface, message);
+        Rsed.ui_draw_n.draw_crash_message(this.renderSurface, message);
     }
 
     // The render loop. This will run continuously once called.
@@ -134,7 +134,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
                 surface.draw_polygons(polyList);
             }
 
-            ui_draw_n.draw_ui(this.renderSurface);
+            Rsed.ui_draw_n.draw_ui(this.renderSurface);
         }
 
         window.requestAnimationFrame(this.run_renderer.bind(this));

@@ -1169,7 +1169,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
         this.renderSurface.update_size(this.scalingFactor);
         this.renderSurface.wipe_clean();
 
-        ui_draw_n.draw_crash_message(this.renderSurface, message);
+        Rsed.ui_draw_n.draw_crash_message(this.renderSurface, message);
     }
 
     // The render loop. This will run continuously once called.
@@ -1233,7 +1233,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
                 surface.draw_polygons(polyList);
             }
 
-            ui_draw_n.draw_ui(this.renderSurface);
+            Rsed.ui_draw_n.draw_ui(this.renderSurface);
         }
 
         window.requestAnimationFrame(this.run_renderer.bind(this));
@@ -3211,7 +3211,7 @@ Rsed.ui_brush_n = (function()
 
 "use strict";
 
-const ui_draw_n = (function()
+Rsed.ui_draw_n = (function()
 {
     // The pixel buffer that UI render commands will draw into.
     let pixelSurface = null;
@@ -4697,7 +4697,7 @@ const resource_loader_n = (function()
             }
 
             // Create an image containing thumbnails of all the textures we loaded.
-            ui_draw_n.prebake_palat_pane();
+            Rsed.ui_draw_n.prebake_palat_pane();
         }
 
         // Takes in a byte array containing a track's tilemap; and loads it into RallySportED.
@@ -5099,7 +5099,7 @@ const rsed_n = (function()
         // This function will be called whenever the size of the render surface changes.
         renderer.set_resize_callback(function()
         {
-            ui_draw_n.prebake_palat_pane();
+            Rsed.ui_draw_n.prebake_palat_pane();
         });
     }
 

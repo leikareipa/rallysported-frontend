@@ -288,7 +288,7 @@ const resource_loader_n = (function()
             }
 
             // Create an image containing thumbnails of all the textures we loaded.
-            ui_draw_n.prebake_palat_pane();
+            Rsed.ui_draw_n.prebake_palat_pane();
         }
 
         // Takes in a byte array containing a track's tilemap; and loads it into RallySportED.
