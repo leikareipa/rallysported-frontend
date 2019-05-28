@@ -6,7 +6,7 @@
  * 
  */
 
-"use strict"
+"use strict";
 
 const ui_view_n = (function()
 {

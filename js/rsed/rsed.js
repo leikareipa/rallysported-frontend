@@ -6,7 +6,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const rsed_n = (function()
 {

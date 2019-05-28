@@ -5,7 +5,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const texture_n = (function()
 {

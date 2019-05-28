@@ -38,7 +38,7 @@
  * 
  */
 
-"use strict"
+"use strict";
 
 // The contents of Rally-Sport's default HITABLE.TXT file.
 const lut_hitable_txt =[0x41,0x2d,0x4a,0x75,0x6e,0x69,0x6f,0x72,0x69,0x00,0x20,0x20,
@@ -258,7 +258,7 @@ const lut_hitable_txt =[0x41,0x2d,0x4a,0x75,0x6e,0x69,0x6f,0x72,0x69,0x00,0x20,0
  *
  */
 
-"use strict"
+"use strict";
 
 function k_assert(condition = false, explanation = "(no reason given)")
 {
@@ -302,7 +302,7 @@ function k_clamp(value, min, max)
  *
  */
 
-"use strict"
+"use strict";
 
 const color_n = (function()
 {
@@ -342,7 +342,7 @@ const color_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const texture_n = (function()
 {
@@ -379,7 +379,7 @@ const texture_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const palette_n = (function()
 {
@@ -591,7 +591,7 @@ const palette_n = (function()
  *
  */
 
- "use strict"
+ "use strict";
 
 const geometry_n = {};
 {
@@ -844,7 +844,7 @@ const geometry_n = {};
  *
  */
 
-"use strict"
+"use strict";
 
 const matrix44_n = (function()
 {
@@ -958,7 +958,7 @@ const matrix44_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const polygon_transform_n = (function()
 {
@@ -1032,7 +1032,7 @@ const polygon_transform_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const camera_n = (function()
 {
@@ -1093,7 +1093,7 @@ const camera_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const rsed_renderer_n = {}
 {
@@ -1262,7 +1262,7 @@ const rsed_renderer_n = {}
  *
  */
 
-"use strict"
+"use strict";
 
 const render_surface_n = (function()
 {
@@ -1449,7 +1449,7 @@ const render_surface_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const maasto_n = (function()
 {
@@ -1928,7 +1928,7 @@ const maasto_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const palat_n = (function()
 {
@@ -2026,7 +2026,7 @@ const palat_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const props_n = (function()
 {
@@ -2141,7 +2141,7 @@ const props_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const manifesto_n = (function()
 {
@@ -2364,7 +2364,7 @@ const manifesto_n = (function()
  * 
  */
 
-"use strict"
+"use strict";
 
 const ui_font_n = (function()
 {
@@ -2992,7 +2992,7 @@ const ui_font_n = (function()
  * 
  */
 
-"use strict"
+"use strict";
 
 const ui_cursor_n = (function()
 {
@@ -3040,7 +3040,7 @@ const ui_cursor_n = (function()
  * 
  */
 
-"use strict"
+"use strict";
 
 const ui_view_n = (function()
 {
@@ -3091,7 +3091,7 @@ const ui_view_n = (function()
  * 
  */
 
-"use strict"
+"use strict";
 
 const ui_brush_n = (function()
 {
@@ -3196,7 +3196,7 @@ const ui_brush_n = (function()
  * 
  */
 
-"use strict"
+"use strict";
 
 const ui_draw_n = (function()
 {
@@ -3620,7 +3620,7 @@ const ui_draw_n = (function()
  * 
  */
 
-"use strict"
+"use strict";
 
 const ui_input_n = (function()
 {
@@ -4061,7 +4061,7 @@ const ui_input_n = (function()
  * 
  */
 
-"use strict"
+"use strict";
 
 const draw_line_n = (function()
 {
@@ -4199,7 +4199,7 @@ const draw_line_n = (function()
  * 
  */
 
-"use strict"
+"use strict";
 
 const polygon_fill_canvas_n = (function()
 {
@@ -4404,7 +4404,7 @@ const polygon_fill_canvas_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const resource_loader_n = (function()
 {
@@ -4800,7 +4800,7 @@ const resource_loader_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const rsed_project_n = (function()
 {
@@ -5037,7 +5037,7 @@ const rsed_project_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 const rsed_n = (function()
 {
@@ -5297,7 +5297,7 @@ const rsed_n = (function()
  *
  */
 
-"use strict"
+"use strict";
 
 /// Temp hack. Set to true when a dropdown list is visible. We do this to prevent the editor from
 /// receiving mouse events in the meantime, so there won't be accidental terrain edits etc. that

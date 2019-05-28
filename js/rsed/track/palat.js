@@ -6,7 +6,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const palat_n = (function()
 {

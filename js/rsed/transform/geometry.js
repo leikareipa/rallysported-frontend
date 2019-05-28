@@ -7,7 +7,7 @@
  *
  */
 
- "use strict"
+ "use strict";
 
 const geometry_n = {};
 {

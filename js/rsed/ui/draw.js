@@ -8,7 +8,7 @@
  * 
  */
 
-"use strict"
+"use strict";
 
 const ui_draw_n = (function()
 {

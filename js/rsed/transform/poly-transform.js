@@ -7,7 +7,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const polygon_transform_n = (function()
 {

@@ -8,7 +8,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const render_surface_n = (function()
 {

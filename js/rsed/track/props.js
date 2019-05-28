@@ -6,7 +6,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const props_n = (function()
 {

@@ -5,7 +5,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const color_n = (function()
 {

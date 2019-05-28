@@ -5,7 +5,7 @@
  * 
  */
 
-"use strict"
+"use strict";
 
 const draw_line_n = (function()
 {

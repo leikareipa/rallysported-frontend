@@ -34,7 +34,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const matrix44_n = (function()
 {

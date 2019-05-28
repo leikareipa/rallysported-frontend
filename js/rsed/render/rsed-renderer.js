@@ -7,7 +7,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const rsed_renderer_n = {}
 {

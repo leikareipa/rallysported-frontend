@@ -7,7 +7,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 function k_assert(condition = false, explanation = "(no reason given)")
 {

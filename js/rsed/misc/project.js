@@ -5,7 +5,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const rsed_project_n = (function()
 {

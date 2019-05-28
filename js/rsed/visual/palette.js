@@ -7,7 +7,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const palette_n = (function()
 {

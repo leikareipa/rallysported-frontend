@@ -9,7 +9,7 @@
  * 
  */
 
-"use strict"
+"use strict";
 
 const polygon_fill_canvas_n = (function()
 {

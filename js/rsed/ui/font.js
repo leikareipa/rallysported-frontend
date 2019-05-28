@@ -8,7 +8,7 @@
  * 
  */
 
-"use strict"
+"use strict";
 
 const ui_font_n = (function()
 {

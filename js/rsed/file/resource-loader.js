@@ -8,7 +8,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const resource_loader_n = (function()
 {

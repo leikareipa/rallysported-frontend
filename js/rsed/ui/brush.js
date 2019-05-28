@@ -6,7 +6,7 @@
  * 
  */
 
-"use strict"
+"use strict";
 
 const ui_brush_n = (function()
 {

@@ -7,7 +7,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 /// Temp hack. Set to true when a dropdown list is visible. We do this to prevent the editor from
 /// receiving mouse events in the meantime, so there won't be accidental terrain edits etc. that

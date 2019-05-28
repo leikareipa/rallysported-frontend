@@ -6,7 +6,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 const camera_n = (function()
 {
