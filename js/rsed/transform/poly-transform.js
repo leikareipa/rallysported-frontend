@@ -19,10 +19,10 @@ Rsed.polygon_transform_n = (function()
                                                       objectSpaceMatrix = [], cameraMatrix = [],
                                                       screenWidth = 0, screenHeight = 0)
         {
-            k_assert((polygons.length > 0), "Expected a non-empty list of polygons.");
-            k_assert((objectSpaceMatrix.length === 16), "Expected a 4 x 4 matrix.");
-            k_assert((cameraMatrix.length === 16), "Expected a 4 x 4 matrix.");
-            k_assert(((screenWidth > 0) && (screenHeight > 0)), "The screen can't have 0 width or height.");
+            Rsed.assert((polygons.length > 0), "Expected a non-empty list of polygons.");
+            Rsed.assert((objectSpaceMatrix.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert((cameraMatrix.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert(((screenWidth > 0) && (screenHeight > 0)), "The screen can't have 0 width or height.");
             
             // Create matrices with which we can transform the polygons, ultimately into
             // screen-space but also into clip-space in the interim.
@@ -47,7 +47,7 @@ Rsed.polygon_transform_n = (function()
                 let k = 0;
                 for (let i = 0; i < polygons.length; i++)
                 {
-                    k_assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon.");
+                    Rsed.assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon.");
                     
                     transfPolys[k] = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
                     transfPolys[k].clone_from(polygons[i]);

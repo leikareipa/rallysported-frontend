@@ -132,7 +132,7 @@ Rsed.main_n = (function()
 
             if (args.fromZip)
             {
-                k_assert((args.locality != null && args.zipFile != null), "Received invalid arguments for loading a project from a zip file.");
+                Rsed.assert((args.locality != null && args.zipFile != null), "Received invalid arguments for loading a project from a zip file.");
 
                 project = Rsed.project_n.make_project_from_zip(args.locality, args.zipFile,
                                                                (newProject)=>
@@ -147,7 +147,7 @@ Rsed.main_n = (function()
             {
                 htmlUI.set_visible(true);
 
-                k_assert(0, "Was given no project no load. There should've been one.");
+                Rsed.assert(0, "Was given no project no load. There should've been one.");
             }
         }
 
@@ -179,7 +179,7 @@ Rsed.main_n = (function()
         // will clear away any existing entries of then from memory.
         publicInterface.initialize_track_data = function(trackId)
         {
-            k_assert(((trackId >= 1) && (trackId <= 8)), "The given track id is out of bounds.");
+            Rsed.assert(((trackId >= 1) && (trackId <= 8)), "The given track id is out of bounds.");
 
             underlyingTrackId = trackId;
 

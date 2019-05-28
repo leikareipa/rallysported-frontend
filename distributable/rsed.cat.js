@@ -45,6 +45,20 @@
 
 // Top-level namespace for RallySportED.
 const Rsed = {};
+
+// Various small utility functions and the like.
+{
+    Rsed.assert = (condition = false, explanation = "(no reason given)")=>
+    {
+        if (!condition)
+        {
+            Rsed.main_n.incapacitate_rallysported(explanation);
+
+            alert("RallySportED assertion failure. " + explanation);
+            throw Error("RallySportED assertion failure: " + explanation);
+        }
+    }
+}
 /*
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED for the browser.
@@ -273,16 +287,6 @@ const lut_hitable_txt =[0x41,0x2d,0x4a,0x75,0x6e,0x69,0x6f,0x72,0x69,0x00,0x20,0
 
 "use strict";
 
-function k_assert(condition = false, explanation = "(no reason given)")
-{
-    if (!condition)
-    {
-        Rsed.main_n.incapacitate_rallysported(explanation);
-        alert("RallySportED assertion failure. " + explanation);
-        throw Error("RallySportED assertion failure: " + explanation);
-    }
-}
-
 // Send out a user-facing message.
 function k_message(message = "")
 {
@@ -324,7 +328,7 @@ Rsed.color_n = (function()
         // Red, green, blue, alpha.
         publicInterface.rgba_o = function(r = 55, g = 55, b = 55, a = 255)
         {
-            k_assert((((r >= 0) && (r <= 255)) &&
+            Rsed.assert((((r >= 0) && (r <= 255)) &&
                       ((g >= 0) && (g <= 255)) &&
                       ((b >= 0) && (b <= 255)) &&
                       ((a >= 0) && (a <= 255))), "The given color values are out of range.");
@@ -376,7 +380,7 @@ Rsed.texture_n = (function()
             this.pixels = [];
             for (let i = 0; i < (width * height); i++)
             {
-                k_assert((pixels[i] instanceof Rsed.color_n.rgba_o), "Expected a color object.");
+                Rsed.assert((pixels[i] instanceof Rsed.color_n.rgba_o), "Expected a color object.");
                 this.pixels.push(new Rsed.color_n.rgba_o(pixels[i].r, pixels[i].g, pixels[i].b, pixels[i].a));
             }
         }
@@ -543,7 +547,7 @@ Rsed.palette_n = (function()
         // Set new r,g,b values for the given palette entry in the currently-active palette.
         publicInterface.modify_palette_entry = function(paletteIdx, r, g, b)
         {
-            k_assert((paletteIdx >= 0 && paletteIdx < palettes[currentPalette].length));
+            Rsed.assert((paletteIdx >= 0 && paletteIdx < palettes[currentPalette].length));
 
             palettes[currentPalette][paletteIdx].r = r;
             palettes[currentPalette][paletteIdx].g = g;
@@ -552,7 +556,7 @@ Rsed.palette_n = (function()
 
         publicInterface.set_palette_for_track = function(trackId = 0)
         {
-            k_assert(((trackId >= 1) && (trackId <= 8)), "Trying to set palette for a track index out of bounds.");
+            Rsed.assert(((trackId >= 1) && (trackId <= 8)), "Trying to set palette for a track index out of bounds.");
 
             switch (trackId)
             {
@@ -564,7 +568,7 @@ Rsed.palette_n = (function()
                 case 7: currentPalette = 0; break;
                 case 5: currentPalette = 1; break;
                 case 8: currentPalette = 3; break;
-                default: k_assert(0, "Unknown track id for setting a palette."); break;
+                default: Rsed.assert(0, "Unknown track id for setting a palette."); break;
             }
         }
 
@@ -622,7 +626,7 @@ Rsed.geometry_n = {};
 
         this.cross = function(other = Rsed.geometry_n.vector3_o)
         {
-            k_assert((other instanceof Rsed.geometry_n.vector3_o), "Expected a vector.");
+            Rsed.assert((other instanceof Rsed.geometry_n.vector3_o), "Expected a vector.");
 
             const c = new Rsed.geometry_n.vector3_o();
 
@@ -660,7 +664,7 @@ Rsed.geometry_n = {};
         // Transform the vertices by the given matrix.
         this.transform = function(m = [])
         {
-            k_assert((m.length === 16), "Expected a 4 x 4 matrix to transform the vertex by.");
+            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix to transform the vertex by.");
             
             const x_ = ((m[0] * this.x) + (m[4] * this.y) + (m[ 8] * this.z) + (m[12] * this.w));
             const y_ = ((m[1] * this.x) + (m[5] * this.y) + (m[ 9] * this.z) + (m[13] * this.w));
@@ -676,7 +680,7 @@ Rsed.geometry_n = {};
 
     Rsed.geometry_n.polygon_o = function(numVertices = 3)
     {
-        k_assert((numVertices > 2) && (numVertices < 10), "Bad vertex count.");
+        Rsed.assert((numVertices > 2) && (numVertices < 10), "Bad vertex count.");
 
         this.v = [];
         for (let i = 0; i < numVertices; i++)
@@ -700,7 +704,7 @@ Rsed.geometry_n = {};
         // Duplicates the given polygon's relevant properties onto this one.
         this.clone_from = function(otherPolygon = {})
         {
-            k_assert(((otherPolygon instanceof Rsed.geometry_n.polygon_o) &&
+            Rsed.assert(((otherPolygon instanceof Rsed.geometry_n.polygon_o) &&
                       (this.v.length === otherPolygon.v.length)), "Incompatible polygons for cloning.");
 
             // Vertices.
@@ -744,7 +748,7 @@ Rsed.geometry_n = {};
             }
             else
             {
-                //k_assert(0, "Unsupported number of vertices for backface culling.");
+                //Rsed.assert(0, "Unsupported number of vertices for backface culling.");
                 return true;
             }
         };
@@ -752,7 +756,7 @@ Rsed.geometry_n = {};
         // Transform the polygon's vertices by the given matrix.
         this.transform = function(m = [])
         {
-            k_assert((m.length === 16), "Expected a 4 x 4 matrix to transform the polygon by.");
+            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix to transform the polygon by.");
             
             for (let i = 0; i < this.v.length; i++)
             {
@@ -775,14 +779,14 @@ Rsed.geometry_n = {};
                                          translation = new Rsed.geometry_n.vector3_o(0, 0, 0),
                                          rotation = new Rsed.geometry_n.vector3_o(0, 0, 0))
     {
-        k_assert((polygons.length > 0), "Expected a non-empty list of polygons.");
-        k_assert((translation instanceof Rsed.geometry_n.vector3_o), "Expected a translation vector.");
-        k_assert((rotation instanceof Rsed.geometry_n.vector3_o), "Expected a rotation vector.");
+        Rsed.assert((polygons.length > 0), "Expected a non-empty list of polygons.");
+        Rsed.assert((translation instanceof Rsed.geometry_n.vector3_o), "Expected a translation vector.");
+        Rsed.assert((rotation instanceof Rsed.geometry_n.vector3_o), "Expected a rotation vector.");
 
         this.polygons = [];
         for (let i = 0; i < polygons.length; i++)
         {
-            k_assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon.");
+            Rsed.assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon.");
 
             const newPoly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
             newPoly.clone_from(polygons[i]);
@@ -802,7 +806,7 @@ Rsed.geometry_n = {};
             const m = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(this.translationVec.x, this.translationVec.y, this.translationVec.z),
                                                    Rsed.matrix44_n.rotation_matrix(this.rotationVec.x, this.rotationVec.y, this.rotationVec.z));
 
-            k_assert((m.length === 16), "Expected to return a 4 x 4 object space matrix.");
+            Rsed.assert((m.length === 16), "Expected to return a 4 x 4 object space matrix.");
             return m;
         }
 
@@ -865,7 +869,7 @@ Rsed.matrix44_n = (function()
     {
         publicInterface.multiply_matrices = function(m1 = [], m2 = [])
         {
-            k_assert(((m1.length === 16) && (m2.length === 16)), "Expected 4 x 4 matrices.");
+            Rsed.assert(((m1.length === 16) && (m2.length === 16)), "Expected 4 x 4 matrices.");
 
             let mResult = [];
             for (let i = 0; i < 4; i++)
@@ -879,7 +883,7 @@ Rsed.matrix44_n = (function()
                 }
             }
 
-            k_assert((mResult.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert((mResult.length === 16), "Expected a 4 x 4 matrix.");
             return mResult;
         }
 
@@ -891,7 +895,7 @@ Rsed.matrix44_n = (function()
             m[2]=0; m[6]=0; m[10]=1; m[14]=z;
             m[3]=0; m[7]=0; m[11]=0; m[15]=1;
 
-            k_assert((m.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix.");
             return m;
         }
 
@@ -917,7 +921,7 @@ Rsed.matrix44_n = (function()
             const temp = Rsed.matrix44_n.multiply_matrices(m2, m3);
             const mResult = Rsed.matrix44_n.multiply_matrices(m1, temp);
 
-            k_assert((mResult.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert((mResult.length === 16), "Expected a 4 x 4 matrix.");
             return mResult;
         }
 
@@ -932,7 +936,7 @@ Rsed.matrix44_n = (function()
             m[2]=0;                             m[6]=0;             m[10]=((-zNear - zFar) / zRange); m[14]=(2 * zFar * (zNear / zRange));
             m[3]=0;                             m[7]=0;             m[11]=1;                          m[15]=0;
 
-            k_assert((m.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix.");
             return m;
         }
 
@@ -944,7 +948,7 @@ Rsed.matrix44_n = (function()
             m[2]=0;           m[6]=0;             m[10]=1; m[14]=0;
             m[3]=0;           m[7]=0;             m[11]=0; m[15]=1;
 
-            k_assert((m.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix.");
             return m;
         }
 
@@ -956,7 +960,7 @@ Rsed.matrix44_n = (function()
             m[2]=0; m[6]=0; m[10]=1; m[14]=0;
             m[3]=0; m[7]=0; m[11]=0; m[15]=1;
 
-            k_assert((m.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert((m.length === 16), "Expected a 4 x 4 matrix.");
             return m;
         }
     }
@@ -983,10 +987,10 @@ Rsed.polygon_transform_n = (function()
                                                       objectSpaceMatrix = [], cameraMatrix = [],
                                                       screenWidth = 0, screenHeight = 0)
         {
-            k_assert((polygons.length > 0), "Expected a non-empty list of polygons.");
-            k_assert((objectSpaceMatrix.length === 16), "Expected a 4 x 4 matrix.");
-            k_assert((cameraMatrix.length === 16), "Expected a 4 x 4 matrix.");
-            k_assert(((screenWidth > 0) && (screenHeight > 0)), "The screen can't have 0 width or height.");
+            Rsed.assert((polygons.length > 0), "Expected a non-empty list of polygons.");
+            Rsed.assert((objectSpaceMatrix.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert((cameraMatrix.length === 16), "Expected a 4 x 4 matrix.");
+            Rsed.assert(((screenWidth > 0) && (screenHeight > 0)), "The screen can't have 0 width or height.");
             
             // Create matrices with which we can transform the polygons, ultimately into
             // screen-space but also into clip-space in the interim.
@@ -1011,7 +1015,7 @@ Rsed.polygon_transform_n = (function()
                 let k = 0;
                 for (let i = 0; i < polygons.length; i++)
                 {
-                    k_assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon.");
+                    Rsed.assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon.");
                     
                     transfPolys[k] = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
                     transfPolys[k].clone_from(polygons[i]);
@@ -1083,7 +1087,7 @@ Rsed.camera_n = (function()
 
         publicInterface.rotate_camera = function(rotX, rotY, rotZ)
         {
-            k_assert(0, "This function has not yet been prepared for use.");
+            Rsed.assert(0, "This function has not yet been prepared for use.");
         }
 
         publicInterface.pos_x = function() { return position.x; }
@@ -1116,7 +1120,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 {
     this.renderSurfaceId = "render_surface_canvas";
 
-    k_assert((document.getElementById(containerElementId) !== null), "Can't find this element.")
+    Rsed.assert((document.getElementById(containerElementId) !== null), "Can't find this element.")
     this.renderSurface = new Rsed.render_surface_n.render_surface_o(this.renderSurfaceId,
                                                                     "canvas",
                                                                     containerElementId,
@@ -1151,13 +1155,13 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 
     this.set_prerefresh_callback = function(preRefreshFn)
     {
-        k_assert((preRefreshFn instanceof Function), "Expected a function for the refresh callback.");
+        Rsed.assert((preRefreshFn instanceof Function), "Expected a function for the refresh callback.");
         this.preRefreshCallbackFn = preRefreshFn;
     }
 
     this.set_resize_callback = function(resizeFn)
     {
-        k_assert((resizeFn instanceof Function), "Expected a function. for the resize callback.");
+        Rsed.assert((resizeFn instanceof Function), "Expected a function. for the resize callback.");
         this.resizeCallbackFn = resizeFn;
     }
 
@@ -1243,7 +1247,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
     // once and you're good.
     this.register_mesh = function(mesh = Rsed.geometry_n.polygon_mesh_o)
     {
-        k_assert((mesh instanceof Rsed.geometry_n.polygon_mesh_o), "Expected a polygon mesh.");
+        Rsed.assert((mesh instanceof Rsed.geometry_n.polygon_mesh_o), "Expected a polygon mesh.");
         this.meshes.push(mesh);
     }
 
@@ -1288,10 +1292,10 @@ Rsed.render_surface_n = (function()
                                                     containerId = "",
                                                     polyFillFn = Function)
         {
-            k_assert((surfaceElementId.length > 0), "Expected a non-null string.");
-            k_assert((surfaceElementName.length > 0), "Expected a non-null string.");
-            k_assert((containerId.length > 0), "Expected a non-null string.");
-            k_assert((polyFillFn != null), "Expected a non-null polyfill function.");
+            Rsed.assert((surfaceElementId.length > 0), "Expected a non-null string.");
+            Rsed.assert((surfaceElementName.length > 0), "Expected a non-null string.");
+            Rsed.assert((containerId.length > 0), "Expected a non-null string.");
+            Rsed.assert((polyFillFn != null), "Expected a non-null polyfill function.");
 
             this.elementId = surfaceElementId;
             this.elementName = surfaceElementName;
@@ -1302,7 +1306,7 @@ Rsed.render_surface_n = (function()
             this.height = null;
             
             this.containerElement = document.getElementById(this.containerId);
-            k_assert((this.containerElement != null), "Couldn't find a render surface element with the given id.");
+            Rsed.assert((this.containerElement != null), "Couldn't find a render surface element with the given id.");
 
             this.element = document.getElementById(this.elementId);
 
@@ -1329,7 +1333,7 @@ Rsed.render_surface_n = (function()
                     }
                     default:
                     {
-                        k_assert(0, "Unknown render surface element id.");
+                        Rsed.assert(0, "Unknown render surface element id.");
                         break;
                     }
                 }
@@ -1338,9 +1342,9 @@ Rsed.render_surface_n = (function()
                 this.element.setAttribute("class", "canvas");
                 this.containerElement.appendChild(this.element);
             }
-            k_assert((this.element.parentNode === this.containerElement), "The render surface element doesn't appear to be embedded in the given container element.");
-            k_assert((this.element != null), "Couldn't find a render surface element with the given id.");
-            k_assert((this.element.tagName.toLowerCase() === this.elementName), "The element by the given id is not compatible with the given element name.");
+            Rsed.assert((this.element.parentNode === this.containerElement), "The render surface element doesn't appear to be embedded in the given container element.");
+            Rsed.assert((this.element != null), "Couldn't find a render surface element with the given id.");
+            Rsed.assert((this.element.tagName.toLowerCase() === this.elementName), "The element by the given id is not compatible with the given element name.");
 
             // A function that can be called by the render surface to draw polygons onto
             // itself.
@@ -1378,7 +1382,7 @@ Rsed.render_surface_n = (function()
                 this.width = targetWidth;
                 this.height = targetHeight;
                 
-                k_assert(!isNaN(this.width) && !isNaN(this.height), "Failed to extract the canvas size.");
+                Rsed.assert(!isNaN(this.width) && !isNaN(this.height), "Failed to extract the canvas size.");
 
                 this.element.setAttribute("width", this.width);
                 this.element.setAttribute("height", this.height);
@@ -1411,7 +1415,7 @@ Rsed.render_surface_n = (function()
                     }
                     default:
                     {
-                        k_assert(0, "Unknown render surface element id.");
+                        Rsed.assert(0, "Unknown render surface element id.");
                     }
                 }
             }
@@ -1446,7 +1450,7 @@ Rsed.render_surface_n = (function()
                     }
                     default:
                     {
-                        k_assert(0, "Unknown render surface element id.");
+                        Rsed.assert(0, "Unknown render surface element id.");
                     }
                 }
             }
@@ -1517,14 +1521,14 @@ Rsed.maasto_n = (function()
 
         publicInterface.num_props = function()
         {
-            k_assert((propLocations.length === propNames.length), "Detected mismatched prop data.");
+            Rsed.assert((propLocations.length === propNames.length), "Detected mismatched prop data.");
 
             return propLocations.length;
         }
 
         publicInterface.remove_prop = function(propIdx)
         {
-            k_assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to delete a prop whose index is out of bounds.");
+            Rsed.assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to delete a prop whose index is out of bounds.");
 
             // Don't allow removing the finish line, since a track needs to have one at all times. But if you
             // really want to remove it, and you know what you're doing, you need to call some other function,
@@ -1548,7 +1552,7 @@ Rsed.maasto_n = (function()
 
         publicInterface.set_prop_position = function(propIdx, x, z)
         {
-            k_assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index is out of bounds.");
+            Rsed.assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index is out of bounds.");
 
             /// TODO: For now, this doesn't clamp the values to track boundaries, as some tracks made with
             /// old versions of RallySportED may try to put props outside of those boundaries (and expect
@@ -1559,7 +1563,7 @@ Rsed.maasto_n = (function()
         
         publicInterface.move_prop = function(propIdx, deltaX, deltaZ)
         {
-            k_assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index is out of bounds.");
+            Rsed.assert((propIdx >= 0 && propIdx < propLocations.length), "Trying to move a prop whose index is out of bounds.");
 
             propLocations[propIdx].x = this.clamped_to_track_prop_boundaries(propLocations[propIdx].x + deltaX);
             propLocations[propIdx].z = this.clamped_to_track_prop_boundaries(propLocations[propIdx].z + deltaZ);
@@ -1618,7 +1622,7 @@ Rsed.maasto_n = (function()
                 bytes[i*2+1] = b2;
             }
 
-            k_assert((bytes.length === originalMaastoBytesize), "Returning too many/few bytes in the saveable MAASTO buffer.");
+            Rsed.assert((bytes.length === originalMaastoBytesize), "Returning too many/few bytes in the saveable MAASTO buffer.");
 
             return bytes;
         }
@@ -1633,7 +1637,7 @@ Rsed.maasto_n = (function()
                 bytes[i] = tilemap[i];
             }
 
-            k_assert((bytes.length === originalVarimaaBytesize), "Returning too many/few bytes in the saveable MAASTO buffer.");
+            Rsed.assert((bytes.length === originalVarimaaBytesize), "Returning too many/few bytes in the saveable MAASTO buffer.");
 
             return bytes;
         }
@@ -1641,27 +1645,27 @@ Rsed.maasto_n = (function()
         // Returns the x,y,z track coordinates of the given prop.
         publicInterface.position_of_prop = function(propId)
         {
-            k_assert((propId >= 0 && propId < propLocations.length), "Querying prop position out of bounds.");
+            Rsed.assert((propId >= 0 && propId < propLocations.length), "Querying prop position out of bounds.");
             return propLocations[propId];
         }
 
         // Returns the name of the given prop.
         publicInterface.name_of_prop = function(propId)
         {
-            k_assert((propId >= 0 && propId < propNames.length), "Querying prop position out of bounds.");
+            Rsed.assert((propId >= 0 && propId < propNames.length), "Querying prop position out of bounds.");
             return propNames[propId].slice(0);
         }
 
         publicInterface.change_prop_type = function(propIdx, newPropIdx)
         {
-            k_assert((propIdx >= 0 && propIdx < propNames.length), "Attempting to change prop type out of bounds.");
+            Rsed.assert((propIdx >= 0 && propIdx < propNames.length), "Attempting to change prop type out of bounds.");
             propNames[propIdx] = Rsed.props_n.prop_name_for_idx(newPropIdx);
         }
 
         publicInterface.set_prop_count = function(numProps = 0)
         {
             // Each track needs at least one prop, i.e. the starting line.
-            k_assert(((numProps >= 1) && (numProps <= propLocations.length)), "Attempting to set prop count out of bounds (" + numProps + ").");
+            Rsed.assert(((numProps >= 1) && (numProps <= propLocations.length)), "Attempting to set prop count out of bounds (" + numProps + ").");
 
             propLocations.length = numProps;
             propNames.length = numProps;
@@ -1683,8 +1687,8 @@ Rsed.maasto_n = (function()
 
         publicInterface.add_prop_location = function(trackId = 0, propName = "", x = 0, y = 0, z = 0)
         {
-            k_assert((trackId >= 0 && trackId <= 8), "Track id is out of bounds.");
-            k_assert((propName.length > 0), "Expected a non-empty prop name.");
+            Rsed.assert((trackId >= 0 && trackId <= 8), "Track id is out of bounds.");
+            Rsed.assert((propName.length > 0), "Expected a non-empty prop name.");
 
             /// Temp hack.
             if (trackId !== Rsed.main_n.underlying_track_id()) return;
@@ -1703,8 +1707,8 @@ Rsed.maasto_n = (function()
         // Call this with a n array of height points (sideLength * sideLength) long.
         publicInterface.set_maasto = function(sideLength = 0, heights = [])
         {
-            k_assert((heights[0] != null), "Can't set the MAASTO with potentially bad data.");
-            k_assert((heights.length === (sideLength * sideLength)), "Incorrect number of height points for MAASTO.");
+            Rsed.assert((heights[0] != null), "Can't set the MAASTO with potentially bad data.");
+            Rsed.assert((heights.length === (sideLength * sideLength)), "Incorrect number of height points for MAASTO.");
 
             maastoSideLength = sideLength;
             heightmap.push(...heights);
@@ -1712,7 +1716,7 @@ Rsed.maasto_n = (function()
 
         publicInterface.set_maasto_height_at = function(x = 0, y = 0, newHeight = 0)
         {
-            k_assert(((x >= 0 && x < maastoSideLength) &&
+            Rsed.assert(((x >= 0 && x < maastoSideLength) &&
                       (y >= 0 && y < maastoSideLength)), "Attempting to set MAASTO height out of bounds (" + x + "," + y + ").");
 
             if (newHeight > maxHeightmapValue) newHeight = maxHeightmapValue;
@@ -1723,7 +1727,7 @@ Rsed.maasto_n = (function()
 
         publicInterface.set_varimaa_tile_at = function(x = 0, y = 0, palaIdx = 0)
         {
-            k_assert(((x >= 0 && x < maastoSideLength) &&
+            Rsed.assert(((x >= 0 && x < maastoSideLength) &&
                       (y >= 0 && y < maastoSideLength)), "Attempting to set a VARIMAA tile out of bounds (" + x + "," + y + ").");
 
             tilemap[x + y * maastoSideLength] = palaIdx;
@@ -1731,7 +1735,7 @@ Rsed.maasto_n = (function()
 
         publicInterface.set_varimaa = function(sideLength = 0, tiles = [])
         {
-            k_assert((sideLength === maastoSideLength), "Expected the MAASTO side length to be set and identical to that of the VARIMAA.");
+            Rsed.assert((sideLength === maastoSideLength), "Expected the MAASTO side length to be set and identical to that of the VARIMAA.");
             tilemap.push(...tiles);
         }
 
@@ -1871,7 +1875,7 @@ Rsed.maasto_n = (function()
                             case 247: bill.texture = Rsed.palat_n.pala_texture(211, true); break;
                             case 250: bill.texture = Rsed.palat_n.pala_texture(212, true); break;
         
-                            default: k_assert(0, "Unrecognized billboard texture."); continue;
+                            default: Rsed.assert(0, "Unrecognized billboard texture."); continue;
                         }
 
                         polys.push(bill);
@@ -1996,7 +2000,7 @@ Rsed.palat_n = (function()
         // Adds the given texture as a known PALA.
         publicInterface.add_pala = function(palaTexture = Rsed.texture_n.texture_o)
         {
-            k_assert((palaTexture instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
+            Rsed.assert((palaTexture instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
 
             let tex = new Rsed.texture_n.texture_o;
             tex.pixels = palaTexture.pixels.slice(0);
@@ -2019,8 +2023,8 @@ Rsed.palat_n = (function()
         publicInterface.pala_texture = function(palaIdx = 0, withAlpha = false)
         {
             const palaSource = (withAlpha? palatWithAlpha : palat);
-           // k_assert((palaSource[palaIdx] != null), "Can't return a valid PALA texture.");
-            //k_assert((palaSource[palaIdx] instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
+           // Rsed.assert((palaSource[palaIdx] != null), "Can't return a valid PALA texture.");
+            //Rsed.assert((palaSource[palaIdx] instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
 
             return (palaSource[palaIdx] == null)? null : palaSource[palaIdx];
         }
@@ -2068,7 +2072,7 @@ Rsed.props_n = (function()
 
         publicInterface.add_prop_texture = function(texture = Rsed.texture_n.texture_o)
         {
-            k_assert((texture instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
+            Rsed.assert((texture instanceof Rsed.texture_n.texture_o), "Expected a texture object.");
 
             texture.hasAlpha = true;
             propTextures.push(texture);
@@ -2076,9 +2080,9 @@ Rsed.props_n = (function()
 
         publicInterface.add_prop_mesh = function(name = "", polygons = [Rsed.geometry_n.polygon_o])
         {
-            k_assert((polygons[0] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon mesh.");
-            k_assert((name.length > 0), "Expected a non-empty prop name string.");
-            k_assert((polygons.length > 0), "Expectd a non-empty mesh.");
+            Rsed.assert((polygons[0] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon mesh.");
+            Rsed.assert((name.length > 0), "Expected a non-empty prop name string.");
+            Rsed.assert((polygons.length > 0), "Expectd a non-empty mesh.");
             
             propMeshes.push(polygons);
             propNames.push(name);
@@ -2086,14 +2090,14 @@ Rsed.props_n = (function()
 
         publicInterface.prop_name_for_idx = function(propIdx)
         {
-            k_assert((propIdx >= 0 && propIdx < propNames.length), "Querying a prop name out of bounds.");
+            Rsed.assert((propIdx >= 0 && propIdx < propNames.length), "Querying a prop name out of bounds.");
             return propNames[propIdx];
         }
 
         publicInterface.prop_idx_for_name = function(propName = "")
         {
             const propIdx = propNames.indexOf(propName);
-            k_assert((propIdx >= 0 && propIdx < propNames.length), "Can't find the given prop name to return an index.");
+            Rsed.assert((propIdx >= 0 && propIdx < propNames.length), "Can't find the given prop name to return an index.");
 
             return propIdx;
         }
@@ -2101,11 +2105,11 @@ Rsed.props_n = (function()
         // Returns a copy of the mesh of the prop of the given name, offset by the given x,y,z.
         publicInterface.prop_mesh = function(name = "", idOnTrack = 0, offsetX = 0, offsetY = 0, offsetZ = 0, wireframeEnabled = false)
         {
-            k_assert((name.length > 0), "Expected a non-empty prop mesh name string.");
+            Rsed.assert((name.length > 0), "Expected a non-empty prop mesh name string.");
 
             const idx = propNames.indexOf(name);
             const sourceMesh = propMeshes[idx];
-            k_assert((idx >= 0), "Couldn't find a prop with the given name.");
+            Rsed.assert((idx >= 0), "Couldn't find a prop with the given name.");
 
             const copyMesh = [];
             for (let i = 0; i < sourceMesh.length; i++)
@@ -2135,7 +2139,7 @@ Rsed.props_n = (function()
         {
             if (idx == null) return null;
 
-            k_assert((idx >= 0 && idx < propTextures.length), "Tried to access a prop texture out of bounds.");
+            Rsed.assert((idx >= 0 && idx < propTextures.length), "Tried to access a prop texture out of bounds.");
 
             return propTextures[idx];
         }
@@ -2175,7 +2179,7 @@ Rsed.manifesto_n = (function()
     {
         return new Promise((resolve, reject) =>
         {
-            k_assert((args.length === 3), "Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
+            Rsed.assert((args.length === 3), "Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
 
             const trackId = Math.floor(Number(args[0]));
             const palatId = Math.floor(Number(args[1]));
@@ -2188,13 +2192,13 @@ Rsed.manifesto_n = (function()
     // Command: road. Sets up the game's driving physics for various kinds of road surfaces.
     function apply_1(args = [])
     {
-        k_assert((args.length === 1), "Invalid number of arguments to manifesto command 1. Expected 1 but received " + args.length + ".");
+        Rsed.assert((args.length === 1), "Invalid number of arguments to manifesto command 1. Expected 1 but received " + args.length + ".");
     }
 
     // Command: num_objs. Sets the number of props (in addition to the starting line) on the track.
     function apply_2(args = [])
     {
-        k_assert((args.length === 1), "Invalid number of arguments to manifesto command 2. Expected 1 but received " + args.length + ".");
+        Rsed.assert((args.length === 1), "Invalid number of arguments to manifesto command 2. Expected 1 but received " + args.length + ".");
 
         const numObjs = Math.floor(Number(args[0]));
 
@@ -2204,7 +2208,7 @@ Rsed.manifesto_n = (function()
     // Command: add_obj. Adds a new prop to the track.
     function apply_3(args = [])
     {
-        k_assert((args.length === 5), "Invalid number of arguments to manifesto command 3. Expected 5 but received " + args.length + ".");
+        Rsed.assert((args.length === 5), "Invalid number of arguments to manifesto command 3. Expected 5 but received " + args.length + ".");
 
         const propTypeIdx = Math.floor(Number(args[0]) - 1);
         const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
@@ -2216,7 +2220,7 @@ Rsed.manifesto_n = (function()
     // Command: change_obj_type. Changes the type of the given prop.
     function apply_4(args = [])
     {
-        k_assert((args.length === 2), "Invalid number of arguments to manifesto command 4. Expected 2 but received " + args.length + ".");
+        Rsed.assert((args.length === 2), "Invalid number of arguments to manifesto command 4. Expected 2 but received " + args.length + ".");
 
         const targetPropIdx = Math.floor(Number(args[0]) - 1);
         const newType = Math.floor(Number(args[1]) - 1);
@@ -2227,7 +2231,7 @@ Rsed.manifesto_n = (function()
     // Command: move_obj. Moves the position of the given prop.
     function apply_5(args = [])
     {
-        k_assert((args.length === 5), "Invalid number of arguments to manifesto command 5. Expected 5 but received " + args.length + ".");
+        Rsed.assert((args.length === 5), "Invalid number of arguments to manifesto command 5. Expected 5 but received " + args.length + ".");
 
         const targetPropIdx = Math.floor(Number(args[0]) - 1);
         const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
@@ -2241,13 +2245,13 @@ Rsed.manifesto_n = (function()
     // it in the editor.
     function apply_6(args = [])
     {
-        k_assert((args.length === 4), "Invalid number of arguments to manifesto command 6. Expected 4 but received " + args.length + ".");
+        Rsed.assert((args.length === 4), "Invalid number of arguments to manifesto command 6. Expected 4 but received " + args.length + ".");
     }
 
     // Command: change_palette_entry. Changes the given palette index to the given r,g,b values.
     function apply_10(args = [])
     {
-        k_assert((args.length === 4), "Invalid number of arguments to manifesto command 10. Expected 4 but received " + args.length + ".");
+        Rsed.assert((args.length === 4), "Invalid number of arguments to manifesto command 10. Expected 4 but received " + args.length + ".");
 
         const targetPaletteIdx = Math.floor(Number(args[0]));
         const r = Math.floor(Number(args[1] * 4));
@@ -2260,7 +2264,7 @@ Rsed.manifesto_n = (function()
     // Command: stop. Stops parsing the manifesto file.
     function apply_99(args = [])
     {
-        k_assert((args.length === 0), "Invalid number of arguments to manifesto command 99. Expected no arguments but received " + args.length + ".");
+        Rsed.assert((args.length === 0), "Invalid number of arguments to manifesto command 99. Expected no arguments but received " + args.length + ".");
     }
 
     const publicInterface = {};
@@ -2272,13 +2276,13 @@ Rsed.manifesto_n = (function()
             return new Promise((resolve, reject) =>
             {
                 const lines = manifestoString.split("\n").filter(Boolean);
-                k_assert((lines.length >= 2), "Invalid number of lines in the manifesto file.");
+                Rsed.assert((lines.length >= 2), "Invalid number of lines in the manifesto file.");
 
                 // Apply the first manifesto command, 0, which sets up the track by loading in all data, etc.
                 const params = lines[0].split(" ");
                 const commandId = Number(params.shift());
                 const initialize_track = manifestoCommands[0];
-                k_assert((commandId === 0), "Expected the first command in the manifesto to be 0.");
+                Rsed.assert((commandId === 0), "Expected the first command in the manifesto to be 0.");
 
                 // Once the first command has finished loading all data, we can continue with the other
                 // manifesto commands, which manipulate those data.
@@ -2290,11 +2294,11 @@ Rsed.manifesto_n = (function()
                         const params = lines[i].split(" ");
                         const commandId = Number(params.shift());
                         const command = manifestoCommands[commandId];
-                        k_assert((command != null), "Unsupported command (" + commandId + ") in the manifesto file.");
+                        Rsed.assert((command != null), "Unsupported command (" + commandId + ") in the manifesto file.");
 
                         if ((commandId === 99) && (i !== (lines.length - 1)))
                         {
-                            k_assert(0, "Expected the command 99 to be the manifesto's last one.");
+                            Rsed.assert(0, "Expected the command 99 to be the manifesto's last one.");
                         }
 
                         command(params);
@@ -2317,7 +2321,7 @@ Rsed.manifesto_n = (function()
             for (let i = 0; i < (manifLines.length - 1); i++)
             {
                 const params = manifLines[i].split(" ");
-                k_assert(params.length > 0, "Did not expect an empty parameters list.");
+                Rsed.assert(params.length > 0, "Did not expect an empty parameters list.");
 
                 switch (params[0])
                 {
@@ -2975,7 +2979,7 @@ Rsed.ui_font_n = (function()
         publicInterface.character = function(ch = 'A')
         {
             let idx = ch.charCodeAt(0);
-            k_assert(((idx >= firstChar.charCodeAt(0)) && (idx <= lastChar.charCodeAt(0)),
+            Rsed.assert(((idx >= firstChar.charCodeAt(0)) && (idx <= lastChar.charCodeAt(0)),
                      "Was asked for a font character that isn't in the charset."));
 
             // Convert to 0-indexed, where 0 is the first character.
@@ -2985,7 +2989,7 @@ Rsed.ui_font_n = (function()
             idx = (idx * charWidth * charHeight);
 
             const character = charset.slice(idx, (idx + (charWidth * charHeight)));
-            k_assert((character.length === (charWidth * charHeight)), "Failed to return the given character.");
+            Rsed.assert((character.length === (charWidth * charHeight)), "Failed to return the given character.");
 
             return character;
         }
@@ -3076,21 +3080,21 @@ Rsed.ui_view_n = (function()
 
         publicInterface.set_view = function(view = "")
         {
-            k_assert(availableViews.includes(view), "Can't find the given view to set.");
+            Rsed.assert(availableViews.includes(view), "Can't find the given view to set.");
             currentView = view;
         }
 
         publicInterface.toggle_view = function(firstView = "", secondView = "")
         {
-            k_assert(availableViews.includes(firstView), "Can't find the given view to set.");
-            k_assert(availableViews.includes(secondView), "Can't find the given view to set.");
+            Rsed.assert(availableViews.includes(firstView), "Can't find the given view to set.");
+            Rsed.assert(availableViews.includes(secondView), "Can't find the given view to set.");
 
             currentView = ((currentView === firstView)? secondView : firstView);
         }
 
         publicInterface.current_view = function()
         {
-            k_assert(availableViews.includes(currentView), "Holding an invalid view.");
+            Rsed.assert(availableViews.includes(currentView), "Holding an invalid view.");
             return currentView.slice(0);
         }
     }
@@ -3169,7 +3173,7 @@ Rsed.ui_brush_n = (function()
 
                             break;
                         }
-                        default: k_assert(0, "Unknown brush action.");
+                        default: Rsed.assert(0, "Unknown brush action.");
                     }
                 }
             }
@@ -3177,7 +3181,7 @@ Rsed.ui_brush_n = (function()
 
         publicInterface.set_brush_size = function(newSize = 0)
         {
-            k_assert((newSize >= 0), "Attempted to set an invalid brush size.");
+            Rsed.assert((newSize >= 0), "Attempted to set an invalid brush size.");
             brushSize = newSize;
         }
 
@@ -3188,7 +3192,7 @@ Rsed.ui_brush_n = (function()
 
         publicInterface.set_brush_pala_idx = function(newPalaIdx = 0)
         {
-            k_assert((newPalaIdx >= 0), "Attempted to set an invalid brush PALA index.");
+            Rsed.assert((newPalaIdx >= 0), "Attempted to set an invalid brush PALA index.");
             brushPalaIdx = newPalaIdx;
         }
         
@@ -3255,11 +3259,11 @@ Rsed.ui_draw_n = (function()
         x = Math.floor(x);
         y = Math.floor(y);
 
-        k_assert((mousePick instanceof Array ||mousePick === null), "Expected a valid mouse-picking buffer.");
-        k_assert((pixelSurface != null), "Expected a valid pixel surface.");
-        k_assert(((pixels[0] != null) && (pixels.length > 0)), "Expected a valid array of pixels.");
-        k_assert(((width > 0) && (height > 0)), "Expected a valid image resolution.");
-        k_assert(((x >= 0) || (x < pixelSurface.width) ||
+        Rsed.assert((mousePick instanceof Array ||mousePick === null), "Expected a valid mouse-picking buffer.");
+        Rsed.assert((pixelSurface != null), "Expected a valid pixel surface.");
+        Rsed.assert(((pixels[0] != null) && (pixels.length > 0)), "Expected a valid array of pixels.");
+        Rsed.assert(((width > 0) && (height > 0)), "Expected a valid image resolution.");
+        Rsed.assert(((x >= 0) || (x < pixelSurface.width) ||
                   (y >= 0) || (y < pixelSurface.height)), "Invalid screen coordinates for drawing the image.");
 
         for (let cy = 0; cy < height; cy++)
@@ -3293,8 +3297,8 @@ Rsed.ui_draw_n = (function()
     {
         string = String(string).toUpperCase();
 
-        k_assert((pixelSurface != null), "Expected a valid pixel surface.");
-        k_assert((string.length != null), "Expected a non-empty string");
+        Rsed.assert((pixelSurface != null), "Expected a valid pixel surface.");
+        Rsed.assert((string.length != null), "Expected a non-empty string");
 
         // Convert from percentages into absolute screen coordinates.
         if (x < 0) x = Math.floor(-x * pixelSurface.width);
@@ -3509,7 +3513,7 @@ Rsed.ui_draw_n = (function()
     {
         // Call this when RallySportED crashes and you want the user to be given a visual indication of that
         // on the render surface.
-        // NOTE: Avoid calling k_assert in this function, since the function itself may be called on asserts.
+        // NOTE: Avoid calling Rsed.assert in this function, since the function itself may be called on asserts.
         publicInterface.draw_crash_message = function(renderSurface, message)
         {
             if (!(renderSurface instanceof Rsed.render_surface_n.render_surface_o)) return;
@@ -3524,12 +3528,12 @@ Rsed.ui_draw_n = (function()
 
         publicInterface.draw_ui = function(renderSurface = Rsed.render_surface_n.render_surface_o)
         {
-            k_assert((renderSurface instanceof Rsed.render_surface_n.render_surface_o), "Expected to receive the render surface.");
+            Rsed.assert((renderSurface instanceof Rsed.render_surface_n.render_surface_o), "Expected to receive the render surface.");
 
             // Draw the UI.
             pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
             mousePickBuffer = renderSurface.mousePickBuffer;
-            k_assert((mousePickBuffer.length === (pixelSurface.width * pixelSurface.height)), "Incompatible mouse-picking buffer.");
+            Rsed.assert((mousePickBuffer.length === (pixelSurface.width * pixelSurface.height)), "Incompatible mouse-picking buffer.");
             {
                 switch (Rsed.ui_view_n.current_view())
                 {
@@ -3730,7 +3734,7 @@ Rsed.ui_input_n = (function()
                 {
                     return;
                 }
-                default: k_assert(0, "Unhandled mouse lock type."); break;
+                default: Rsed.assert(0, "Unhandled mouse lock type."); break;
             }
         }
         else if (mouseLock.hibernating)
@@ -3779,7 +3783,7 @@ Rsed.ui_input_n = (function()
             }
             case "prop":
             {
-                k_assert((mouseLock.propTrackId != null), "Expected the prop track id as a parameter to prop grabs.");
+                Rsed.assert((mouseLock.propTrackId != null), "Expected the prop track id as a parameter to prop grabs.");
 
                 if (mouseLeftPressed)
                 {
@@ -3804,8 +3808,8 @@ Rsed.ui_input_n = (function()
             }
             case "ui":
             {
-                k_assert((mouseLock.elementId != null), "Expected the element id as a parameter to ui grabs.");
-                k_assert((mouseLock.x != null && mouseLock.y != null), "Expected x,y coordinates as parameters to ui grabs.");
+                Rsed.assert((mouseLock.elementId != null), "Expected the element id as a parameter to ui grabs.");
+                Rsed.assert((mouseLock.x != null && mouseLock.y != null), "Expected x,y coordinates as parameters to ui grabs.");
 
                 switch (mouseLock.elementId)
                 {
@@ -3829,11 +3833,11 @@ Rsed.ui_input_n = (function()
 
                         break;
                     }
-                    default: k_assert(0, "Unhandled UI element click."); break;
+                    default: Rsed.assert(0, "Unhandled UI element click."); break;
                 }
                 break;
             }
-            default: k_assert(0, "Unknown mouse grab type."); break;
+            default: Rsed.assert(0, "Unknown mouse grab type."); break;
         }
     }
     
@@ -3859,7 +3863,7 @@ Rsed.ui_input_n = (function()
         // pre-set order/manner the arguments should be packed.
         publicInterface.create_mouse_picking_id = function(pickType = 0, args = {})
         {
-            k_assert(((pickType & ((1<<numBitsForIndex)-1)) === pickType), "Can't store the picking index in the given number of bytes.");
+            Rsed.assert(((pickType & ((1<<numBitsForIndex)-1)) === pickType), "Can't store the picking index in the given number of bytes.");
 
             let id = pickType;
             switch (pickType)
@@ -3872,8 +3876,8 @@ Rsed.ui_input_n = (function()
                 {
                     const numBitsRequired = (numBitsForUiElementId + (numBitsForUiCoord * 2) + numBitsForIndex);
 
-                    k_assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a UI element.");
-                    k_assert((args.elementId != null && args.uiX != null && args.uiY != null), "Missing arguments for a UI picking id.");
+                    Rsed.assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a UI element.");
+                    Rsed.assert((args.elementId != null && args.uiX != null && args.uiY != null), "Missing arguments for a UI picking id.");
 
                     id |= (args.uiX << numBitsForIndex);
                     id |= (args.uiY << (numBitsForIndex + numBitsForUiCoord));
@@ -3885,8 +3889,8 @@ Rsed.ui_input_n = (function()
                 {
                     const numBitsRequired = (numBitsForPropIdx + numBitsForPropTrackId + numBitsForIndex);
 
-                    k_assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a prop.");
-                    k_assert((args.propIdx != null && args.propTrackId != null), "Missing arguments for a prop picking id.");
+                    Rsed.assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a prop.");
+                    Rsed.assert((args.propIdx != null && args.propTrackId != null), "Missing arguments for a prop picking id.");
 
                     id |= (args.propIdx << numBitsForIndex);
                     id |= (args.propTrackId << (numBitsForIndex + numBitsForPropIdx));
@@ -3897,8 +3901,8 @@ Rsed.ui_input_n = (function()
                 {
                     const numBitsRequired = (numBitsForTileCoords * 2 + numBitsForIndex);
 
-                    k_assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a ground tile.");
-                    k_assert((args.tileX != null && args.tileZ != null), "Missing arguments for a ground picking id.");
+                    Rsed.assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a ground tile.");
+                    Rsed.assert((args.tileX != null && args.tileZ != null), "Missing arguments for a ground picking id.");
 
                     // The tile coordinates can be out of bounds when the camera is moved outside of the
                     // track's boundaries. In that case, simply ignore them, since there's no interactible
@@ -3909,18 +3913,18 @@ Rsed.ui_input_n = (function()
                         return null;
                     }
 
-                    k_assert(((args.tileX & ((1<<numBitsForTileCoords)-1)) === args.tileX), "Can't store the MAASTO x coordinate in the picking id.");
-                    k_assert(((args.tileZ & ((1<<numBitsForTileCoords)-1)) === args.tileZ), "Can't store the MAASTO z coordinate in the picking id.");
+                    Rsed.assert(((args.tileX & ((1<<numBitsForTileCoords)-1)) === args.tileX), "Can't store the MAASTO x coordinate in the picking id.");
+                    Rsed.assert(((args.tileZ & ((1<<numBitsForTileCoords)-1)) === args.tileZ), "Can't store the MAASTO z coordinate in the picking id.");
 
                     id |= (args.tileX << numBitsForIndex);
                     id |= (args.tileZ << (numBitsForIndex + numBitsForTileCoords));
 
                     return id;
                 }
-                default: k_assert(0, "Undefined mouse-picking case when packing."); return null;
+                default: Rsed.assert(0, "Undefined mouse-picking case when packing."); return null;
             }
 
-            k_assert(0, "Fell through (shouldn't have) when creating a mouse-picking id.");
+            Rsed.assert(0, "Fell through (shouldn't have) when creating a mouse-picking id.");
         }
 
         publicInterface.get_mouse_picking_type = function(mousePickingValue)
@@ -3968,7 +3972,7 @@ Rsed.ui_input_n = (function()
                 default: return null;
             }
 
-            k_assert(0, "Fell through (shouldn't have) when extracting mouse-picking args.");
+            Rsed.assert(0, "Fell through (shouldn't have) when extracting mouse-picking args.");
         }
 
         publicInterface.enact_inputs = function()
@@ -4086,8 +4090,8 @@ Rsed.draw_line_n = (function()
                                                    vert2 = Rsed.geometry_n.vertex_o,
                                                    array = [], yOffset = 0)
         {
-            k_assert((vert1 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
-            k_assert((vert2 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
+            Rsed.assert((vert1 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
+            Rsed.assert((vert2 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
 
             yOffset = Math.floor(yOffset);
 
@@ -4145,9 +4149,9 @@ Rsed.draw_line_n = (function()
                                                     canvas = [], width = 0, height = 0,
                                                     r = 0, g = 0, b = 0)
         {
-            k_assert((canvas.length > 0), "Expected the canvas to be a non-zero-length array.");
-            k_assert((vert1 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
-            k_assert((vert2 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
+            Rsed.assert((canvas.length > 0), "Expected the canvas to be a non-zero-length array.");
+            Rsed.assert((vert1 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
+            Rsed.assert((vert2 instanceof Rsed.geometry_n.vertex_o), "Expected a vertex.");
 
             function put_pixel(x = 0, y = 0)
             {
@@ -4220,9 +4224,9 @@ Rsed.ngon_fill_n = (function()
     {
         publicInterface.fill_polygons = function(polygons = [])
         {
-            k_assert((this instanceof Rsed.render_surface_n.render_surface_o), "Expected the function to be bound to a render surface.");
-            k_assert((polygons[0] instanceof Rsed.geometry_n.polygon_o), "Expected polygons.");
-            k_assert((polygons.length > 0), "Received an empty list of triangles to rasterize.");
+            Rsed.assert((this instanceof Rsed.render_surface_n.render_surface_o), "Expected the function to be bound to a render surface.");
+            Rsed.assert((polygons[0] instanceof Rsed.geometry_n.polygon_o), "Expected polygons.");
+            Rsed.assert((polygons.length > 0), "Received an empty list of triangles to rasterize.");
 
             const surface = this;
             const width = surface.width;
@@ -4233,7 +4237,7 @@ Rsed.ngon_fill_n = (function()
 
             for (let i = 0; i < polygons.length; i++)
             {
-                k_assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon");
+                Rsed.assert((polygons[i] instanceof Rsed.geometry_n.polygon_o), "Expected a polygon");
 
                 const poly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
                 poly.clone_from(polygons[i]);
@@ -4283,8 +4287,8 @@ Rsed.ngon_fill_n = (function()
                     leftVerts.sort(function(a, b){ return (a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1); });
                     rightVerts.sort(function(a, b){ return (a.y === b.y)? 0 : ((a.y > b.y)? -1 : 1); });
 
-                    k_assert(((leftVerts.length !== 0) && (rightVerts.length !== 0)), "Expected each side list to have at least one vertex.");
-                    k_assert(((leftVerts.length + rightVerts.length) === poly.v.length), "Vertices appear to have gone missing.");
+                    Rsed.assert(((leftVerts.length !== 0) && (rightVerts.length !== 0)), "Expected each side list to have at least one vertex.");
+                    Rsed.assert(((leftVerts.length + rightVerts.length) === poly.v.length), "Vertices appear to have gone missing.");
                 }
 
                 // Create arrays where the index represents the y coordinate and the values x
@@ -4454,10 +4458,10 @@ const resource_loader_n = (function()
     //
     function load_prop_locations(data = Object)
     {
-        k_assert((data.tracks != null), "Expected a JSON object containing track prop locations.");
+        Rsed.assert((data.tracks != null), "Expected a JSON object containing track prop locations.");
         data.tracks.forEach(track=>
         {
-            k_assert((track.props != null), "Expected a JSON object containing track prop locations.");
+            Rsed.assert((track.props != null), "Expected a JSON object containing track prop locations.");
             track.props.forEach(prop=>
             {
                 Rsed.maasto_n.add_prop_location(track.trackId, prop.name, prop.x, prop.y, prop.z);
@@ -4484,12 +4488,12 @@ const resource_loader_n = (function()
     //
     function load_prop_meshes(data = Object)
     {
-        k_assert((data.props != null), "Expected a JSON object containing prop meshes.");
+        Rsed.assert((data.props != null), "Expected a JSON object containing prop meshes.");
         data.props.forEach(prop=>
         {
             const convertedPolygons = [];
 
-            k_assert((prop.polygons != null), "Encountered a track prop with no polygons.");
+            Rsed.assert((prop.polygons != null), "Encountered a track prop with no polygons.");
             prop.polygons.forEach(propPoly=>
             {
                 const numVertices = (propPoly.verts.length / 3);
@@ -4498,7 +4502,7 @@ const resource_loader_n = (function()
                 convertedPoly.texture = Rsed.props_n.prop_texture(propPoly.textureIdx);
                 convertedPoly.color = Rsed.palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
 
-                k_assert((convertedPoly.v.length === numVertices), "Incorrect number of vertices in prop polygon.");
+                Rsed.assert((convertedPoly.v.length === numVertices), "Incorrect number of vertices in prop polygon.");
                 convertedPoly.v.forEach((vertex, idx)=>
                 {
                     vertex.x = propPoly.verts[idx*3];
@@ -4561,7 +4565,7 @@ const resource_loader_n = (function()
         // function.
         publicInterface.load_project_data = function(args = {}, returnCallback)
         {
-            k_assert((returnCallback instanceof Function), "Expected to receive a callback function.");
+            Rsed.assert((returnCallback instanceof Function), "Expected to receive a callback function.");
 
             const projectData = {};
 
@@ -4651,11 +4655,11 @@ const resource_loader_n = (function()
                         })();
                     }
                 })
-                .catch((error)=>{k_assert(0, "Failed to extract project data (JSZip error: '" + error + "').");});
+                .catch((error)=>{Rsed.assert(0, "Failed to extract project data (JSZip error: '" + error + "').");});
             }
             else
             {
-                k_assert(0, "Unknown file format for loading project data.");
+                Rsed.assert(0, "Unknown file format for loading project data.");
             }
         }
 
@@ -4671,7 +4675,7 @@ const resource_loader_n = (function()
             // How many textures we expect to receive.
             const numPalas = 256;
 
-            k_assert((bytes.byteLength === (numPalas * palaWidth * palaHeight)), "Incorrect number of bytes for PALA data.");
+            Rsed.assert((bytes.byteLength === (numPalas * palaWidth * palaHeight)), "Incorrect number of bytes for PALA data.");
 
             // Add each PALA as an individual texture.
             for (let i = 0; i < numPalas; i++)
@@ -4706,13 +4710,13 @@ const resource_loader_n = (function()
         publicInterface.load_varimaa_data = function(bytes)
         {
             const tilesPerSide = Math.sqrt(bytes.byteLength);
-            k_assert(((tilesPerSide === 64) || (tilesPerSide === 128)), "Unsupported VARIMAA size.");
+            Rsed.assert(((tilesPerSide === 64) || (tilesPerSide === 128)), "Unsupported VARIMAA size.");
 
             // Verify the data.
             for (let i = 0; i < bytes.byteLength; i++)
             {
-                k_assert((Number.isInteger(bytes[i])), "Detected invalid VARIMAA data.");
-                k_assert((bytes[i] >= 0 && bytes[i] <= 255), "Detected invalid VARIMAA data.");
+                Rsed.assert((Number.isInteger(bytes[i])), "Detected invalid VARIMAA data.");
+                Rsed.assert((bytes[i] >= 0 && bytes[i] <= 255), "Detected invalid VARIMAA data.");
             }
 
             Rsed.maasto_n.set_varimaa(tilesPerSide, bytes);
@@ -4724,7 +4728,7 @@ const resource_loader_n = (function()
         publicInterface.load_maasto_data = function(bytes)
         {
             const tilesPerSide = Math.sqrt(bytes.byteLength / 2);
-            k_assert(((tilesPerSide === 64) || (tilesPerSide === 128)), "Unsupported MAASTO size.");
+            Rsed.assert(((tilesPerSide === 64) || (tilesPerSide === 128)), "Unsupported MAASTO size.");
 
             // Convert Rally-Sport's two-byte height format into RallySportED's single values.
             const convertedHeightmap = [];
@@ -4739,7 +4743,7 @@ const resource_loader_n = (function()
                 convertedHeightmap.push(height);
             }
 
-            k_assert((convertedHeightmap.length === (tilesPerSide * tilesPerSide)), "Detected an invalid MAASTO height conversion.");
+            Rsed.assert((convertedHeightmap.length === (tilesPerSide * tilesPerSide)), "Detected an invalid MAASTO height conversion.");
 
             Rsed.maasto_n.set_maasto(tilesPerSide, convertedHeightmap);
         }
@@ -4747,8 +4751,8 @@ const resource_loader_n = (function()
         // Loads from a JSON file resources of the given type.
         publicInterface.load_json_resource = function(filename = "", resourceType = "")
         {
-            k_assert(((typeof filename === "string") && (filename.length > 0)), "Expected a non-null filename string.");
-            k_assert(jsonResourceTypes.includes(resourceType), "Expected a valid resource type.");
+            Rsed.assert(((typeof filename === "string") && (filename.length > 0)), "Expected a non-null filename string.");
+            Rsed.assert(jsonResourceTypes.includes(resourceType), "Expected a valid resource type.");
 
             return new Promise((resolve, reject)=>
             {
@@ -4760,12 +4764,12 @@ const resource_loader_n = (function()
                     {
                         case "prop-meshes": load_prop_meshes(data); break;
                         case "prop-locations": load_prop_locations(data); break;
-                        default: k_assert(0, "Unknown resource type."); reject(); break;
+                        default: Rsed.assert(0, "Unknown resource type."); reject(); break;
                     }
                     
                     resolve();
                 })
-                .catch((error)=>{k_assert(0, "Failed to fetch resource file " + filename + ". Error: " + error)});
+                .catch((error)=>{Rsed.assert(0, "Failed to fetch resource file " + filename + ". Error: " + error)});
             });
         }
 
@@ -4775,8 +4779,8 @@ const resource_loader_n = (function()
         // is required for some of the resource types.
         publicInterface.load_binary_resource = function(filename = "", resourceType = "", receptacle)
         {
-            k_assert((filename.length > 0), "Expected a non-empty string.");
-            k_assert(binaryResourceTypes.includes(resourceType), "Expected a valid resource type.");
+            Rsed.assert((filename.length > 0), "Expected a non-empty string.");
+            Rsed.assert(binaryResourceTypes.includes(resourceType), "Expected a valid resource type.");
 
             return new Promise((resolve, reject)=>
             {
@@ -4785,7 +4789,7 @@ const resource_loader_n = (function()
                 .then((dataBuffer)=>
                 {
                     const bytes = new Uint8Array(dataBuffer);
-                    k_assert((bytes != null), "Received invalid binary file data.");
+                    Rsed.assert((bytes != null), "Received invalid binary file data.");
 
                     switch (resourceType)
                     {
@@ -4795,12 +4799,12 @@ const resource_loader_n = (function()
                         case "palat": publicInterface.load_palat_data(bytes); break;
                         case "maasto": publicInterface.load_maasto_data(bytes); break;
                         case "varimaa": publicInterface.load_varimaa_data(bytes); break;
-                        default: k_assert(0, "Unknown resource type."); reject(); break;
+                        default: Rsed.assert(0, "Unknown resource type."); reject(); break;
                     }
 
                     resolve();
                 })
-                .catch((error)=>{k_assert(0, "Failed to fetch resource file " + filename + ". Error: " + error)});
+                .catch((error)=>{Rsed.assert(0, "Failed to fetch resource file " + filename + ". Error: " + error)});
             });
         }
     }
@@ -4855,7 +4859,7 @@ Rsed.project_n = (function()
     // Inserts the project's custom assets over any previous ones.
     function override_track_assets(dtaData)
     {
-        k_assert((dtaData instanceof ArrayBuffer), "Expected the project assets to come in as an array buffer.");
+        Rsed.assert((dtaData instanceof ArrayBuffer), "Expected the project assets to come in as an array buffer.");
     
         Rsed.maasto_n.clear_maasto_data();
         Rsed.palat_n.clear_palat_data();
@@ -4870,7 +4874,7 @@ Rsed.project_n = (function()
             {
                 const maastoBytesize = (new DataView(dtaData, i, 4).getUint32(0, endianness));
                 i+=4;
-                k_assert(((i + maastoBytesize) <= dtaData.byteLength), "Was about to read project data out of bounds.");
+                Rsed.assert(((i + maastoBytesize) <= dtaData.byteLength), "Was about to read project data out of bounds.");
                 const maastoBytes = new Uint8Array(dtaData.slice(i, i + maastoBytesize));
                 i+=maastoBytesize;
 
@@ -4882,7 +4886,7 @@ Rsed.project_n = (function()
             {
                 const varimaaBytesize = (new DataView(dtaData, i, 4).getUint32(0, endianness));
                 i+=4;
-                k_assert(((i + varimaaBytesize) <= dtaData.byteLength), "Was about to read project data out of bounds.");
+                Rsed.assert(((i + varimaaBytesize) <= dtaData.byteLength), "Was about to read project data out of bounds.");
                 const varimaaBytes = new Uint8Array(dtaData.slice(i, i+varimaaBytesize));
                 i+=varimaaBytesize;
 
@@ -4894,7 +4898,7 @@ Rsed.project_n = (function()
             {
                 const palatBytesize = (new DataView(dtaData, i, 4).getUint32(0, endianness));
                 i+=4;
-                k_assert(((i + palatBytesize) <= dtaData.byteLength), "Was about to read project data out of bounds.");
+                Rsed.assert(((i + palatBytesize) <= dtaData.byteLength), "Was about to read project data out of bounds.");
                 let palatBytes = new Uint8Array(dtaData.slice(i, i+palatBytesize));
                 i+=palatBytesize;
 
@@ -4910,7 +4914,7 @@ Rsed.project_n = (function()
                 }
                 else if (palatBytesize !== 65536)
                 {
-                    k_assert(0, "Unexpected number of PALA bytes in the project file.");
+                    Rsed.assert(0, "Unexpected number of PALA bytes in the project file.");
                 }
 
                 Rsed.palat_n.set_palat_bytesize(palatBytesize);
@@ -4924,10 +4928,10 @@ Rsed.project_n = (function()
         // Will return true if the given project is valid. Otherwise, will throw an error.
         publicInterface.verify_project_validity = function(projectToVerify)
         {
-            k_assert((projectToVerify instanceof Rsed.project_n.project_o), "Was asked to test the validity of a non-RallySportED project.");
+            Rsed.assert((projectToVerify instanceof Rsed.project_n.project_o), "Was asked to test the validity of a non-RallySportED project.");
 
-            k_assert(((projectToVerify != null) && (projectToVerify.isValidProject)), "Failed to load the given zipped RallySportED project file.");
-            k_assert((projectToVerify.name != null && projectToVerify.displayName != null), "Failed to load the given zipped RallySportED project file.");
+            Rsed.assert(((projectToVerify != null) && (projectToVerify.isValidProject)), "Failed to load the given zipped RallySportED project file.");
+            Rsed.assert((projectToVerify.name != null && projectToVerify.displayName != null), "Failed to load the given zipped RallySportED project file.");
 
             console.log("'" + projectToVerify.displayName + "' is a valid RallySportED project.");
 
@@ -4970,13 +4974,13 @@ Rsed.project_n = (function()
 
                     break;
                 }
-                default: k_assert(0, "Unknown RallySportED project zip file locality."); return null;
+                default: Rsed.assert(0, "Unknown RallySportED project zip file locality."); return null;
             }
         }
 
         publicInterface.generate_download_of_project = function(project = Rsed.project_n.project_o)
         {
-            k_assert((project instanceof Rsed.project_n.project_o), "Expected a RallySportED project object.");
+            Rsed.assert((project instanceof Rsed.project_n.project_o), "Expected a RallySportED project object.");
 
             const saveName = project.name.toUpperCase();
 
@@ -5012,7 +5016,7 @@ Rsed.project_n = (function()
             {
                 saveAs(blob, saveName + ".ZIP");
             })
-            .catch((error)=>{k_assert(0, error);});
+            .catch((error)=>{Rsed.assert(0, error);});
         }
 
         // Returns a project object of the given project data. Note that this will overwrite
@@ -5176,7 +5180,7 @@ Rsed.main_n = (function()
 
             if (args.fromZip)
             {
-                k_assert((args.locality != null && args.zipFile != null), "Received invalid arguments for loading a project from a zip file.");
+                Rsed.assert((args.locality != null && args.zipFile != null), "Received invalid arguments for loading a project from a zip file.");
 
                 project = Rsed.project_n.make_project_from_zip(args.locality, args.zipFile,
                                                                (newProject)=>
@@ -5191,7 +5195,7 @@ Rsed.main_n = (function()
             {
                 htmlUI.set_visible(true);
 
-                k_assert(0, "Was given no project no load. There should've been one.");
+                Rsed.assert(0, "Was given no project no load. There should've been one.");
             }
         }
 
@@ -5223,7 +5227,7 @@ Rsed.main_n = (function()
         // will clear away any existing entries of then from memory.
         publicInterface.initialize_track_data = function(trackId)
         {
-            k_assert(((trackId >= 1) && (trackId <= 8)), "The given track id is out of bounds.");
+            Rsed.assert(((trackId >= 1) && (trackId <= 8)), "The given track id is out of bounds.");
 
             underlyingTrackId = trackId;
 
@@ -5341,7 +5345,7 @@ window.onload = function(event)
             if (!(typeof args.zipFile === "string") ||
                 !(/^[a-k2-9]+$/.test(args.zipFile)))
             {
-                k_assert(0, "Invalid track identifier detected. Can't continue.");
+                Rsed.assert(0, "Invalid track identifier detected. Can't continue.");
                 return;
             }
         }
@@ -5350,7 +5354,7 @@ window.onload = function(event)
         else if (params.has("original"))
         {
             const trackId = parseInt(params.get("original"), 10);
-            k_assert((trackId >= 1 && trackId <= 8), "The given track id is out of bounds.");
+            Rsed.assert((trackId >= 1 && trackId <= 8), "The given track id is out of bounds.");
 
             args.fromZip = true;
             args.locality = "server";
@@ -5360,7 +5364,7 @@ window.onload = function(event)
             if (!(typeof args.zipFile === "string") ||
                 !(/^[a-z1-8]+$/.test(args.zipFile)))
             {
-                k_assert(0, "Invalid track identifier detected. Can't continue.");
+                Rsed.assert(0, "Invalid track identifier detected. Can't continue.");
                 return;
             }
         }

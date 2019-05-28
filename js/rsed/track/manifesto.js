@@ -29,7 +29,7 @@ Rsed.manifesto_n = (function()
     {
         return new Promise((resolve, reject) =>
         {
-            k_assert((args.length === 3), "Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
+            Rsed.assert((args.length === 3), "Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
 
             const trackId = Math.floor(Number(args[0]));
             const palatId = Math.floor(Number(args[1]));
@@ -42,13 +42,13 @@ Rsed.manifesto_n = (function()
     // Command: road. Sets up the game's driving physics for various kinds of road surfaces.
     function apply_1(args = [])
     {
-        k_assert((args.length === 1), "Invalid number of arguments to manifesto command 1. Expected 1 but received " + args.length + ".");
+        Rsed.assert((args.length === 1), "Invalid number of arguments to manifesto command 1. Expected 1 but received " + args.length + ".");
     }
 
     // Command: num_objs. Sets the number of props (in addition to the starting line) on the track.
     function apply_2(args = [])
     {
-        k_assert((args.length === 1), "Invalid number of arguments to manifesto command 2. Expected 1 but received " + args.length + ".");
+        Rsed.assert((args.length === 1), "Invalid number of arguments to manifesto command 2. Expected 1 but received " + args.length + ".");
 
         const numObjs = Math.floor(Number(args[0]));
 
@@ -58,7 +58,7 @@ Rsed.manifesto_n = (function()
     // Command: add_obj. Adds a new prop to the track.
     function apply_3(args = [])
     {
-        k_assert((args.length === 5), "Invalid number of arguments to manifesto command 3. Expected 5 but received " + args.length + ".");
+        Rsed.assert((args.length === 5), "Invalid number of arguments to manifesto command 3. Expected 5 but received " + args.length + ".");
 
         const propTypeIdx = Math.floor(Number(args[0]) - 1);
         const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
@@ -70,7 +70,7 @@ Rsed.manifesto_n = (function()
     // Command: change_obj_type. Changes the type of the given prop.
     function apply_4(args = [])
     {
-        k_assert((args.length === 2), "Invalid number of arguments to manifesto command 4. Expected 2 but received " + args.length + ".");
+        Rsed.assert((args.length === 2), "Invalid number of arguments to manifesto command 4. Expected 2 but received " + args.length + ".");
 
         const targetPropIdx = Math.floor(Number(args[0]) - 1);
         const newType = Math.floor(Number(args[1]) - 1);
@@ -81,7 +81,7 @@ Rsed.manifesto_n = (function()
     // Command: move_obj. Moves the position of the given prop.
     function apply_5(args = [])
     {
-        k_assert((args.length === 5), "Invalid number of arguments to manifesto command 5. Expected 5 but received " + args.length + ".");
+        Rsed.assert((args.length === 5), "Invalid number of arguments to manifesto command 5. Expected 5 but received " + args.length + ".");
 
         const targetPropIdx = Math.floor(Number(args[0]) - 1);
         const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
@@ -95,13 +95,13 @@ Rsed.manifesto_n = (function()
     // it in the editor.
     function apply_6(args = [])
     {
-        k_assert((args.length === 4), "Invalid number of arguments to manifesto command 6. Expected 4 but received " + args.length + ".");
+        Rsed.assert((args.length === 4), "Invalid number of arguments to manifesto command 6. Expected 4 but received " + args.length + ".");
     }
 
     // Command: change_palette_entry. Changes the given palette index to the given r,g,b values.
     function apply_10(args = [])
     {
-        k_assert((args.length === 4), "Invalid number of arguments to manifesto command 10. Expected 4 but received " + args.length + ".");
+        Rsed.assert((args.length === 4), "Invalid number of arguments to manifesto command 10. Expected 4 but received " + args.length + ".");
 
         const targetPaletteIdx = Math.floor(Number(args[0]));
         const r = Math.floor(Number(args[1] * 4));
@@ -114,7 +114,7 @@ Rsed.manifesto_n = (function()
     // Command: stop. Stops parsing the manifesto file.
     function apply_99(args = [])
     {
-        k_assert((args.length === 0), "Invalid number of arguments to manifesto command 99. Expected no arguments but received " + args.length + ".");
+        Rsed.assert((args.length === 0), "Invalid number of arguments to manifesto command 99. Expected no arguments but received " + args.length + ".");
     }
 
     const publicInterface = {};
@@ -126,13 +126,13 @@ Rsed.manifesto_n = (function()
             return new Promise((resolve, reject) =>
             {
                 const lines = manifestoString.split("\n").filter(Boolean);
-                k_assert((lines.length >= 2), "Invalid number of lines in the manifesto file.");
+                Rsed.assert((lines.length >= 2), "Invalid number of lines in the manifesto file.");
 
                 // Apply the first manifesto command, 0, which sets up the track by loading in all data, etc.
                 const params = lines[0].split(" ");
                 const commandId = Number(params.shift());
                 const initialize_track = manifestoCommands[0];
-                k_assert((commandId === 0), "Expected the first command in the manifesto to be 0.");
+                Rsed.assert((commandId === 0), "Expected the first command in the manifesto to be 0.");
 
                 // Once the first command has finished loading all data, we can continue with the other
                 // manifesto commands, which manipulate those data.
@@ -144,11 +144,11 @@ Rsed.manifesto_n = (function()
                         const params = lines[i].split(" ");
                         const commandId = Number(params.shift());
                         const command = manifestoCommands[commandId];
-                        k_assert((command != null), "Unsupported command (" + commandId + ") in the manifesto file.");
+                        Rsed.assert((command != null), "Unsupported command (" + commandId + ") in the manifesto file.");
 
                         if ((commandId === 99) && (i !== (lines.length - 1)))
                         {
-                            k_assert(0, "Expected the command 99 to be the manifesto's last one.");
+                            Rsed.assert(0, "Expected the command 99 to be the manifesto's last one.");
                         }
 
                         command(params);
@@ -171,7 +171,7 @@ Rsed.manifesto_n = (function()
             for (let i = 0; i < (manifLines.length - 1); i++)
             {
                 const params = manifLines[i].split(" ");
-                k_assert(params.length > 0, "Did not expect an empty parameters list.");
+                Rsed.assert(params.length > 0, "Did not expect an empty parameters list.");
 
                 switch (params[0])
                 {

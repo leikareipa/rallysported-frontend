@@ -105,7 +105,7 @@ Rsed.ui_input_n = (function()
                 {
                     return;
                 }
-                default: k_assert(0, "Unhandled mouse lock type."); break;
+                default: Rsed.assert(0, "Unhandled mouse lock type."); break;
             }
         }
         else if (mouseLock.hibernating)
@@ -154,7 +154,7 @@ Rsed.ui_input_n = (function()
             }
             case "prop":
             {
-                k_assert((mouseLock.propTrackId != null), "Expected the prop track id as a parameter to prop grabs.");
+                Rsed.assert((mouseLock.propTrackId != null), "Expected the prop track id as a parameter to prop grabs.");
 
                 if (mouseLeftPressed)
                 {
@@ -179,8 +179,8 @@ Rsed.ui_input_n = (function()
             }
             case "ui":
             {
-                k_assert((mouseLock.elementId != null), "Expected the element id as a parameter to ui grabs.");
-                k_assert((mouseLock.x != null && mouseLock.y != null), "Expected x,y coordinates as parameters to ui grabs.");
+                Rsed.assert((mouseLock.elementId != null), "Expected the element id as a parameter to ui grabs.");
+                Rsed.assert((mouseLock.x != null && mouseLock.y != null), "Expected x,y coordinates as parameters to ui grabs.");
 
                 switch (mouseLock.elementId)
                 {
@@ -204,11 +204,11 @@ Rsed.ui_input_n = (function()
 
                         break;
                     }
-                    default: k_assert(0, "Unhandled UI element click."); break;
+                    default: Rsed.assert(0, "Unhandled UI element click."); break;
                 }
                 break;
             }
-            default: k_assert(0, "Unknown mouse grab type."); break;
+            default: Rsed.assert(0, "Unknown mouse grab type."); break;
         }
     }
     
@@ -234,7 +234,7 @@ Rsed.ui_input_n = (function()
         // pre-set order/manner the arguments should be packed.
         publicInterface.create_mouse_picking_id = function(pickType = 0, args = {})
         {
-            k_assert(((pickType & ((1<<numBitsForIndex)-1)) === pickType), "Can't store the picking index in the given number of bytes.");
+            Rsed.assert(((pickType & ((1<<numBitsForIndex)-1)) === pickType), "Can't store the picking index in the given number of bytes.");
 
             let id = pickType;
             switch (pickType)
@@ -247,8 +247,8 @@ Rsed.ui_input_n = (function()
                 {
                     const numBitsRequired = (numBitsForUiElementId + (numBitsForUiCoord * 2) + numBitsForIndex);
 
-                    k_assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a UI element.");
-                    k_assert((args.elementId != null && args.uiX != null && args.uiY != null), "Missing arguments for a UI picking id.");
+                    Rsed.assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a UI element.");
+                    Rsed.assert((args.elementId != null && args.uiX != null && args.uiY != null), "Missing arguments for a UI picking id.");
 
                     id |= (args.uiX << numBitsForIndex);
                     id |= (args.uiY << (numBitsForIndex + numBitsForUiCoord));
@@ -260,8 +260,8 @@ Rsed.ui_input_n = (function()
                 {
                     const numBitsRequired = (numBitsForPropIdx + numBitsForPropTrackId + numBitsForIndex);
 
-                    k_assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a prop.");
-                    k_assert((args.propIdx != null && args.propTrackId != null), "Missing arguments for a prop picking id.");
+                    Rsed.assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a prop.");
+                    Rsed.assert((args.propIdx != null && args.propTrackId != null), "Missing arguments for a prop picking id.");
 
                     id |= (args.propIdx << numBitsForIndex);
                     id |= (args.propTrackId << (numBitsForIndex + numBitsForPropIdx));
@@ -272,8 +272,8 @@ Rsed.ui_input_n = (function()
                 {
                     const numBitsRequired = (numBitsForTileCoords * 2 + numBitsForIndex);
 
-                    k_assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a ground tile.");
-                    k_assert((args.tileX != null && args.tileZ != null), "Missing arguments for a ground picking id.");
+                    Rsed.assert((numBitsRequired <= 32), "Not enough bits to store the mouse-picking args for a ground tile.");
+                    Rsed.assert((args.tileX != null && args.tileZ != null), "Missing arguments for a ground picking id.");
 
                     // The tile coordinates can be out of bounds when the camera is moved outside of the
                     // track's boundaries. In that case, simply ignore them, since there's no interactible
@@ -284,18 +284,18 @@ Rsed.ui_input_n = (function()
                         return null;
                     }
 
-                    k_assert(((args.tileX & ((1<<numBitsForTileCoords)-1)) === args.tileX), "Can't store the MAASTO x coordinate in the picking id.");
-                    k_assert(((args.tileZ & ((1<<numBitsForTileCoords)-1)) === args.tileZ), "Can't store the MAASTO z coordinate in the picking id.");
+                    Rsed.assert(((args.tileX & ((1<<numBitsForTileCoords)-1)) === args.tileX), "Can't store the MAASTO x coordinate in the picking id.");
+                    Rsed.assert(((args.tileZ & ((1<<numBitsForTileCoords)-1)) === args.tileZ), "Can't store the MAASTO z coordinate in the picking id.");
 
                     id |= (args.tileX << numBitsForIndex);
                     id |= (args.tileZ << (numBitsForIndex + numBitsForTileCoords));
 
                     return id;
                 }
-                default: k_assert(0, "Undefined mouse-picking case when packing."); return null;
+                default: Rsed.assert(0, "Undefined mouse-picking case when packing."); return null;
             }
 
-            k_assert(0, "Fell through (shouldn't have) when creating a mouse-picking id.");
+            Rsed.assert(0, "Fell through (shouldn't have) when creating a mouse-picking id.");
         }
 
         publicInterface.get_mouse_picking_type = function(mousePickingValue)
@@ -343,7 +343,7 @@ Rsed.ui_input_n = (function()
                 default: return null;
             }
 
-            k_assert(0, "Fell through (shouldn't have) when extracting mouse-picking args.");
+            Rsed.assert(0, "Fell through (shouldn't have) when extracting mouse-picking args.");
         }
 
         publicInterface.enact_inputs = function()

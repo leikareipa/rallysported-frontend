@@ -606,7 +606,7 @@ Rsed.ui_font_n = (function()
         publicInterface.character = function(ch = 'A')
         {
             let idx = ch.charCodeAt(0);
-            k_assert(((idx >= firstChar.charCodeAt(0)) && (idx <= lastChar.charCodeAt(0)),
+            Rsed.assert(((idx >= firstChar.charCodeAt(0)) && (idx <= lastChar.charCodeAt(0)),
                      "Was asked for a font character that isn't in the charset."));
 
             // Convert to 0-indexed, where 0 is the first character.
@@ -616,7 +616,7 @@ Rsed.ui_font_n = (function()
             idx = (idx * charWidth * charHeight);
 
             const character = charset.slice(idx, (idx + (charWidth * charHeight)));
-            k_assert((character.length === (charWidth * charHeight)), "Failed to return the given character.");
+            Rsed.assert((character.length === (charWidth * charHeight)), "Failed to return the given character.");
 
             return character;
         }

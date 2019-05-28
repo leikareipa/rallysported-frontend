@@ -26,7 +26,7 @@ Rsed.texture_n = (function()
             this.pixels = [];
             for (let i = 0; i < (width * height); i++)
             {
-                k_assert((pixels[i] instanceof Rsed.color_n.rgba_o), "Expected a color object.");
+                Rsed.assert((pixels[i] instanceof Rsed.color_n.rgba_o), "Expected a color object.");
                 this.pixels.push(new Rsed.color_n.rgba_o(pixels[i].r, pixels[i].g, pixels[i].b, pixels[i].a));
             }
         }

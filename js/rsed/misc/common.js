@@ -9,16 +9,6 @@
 
 "use strict";
 
-function k_assert(condition = false, explanation = "(no reason given)")
-{
-    if (!condition)
-    {
-        Rsed.main_n.incapacitate_rallysported(explanation);
-        alert("RallySportED assertion failure. " + explanation);
-        throw Error("RallySportED assertion failure: " + explanation);
-    }
-}
-
 // Send out a user-facing message.
 function k_message(message = "")
 {

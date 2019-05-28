@@ -29,21 +29,21 @@ Rsed.ui_view_n = (function()
 
         publicInterface.set_view = function(view = "")
         {
-            k_assert(availableViews.includes(view), "Can't find the given view to set.");
+            Rsed.assert(availableViews.includes(view), "Can't find the given view to set.");
             currentView = view;
         }
 
         publicInterface.toggle_view = function(firstView = "", secondView = "")
         {
-            k_assert(availableViews.includes(firstView), "Can't find the given view to set.");
-            k_assert(availableViews.includes(secondView), "Can't find the given view to set.");
+            Rsed.assert(availableViews.includes(firstView), "Can't find the given view to set.");
+            Rsed.assert(availableViews.includes(secondView), "Can't find the given view to set.");
 
             currentView = ((currentView === firstView)? secondView : firstView);
         }
 
         publicInterface.current_view = function()
         {
-            k_assert(availableViews.includes(currentView), "Holding an invalid view.");
+            Rsed.assert(availableViews.includes(currentView), "Holding an invalid view.");
             return currentView.slice(0);
         }
     }

@@ -54,11 +54,11 @@ Rsed.ui_draw_n = (function()
         x = Math.floor(x);
         y = Math.floor(y);
 
-        k_assert((mousePick instanceof Array ||mousePick === null), "Expected a valid mouse-picking buffer.");
-        k_assert((pixelSurface != null), "Expected a valid pixel surface.");
-        k_assert(((pixels[0] != null) && (pixels.length > 0)), "Expected a valid array of pixels.");
-        k_assert(((width > 0) && (height > 0)), "Expected a valid image resolution.");
-        k_assert(((x >= 0) || (x < pixelSurface.width) ||
+        Rsed.assert((mousePick instanceof Array ||mousePick === null), "Expected a valid mouse-picking buffer.");
+        Rsed.assert((pixelSurface != null), "Expected a valid pixel surface.");
+        Rsed.assert(((pixels[0] != null) && (pixels.length > 0)), "Expected a valid array of pixels.");
+        Rsed.assert(((width > 0) && (height > 0)), "Expected a valid image resolution.");
+        Rsed.assert(((x >= 0) || (x < pixelSurface.width) ||
                   (y >= 0) || (y < pixelSurface.height)), "Invalid screen coordinates for drawing the image.");
 
         for (let cy = 0; cy < height; cy++)
@@ -92,8 +92,8 @@ Rsed.ui_draw_n = (function()
     {
         string = String(string).toUpperCase();
 
-        k_assert((pixelSurface != null), "Expected a valid pixel surface.");
-        k_assert((string.length != null), "Expected a non-empty string");
+        Rsed.assert((pixelSurface != null), "Expected a valid pixel surface.");
+        Rsed.assert((string.length != null), "Expected a non-empty string");
 
         // Convert from percentages into absolute screen coordinates.
         if (x < 0) x = Math.floor(-x * pixelSurface.width);
@@ -308,7 +308,7 @@ Rsed.ui_draw_n = (function()
     {
         // Call this when RallySportED crashes and you want the user to be given a visual indication of that
         // on the render surface.
-        // NOTE: Avoid calling k_assert in this function, since the function itself may be called on asserts.
+        // NOTE: Avoid calling Rsed.assert in this function, since the function itself may be called on asserts.
         publicInterface.draw_crash_message = function(renderSurface, message)
         {
             if (!(renderSurface instanceof Rsed.render_surface_n.render_surface_o)) return;
@@ -323,12 +323,12 @@ Rsed.ui_draw_n = (function()
 
         publicInterface.draw_ui = function(renderSurface = Rsed.render_surface_n.render_surface_o)
         {
-            k_assert((renderSurface instanceof Rsed.render_surface_n.render_surface_o), "Expected to receive the render surface.");
+            Rsed.assert((renderSurface instanceof Rsed.render_surface_n.render_surface_o), "Expected to receive the render surface.");
 
             // Draw the UI.
             pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
             mousePickBuffer = renderSurface.mousePickBuffer;
-            k_assert((mousePickBuffer.length === (pixelSurface.width * pixelSurface.height)), "Incompatible mouse-picking buffer.");
+            Rsed.assert((mousePickBuffer.length === (pixelSurface.width * pixelSurface.height)), "Incompatible mouse-picking buffer.");
             {
                 switch (Rsed.ui_view_n.current_view())
                 {

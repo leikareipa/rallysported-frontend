@@ -38,7 +38,7 @@ window.onload = function(event)
             if (!(typeof args.zipFile === "string") ||
                 !(/^[a-k2-9]+$/.test(args.zipFile)))
             {
-                k_assert(0, "Invalid track identifier detected. Can't continue.");
+                Rsed.assert(0, "Invalid track identifier detected. Can't continue.");
                 return;
             }
         }
@@ -47,7 +47,7 @@ window.onload = function(event)
         else if (params.has("original"))
         {
             const trackId = parseInt(params.get("original"), 10);
-            k_assert((trackId >= 1 && trackId <= 8), "The given track id is out of bounds.");
+            Rsed.assert((trackId >= 1 && trackId <= 8), "The given track id is out of bounds.");
 
             args.fromZip = true;
             args.locality = "server";
@@ -57,7 +57,7 @@ window.onload = function(event)
             if (!(typeof args.zipFile === "string") ||
                 !(/^[a-z1-8]+$/.test(args.zipFile)))
             {
-                k_assert(0, "Invalid track identifier detected. Can't continue.");
+                Rsed.assert(0, "Invalid track identifier detected. Can't continue.");
                 return;
             }
         }
