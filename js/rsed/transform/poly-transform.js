@@ -29,15 +29,15 @@ const polygon_transform_n = (function()
             let toClipSpace = [];
             let toScreenSpace = [];
             {
-                const viewSpace = matrix44_n.multiply_matrices(cameraMatrix, objectSpaceMatrix);
+                const viewSpace = Rsed.matrix44_n.multiply_matrices(cameraMatrix, objectSpaceMatrix);
                 
                 // Clip-space, for clipping triangles against the viewport; although for now,
                 // the interim step into clip-space is ignored, as no triangle clipping is to
                 // be done.
-                toClipSpace = matrix44_n.multiply_matrices(matrix44_n.perspective_matrix(0.75/*camera fov in radians*/, (screenWidth / screenHeight), 1, 1000),
+                toClipSpace = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.perspective_matrix(0.75/*camera fov in radians*/, (screenWidth / screenHeight), 1, 1000),
                                                         viewSpace);
 
-                toScreenSpace = matrix44_n.multiply_matrices(matrix44_n.screen_space_matrix(screenWidth, screenHeight),
+                toScreenSpace = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.screen_space_matrix(screenWidth, screenHeight),
                                                             toClipSpace);
             }
             

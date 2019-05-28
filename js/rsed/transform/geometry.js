@@ -202,8 +202,8 @@ Rsed.geometry_n = {};
         // Returns a matrix by which the polygons of this mesh can be transformed into the mesh's object-space.
         this.object_space_matrix = function()
         {
-            const m = matrix44_n.multiply_matrices(matrix44_n.translation_matrix(this.translationVec.x, this.translationVec.y, this.translationVec.z),
-                                                   matrix44_n.rotation_matrix(this.rotationVec.x, this.rotationVec.y, this.rotationVec.z));
+            const m = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(this.translationVec.x, this.translationVec.y, this.translationVec.z),
+                                                   Rsed.matrix44_n.rotation_matrix(this.rotationVec.x, this.rotationVec.y, this.rotationVec.z));
 
             k_assert((m.length === 16), "Expected to return a 4 x 4 object space matrix.");
             return m;

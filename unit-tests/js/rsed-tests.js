@@ -168,7 +168,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
     unit("Matrix (4x4)", ()=>
     {
         {
-            const m = matrix44_n.identity_matrix();
+            const m = Rsed.matrix44_n.identity_matrix();
             expect_true([()=>m.length === 16 && (m[0]===1 && m[4]===0 && m[ 8]===0 && m[12]===0 &&
                                                  m[1]===0 && m[5]===1 && m[ 9]===0 && m[13]===0 &&
                                                  m[2]===0 && m[6]===0 && m[10]===1 && m[14]===0 &&
@@ -176,7 +176,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
         }
         
         {
-            const m = matrix44_n.rotation_matrix(1.6572, 0.3457, 874665.5247);
+            const m = Rsed.matrix44_n.rotation_matrix(1.6572, 0.3457, 874665.5247);
             expect_true([()=>m.length === 16 && (trunc4(m[0])===-0.5131 && trunc4(m[4])===-0.7886 && trunc4(m[ 8])===-0.3389 && trunc4(m[12])===0.0000 && 
                                                  trunc4(m[1])===0.1118  && trunc4(m[5])===0.3300  && trunc4(m[ 9])===-0.9373 && trunc4(m[13])===0.0000 && 
                                                  trunc4(m[2])===0.8510  && trunc4(m[6])===-0.5188 && trunc4(m[10])===-0.0812 && trunc4(m[14])===0.0000 && 
@@ -184,7 +184,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
         }
 
         {
-            const m = matrix44_n.translation_matrix(452.8541, 2.5412, 8745.1645);
+            const m = Rsed.matrix44_n.translation_matrix(452.8541, 2.5412, 8745.1645);
             expect_true([()=>m.length === 16 && (trunc4(m[0])===1.0000 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===0.0000 && trunc4(m[12])===452.8541  && 
                                                  trunc4(m[1])===0.0000 && trunc4(m[5])===1.0000 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===2.5412    && 
                                                  trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===1.0000 && trunc4(m[14])===8745.1645 && 
@@ -192,7 +192,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
         }
 
         {
-            const m = matrix44_n.perspective_matrix(0.7545, 1.7155, 0.9138, 97852.8647);
+            const m = Rsed.matrix44_n.perspective_matrix(0.7545, 1.7155, 0.9138, 97852.8647);
             expect_true([()=>m.length === 16 && (trunc4(m[0])===1.4712 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===0.0000 && trunc4(m[12])===0.0000  && 
                                                  trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===0.0000  && 
                                                  trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===1.0000 && trunc4(m[14])===-1.8276 && 
@@ -200,7 +200,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
         }
 
         {
-            const m = matrix44_n.screen_space_matrix(4567.2434, 3.1284);
+            const m = Rsed.matrix44_n.screen_space_matrix(4567.2434, 3.1284);
             expect_true([()=>m.length === 16 && (trunc4(m[0])===2283.6217 && trunc4(m[4])===0.0000  && trunc4(m[ 8])===0.0000 && trunc4(m[12])===2283.1217 && 
                                                  trunc4(m[1])===0.0000    && trunc4(m[5])===-1.5642 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===1.0642    && 
                                                  trunc4(m[2])===0.0000    && trunc4(m[6])===0.0000  && trunc4(m[10])===1.0000 && trunc4(m[14])===0.0000    && 
@@ -208,8 +208,8 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
         }
 
         {
-            const m = matrix44_n.multiply_matrices(matrix44_n.translation_matrix(452.8541, 2.5412, 8745.1645),
-                                                   matrix44_n.perspective_matrix(0.7545, 1.7155, 0.9138, 97852.8647));
+            const m = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(452.8541, 2.5412, 8745.1645),
+                                                   Rsed.matrix44_n.perspective_matrix(0.7545, 1.7155, 0.9138, 97852.8647));
             expect_true([()=>m.length === 16 && (trunc4(m[0])===1.4712 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===452.8541  && trunc4(m[12])===0.0000  && 
                                                  trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===2.5412    && trunc4(m[13])===0.0000  && 
                                                  trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===8746.1645 && trunc4(m[14])===-1.8276 && 

@@ -799,8 +799,8 @@ Rsed.geometry_n = {};
         // Returns a matrix by which the polygons of this mesh can be transformed into the mesh's object-space.
         this.object_space_matrix = function()
         {
-            const m = matrix44_n.multiply_matrices(matrix44_n.translation_matrix(this.translationVec.x, this.translationVec.y, this.translationVec.z),
-                                                   matrix44_n.rotation_matrix(this.rotationVec.x, this.rotationVec.y, this.rotationVec.z));
+            const m = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(this.translationVec.x, this.translationVec.y, this.translationVec.z),
+                                                   Rsed.matrix44_n.rotation_matrix(this.rotationVec.x, this.rotationVec.y, this.rotationVec.z));
 
             k_assert((m.length === 16), "Expected to return a 4 x 4 object space matrix.");
             return m;
@@ -859,7 +859,7 @@ Rsed.geometry_n = {};
 
 "use strict";
 
-const matrix44_n = (function()
+Rsed.matrix44_n = (function()
 {
     const publicInterface = {};
     {
@@ -914,8 +914,8 @@ const matrix44_n = (function()
             m3[2]=0;           m3[6]=0;            m3[10]=1;            m3[14]=0;
             m3[3]=0;           m3[7]=0;            m3[11]=0;            m3[15]=1;
 
-            const temp = matrix44_n.multiply_matrices(m2, m3);
-            const mResult = matrix44_n.multiply_matrices(m1, temp);
+            const temp = Rsed.matrix44_n.multiply_matrices(m2, m3);
+            const mResult = Rsed.matrix44_n.multiply_matrices(m1, temp);
 
             k_assert((mResult.length === 16), "Expected a 4 x 4 matrix.");
             return mResult;
@@ -993,15 +993,15 @@ const polygon_transform_n = (function()
             let toClipSpace = [];
             let toScreenSpace = [];
             {
-                const viewSpace = matrix44_n.multiply_matrices(cameraMatrix, objectSpaceMatrix);
+                const viewSpace = Rsed.matrix44_n.multiply_matrices(cameraMatrix, objectSpaceMatrix);
                 
                 // Clip-space, for clipping triangles against the viewport; although for now,
                 // the interim step into clip-space is ignored, as no triangle clipping is to
                 // be done.
-                toClipSpace = matrix44_n.multiply_matrices(matrix44_n.perspective_matrix(0.75/*camera fov in radians*/, (screenWidth / screenHeight), 1, 1000),
+                toClipSpace = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.perspective_matrix(0.75/*camera fov in radians*/, (screenWidth / screenHeight), 1, 1000),
                                                         viewSpace);
 
-                toScreenSpace = matrix44_n.multiply_matrices(matrix44_n.screen_space_matrix(screenWidth, screenHeight),
+                toScreenSpace = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.screen_space_matrix(screenWidth, screenHeight),
                                                             toClipSpace);
             }
             
@@ -1194,10 +1194,10 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
             // Transform and render any meshes that have been registered with this renderer.
             if (this.meshes.length > 0)
             {
-                const viewMatrix = matrix44_n.multiply_matrices(matrix44_n.translation_matrix(this.cameraPosition.x,
+                const viewMatrix = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(this.cameraPosition.x,
                                                                                                 this.cameraPosition.y,
                                                                                                 this.cameraPosition.z),
-                                                                matrix44_n.rotation_matrix(this.cameraDirection.x,
+                                                                Rsed.matrix44_n.rotation_matrix(this.cameraDirection.x,
                                                                                             this.cameraDirection.y,
                                                                                             this.cameraDirection.z));
 

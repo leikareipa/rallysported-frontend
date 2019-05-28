@@ -95,10 +95,10 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
             // Transform and render any meshes that have been registered with this renderer.
             if (this.meshes.length > 0)
             {
-                const viewMatrix = matrix44_n.multiply_matrices(matrix44_n.translation_matrix(this.cameraPosition.x,
+                const viewMatrix = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(this.cameraPosition.x,
                                                                                                 this.cameraPosition.y,
                                                                                                 this.cameraPosition.z),
-                                                                matrix44_n.rotation_matrix(this.cameraDirection.x,
+                                                                Rsed.matrix44_n.rotation_matrix(this.cameraDirection.x,
                                                                                             this.cameraDirection.y,
                                                                                             this.cameraDirection.z));
 

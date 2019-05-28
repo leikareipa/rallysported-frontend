@@ -36,7 +36,7 @@
 
 "use strict";
 
-const matrix44_n = (function()
+Rsed.matrix44_n = (function()
 {
     const publicInterface = {};
     {
@@ -91,8 +91,8 @@ const matrix44_n = (function()
             m3[2]=0;           m3[6]=0;            m3[10]=1;            m3[14]=0;
             m3[3]=0;           m3[7]=0;            m3[11]=0;            m3[15]=1;
 
-            const temp = matrix44_n.multiply_matrices(m2, m3);
-            const mResult = matrix44_n.multiply_matrices(m1, temp);
+            const temp = Rsed.matrix44_n.multiply_matrices(m2, m3);
+            const mResult = Rsed.matrix44_n.multiply_matrices(m1, temp);
 
             k_assert((mResult.length === 16), "Expected a 4 x 4 matrix.");
             return mResult;
