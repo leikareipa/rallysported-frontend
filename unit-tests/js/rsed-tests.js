@@ -29,7 +29,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
             const vert2 = new geometry_n.vertex_o(2, 2, 0);
             const array = [];
 
-            draw_line_n.line_into_array(vert1, vert2, array, 0);
+            Rsed.draw_line_n.line_into_array(vert1, vert2, array, 0);
             expect_true([()=>(array.length === 3),
                          ()=>(array[0] === 0),
                          ()=>(array[1] === 1),
@@ -42,7 +42,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
             const vert2 = new geometry_n.vertex_o(2, 0, 0);
             const array = [];
 
-            draw_line_n.line_into_array(vert1, vert2, array, 0);
+            Rsed.draw_line_n.line_into_array(vert1, vert2, array, 0);
             expect_true([()=>(array.length === 1),
                          ()=>(array[0] === 0)]);
         }
@@ -53,7 +53,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
             const vert2 = new geometry_n.vertex_o(15, 2, 0);
             const array = [];
 
-            draw_line_n.line_into_array(vert1, vert2, array, 0);
+            Rsed.draw_line_n.line_into_array(vert1, vert2, array, 0);
             expect_true([()=>(array.length === 3),
                          ()=>(array[0] === 15),
                          ()=>(array[1] === 15),

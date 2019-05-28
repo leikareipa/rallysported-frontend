@@ -7,7 +7,7 @@
 
 "use strict";
 
-const draw_line_n = (function()
+Rsed.draw_line_n = (function()
 {
     const publicInterface = {};
     {
