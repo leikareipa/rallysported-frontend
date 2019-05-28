@@ -30,7 +30,7 @@ function k_popup(message = "")
 {
     /// Temp hack. A modifier's status will stick if the key is releasd while a modal popup is open,
     /// so just clear them all in advance.
-    ui_input_n.reset_modifier_key_statuses();
+    Rsed.ui_input_n.reset_modifier_key_statuses();
 
     window.alert(message);
 }

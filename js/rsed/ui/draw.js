@@ -118,16 +118,16 @@ Rsed.ui_draw_n = (function()
         /*const graphic = Rsed.ui_cursor_n.graphic();
         const width = Rsed.ui_cursor_n.cursor_width();
         const height = Rsed.ui_cursor_n.cursor_height();
-        draw_image(graphic, null, width, height, ui_input_n.mouse_pos_x(), ui_input_n.mouse_pos_y(), true);*/
+        draw_image(graphic, null, width, height, Rsed.ui_input_n.mouse_pos_x(), Rsed.ui_input_n.mouse_pos_y(), true);*/
 
-        if (ui_input_n.mouse_hover_type() === ui_input_n.mousePickingType.ui &&
-            ui_input_n.mouse_hover_args().elementId === ui_input_n.uiElement.palat_pane)
+        if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.ui &&
+            Rsed.ui_input_n.mouse_hover_args().elementId === Rsed.ui_input_n.uiElement.palat_pane)
         {
-            draw_string("PALA:" + ui_input_n.mouse_hover_args().x, ui_input_n.mouse_pos_x() + 10, ui_input_n.mouse_pos_y() + 17);
+            draw_string("PALA:" + Rsed.ui_input_n.mouse_hover_args().x, Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
         }
         else if (Rsed.ui_brush_n.brushSmoothens)
         {
-            draw_string("SMOOTHING", ui_input_n.mouse_pos_x() + 10, ui_input_n.mouse_pos_y() + 17);
+            draw_string("SMOOTHING", Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
         }
     }
 
@@ -140,13 +140,13 @@ Rsed.ui_draw_n = (function()
 
     function draw_footer_info()
     {
-        const x = ui_input_n.mouse_tile_hover_x();
-        const y = ui_input_n.mouse_tile_hover_y();
+        const x = Rsed.ui_input_n.mouse_tile_hover_x();
+        const y = Rsed.ui_input_n.mouse_tile_hover_y();
 
         let str = "HEIGHT:+000 PALA:000 X,Y:000,000";
-        switch (ui_input_n.mouse_hover_type())
+        switch (Rsed.ui_input_n.mouse_hover_type())
         {
-            case ui_input_n.mousePickingType.ground:
+            case Rsed.ui_input_n.mousePickingType.ground:
             {
                 const xStr = String(x).padStart(3, "0");
                 const yStr = String(y).padStart(3, "0");
@@ -158,10 +158,10 @@ Rsed.ui_draw_n = (function()
 
                 break;
             }
-            case ui_input_n.mousePickingType.prop:
+            case Rsed.ui_input_n.mousePickingType.prop:
             {
-                str = "PROP:" + Rsed.props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx) +
-                      " IDX:" + ui_input_n.mouse_hover_args().idx + "(" + ui_input_n.mouse_hover_args().trackId + ")";
+                str = "PROP:" + Rsed.props_n.prop_name_for_idx(Rsed.ui_input_n.mouse_hover_args().idx) +
+                      " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
             }
         }
 
@@ -208,8 +208,8 @@ Rsed.ui_draw_n = (function()
                 if (x % (width - 1) === 0) color = "black";
 
                 image.push(color);
-                mousePick.push(ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.ui,
-                                                                  {elementId:ui_input_n.uiElement.minimap,
+                mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
+                                                                  {elementId:Rsed.ui_input_n.uiElement.minimap,
                                                                    uiX:tileX, uiY:tileZ}));
             }
         }
@@ -288,8 +288,8 @@ Rsed.ui_draw_n = (function()
                     }
 
                     image.push(color);
-                    mousePick.push(ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.ui,
-                        {elementId:ui_input_n.uiElement.large_minimap,
+                    mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
+                        {elementId:Rsed.ui_input_n.uiElement.large_minimap,
                         uiX:tileX, uiY:tileZ}));
                 }
             }
@@ -396,8 +396,8 @@ Rsed.ui_draw_n = (function()
                                                             Math.floor((y * Rsed.palat_n.pala_height() + py) / 2) * palatPaneWidth);
 
                             palatPaneBuffer[bufferTexel] = palette_n.palette_idx_to_rgba(pala.paletteIndices[palaTexel]);
-                            palatPaneMousePick[bufferTexel] = ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.ui,
-                                                                                                 {elementId:ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
+                            palatPaneMousePick[bufferTexel] = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
+                                                                                                 {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
                         }
                     }
                 }

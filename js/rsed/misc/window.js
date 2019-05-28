@@ -86,8 +86,8 @@ window.oncontextmenu = function(event)
     if (event.target.id !== rsed_n.render_surface_id()) return;
 
     // Display a right-click menu for changing the type of the prop under the cursor.
-    if (ui_input_n.mouse_hover_type() === ui_input_n.mousePickingType.prop &&
-        !Rsed.props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+    if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop &&
+        !Rsed.props_n.prop_name_for_idx(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const propDowndown = document.getElementById("prop-dropdown");
         
@@ -109,7 +109,7 @@ window.close_dropdowns = function()
     }
 
     RSED_DROPDOWN_ACTIVATED = false;
-    ui_input_n.reset_mouse_hover_info();
+    Rsed.ui_input_n.reset_mouse_hover_info();
 }
 
 // The program uses onmousedown for primary click processing, but onclick is used here
@@ -127,9 +127,9 @@ window.onmousedown = function(event)
 {
     switch (event.button)
     {
-        case 0: ui_input_n.set_left_click(true); break;
-        case 1: ui_input_n.set_middle_click(true); break;
-        case 2: ui_input_n.set_right_click(true); break;
+        case 0: Rsed.ui_input_n.set_left_click(true); break;
+        case 1: Rsed.ui_input_n.set_middle_click(true); break;
+        case 2: Rsed.ui_input_n.set_right_click(true); break;
         default: break;
     }
 }
@@ -138,9 +138,9 @@ window.onmouseup = function(event)
 {
     switch (event.button)
     {
-        case 0: ui_input_n.set_left_click(false); break;
-        case 1: ui_input_n.set_middle_click(false); break;
-        case 2: ui_input_n.set_right_click(false); break;
+        case 0: Rsed.ui_input_n.set_left_click(false); break;
+        case 1: Rsed.ui_input_n.set_middle_click(false); break;
+        case 2: Rsed.ui_input_n.set_right_click(false); break;
         default: break;
     }
 }
@@ -151,9 +151,9 @@ window.onmousemove = function(event)
     {
         /// Temp hack. Prevent mouse clicks over prop dropdown dialogs from falling through and
         /// inadvertently editing the terrain.
-        if (ui_input_n.mouse_hover_type() !== ui_input_n.mousePickingType.prop)
+        if (Rsed.ui_input_n.mouse_hover_type() !== Rsed.ui_input_n.mousePickingType.prop)
         {
-            ui_input_n.reset_mouse_hover_info();
+            Rsed.ui_input_n.reset_mouse_hover_info();
         }
 
         return;
@@ -164,14 +164,14 @@ window.onmousemove = function(event)
         RSED_MOUSE_POS.x = (event.clientX - event.target.getBoundingClientRect().left);
         RSED_MOUSE_POS.y = (event.clientY - event.target.getBoundingClientRect().top);
 
-        ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * rsed_n.scaling_multiplier()),
-                                Math.floor(RSED_MOUSE_POS.y * rsed_n.scaling_multiplier()));
+        Rsed.ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * rsed_n.scaling_multiplier()),
+                                      Math.floor(RSED_MOUSE_POS.y * rsed_n.scaling_multiplier()));
     }
 }
 
 window.onkeydown = function(event)
 {
-    ui_input_n.update_key_status(event, true);
+    Rsed.ui_input_n.update_key_status(event, true);
 
     /// Temp hack. Process some of the key presses here, for convenience.
     {
@@ -199,5 +199,5 @@ window.onkeydown = function(event)
 
 window.onkeyup = function(event)
 {
-    ui_input_n.update_key_status(event, false);
+    Rsed.ui_input_n.update_key_status(event, false);
 }

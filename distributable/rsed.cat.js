@@ -294,7 +294,7 @@ function k_popup(message = "")
 {
     /// Temp hack. A modifier's status will stick if the key is releasd while a modal popup is open,
     /// so just clear them all in advance.
-    ui_input_n.reset_modifier_key_statuses();
+    Rsed.ui_input_n.reset_modifier_key_statuses();
 
     window.alert(message);
 }
@@ -1439,7 +1439,7 @@ Rsed.render_surface_n = (function()
                         surface.fillRect(0, 0, this.width, this.height);
 
                         // Reset auxiliary buffers.
-                        this.mousePickBuffer.fill(ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.void, {}));
+                        this.mousePickBuffer.fill(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.void, {}));
                         //this.depthBuffer.fill(Number.MAX_VALUE);
 
                         break;
@@ -1809,8 +1809,8 @@ Rsed.maasto_n = (function()
                     let tilePala = this.varimaa_tile_at(tileX, (tileZ - 1));
 
                     // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
-                    if (tileX === ui_input_n.mouse_tile_hover_x() &&
-                        (tileZ - 1) === ui_input_n.mouse_tile_hover_y())
+                    if (tileX === Rsed.ui_input_n.mouse_tile_hover_x() &&
+                        (tileZ - 1) === Rsed.ui_input_n.mouse_tile_hover_y())
                     {
                         tilePala = Rsed.ui_brush_n.brush_pala_idx();
                     }
@@ -1836,7 +1836,7 @@ Rsed.maasto_n = (function()
                     // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
                     // rasterization we'll write into the mouse-picking buffer, so we can later determine which
                     // quad, if any, the mouse cursor is hovering over.
-                    quad.mousePickId = ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.ground,
+                    quad.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
                                                                           {"tileX":tileX,
                                                                            "tileZ":(tileZ - 1)});
 
@@ -2117,7 +2117,7 @@ Rsed.props_n = (function()
 
                 copyMesh[i].isEthereal = ui_view_n.hideProps;
 
-                copyMesh[i].mousePickId = ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.prop,
+                copyMesh[i].mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
                                                                              {propIdx:idx, propTrackId:idOnTrack});
 
                 for (let v = 0; v < copyMesh[i].v.length; v++)
@@ -3319,16 +3319,16 @@ Rsed.ui_draw_n = (function()
         /*const graphic = Rsed.ui_cursor_n.graphic();
         const width = Rsed.ui_cursor_n.cursor_width();
         const height = Rsed.ui_cursor_n.cursor_height();
-        draw_image(graphic, null, width, height, ui_input_n.mouse_pos_x(), ui_input_n.mouse_pos_y(), true);*/
+        draw_image(graphic, null, width, height, Rsed.ui_input_n.mouse_pos_x(), Rsed.ui_input_n.mouse_pos_y(), true);*/
 
-        if (ui_input_n.mouse_hover_type() === ui_input_n.mousePickingType.ui &&
-            ui_input_n.mouse_hover_args().elementId === ui_input_n.uiElement.palat_pane)
+        if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.ui &&
+            Rsed.ui_input_n.mouse_hover_args().elementId === Rsed.ui_input_n.uiElement.palat_pane)
         {
-            draw_string("PALA:" + ui_input_n.mouse_hover_args().x, ui_input_n.mouse_pos_x() + 10, ui_input_n.mouse_pos_y() + 17);
+            draw_string("PALA:" + Rsed.ui_input_n.mouse_hover_args().x, Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
         }
         else if (Rsed.ui_brush_n.brushSmoothens)
         {
-            draw_string("SMOOTHING", ui_input_n.mouse_pos_x() + 10, ui_input_n.mouse_pos_y() + 17);
+            draw_string("SMOOTHING", Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
         }
     }
 
@@ -3341,13 +3341,13 @@ Rsed.ui_draw_n = (function()
 
     function draw_footer_info()
     {
-        const x = ui_input_n.mouse_tile_hover_x();
-        const y = ui_input_n.mouse_tile_hover_y();
+        const x = Rsed.ui_input_n.mouse_tile_hover_x();
+        const y = Rsed.ui_input_n.mouse_tile_hover_y();
 
         let str = "HEIGHT:+000 PALA:000 X,Y:000,000";
-        switch (ui_input_n.mouse_hover_type())
+        switch (Rsed.ui_input_n.mouse_hover_type())
         {
-            case ui_input_n.mousePickingType.ground:
+            case Rsed.ui_input_n.mousePickingType.ground:
             {
                 const xStr = String(x).padStart(3, "0");
                 const yStr = String(y).padStart(3, "0");
@@ -3359,10 +3359,10 @@ Rsed.ui_draw_n = (function()
 
                 break;
             }
-            case ui_input_n.mousePickingType.prop:
+            case Rsed.ui_input_n.mousePickingType.prop:
             {
-                str = "PROP:" + Rsed.props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx) +
-                      " IDX:" + ui_input_n.mouse_hover_args().idx + "(" + ui_input_n.mouse_hover_args().trackId + ")";
+                str = "PROP:" + Rsed.props_n.prop_name_for_idx(Rsed.ui_input_n.mouse_hover_args().idx) +
+                      " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
             }
         }
 
@@ -3409,8 +3409,8 @@ Rsed.ui_draw_n = (function()
                 if (x % (width - 1) === 0) color = "black";
 
                 image.push(color);
-                mousePick.push(ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.ui,
-                                                                  {elementId:ui_input_n.uiElement.minimap,
+                mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
+                                                                  {elementId:Rsed.ui_input_n.uiElement.minimap,
                                                                    uiX:tileX, uiY:tileZ}));
             }
         }
@@ -3489,8 +3489,8 @@ Rsed.ui_draw_n = (function()
                     }
 
                     image.push(color);
-                    mousePick.push(ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.ui,
-                        {elementId:ui_input_n.uiElement.large_minimap,
+                    mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
+                        {elementId:Rsed.ui_input_n.uiElement.large_minimap,
                         uiX:tileX, uiY:tileZ}));
                 }
             }
@@ -3597,8 +3597,8 @@ Rsed.ui_draw_n = (function()
                                                             Math.floor((y * Rsed.palat_n.pala_height() + py) / 2) * palatPaneWidth);
 
                             palatPaneBuffer[bufferTexel] = palette_n.palette_idx_to_rgba(pala.paletteIndices[palaTexel]);
-                            palatPaneMousePick[bufferTexel] = ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.ui,
-                                                                                                 {elementId:ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
+                            palatPaneMousePick[bufferTexel] = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
+                                                                                                 {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
                         }
                     }
                 }
@@ -3635,7 +3635,7 @@ Rsed.ui_draw_n = (function()
 
 "use strict";
 
-const ui_input_n = (function()
+Rsed.ui_input_n = (function()
 {
     const publicInterface = {};
 
@@ -3710,7 +3710,7 @@ const ui_input_n = (function()
             {
                 case publicInterface.mousePickingType.prop:
                 {
-                    mouseLock = {grab:"prop",propTrackId:ui_input_n.mouse_hover_args().trackId};
+                    mouseLock = {grab:"prop",propTrackId:Rsed.ui_input_n.mouse_hover_args().trackId};
                     break;
                 }
                 case publicInterface.mousePickingType.ground:
@@ -3795,7 +3795,7 @@ const ui_input_n = (function()
                         // For now, don't allow moving the starting line (prop #0).
                         if (mouseLock.propTrackId !== 0)
                         {
-                            Rsed.maasto_n.move_prop(mouseLock.propTrackId, ui_input_n.mouse_pos_delta_x()*6, ui_input_n.mouse_pos_delta_y()*12)
+                            Rsed.maasto_n.move_prop(mouseLock.propTrackId, Rsed.ui_input_n.mouse_pos_delta_x()*6, Rsed.ui_input_n.mouse_pos_delta_y()*12)
                         }
                     }
                 }
@@ -5093,7 +5093,7 @@ const rsed_n = (function()
                 }
             }
 
-            ui_input_n.enact_inputs();
+            Rsed.ui_input_n.enact_inputs();
         });
 
         // This function will be called whenever the size of the render surface changes.
@@ -5124,7 +5124,7 @@ const rsed_n = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop:function(name = "")
                 {
-                    Rsed.maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, Rsed.props_n.prop_idx_for_name(name));
+                    Rsed.maasto_n.change_prop_type(Rsed.ui_input_n.mouse_hover_args().trackId, Rsed.props_n.prop_idx_for_name(name));
                     window.close_dropdowns();
 
                     return;
@@ -5389,8 +5389,8 @@ window.oncontextmenu = function(event)
     if (event.target.id !== rsed_n.render_surface_id()) return;
 
     // Display a right-click menu for changing the type of the prop under the cursor.
-    if (ui_input_n.mouse_hover_type() === ui_input_n.mousePickingType.prop &&
-        !Rsed.props_n.prop_name_for_idx(ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+    if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop &&
+        !Rsed.props_n.prop_name_for_idx(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const propDowndown = document.getElementById("prop-dropdown");
         
@@ -5412,7 +5412,7 @@ window.close_dropdowns = function()
     }
 
     RSED_DROPDOWN_ACTIVATED = false;
-    ui_input_n.reset_mouse_hover_info();
+    Rsed.ui_input_n.reset_mouse_hover_info();
 }
 
 // The program uses onmousedown for primary click processing, but onclick is used here
@@ -5430,9 +5430,9 @@ window.onmousedown = function(event)
 {
     switch (event.button)
     {
-        case 0: ui_input_n.set_left_click(true); break;
-        case 1: ui_input_n.set_middle_click(true); break;
-        case 2: ui_input_n.set_right_click(true); break;
+        case 0: Rsed.ui_input_n.set_left_click(true); break;
+        case 1: Rsed.ui_input_n.set_middle_click(true); break;
+        case 2: Rsed.ui_input_n.set_right_click(true); break;
         default: break;
     }
 }
@@ -5441,9 +5441,9 @@ window.onmouseup = function(event)
 {
     switch (event.button)
     {
-        case 0: ui_input_n.set_left_click(false); break;
-        case 1: ui_input_n.set_middle_click(false); break;
-        case 2: ui_input_n.set_right_click(false); break;
+        case 0: Rsed.ui_input_n.set_left_click(false); break;
+        case 1: Rsed.ui_input_n.set_middle_click(false); break;
+        case 2: Rsed.ui_input_n.set_right_click(false); break;
         default: break;
     }
 }
@@ -5454,9 +5454,9 @@ window.onmousemove = function(event)
     {
         /// Temp hack. Prevent mouse clicks over prop dropdown dialogs from falling through and
         /// inadvertently editing the terrain.
-        if (ui_input_n.mouse_hover_type() !== ui_input_n.mousePickingType.prop)
+        if (Rsed.ui_input_n.mouse_hover_type() !== Rsed.ui_input_n.mousePickingType.prop)
         {
-            ui_input_n.reset_mouse_hover_info();
+            Rsed.ui_input_n.reset_mouse_hover_info();
         }
 
         return;
@@ -5467,14 +5467,14 @@ window.onmousemove = function(event)
         RSED_MOUSE_POS.x = (event.clientX - event.target.getBoundingClientRect().left);
         RSED_MOUSE_POS.y = (event.clientY - event.target.getBoundingClientRect().top);
 
-        ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * rsed_n.scaling_multiplier()),
+        Rsed.ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * rsed_n.scaling_multiplier()),
                                 Math.floor(RSED_MOUSE_POS.y * rsed_n.scaling_multiplier()));
     }
 }
 
 window.onkeydown = function(event)
 {
-    ui_input_n.update_key_status(event, true);
+    Rsed.ui_input_n.update_key_status(event, true);
 
     /// Temp hack. Process some of the key presses here, for convenience.
     {
@@ -5502,5 +5502,5 @@ window.onkeydown = function(event)
 
 window.onkeyup = function(event)
 {
-    ui_input_n.update_key_status(event, false);
+    Rsed.ui_input_n.update_key_status(event, false);
 }

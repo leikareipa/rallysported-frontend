@@ -172,7 +172,7 @@ Rsed.render_surface_n = (function()
                         surface.fillRect(0, 0, this.width, this.height);
 
                         // Reset auxiliary buffers.
-                        this.mousePickBuffer.fill(ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.void, {}));
+                        this.mousePickBuffer.fill(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.void, {}));
                         //this.depthBuffer.fill(Number.MAX_VALUE);
 
                         break;

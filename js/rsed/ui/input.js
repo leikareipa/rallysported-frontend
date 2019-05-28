@@ -10,7 +10,7 @@
 
 "use strict";
 
-const ui_input_n = (function()
+Rsed.ui_input_n = (function()
 {
     const publicInterface = {};
 
@@ -85,7 +85,7 @@ const ui_input_n = (function()
             {
                 case publicInterface.mousePickingType.prop:
                 {
-                    mouseLock = {grab:"prop",propTrackId:ui_input_n.mouse_hover_args().trackId};
+                    mouseLock = {grab:"prop",propTrackId:Rsed.ui_input_n.mouse_hover_args().trackId};
                     break;
                 }
                 case publicInterface.mousePickingType.ground:
@@ -170,7 +170,7 @@ const ui_input_n = (function()
                         // For now, don't allow moving the starting line (prop #0).
                         if (mouseLock.propTrackId !== 0)
                         {
-                            Rsed.maasto_n.move_prop(mouseLock.propTrackId, ui_input_n.mouse_pos_delta_x()*6, ui_input_n.mouse_pos_delta_y()*12)
+                            Rsed.maasto_n.move_prop(mouseLock.propTrackId, Rsed.ui_input_n.mouse_pos_delta_x()*6, Rsed.ui_input_n.mouse_pos_delta_y()*12)
                         }
                     }
                 }

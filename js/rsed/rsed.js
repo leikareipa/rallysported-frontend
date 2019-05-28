@@ -49,7 +49,7 @@ const rsed_n = (function()
                 }
             }
 
-            ui_input_n.enact_inputs();
+            Rsed.ui_input_n.enact_inputs();
         });
 
         // This function will be called whenever the size of the render surface changes.
@@ -80,7 +80,7 @@ const rsed_n = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop:function(name = "")
                 {
-                    Rsed.maasto_n.change_prop_type(ui_input_n.mouse_hover_args().trackId, Rsed.props_n.prop_idx_for_name(name));
+                    Rsed.maasto_n.change_prop_type(Rsed.ui_input_n.mouse_hover_args().trackId, Rsed.props_n.prop_idx_for_name(name));
                     window.close_dropdowns();
 
                     return;

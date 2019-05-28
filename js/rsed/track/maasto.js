@@ -353,8 +353,8 @@ Rsed.maasto_n = (function()
                     let tilePala = this.varimaa_tile_at(tileX, (tileZ - 1));
 
                     // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
-                    if (tileX === ui_input_n.mouse_tile_hover_x() &&
-                        (tileZ - 1) === ui_input_n.mouse_tile_hover_y())
+                    if (tileX === Rsed.ui_input_n.mouse_tile_hover_x() &&
+                        (tileZ - 1) === Rsed.ui_input_n.mouse_tile_hover_y())
                     {
                         tilePala = Rsed.ui_brush_n.brush_pala_idx();
                     }
@@ -380,7 +380,7 @@ Rsed.maasto_n = (function()
                     // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
                     // rasterization we'll write into the mouse-picking buffer, so we can later determine which
                     // quad, if any, the mouse cursor is hovering over.
-                    quad.mousePickId = ui_input_n.create_mouse_picking_id(ui_input_n.mousePickingType.ground,
+                    quad.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
                                                                           {"tileX":tileX,
                                                                            "tileZ":(tileZ - 1)});
 
