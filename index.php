@@ -52,6 +52,6 @@
         <script src="./distributable/polyfill.js" defer></script>
 
         <!-- RallySportED's JavaScript.-->
-        <script src="./distributable/rsed.cat.js" defer></script>
+        <script src="./distributable/rallysported.cat.js" defer></script>
     </body>
 </html>

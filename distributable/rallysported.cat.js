@@ -3,34 +3,34 @@
 // VERSION: live
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // FILES:
-//	../js/rsed/rallysported.js
+//	../js/rallysported/rallysported.js
 //	../distributable/assets/hitable.txt.js
-//	../js/rsed/misc/common.js
-//	../js/rsed/visual/color.js
-//	../js/rsed/visual/texture.js
-//	../js/rsed/visual/palette.js
-//	../js/rsed/transform/geometry.js
-//	../js/rsed/transform/matrix44.js
-//	../js/rsed/transform/poly-transform.js
-//	../js/rsed/render/camera.js
-//	../js/rsed/render/renderer.js
-//	../js/rsed/render/render-surface.js
-//	../js/rsed/track/maasto.js
-//	../js/rsed/track/palat.js
-//	../js/rsed/track/props.js
-//	../js/rsed/track/manifesto.js
-//	../js/rsed/ui/font.js
-//	../js/rsed/ui/cursor.js
-//	../js/rsed/ui/view.js
-//	../js/rsed/ui/brush.js
-//	../js/rsed/ui/draw.js
-//	../js/rsed/ui/input.js
-//	../js/rsed/render/line-draw.js
-//	../js/rsed/render/ngon-fill.js
-//	../js/rsed/file/resource-loader.js
-//	../js/rsed/misc/project.js
-//	../js/rsed/main.js
-//	../js/rsed/misc/window.js
+//	../js/rallysported/misc/common.js
+//	../js/rallysported/visual/color.js
+//	../js/rallysported/visual/texture.js
+//	../js/rallysported/visual/palette.js
+//	../js/rallysported/transform/geometry.js
+//	../js/rallysported/transform/matrix44.js
+//	../js/rallysported/transform/poly-transform.js
+//	../js/rallysported/render/camera.js
+//	../js/rallysported/render/renderer.js
+//	../js/rallysported/render/render-surface.js
+//	../js/rallysported/track/maasto.js
+//	../js/rallysported/track/palat.js
+//	../js/rallysported/track/props.js
+//	../js/rallysported/track/manifesto.js
+//	../js/rallysported/ui/font.js
+//	../js/rallysported/ui/cursor.js
+//	../js/rallysported/ui/view.js
+//	../js/rallysported/ui/brush.js
+//	../js/rallysported/ui/draw.js
+//	../js/rallysported/ui/input.js
+//	../js/rallysported/render/line-draw.js
+//	../js/rallysported/render/ngon-fill.js
+//	../js/rallysported/file/resource-loader.js
+//	../js/rallysported/misc/project.js
+//	../js/rallysported/main.js
+//	../js/rallysported/misc/window.js
 /////////////////////////////////////////////////
 
 /*
