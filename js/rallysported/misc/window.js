@@ -101,13 +101,12 @@ window.oncontextmenu = function(event)
     if (event.target.id !== Rsed.main_n.render_surface_id()) return;
 
     // Display a right-click menu for changing the type of the prop under the cursor.
-    if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop &&
+    if ((Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
         !Rsed.props_n.prop_name_for_idx(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
-        const propDowndown = document.getElementById("prop-dropdown");
-        
-        propDowndown.style.transform = "translate(" + (RSED_MOUSE_POS.x - 40) + "px, " + (RSED_MOUSE_POS.y - 0) + "px)";
-        propDowndown.classList.toggle("show");
+        const propDropdown = document.getElementById("prop-dropdown");
+        propDropdown.style.transform = "translate(" + (RSED_MOUSE_POS.x - 40) + "px, " + (RSED_MOUSE_POS.y - 0) + "px)";
+        propDropdown.classList.toggle("show");
 
         RSED_DROPDOWN_ACTIVATED = true;
     }
@@ -119,7 +118,8 @@ window.oncontextmenu = function(event)
 // to close any open dropdown lists.
 window.onclick = function(event)
 {
-    if (RSED_DROPDOWN_ACTIVATED)
+    if (RSED_DROPDOWN_ACTIVATED &&
+        (event.target.id === Rsed.main_n.render_surface_id()))
     {
         window.close_dropdowns();
         return false;
