@@ -3574,7 +3574,7 @@ Rsed.ui_draw_n = (function()
                     case "3d":
                     case "3d-topdown":
                     {
-                        //draw_fps();
+                        if (Rsed.main_n.fps_counter_enabled()) draw_fps();
                         draw_watermark();
                         draw_minimap();
                         draw_active_pala();
@@ -4454,22 +4454,25 @@ Rsed.ngon_fill_n = (function()
                     /// CLEANUP: The code for this is a bit unsightly.
                     if (poly.hasWireframe)
                     {
-                        const wireShade = ((poly.isEthereal)? 100 : 0);
+                        const wireColor = new Array(3).fill((poly.isEthereal)? 100 : 0);
 
                         let prevVert = leftVerts[0];
                         for (let l = 1; l < leftVerts.length; l++)
                         {
-                            Rsed.draw_line_n.line_onto_canvas(prevVert, leftVerts[l], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+                            Rsed.draw_line_n.line_onto_canvas(prevVert, leftVerts[l], pixelMap.data, width, height, ...wireColor);
                             prevVert = leftVerts[l];
                         }
-                        Rsed.draw_line_n.line_onto_canvas(prevVert, rightVerts[0], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+
+                        Rsed.draw_line_n.line_onto_canvas(prevVert, rightVerts[0], pixelMap.data, width, height, ...wireColor);
+
                         prevVert = rightVerts[0];
                         for (let r = 1; r < rightVerts.length; r++)
                         {
-                            Rsed.draw_line_n.line_onto_canvas(prevVert, rightVerts[r], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+                            Rsed.draw_line_n.line_onto_canvas(prevVert, rightVerts[r], pixelMap.data, width, height, ...wireColor);
                             prevVert = rightVerts[r];
                         }
-                        Rsed.draw_line_n.line_onto_canvas(prevVert, leftVerts[0], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+
+                        Rsed.draw_line_n.line_onto_canvas(prevVert, leftVerts[0], pixelMap.data, width, height, ...wireColor);
                     }
                 }
             }
@@ -5173,6 +5176,13 @@ Rsed.main_n = (function()
 
     const renderScalingMultiplier = 0.25;
 
+    // Whether to display an FPS counter to the user.
+    const fpsCounterEnabled = (()=>
+    {
+        const params = new URLSearchParams(window.location.search);
+        return (params.has("showFramerate") && (Number(params.get("showFramerate")) === 1));
+    })();
+
     // Test various browser compatibility factors, and give the user messages of warning where appropriate.
     function check_browser_compatibility()
     {
@@ -5273,6 +5283,8 @@ Rsed.main_n = (function()
         // If not operational, the program won't respond to user input and won't display anything to
         // the user.
         publicInterface.isOperational = true;
+
+        publicInterface.fps_counter_enabled = function() { return fpsCounterEnabled; }
 
         publicInterface.scaling_multiplier = function() { return renderScalingMultiplier; }
     

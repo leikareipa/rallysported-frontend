@@ -186,22 +186,25 @@ Rsed.ngon_fill_n = (function()
                     /// CLEANUP: The code for this is a bit unsightly.
                     if (poly.hasWireframe)
                     {
-                        const wireShade = ((poly.isEthereal)? 100 : 0);
+                        const wireColor = new Array(3).fill((poly.isEthereal)? 100 : 0);
 
                         let prevVert = leftVerts[0];
                         for (let l = 1; l < leftVerts.length; l++)
                         {
-                            Rsed.draw_line_n.line_onto_canvas(prevVert, leftVerts[l], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+                            Rsed.draw_line_n.line_onto_canvas(prevVert, leftVerts[l], pixelMap.data, width, height, ...wireColor);
                             prevVert = leftVerts[l];
                         }
-                        Rsed.draw_line_n.line_onto_canvas(prevVert, rightVerts[0], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+
+                        Rsed.draw_line_n.line_onto_canvas(prevVert, rightVerts[0], pixelMap.data, width, height, ...wireColor);
+
                         prevVert = rightVerts[0];
                         for (let r = 1; r < rightVerts.length; r++)
                         {
-                            Rsed.draw_line_n.line_onto_canvas(prevVert, rightVerts[r], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+                            Rsed.draw_line_n.line_onto_canvas(prevVert, rightVerts[r], pixelMap.data, width, height, ...wireColor);
                             prevVert = rightVerts[r];
                         }
-                        Rsed.draw_line_n.line_onto_canvas(prevVert, leftVerts[0], pixelMap.data, width, height, wireShade, wireShade, wireShade);
+
+                        Rsed.draw_line_n.line_onto_canvas(prevVert, leftVerts[0], pixelMap.data, width, height, ...wireColor);
                     }
                 }
             }

@@ -349,7 +349,7 @@ Rsed.ui_draw_n = (function()
                     case "3d":
                     case "3d-topdown":
                     {
-                        //draw_fps();
+                        if (Rsed.main_n.fps_counter_enabled()) draw_fps();
                         draw_watermark();
                         draw_minimap();
                         draw_active_pala();

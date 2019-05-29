@@ -23,6 +23,13 @@ Rsed.main_n = (function()
 
     const renderScalingMultiplier = 0.25;
 
+    // Whether to display an FPS counter to the user.
+    const fpsCounterEnabled = (()=>
+    {
+        const params = new URLSearchParams(window.location.search);
+        return (params.has("showFramerate") && (Number(params.get("showFramerate")) === 1));
+    })();
+
     // Test various browser compatibility factors, and give the user messages of warning where appropriate.
     function check_browser_compatibility()
     {
@@ -123,6 +130,8 @@ Rsed.main_n = (function()
         // If not operational, the program won't respond to user input and won't display anything to
         // the user.
         publicInterface.isOperational = true;
+
+        publicInterface.fps_counter_enabled = function() { return fpsCounterEnabled; }
 
         publicInterface.scaling_multiplier = function() { return renderScalingMultiplier; }
     
