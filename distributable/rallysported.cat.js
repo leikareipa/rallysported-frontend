@@ -20,7 +20,6 @@
 //	../js/rallysported/track/props.js
 //	../js/rallysported/track/manifesto.js
 //	../js/rallysported/ui/font.js
-//	../js/rallysported/ui/cursor.js
 //	../js/rallysported/ui/view.js
 //	../js/rallysported/ui/brush.js
 //	../js/rallysported/ui/draw.js
@@ -3067,56 +3066,6 @@ Rsed.ui_font_n = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/ui/cursor.js
- *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
- *
- * The mouse cursor.
- * 
- */
-
-"use strict";
-
-Rsed.ui_cursor_n = (function()
-{
-    const cursorWidth = 16;
-    const cursorHeight = 16;
-
-    const X = 5;
-    const Y = 6;
-    const _ = 20;
-    const graphic =
-        [_,_,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        _,X,_,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        _,Y,X,_,0,0,0,0,0,0,0,0,0,0,0,0,
-        _,Y,X,X,_,0,0,0,0,0,0,0,0,0,0,0,
-        _,Y,Y,X,X,_,0,0,0,0,0,0,0,0,0,0,
-        _,Y,Y,X,X,X,_,0,0,0,0,0,0,0,0,0,
-        _,Y,Y,Y,X,X,X,_,0,0,0,0,0,0,0,0,
-        _,Y,Y,Y,X,X,X,X,_,0,0,0,0,0,0,0,
-        _,Y,Y,Y,Y,X,_,_,_,0,0,0,0,0,0,0,
-        _,Y,_,_,Y,Y,_,0,0,0,0,0,0,0,0,0,
-        _,_,0,0,_,Y,X,_,0,0,0,0,0,0,0,0,
-        0,0,0,0,_,Y,Y,_,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,_,_,_,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-
-    const publicInterface = {};
-    {
-        publicInterface.graphic = function()
-        {
-            return graphic.slice(0);
-        }
-
-        publicInterface.cursor_width = function() { return cursorWidth; }
-        publicInterface.cursor_height = function() { return cursorHeight; }
-    }
-    return publicInterface;
-})();
-/*
  * Most recent known filename: js/ui/view.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
@@ -3413,12 +3362,6 @@ Rsed.ui_draw_n = (function()
     // Draws the mouse cursor, and any indicators attached to it.
     function draw_mouse_cursor()
     {
-        /// Drawing the mouse cursors directly into the canvas is disabled for performance reasons.
-        /*const graphic = Rsed.ui_cursor_n.graphic();
-        const width = Rsed.ui_cursor_n.cursor_width();
-        const height = Rsed.ui_cursor_n.cursor_height();
-        draw_image(graphic, null, width, height, Rsed.ui_input_n.mouse_pos_x(), Rsed.ui_input_n.mouse_pos_y(), true);*/
-
         if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.ui &&
             Rsed.ui_input_n.mouse_hover_args().elementId === Rsed.ui_input_n.uiElement.palat_pane)
         {

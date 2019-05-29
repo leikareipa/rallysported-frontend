@@ -132,12 +132,6 @@ Rsed.ui_draw_n = (function()
     // Draws the mouse cursor, and any indicators attached to it.
     function draw_mouse_cursor()
     {
-        /// Drawing the mouse cursors directly into the canvas is disabled for performance reasons.
-        /*const graphic = Rsed.ui_cursor_n.graphic();
-        const width = Rsed.ui_cursor_n.cursor_width();
-        const height = Rsed.ui_cursor_n.cursor_height();
-        draw_image(graphic, null, width, height, Rsed.ui_input_n.mouse_pos_x(), Rsed.ui_input_n.mouse_pos_y(), true);*/
-
         if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.ui &&
             Rsed.ui_input_n.mouse_hover_args().elementId === Rsed.ui_input_n.uiElement.palat_pane)
         {
