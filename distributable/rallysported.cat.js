@@ -5501,12 +5501,24 @@ window.onload = function(event)
     Rsed.main_n.launch_rallysported(args);
 }
 
+window.close_dropdowns = function()
+{
+    const dropdowns = document.getElementsByClassName("dropdown_list");
+    for (let i = 0; i < dropdowns.length; i++)
+    {
+        if (dropdowns[i].classList.contains("show")) dropdowns[i].classList.toggle("show");
+    }
+
+    RSED_DROPDOWN_ACTIVATED = false;
+    Rsed.ui_input_n.reset_mouse_hover_info();
+}
+
 // Disable the right-click browser menu, since we want to use the right mouse button for other things.
 window.oncontextmenu = function(event)
 {
     if (RSED_DROPDOWN_ACTIVATED)
     {
-        page_n.close_dropdowns();
+        window.close_dropdowns();
         return false;
     }
 
@@ -5527,25 +5539,13 @@ window.oncontextmenu = function(event)
     return false;
 }
 
-window.close_dropdowns = function()
-{
-    const dropdowns = document.getElementsByClassName("dropdown_list");
-    for (let i = 0; i < dropdowns.length; i++)
-    {
-        if (dropdowns[i].classList.contains("show")) dropdowns[i].classList.toggle("show");
-    }
-
-    RSED_DROPDOWN_ACTIVATED = false;
-    Rsed.ui_input_n.reset_mouse_hover_info();
-}
-
 // The program uses onmousedown for primary click processing, but onclick is used here
 // to close any open dropdown lists.
 window.onclick = function(event)
 {
     if (RSED_DROPDOWN_ACTIVATED)
     {
-        page_n.close_dropdowns();
+        window.close_dropdowns();
         return false;
     }
 }
