@@ -1,7 +1,8 @@
 /*
  * Most recent known filename: js/palette.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  * 
  * Rally-Sport's four VGA mode 13h palettes.
  *

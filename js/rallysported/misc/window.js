@@ -1,7 +1,8 @@
 /*
  * Most recent known filename: js/misc/window.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  * Provides logic for dealing with the host HTML page.
  *

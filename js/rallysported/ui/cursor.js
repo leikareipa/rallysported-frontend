@@ -2,7 +2,7 @@
  * Most recent known filename: js/ui/cursor.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  * The mouse cursor.
  * 

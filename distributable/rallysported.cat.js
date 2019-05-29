@@ -37,7 +37,7 @@
  * Most recent known filename: js/rallysported.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  */
 
@@ -284,7 +284,8 @@ const lut_hitable_txt =[0x41,0x2d,0x4a,0x75,0x6e,0x69,0x6f,0x72,0x69,0x00,0x20,0
   /*
  * Most recent known filename: js/misc/common.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  * Various functions that may (or might not) be used across the program.
  *
@@ -320,7 +321,8 @@ function k_clamp(value, min, max)
 }/*
  * Most recent known filename: js/color.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  */
 
@@ -361,7 +363,8 @@ Rsed.color_n = (function()
 /*
  * Most recent known filename: js/texture.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  */
 
@@ -398,7 +401,8 @@ Rsed.texture_n = (function()
 /*
  * Most recent known filename: js/palette.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  * 
  * Rally-Sport's four VGA mode 13h palettes.
  *
@@ -615,7 +619,8 @@ Rsed.palette_n = (function()
 /*
  * Most recent known filename: js/geometry.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  * Functions to do with space; like vectors, vertices, etc.
  *
@@ -854,7 +859,8 @@ Rsed.geometry_n = {};
 /*
  * Most recent known filename: js/matrix44.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  * 4 x 4 matrix manipulation.
  * 
@@ -1009,7 +1015,8 @@ Rsed.matrix44_n = (function()
 /*
  * Most recent known filename: js/poly_transform.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  * Routines for transforming polygons to screen-space.
  *
@@ -1093,7 +1100,7 @@ Rsed.polygon_transform_n = (function()
  * Most recent known filename: js/render/camera.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  */
 
@@ -1152,7 +1159,8 @@ Rsed.camera_n = (function()
 })();/*
  * Most recent known filename: js/render/renderer.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  * 
  * The (3d) renderer for RallySportED.
  *
@@ -1327,7 +1335,8 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 /*
  * Most recent known filename: js/render_surface.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  * 
  * Provides an abstracted surface for rendering graphics onto the webpage. The surface
  * might be, for instance, an <svg> element.
@@ -1461,7 +1470,7 @@ Rsed.render_surface_n = (function()
  * Most recent known filename: js/track/maasto.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  */
 
@@ -1963,7 +1972,7 @@ Rsed.maasto_n = (function()
  * Most recent known filename: js/track/palat.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  */
 
@@ -2060,7 +2069,7 @@ Rsed.palat_n = (function()
  * Most recent known filename: js/track/props.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  */
 
@@ -2187,7 +2196,7 @@ Rsed.props_n = (function()
  * Most recent known filename: js/track/manifesto.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  * 
  * Parses RallySportED's manifesto files.
  *
@@ -2427,7 +2436,7 @@ Rsed.manifesto_n = (function()
  * Most recent known filename: js/ui/font.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  * The UI font.
  * 
@@ -3061,7 +3070,7 @@ Rsed.ui_font_n = (function()
  * Most recent known filename: js/ui/cursor.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  * The mouse cursor.
  * 
@@ -3111,7 +3120,7 @@ Rsed.ui_cursor_n = (function()
  * Most recent known filename: js/ui/view.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  * 
  */
 
@@ -3167,7 +3176,7 @@ Rsed.ui_view_n = (function()
  * Most recent known filename: js/ui/brush.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  * 
  */
 
@@ -3274,7 +3283,7 @@ Rsed.ui_brush_n = (function()
  * Most recent known filename: js/ui/draw.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  * Renders the RallySportED UI.
  * 
@@ -3718,7 +3727,7 @@ Rsed.ui_draw_n = (function()
  * Most recent known filename: js/ui/input.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  * Handles user input.
  * 
@@ -4183,7 +4192,8 @@ Rsed.ui_input_n = (function()
 /*
  * Most recent known filename: js/render/line_draw.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  * 
  */
 
@@ -4321,7 +4331,8 @@ Rsed.draw_line_n = (function()
 /*
  * Most recent known filename: js/render/ngon_fill.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  * An n-gon rasterizer for the HTML5 canvas.
  * Note that the drawing functions expect 'this' to point to the render surface object into whose
@@ -4959,7 +4970,8 @@ const resource_loader_n = (function()
 /*
  * Most recent known filename: js/misc/project.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  */
 
@@ -5205,7 +5217,7 @@ Rsed.project_n = (function()
  * Most recent known filename: js/main.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  */
 
@@ -5466,7 +5478,8 @@ Rsed.main_n = (function()
 /*
  * Most recent known filename: js/misc/window.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  * Provides logic for dealing with the host HTML page.
  *

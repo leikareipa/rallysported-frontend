@@ -1,7 +1,8 @@
 /*
  * Most recent known filename: js/poly_transform.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  * Routines for transforming polygons to screen-space.
  *

@@ -1,4 +1,12 @@
-"use strict";
+/*
+ * Most recent known filename: rsed-tests.js
+ *
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
+ *
+ */
+
+ "use strict";
 
 const unitTestResults = unit_tests("RallySportED (JS)", ()=>
 {

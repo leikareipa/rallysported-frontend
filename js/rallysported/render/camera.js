@@ -2,7 +2,7 @@
  * Most recent known filename: js/render/camera.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  */
 

@@ -1,7 +1,8 @@
 /*
  * Most recent known filename: js/color.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  */
 

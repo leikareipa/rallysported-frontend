@@ -2,7 +2,7 @@
  * Most recent known filename: js/ui/draw.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED for the browser.
+ * RallySportED-js
  *
  * Renders the RallySportED UI.
  * 

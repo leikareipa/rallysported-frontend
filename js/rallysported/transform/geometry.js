@@ -1,7 +1,8 @@
 /*
  * Most recent known filename: js/geometry.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  * Functions to do with space; like vectors, vertices, etc.
  *

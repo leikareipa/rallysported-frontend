@@ -1,7 +1,8 @@
 /*
  * Most recent known filename: js/misc/common.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  * Various functions that may (or might not) be used across the program.
  *

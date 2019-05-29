@@ -1,7 +1,8 @@
 /*
  * Most recent known filename: js/render/ngon_fill.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  *
  * An n-gon rasterizer for the HTML5 canvas.
  * Note that the drawing functions expect 'this' to point to the render surface object into whose

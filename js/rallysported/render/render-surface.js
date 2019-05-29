@@ -1,7 +1,8 @@
 /*
  * Most recent known filename: js/render_surface.js
  *
- * Tarpeeksi Hyvae Soft 2018
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
  * 
  * Provides an abstracted surface for rendering graphics onto the webpage. The surface
  * might be, for instance, an <svg> element.
