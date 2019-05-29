@@ -128,11 +128,11 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
                     let d1 = 0;
                     let d2 = 0;
                         
-                    for (let i = 0; i < a.v.length; i++) d1 += a.v[i].z;
-                    for (let i = 0; i < b.v.length; i++) d2 += b.v[i].z;
+                    for (let i = 0; i < a.verts.length; i++) d1 += a.verts[i].z;
+                    for (let i = 0; i < b.verts.length; i++) d2 += b.verts[i].z;
                     
-                    d1 /= a.v.length;
-                    d2 /= b.v.length;
+                    d1 /= a.verts.length;
+                    d2 /= b.verts.length;
                         
                     return ((d1 === d2)? 0 : ((d1 < d2)? 1 : -1));
                 });

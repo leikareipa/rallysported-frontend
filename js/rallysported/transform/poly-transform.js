@@ -58,14 +58,14 @@ Rsed.polygon_transform_n = (function()
                     Rsed.assert && (polygons[i] instanceof Rsed.geometry_n.polygon_o)
                                 || Rsed.throw("Expected a polygon.");
                     
-                    transfPolys[k] = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
+                    transfPolys[k] = new Rsed.geometry_n.polygon_o(polygons[i].verts.length);
                     transfPolys[k].clone_from(polygons[i]);
 
                     transfPolys[k].transform(toScreenSpace);
 
                     // Clip against the near plane. Instead of modulating the vertex positions,
                     // we'll just cull the entire polygon if any of its vertices are behind the plane.
-                    if (transfPolys[k].v.some(v=>(v.w <= 0)))
+                    if (transfPolys[k].verts.some(v=>(v.w <= 0)))
                     {
                         transfPolys.pop();
                         continue;

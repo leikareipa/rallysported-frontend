@@ -625,7 +625,7 @@ Rsed.palette_n = (function()
  *
  */
 
- "use strict";
+"use strict";
 
 Rsed.geometry_n = {};
 {
@@ -703,12 +703,7 @@ Rsed.geometry_n = {};
                         (numVertices < 10))
                     || Rsed.throw("Bad vertex count.");
 
-        this.v = [];
-        for (let i = 0; i < numVertices; i++)
-        {
-            this.v.push(new Rsed.geometry_n.vertex_o());
-        }
-        
+        this.verts = new Array(numVertices).fill().map(()=>new Rsed.geometry_n.vertex_o());
         this.color = new Rsed.color_n.rgba_o();
         this.texture = 0;
 
@@ -726,19 +721,19 @@ Rsed.geometry_n = {};
         this.clone_from = function(otherPolygon = {})
         {
             Rsed.assert && ((otherPolygon instanceof Rsed.geometry_n.polygon_o) &&
-                            (this.v.length === otherPolygon.v.length))
+                            (this.verts.length === otherPolygon.verts.length))
                         || Rsed.throw("Incompatible polygons for cloning.");
 
             // Vertices.
-            for (let i = 0; i < otherPolygon.v.length; i++)
+            for (let i = 0; i < otherPolygon.verts.length; i++)
             {
-                this.v[i].x = otherPolygon.v[i].x;
-                this.v[i].y = otherPolygon.v[i].y;
-                this.v[i].z = otherPolygon.v[i].z;
-                this.v[i].w = otherPolygon.v[i].w;
+                this.verts[i].x = otherPolygon.verts[i].x;
+                this.verts[i].y = otherPolygon.verts[i].y;
+                this.verts[i].z = otherPolygon.verts[i].z;
+                this.verts[i].w = otherPolygon.verts[i].w;
 
-                this.v[i].u = otherPolygon.v[i].u;
-                this.v[i].v = otherPolygon.v[i].v;
+                this.verts[i].u = otherPolygon.verts[i].u;
+                this.verts[i].v = otherPolygon.verts[i].v;
             }
             
             this.color.r = otherPolygon.color.r;
@@ -755,14 +750,14 @@ Rsed.geometry_n = {};
         // Back-face culling.
         this.is_facing_camera = function()
         {
-            if (this.v.length === 3) // For triangles.
+            if (this.verts.length === 3) // For triangles.
             {
                 // Based on https://stackoverflow.com/a/35280392.
                 {
-                    const ax = (this.v[0].x - this.v[1].x);
-                    const ay = (this.v[0].y - this.v[1].y);
-                    const bx = (this.v[0].x - this.v[2].x);
-                    const by = (this.v[0].y - this.v[2].y);
+                    const ax = (this.verts[0].x - this.verts[1].x);
+                    const ay = (this.verts[0].y - this.verts[1].y);
+                    const bx = (this.verts[0].x - this.verts[2].x);
+                    const by = (this.verts[0].y - this.verts[2].y);
                     const cz = ((ax * by) - (ay * bx));
 
                     return (cz >= 0);
@@ -780,19 +775,19 @@ Rsed.geometry_n = {};
             Rsed.assert && (m.length === 16)
                         || Rsed.throw("Expected a 4 x 4 matrix to transform the polygon by.");
             
-            for (let i = 0; i < this.v.length; i++)
+            for (let i = 0; i < this.verts.length; i++)
             {
-                this.v[i].transform(m);
+                this.verts[i].transform(m);
             }
         };
         
         this.perspective_divide = function()
         {
-            for (let i = 0; i < this.v.length; i++)
+            for (let i = 0; i < this.verts.length; i++)
             {
-                this.v[i].x /= this.v[i].w;
-                this.v[i].y /= this.v[i].w;
-                this.v[i].z /= this.v[i].w;
+                this.verts[i].x /= this.verts[i].w;
+                this.verts[i].y /= this.verts[i].w;
+                this.verts[i].z /= this.verts[i].w;
             }
         };
     }
@@ -816,7 +811,7 @@ Rsed.geometry_n = {};
             Rsed.assert && (polygons[i] instanceof Rsed.geometry_n.polygon_o)
                         || Rsed.throw("Expected a polygon.");
 
-            const newPoly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
+            const newPoly = new Rsed.geometry_n.polygon_o(polygons[i].verts.length);
             newPoly.clone_from(polygons[i]);
 
             this.polygons.push(newPoly);
@@ -832,7 +827,7 @@ Rsed.geometry_n = {};
         this.object_space_matrix = function()
         {
             const m = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(this.translationVec.x, this.translationVec.y, this.translationVec.z),
-                                                   Rsed.matrix44_n.rotation_matrix(this.rotationVec.x, this.rotationVec.y, this.rotationVec.z));
+                                                        Rsed.matrix44_n.rotation_matrix(this.rotationVec.x, this.rotationVec.y, this.rotationVec.z));
 
             Rsed.assert && (m.length === 16)
                         || Rsed.throw("Expected to return a 4 x 4 object space matrix.");
@@ -845,8 +840,8 @@ Rsed.geometry_n = {};
         {
             const sort_by_z = function(a, b)
             {
-                const d1 = (a.v[0].z + a.v[1].z + a.v[2].z);
-                const d2 = (b.v[0].z + b.v[1].z + b.v[2].z);
+                const d1 = (a.verts[0].z + a.verts[1].z + a.verts[2].z);
+                const d2 = (b.verts[0].z + b.verts[1].z + b.verts[2].z);
 
                 return (d1 < d2);
             };
@@ -1071,14 +1066,14 @@ Rsed.polygon_transform_n = (function()
                     Rsed.assert && (polygons[i] instanceof Rsed.geometry_n.polygon_o)
                                 || Rsed.throw("Expected a polygon.");
                     
-                    transfPolys[k] = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
+                    transfPolys[k] = new Rsed.geometry_n.polygon_o(polygons[i].verts.length);
                     transfPolys[k].clone_from(polygons[i]);
 
                     transfPolys[k].transform(toScreenSpace);
 
                     // Clip against the near plane. Instead of modulating the vertex positions,
                     // we'll just cull the entire polygon if any of its vertices are behind the plane.
-                    if (transfPolys[k].v.some(v=>(v.w <= 0)))
+                    if (transfPolys[k].verts.some(v=>(v.w <= 0)))
                     {
                         transfPolys.pop();
                         continue;
@@ -1285,11 +1280,11 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
                     let d1 = 0;
                     let d2 = 0;
                         
-                    for (let i = 0; i < a.v.length; i++) d1 += a.v[i].z;
-                    for (let i = 0; i < b.v.length; i++) d2 += b.v[i].z;
+                    for (let i = 0; i < a.verts.length; i++) d1 += a.verts[i].z;
+                    for (let i = 0; i < b.verts.length; i++) d2 += b.verts[i].z;
                     
-                    d1 /= a.v.length;
-                    d2 /= b.v.length;
+                    d1 /= a.verts.length;
+                    d2 /= b.verts.length;
                         
                     return ((d1 === d2)? 0 : ((d1 < d2)? 1 : -1));
                 });
@@ -1858,10 +1853,10 @@ Rsed.maasto_n = (function()
                         const height3 = trackOffsetY + this.maasto_height_at((tileX + 1), (tileZ - 1));
                         const height4 = trackOffsetY + this.maasto_height_at( tileX,      (tileZ - 1));
                         
-                        quad.v[0] = new Rsed.geometry_n.vertex_o( vertX,             height1, vertZ);
-                        quad.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height2, vertZ);
-                        quad.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height3, (vertZ + tileSize));
-                        quad.v[3] = new Rsed.geometry_n.vertex_o( vertX,             height4, (vertZ + tileSize));
+                        quad.verts[0] = new Rsed.geometry_n.vertex_o( vertX,             height1, vertZ);
+                        quad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height2, vertZ);
+                        quad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height3, (vertZ + tileSize));
+                        quad.verts[3] = new Rsed.geometry_n.vertex_o( vertX,             height4, (vertZ + tileSize));
                         
                         quad.hasWireframe = wireframeOnRequest;
                         quad.texture = Rsed.palat_n.pala_texture(tilePala);
@@ -1882,10 +1877,10 @@ Rsed.maasto_n = (function()
                         const baseHeight = trackOffsetY + this.maasto_height_at(tileX, (tileZ - 1));
 
                         const bill = new Rsed.geometry_n.polygon_o(4);
-                        bill.v[0] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight,          vertZ);
-                        bill.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight,          vertZ);
-                        bill.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight+tileSize, vertZ);
-                        bill.v[3] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight+tileSize, vertZ);
+                        bill.verts[0] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight,          vertZ);
+                        bill.verts[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight,          vertZ);
+                        bill.verts[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight+tileSize, vertZ);
+                        bill.verts[3] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight+tileSize, vertZ);
 
                         switch (tilePala)
                         {
@@ -1914,10 +1909,10 @@ Rsed.maasto_n = (function()
                     else if (tilePala === 248 || tilePala === 249)
                     {
                         const bridge = new Rsed.geometry_n.polygon_o(4);
-                        bridge.v[0] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, vertZ);
-                        bridge.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, vertZ);
-                        bridge.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, (vertZ+tileSize));
-                        bridge.v[3] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, (vertZ+tileSize));
+                        bridge.verts[0] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, vertZ);
+                        bridge.verts[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, vertZ);
+                        bridge.verts[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, (vertZ+tileSize));
+                        bridge.verts[3] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, (vertZ+tileSize));
 
                         bridge.texture = Rsed.palat_n.pala_texture(177, true);
 
@@ -2156,7 +2151,7 @@ Rsed.props_n = (function()
             const copyMesh = [];
             for (let i = 0; i < sourceMesh.length; i++)
             {
-                copyMesh.push(new Rsed.geometry_n.polygon_o(sourceMesh[i].v.length));
+                copyMesh.push(new Rsed.geometry_n.polygon_o(sourceMesh[i].verts.length));
                 copyMesh[i].clone_from(sourceMesh[i]);
 
                 copyMesh[i].hasWireframe = wireframeEnabled;
@@ -2166,11 +2161,11 @@ Rsed.props_n = (function()
                 copyMesh[i].mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
                                                                              {propIdx:idx, propTrackId:idOnTrack});
 
-                for (let v = 0; v < copyMesh[i].v.length; v++)
+                for (let v = 0; v < copyMesh[i].verts.length; v++)
                 {
-                    copyMesh[i].v[v].x += offsetX;
-                    copyMesh[i].v[v].y += offsetY;
-                    copyMesh[i].v[v].z += offsetZ;
+                    copyMesh[i].verts[v].x += offsetX;
+                    copyMesh[i].verts[v].y += offsetY;
+                    copyMesh[i].verts[v].z += offsetZ;
                 }
             }
 
@@ -4312,7 +4307,7 @@ Rsed.ngon_fill_n = (function()
                 Rsed.assert && (polygons[i] instanceof Rsed.geometry_n.polygon_o)
                             || Rsed.throw("Expected a polygon");
 
-                const poly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
+                const poly = new Rsed.geometry_n.polygon_o(polygons[i].verts.length);
                 poly.clone_from(polygons[i]);
 
                 // Find which of the polygon's vertices form the polygon's left side and which the right.
@@ -4327,9 +4322,9 @@ Rsed.ngon_fill_n = (function()
                 const rightVerts = [];
                 {
                     // Sort the vertices by increasing y, i.e. by height.
-                    poly.v.sort(function(a, b){ return (a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1); });
-                    const topVert = poly.v[0];
-                    const bottomVert = poly.v[poly.v.length-1];
+                    poly.verts.sort(function(a, b){ return (a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1); });
+                    const topVert = poly.verts[0];
+                    const bottomVert = poly.verts[poly.verts.length-1];
 
                     // The left side will always start with the top-most vertex, and the right side with
                     // the bottom-most vertex.
@@ -4340,18 +4335,15 @@ Rsed.ngon_fill_n = (function()
                     // the two intervening vertices, find whether they're to the left or right of that line on
                     // x. Being on the left side of that line means the vertex is on the polygon's left side,
                     // and same for the right side.
-                    for (let p = 1; p < (poly.v.length-1); p++)
+                    for (let p = 1; p < (poly.verts.length-1); p++)
                     {
-                        const lr = k_lerp(topVert.x, bottomVert.x, ((poly.v[p].y - topVert.y) / (bottomVert.y - topVert.y)));
+                        const lr = k_lerp(topVert.x, bottomVert.x, ((poly.verts[p].y - topVert.y) / (bottomVert.y - topVert.y)));
                         
-                        if (poly.v[p].x >= lr)
+                        if (poly.verts[p].x >= lr)
                         {
-                            rightVerts.push(poly.v[p]);
+                            rightVerts.push(poly.verts[p]);
                         }
-                        else
-                        {
-                            leftVerts.push(poly.v[p]);
-                        }
+                        else leftVerts.push(poly.verts[p]);
                     }
 
                     // Sort the two sides' vertices so that we can trace them anti-clockwise starting from the top,
@@ -4363,7 +4355,7 @@ Rsed.ngon_fill_n = (function()
                     Rsed.assert && ((leftVerts.length !== 0) && (rightVerts.length !== 0))
                                 || Rsed.throw("Expected each side list to have at least one vertex.");
 
-                    Rsed.assert && ((leftVerts.length + rightVerts.length) === poly.v.length)
+                    Rsed.assert && ((leftVerts.length + rightVerts.length) === poly.verts.length)
                                 || Rsed.throw("Vertices appear to have gone missing.");
                 }
 
@@ -4375,17 +4367,17 @@ Rsed.ngon_fill_n = (function()
                     let prevVert = leftVerts[0];
                     for (let l = 1; l < leftVerts.length; l++)
                     {
-                        Rsed.draw_line_n.line_into_array(prevVert, leftVerts[l], leftEdge, poly.v[0].y);
+                        Rsed.draw_line_n.line_into_array(prevVert, leftVerts[l], leftEdge, poly.verts[0].y);
                         prevVert = leftVerts[l];
                     }
-                    Rsed.draw_line_n.line_into_array(prevVert, rightVerts[0], leftEdge, poly.v[0].y);
+                    Rsed.draw_line_n.line_into_array(prevVert, rightVerts[0], leftEdge, poly.verts[0].y);
                     prevVert = rightVerts[0];
                     for (let r = 1; r < rightVerts.length; r++)
                     {
-                        Rsed.draw_line_n.line_into_array(prevVert, rightVerts[r], rightEdge, poly.v[0].y);
+                        Rsed.draw_line_n.line_into_array(prevVert, rightVerts[r], rightEdge, poly.verts[0].y);
                         prevVert = rightVerts[r];
                     }
-                    Rsed.draw_line_n.line_into_array(prevVert, leftVerts[0], rightEdge, poly.v[0].y);
+                    Rsed.draw_line_n.line_into_array(prevVert, leftVerts[0], rightEdge, poly.verts[0].y);
                 }
 
                 // Draw the polygon.
@@ -4393,7 +4385,7 @@ Rsed.ngon_fill_n = (function()
                     // Solid or textured fill.
                     if (!poly.isEthereal)
                     {
-                        const polyYOffset = Math.floor(poly.v[0].y);
+                        const polyYOffset = Math.floor(poly.verts[0].y);
                         const polyHeight = leftEdge.length;
                         const texture = poly.texture;
 
@@ -4582,10 +4574,10 @@ const resource_loader_n = (function()
                 convertedPoly.texture = Rsed.props_n.prop_texture(propPoly.textureIdx);
                 convertedPoly.color = Rsed.palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
 
-                Rsed.assert && (convertedPoly.v.length === numVertices)
+                Rsed.assert && (convertedPoly.verts.length === numVertices)
                             || Rsed.throw("Incorrect number of vertices in prop polygon.");
 
-                convertedPoly.v.forEach((vertex, idx)=>
+                convertedPoly.verts.forEach((vertex, idx)=>
                 {
                     vertex.x = propPoly.verts[idx*3];
                     vertex.y = -propPoly.verts[idx*3+1];

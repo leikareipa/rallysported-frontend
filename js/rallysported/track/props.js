@@ -90,7 +90,7 @@ Rsed.props_n = (function()
             const copyMesh = [];
             for (let i = 0; i < sourceMesh.length; i++)
             {
-                copyMesh.push(new Rsed.geometry_n.polygon_o(sourceMesh[i].v.length));
+                copyMesh.push(new Rsed.geometry_n.polygon_o(sourceMesh[i].verts.length));
                 copyMesh[i].clone_from(sourceMesh[i]);
 
                 copyMesh[i].hasWireframe = wireframeEnabled;
@@ -100,11 +100,11 @@ Rsed.props_n = (function()
                 copyMesh[i].mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
                                                                              {propIdx:idx, propTrackId:idOnTrack});
 
-                for (let v = 0; v < copyMesh[i].v.length; v++)
+                for (let v = 0; v < copyMesh[i].verts.length; v++)
                 {
-                    copyMesh[i].v[v].x += offsetX;
-                    copyMesh[i].v[v].y += offsetY;
-                    copyMesh[i].v[v].z += offsetZ;
+                    copyMesh[i].verts[v].x += offsetX;
+                    copyMesh[i].verts[v].y += offsetY;
+                    copyMesh[i].verts[v].z += offsetZ;
                 }
             }
 

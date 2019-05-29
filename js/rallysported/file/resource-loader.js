@@ -93,10 +93,10 @@ const resource_loader_n = (function()
                 convertedPoly.texture = Rsed.props_n.prop_texture(propPoly.textureIdx);
                 convertedPoly.color = Rsed.palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
 
-                Rsed.assert && (convertedPoly.v.length === numVertices)
+                Rsed.assert && (convertedPoly.verts.length === numVertices)
                             || Rsed.throw("Incorrect number of vertices in prop polygon.");
 
-                convertedPoly.v.forEach((vertex, idx)=>
+                convertedPoly.verts.forEach((vertex, idx)=>
                 {
                     vertex.x = propPoly.verts[idx*3];
                     vertex.y = -propPoly.verts[idx*3+1];

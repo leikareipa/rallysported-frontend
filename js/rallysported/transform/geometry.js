@@ -8,7 +8,7 @@
  *
  */
 
- "use strict";
+"use strict";
 
 Rsed.geometry_n = {};
 {
@@ -86,12 +86,7 @@ Rsed.geometry_n = {};
                         (numVertices < 10))
                     || Rsed.throw("Bad vertex count.");
 
-        this.v = [];
-        for (let i = 0; i < numVertices; i++)
-        {
-            this.v.push(new Rsed.geometry_n.vertex_o());
-        }
-        
+        this.verts = new Array(numVertices).fill().map(()=>new Rsed.geometry_n.vertex_o());
         this.color = new Rsed.color_n.rgba_o();
         this.texture = 0;
 
@@ -109,19 +104,19 @@ Rsed.geometry_n = {};
         this.clone_from = function(otherPolygon = {})
         {
             Rsed.assert && ((otherPolygon instanceof Rsed.geometry_n.polygon_o) &&
-                            (this.v.length === otherPolygon.v.length))
+                            (this.verts.length === otherPolygon.verts.length))
                         || Rsed.throw("Incompatible polygons for cloning.");
 
             // Vertices.
-            for (let i = 0; i < otherPolygon.v.length; i++)
+            for (let i = 0; i < otherPolygon.verts.length; i++)
             {
-                this.v[i].x = otherPolygon.v[i].x;
-                this.v[i].y = otherPolygon.v[i].y;
-                this.v[i].z = otherPolygon.v[i].z;
-                this.v[i].w = otherPolygon.v[i].w;
+                this.verts[i].x = otherPolygon.verts[i].x;
+                this.verts[i].y = otherPolygon.verts[i].y;
+                this.verts[i].z = otherPolygon.verts[i].z;
+                this.verts[i].w = otherPolygon.verts[i].w;
 
-                this.v[i].u = otherPolygon.v[i].u;
-                this.v[i].v = otherPolygon.v[i].v;
+                this.verts[i].u = otherPolygon.verts[i].u;
+                this.verts[i].v = otherPolygon.verts[i].v;
             }
             
             this.color.r = otherPolygon.color.r;
@@ -138,14 +133,14 @@ Rsed.geometry_n = {};
         // Back-face culling.
         this.is_facing_camera = function()
         {
-            if (this.v.length === 3) // For triangles.
+            if (this.verts.length === 3) // For triangles.
             {
                 // Based on https://stackoverflow.com/a/35280392.
                 {
-                    const ax = (this.v[0].x - this.v[1].x);
-                    const ay = (this.v[0].y - this.v[1].y);
-                    const bx = (this.v[0].x - this.v[2].x);
-                    const by = (this.v[0].y - this.v[2].y);
+                    const ax = (this.verts[0].x - this.verts[1].x);
+                    const ay = (this.verts[0].y - this.verts[1].y);
+                    const bx = (this.verts[0].x - this.verts[2].x);
+                    const by = (this.verts[0].y - this.verts[2].y);
                     const cz = ((ax * by) - (ay * bx));
 
                     return (cz >= 0);
@@ -163,19 +158,19 @@ Rsed.geometry_n = {};
             Rsed.assert && (m.length === 16)
                         || Rsed.throw("Expected a 4 x 4 matrix to transform the polygon by.");
             
-            for (let i = 0; i < this.v.length; i++)
+            for (let i = 0; i < this.verts.length; i++)
             {
-                this.v[i].transform(m);
+                this.verts[i].transform(m);
             }
         };
         
         this.perspective_divide = function()
         {
-            for (let i = 0; i < this.v.length; i++)
+            for (let i = 0; i < this.verts.length; i++)
             {
-                this.v[i].x /= this.v[i].w;
-                this.v[i].y /= this.v[i].w;
-                this.v[i].z /= this.v[i].w;
+                this.verts[i].x /= this.verts[i].w;
+                this.verts[i].y /= this.verts[i].w;
+                this.verts[i].z /= this.verts[i].w;
             }
         };
     }
@@ -199,7 +194,7 @@ Rsed.geometry_n = {};
             Rsed.assert && (polygons[i] instanceof Rsed.geometry_n.polygon_o)
                         || Rsed.throw("Expected a polygon.");
 
-            const newPoly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
+            const newPoly = new Rsed.geometry_n.polygon_o(polygons[i].verts.length);
             newPoly.clone_from(polygons[i]);
 
             this.polygons.push(newPoly);
@@ -215,7 +210,7 @@ Rsed.geometry_n = {};
         this.object_space_matrix = function()
         {
             const m = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(this.translationVec.x, this.translationVec.y, this.translationVec.z),
-                                                   Rsed.matrix44_n.rotation_matrix(this.rotationVec.x, this.rotationVec.y, this.rotationVec.z));
+                                                        Rsed.matrix44_n.rotation_matrix(this.rotationVec.x, this.rotationVec.y, this.rotationVec.z));
 
             Rsed.assert && (m.length === 16)
                         || Rsed.throw("Expected to return a 4 x 4 object space matrix.");
@@ -228,8 +223,8 @@ Rsed.geometry_n = {};
         {
             const sort_by_z = function(a, b)
             {
-                const d1 = (a.v[0].z + a.v[1].z + a.v[2].z);
-                const d2 = (b.v[0].z + b.v[1].z + b.v[2].z);
+                const d1 = (a.verts[0].z + a.verts[1].z + a.verts[2].z);
+                const d2 = (b.verts[0].z + b.verts[1].z + b.verts[2].z);
 
                 return (d1 < d2);
             };

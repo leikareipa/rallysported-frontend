@@ -125,21 +125,21 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
             const tri2 = new Rsed.geometry_n.polygon_o(3);
             const quad = new Rsed.geometry_n.polygon_o(4);
 
-            tri1.v[0] = new Rsed.geometry_n.vertex_o(123, 456, 789);
-            tri2.v[0] = new Rsed.geometry_n.vertex_o(987, 654, 321);
+            tri1.verts[0] = new Rsed.geometry_n.vertex_o(123, 456, 789);
+            tri2.verts[0] = new Rsed.geometry_n.vertex_o(987, 654, 321);
             tri1.clone_from(tri2);
-            expect_true([()=>(tri1.v[0].x === tri2.v[0].x),
-                         ()=>(tri1.v[0].y === tri2.v[0].y),
-                         ()=>(tri1.v[0].z === tri2.v[0].z)]);
+            expect_true([()=>(tri1.verts[0].x === tri2.verts[0].x),
+                         ()=>(tri1.verts[0].y === tri2.verts[0].y),
+                         ()=>(tri1.verts[0].z === tri2.verts[0].z)]);
 
             // See that the cloning is by value, not by reference.
-            tri1.v[0] = new Rsed.geometry_n.vertex_o(111, 222, 333);
-            expect_true([()=>(tri2.v[0].x === 987),
-                         ()=>(tri2.v[0].y === 654),
-                         ()=>(tri2.v[0].z === 321),
-                         ()=>(tri1.v[0].x === 111),
-                         ()=>(tri1.v[0].y === 222),
-                         ()=>(tri1.v[0].z === 333)]);
+            tri1.verts[0] = new Rsed.geometry_n.vertex_o(111, 222, 333);
+            expect_true([()=>(tri2.verts[0].x === 987),
+                         ()=>(tri2.verts[0].y === 654),
+                         ()=>(tri2.verts[0].z === 321),
+                         ()=>(tri1.verts[0].x === 111),
+                         ()=>(tri1.verts[0].y === 222),
+                         ()=>(tri1.verts[0].z === 333)]);
 
             // Reject cloning from a quad into a triangle.
             expect_fail([()=>{tri1.clone_from(quad);}]);
@@ -151,19 +151,19 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
             {
                 const poly1 = new Rsed.geometry_n.polygon_o(3);
                 const poly2 = new Rsed.geometry_n.polygon_o(6);
-                poly1.v[0].x = 321;
+                poly1.verts[0].x = 321;
                 
                 const polyList = [poly1, poly2];
                 const mesh = new Rsed.geometry_n.polygon_mesh_o(polyList);
 
                 // See that all polys and vertices were imported.
                 expect_true([()=>(mesh.polygons.length === polyList.length),
-                             ()=>(mesh.polygons[0].v.length === polyList[0].v.length),
-                             ()=>(mesh.polygons[1].v.length === polyList[1].v.length)]);
+                             ()=>(mesh.polygons[0].verts.length === polyList[0].verts.length),
+                             ()=>(mesh.polygons[1].verts.length === polyList[1].verts.length)]);
 
                 // See that vertices were copied by value, not by reference.
-                mesh.polygons[0].v[0].x = 456;
-                expect_true([()=>(mesh.polygons[0].v[0].x !== poly1.v[0].x)]);
+                mesh.polygons[0].verts[0].x = 456;
+                expect_true([()=>(mesh.polygons[0].verts[0].x !== poly1.verts[0].x)]);
 
                 // Reject creating a null polygon mesh.
                 expect_fail([()=>{new Rsed.geometry_n.polygon_mesh_o();}])

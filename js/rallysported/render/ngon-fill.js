@@ -39,7 +39,7 @@ Rsed.ngon_fill_n = (function()
                 Rsed.assert && (polygons[i] instanceof Rsed.geometry_n.polygon_o)
                             || Rsed.throw("Expected a polygon");
 
-                const poly = new Rsed.geometry_n.polygon_o(polygons[i].v.length);
+                const poly = new Rsed.geometry_n.polygon_o(polygons[i].verts.length);
                 poly.clone_from(polygons[i]);
 
                 // Find which of the polygon's vertices form the polygon's left side and which the right.
@@ -54,9 +54,9 @@ Rsed.ngon_fill_n = (function()
                 const rightVerts = [];
                 {
                     // Sort the vertices by increasing y, i.e. by height.
-                    poly.v.sort(function(a, b){ return (a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1); });
-                    const topVert = poly.v[0];
-                    const bottomVert = poly.v[poly.v.length-1];
+                    poly.verts.sort(function(a, b){ return (a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1); });
+                    const topVert = poly.verts[0];
+                    const bottomVert = poly.verts[poly.verts.length-1];
 
                     // The left side will always start with the top-most vertex, and the right side with
                     // the bottom-most vertex.
@@ -67,18 +67,15 @@ Rsed.ngon_fill_n = (function()
                     // the two intervening vertices, find whether they're to the left or right of that line on
                     // x. Being on the left side of that line means the vertex is on the polygon's left side,
                     // and same for the right side.
-                    for (let p = 1; p < (poly.v.length-1); p++)
+                    for (let p = 1; p < (poly.verts.length-1); p++)
                     {
-                        const lr = k_lerp(topVert.x, bottomVert.x, ((poly.v[p].y - topVert.y) / (bottomVert.y - topVert.y)));
+                        const lr = k_lerp(topVert.x, bottomVert.x, ((poly.verts[p].y - topVert.y) / (bottomVert.y - topVert.y)));
                         
-                        if (poly.v[p].x >= lr)
+                        if (poly.verts[p].x >= lr)
                         {
-                            rightVerts.push(poly.v[p]);
+                            rightVerts.push(poly.verts[p]);
                         }
-                        else
-                        {
-                            leftVerts.push(poly.v[p]);
-                        }
+                        else leftVerts.push(poly.verts[p]);
                     }
 
                     // Sort the two sides' vertices so that we can trace them anti-clockwise starting from the top,
@@ -90,7 +87,7 @@ Rsed.ngon_fill_n = (function()
                     Rsed.assert && ((leftVerts.length !== 0) && (rightVerts.length !== 0))
                                 || Rsed.throw("Expected each side list to have at least one vertex.");
 
-                    Rsed.assert && ((leftVerts.length + rightVerts.length) === poly.v.length)
+                    Rsed.assert && ((leftVerts.length + rightVerts.length) === poly.verts.length)
                                 || Rsed.throw("Vertices appear to have gone missing.");
                 }
 
@@ -102,17 +99,17 @@ Rsed.ngon_fill_n = (function()
                     let prevVert = leftVerts[0];
                     for (let l = 1; l < leftVerts.length; l++)
                     {
-                        Rsed.draw_line_n.line_into_array(prevVert, leftVerts[l], leftEdge, poly.v[0].y);
+                        Rsed.draw_line_n.line_into_array(prevVert, leftVerts[l], leftEdge, poly.verts[0].y);
                         prevVert = leftVerts[l];
                     }
-                    Rsed.draw_line_n.line_into_array(prevVert, rightVerts[0], leftEdge, poly.v[0].y);
+                    Rsed.draw_line_n.line_into_array(prevVert, rightVerts[0], leftEdge, poly.verts[0].y);
                     prevVert = rightVerts[0];
                     for (let r = 1; r < rightVerts.length; r++)
                     {
-                        Rsed.draw_line_n.line_into_array(prevVert, rightVerts[r], rightEdge, poly.v[0].y);
+                        Rsed.draw_line_n.line_into_array(prevVert, rightVerts[r], rightEdge, poly.verts[0].y);
                         prevVert = rightVerts[r];
                     }
-                    Rsed.draw_line_n.line_into_array(prevVert, leftVerts[0], rightEdge, poly.v[0].y);
+                    Rsed.draw_line_n.line_into_array(prevVert, leftVerts[0], rightEdge, poly.verts[0].y);
                 }
 
                 // Draw the polygon.
@@ -120,7 +117,7 @@ Rsed.ngon_fill_n = (function()
                     // Solid or textured fill.
                     if (!poly.isEthereal)
                     {
-                        const polyYOffset = Math.floor(poly.v[0].y);
+                        const polyYOffset = Math.floor(poly.verts[0].y);
                         const polyHeight = leftEdge.length;
                         const texture = poly.texture;
 

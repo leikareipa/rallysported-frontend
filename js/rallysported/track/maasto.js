@@ -391,10 +391,10 @@ Rsed.maasto_n = (function()
                         const height3 = trackOffsetY + this.maasto_height_at((tileX + 1), (tileZ - 1));
                         const height4 = trackOffsetY + this.maasto_height_at( tileX,      (tileZ - 1));
                         
-                        quad.v[0] = new Rsed.geometry_n.vertex_o( vertX,             height1, vertZ);
-                        quad.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height2, vertZ);
-                        quad.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height3, (vertZ + tileSize));
-                        quad.v[3] = new Rsed.geometry_n.vertex_o( vertX,             height4, (vertZ + tileSize));
+                        quad.verts[0] = new Rsed.geometry_n.vertex_o( vertX,             height1, vertZ);
+                        quad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height2, vertZ);
+                        quad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height3, (vertZ + tileSize));
+                        quad.verts[3] = new Rsed.geometry_n.vertex_o( vertX,             height4, (vertZ + tileSize));
                         
                         quad.hasWireframe = wireframeOnRequest;
                         quad.texture = Rsed.palat_n.pala_texture(tilePala);
@@ -415,10 +415,10 @@ Rsed.maasto_n = (function()
                         const baseHeight = trackOffsetY + this.maasto_height_at(tileX, (tileZ - 1));
 
                         const bill = new Rsed.geometry_n.polygon_o(4);
-                        bill.v[0] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight,          vertZ);
-                        bill.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight,          vertZ);
-                        bill.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight+tileSize, vertZ);
-                        bill.v[3] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight+tileSize, vertZ);
+                        bill.verts[0] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight,          vertZ);
+                        bill.verts[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight,          vertZ);
+                        bill.verts[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight+tileSize, vertZ);
+                        bill.verts[3] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight+tileSize, vertZ);
 
                         switch (tilePala)
                         {
@@ -447,10 +447,10 @@ Rsed.maasto_n = (function()
                     else if (tilePala === 248 || tilePala === 249)
                     {
                         const bridge = new Rsed.geometry_n.polygon_o(4);
-                        bridge.v[0] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, vertZ);
-                        bridge.v[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, vertZ);
-                        bridge.v[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, (vertZ+tileSize));
-                        bridge.v[3] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, (vertZ+tileSize));
+                        bridge.verts[0] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, vertZ);
+                        bridge.verts[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, vertZ);
+                        bridge.verts[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, (vertZ+tileSize));
+                        bridge.verts[3] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, (vertZ+tileSize));
 
                         bridge.texture = Rsed.palat_n.pala_texture(177, true);
 
