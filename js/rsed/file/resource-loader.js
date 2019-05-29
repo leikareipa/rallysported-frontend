@@ -352,7 +352,7 @@ const resource_loader_n = (function()
         }
 
         // Loads from a JSON file resources of the given type.
-        publicInterface.load_json_resource = function(filename = "", resourceType = "")
+        publicInterface.load_json_resource = function(resourceType = "", filename = "")
         {
             Rsed.assert && ((typeof filename === "string") && (filename.length > 0))
                         || Rsed.throw("Expected a non-null filename string.");
@@ -383,7 +383,7 @@ const resource_loader_n = (function()
         // data has been loaded and processed. The receptacle is an object that can receive from this
         // function the raw data loaded from file (without subsequent processing by this function), and
         // is required for some of the resource types.
-        publicInterface.load_binary_resource = function(filename = "", resourceType = "", receptacle)
+        publicInterface.load_binary_resource = function(resourceType = "", filename = "", receptacle)
         {
             Rsed.assert && (filename.length > 0)
                         || Rsed.throw("Expected a non-empty string.");

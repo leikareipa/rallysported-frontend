@@ -137,13 +137,13 @@ Rsed.project_n = (function()
         // Creates a project memory object from a zip file containing the files of a RallySportED project.
         // NOTE: There can be only one active project at a time in RallySportED, so calling this will
         //       cause any existing project data to be overwritten by the new data.
-        publicInterface.make_project_from_zip = function(locality = "local", zip, broadcastFn)
+        publicInterface.make_project_from_zip = function(locality = "local", zipFilename, broadcastFn)
         {
             switch (locality)
             {
                 case "local":
                 {
-                    resource_loader_n.load_project_data({fromZip:true,zipFile:zip}, (projectData)=>
+                    resource_loader_n.load_project_data({fromZip:true,zipFile:zipFilename}, (projectData)=>
                     {
                         /// Temp hack. Project loading will be redesigned in the future.
                         const project = new publicInterface.project_o(projectData);
@@ -156,7 +156,7 @@ Rsed.project_n = (function()
                 }
                 case "server":
                 {
-                    resource_loader_n.load_binary_resource(zip, "rsed-project-zip", (zipFile)=>
+                    resource_loader_n.load_binary_resource("rsed-project-zip", zipFilename, (zipFile)=>
                     {
                         resource_loader_n.load_project_data({fromZip:true,zipFile}, (projectData)=>
                         {

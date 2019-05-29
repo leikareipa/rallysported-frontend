@@ -199,10 +199,10 @@ Rsed.main_n = (function()
 
                 (async()=>
                 {
-                    await resource_loader_n.load_binary_resource(exeAssetDir + "prop-textures.bin", "prop-textures");
-                    await resource_loader_n.load_json_resource(exeAssetDir + "prop-meshes.json", "prop-meshes");
-                    await resource_loader_n.load_json_resource(exeAssetDir + "prop-locations.json", "prop-locations");
-                    await resource_loader_n.load_binary_resource(exeAssetDir + "track-header.bin", "track-header");
+                    await resource_loader_n.load_binary_resource("prop-textures", (exeAssetDir + "prop-textures.bin"));
+                    await resource_loader_n.load_json_resource("prop-meshes", (exeAssetDir + "prop-meshes.json"));
+                    await resource_loader_n.load_json_resource("prop-locations", (exeAssetDir + "prop-locations.json"));
+                    await resource_loader_n.load_binary_resource("track-header", (exeAssetDir + "track-header.bin"));
                     resolve();
                 })();
             });

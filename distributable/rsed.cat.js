@@ -4887,7 +4887,7 @@ const resource_loader_n = (function()
         }
 
         // Loads from a JSON file resources of the given type.
-        publicInterface.load_json_resource = function(filename = "", resourceType = "")
+        publicInterface.load_json_resource = function(resourceType = "", filename = "")
         {
             Rsed.assert && ((typeof filename === "string") && (filename.length > 0))
                         || Rsed.throw("Expected a non-null filename string.");
@@ -4918,7 +4918,7 @@ const resource_loader_n = (function()
         // data has been loaded and processed. The receptacle is an object that can receive from this
         // function the raw data loaded from file (without subsequent processing by this function), and
         // is required for some of the resource types.
-        publicInterface.load_binary_resource = function(filename = "", resourceType = "", receptacle)
+        publicInterface.load_binary_resource = function(resourceType = "", filename = "", receptacle)
         {
             Rsed.assert && (filename.length > 0)
                         || Rsed.throw("Expected a non-empty string.");
@@ -5095,13 +5095,13 @@ Rsed.project_n = (function()
         // Creates a project memory object from a zip file containing the files of a RallySportED project.
         // NOTE: There can be only one active project at a time in RallySportED, so calling this will
         //       cause any existing project data to be overwritten by the new data.
-        publicInterface.make_project_from_zip = function(locality = "local", zip, broadcastFn)
+        publicInterface.make_project_from_zip = function(locality = "local", zipFilename, broadcastFn)
         {
             switch (locality)
             {
                 case "local":
                 {
-                    resource_loader_n.load_project_data({fromZip:true,zipFile:zip}, (projectData)=>
+                    resource_loader_n.load_project_data({fromZip:true,zipFile:zipFilename}, (projectData)=>
                     {
                         /// Temp hack. Project loading will be redesigned in the future.
                         const project = new publicInterface.project_o(projectData);
@@ -5114,7 +5114,7 @@ Rsed.project_n = (function()
                 }
                 case "server":
                 {
-                    resource_loader_n.load_binary_resource(zip, "rsed-project-zip", (zipFile)=>
+                    resource_loader_n.load_binary_resource("rsed-project-zip", zipFilename, (zipFile)=>
                     {
                         resource_loader_n.load_project_data({fromZip:true,zipFile}, (projectData)=>
                         {
@@ -5402,10 +5402,10 @@ Rsed.main_n = (function()
 
                 (async()=>
                 {
-                    await resource_loader_n.load_binary_resource(exeAssetDir + "prop-textures.bin", "prop-textures");
-                    await resource_loader_n.load_json_resource(exeAssetDir + "prop-meshes.json", "prop-meshes");
-                    await resource_loader_n.load_json_resource(exeAssetDir + "prop-locations.json", "prop-locations");
-                    await resource_loader_n.load_binary_resource(exeAssetDir + "track-header.bin", "track-header");
+                    await resource_loader_n.load_binary_resource("prop-textures", (exeAssetDir + "prop-textures.bin"));
+                    await resource_loader_n.load_json_resource("prop-meshes", (exeAssetDir + "prop-meshes.json"));
+                    await resource_loader_n.load_json_resource("prop-locations", (exeAssetDir + "prop-locations.json"));
+                    await resource_loader_n.load_binary_resource("track-header", (exeAssetDir + "track-header.bin"));
                     resolve();
                 })();
             });
