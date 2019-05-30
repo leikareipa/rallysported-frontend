@@ -93,7 +93,6 @@ You can check out the [to-do list](#to-do) to get a rough idea of what's to come
 </table>
 
 ### Known issues
-- [ ] Since the introduction of Vue, right-click menus don't work correctly on Firefox.
 - [ ] Middle mouse button clicks, used to paint the terrain, may intermittently stop being registered
 - [ ] The paint view may be slow to draw, as it's sloppily implemented
 - [ ] There are occasional rendering glitches in the 3d view
