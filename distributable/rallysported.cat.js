@@ -3095,15 +3095,13 @@ Rsed.ui_view_n = (function()
                         || Rsed.throw("Can't find the given view to set.");
                         
             currentView = view;
+
+            Rsed.ui_input_n.reset_mouse_hover_info();
         }
 
         publicInterface.toggle_view = function(firstView = "", secondView = "")
         {
-            Rsed.assert && ((availableViews.includes(firstView)) &&
-                            (availableViews.includes(secondView)))
-                        || Rsed.throw("Can't find the given view to set.");
-
-            currentView = ((currentView === firstView)? secondView : firstView);
+            this.set_view(((currentView === firstView)? secondView : firstView))
         }
 
         publicInterface.current_view = function()
