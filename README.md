@@ -73,6 +73,15 @@ You can check out the [to-do list](#to-do) to get a rough idea of what's to come
         </th>
     </tr>
     <tr>
+        <td align="left">pre-beta.4</td>
+        <td align="center">46</td>
+        <td align="center">39</td>
+        <td align="center">37</td>
+        <td align="center">10?</td>
+        <td align="center">14?</td>
+        <td align="center">No</td>
+    </tr>
+    <tr>
         <td align="left">beta.3</td>
         <td align="center">46</td>
         <td align="center">27</td>
