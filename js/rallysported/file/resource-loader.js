@@ -12,20 +12,19 @@
 
 const resource_loader_n = (function()
 {
-    // The names of the types of binary resources we recognize.
-    // Any binary resource we're asked to load must be one of these types.
-    const binaryResourceTypes = Object.freeze(["palat",
-                                               "maasto",
-                                               "varimaa",
-                                               "kierros",
-                                               "track-header",
-                                               "prop-textures",
-                                               "rsed-project-zip"]);
-
-    // The names of the types of JSON resources we recognize.
-    // Any JSON resource we're asked to load must be one of these types.
-    const jsonResourceTypes = Object.freeze(["prop-meshes",
-                                             "prop-locations"]);
+    // The names of the types of resources we recognize. Any resource we're asked to load
+    // must be one of these types.
+    const resourceTypes = Object.freeze(["text",
+                                         "palat",
+                                         "maasto",
+                                         "varimaa",
+                                         "kierros",
+                                         "prop-meshes",
+                                         "track-header",
+                                         "prop-textures",
+                                         "prop-locations",
+                                         "rsed-project-zip",
+                                         "rsed-project-raw"]);
 
     // Takes in a JSON object describing the locations of each track's props; for instance,
     //
@@ -163,97 +162,117 @@ const resource_loader_n = (function()
 
             const projectData = {};
 
-            // Get the data from a zip file.
-            if (args.fromZip)
+            switch (args.fileFormat)
             {
-                const zipContents = new JSZip();
-
-                zipContents.loadAsync(args.zipFile)
-                .then(()=>
+                case "raw":
                 {
-                    // Parse the zip file's contents. We'll require that it contains exactly one directory, which stores
-                    // the project's $FT and DTA files.
-                    const files = [];
+                    projectData.name = args.fileReference.slice(args.fileReference.lastIndexOf("/")+1).toLowerCase();
+                    projectData.displayName = ("Shared/" + projectData.name);
+
+                    (async()=>
                     {
-                        const dirs = [];
-                        zipContents.forEach((path, entry)=>
+                        const baseFilename = (args.fileReference + "/" + projectData.name);
+
+                        await resource_loader_n.load_resources_from_file("plain", "text", (baseFilename + ".$ft"), (data)=>{projectData.manifestoData = data});
+                        await resource_loader_n.load_resources_from_file("binary", "rsed-project-raw", (baseFilename + ".dta"), (data)=>{projectData.dtaData = data.buffer});
+
+                        returnCallback(projectData);
+                    })();
+
+                    break;
+                }
+
+                case "zip":
+                {
+                    const zipContents = new JSZip();
+
+                    zipContents.loadAsync(args.fileReference)
+                    .then(()=>
+                    {
+                        // Parse the zip file's contents. We'll require that it contains exactly one directory, which stores
+                        // the project's $FT and DTA files.
+                        const files = [];
                         {
-                            if (entry.dir)
+                            const dirs = [];
+                            zipContents.forEach((path, entry)=>
                             {
-                                dirs.push(entry);
-                            }
-                            else files.push(entry);
-                        });
-
-                        if (dirs.length != 1)
-                        {
-                            alert("The RallySportED project zip file must contain at least one directory under which the project's .DTA and .$FT files are found.");
-                            return;
-                        }
-
-                        projectData.name = dirs[0].name.slice(0, -1).toLowerCase();
-
-                        switch (projectData.name)
-                        {
-                            // For the original Rally-Sport tracks, have display names that reflect the in-game names
-                            // rather than the project names (like "demoa", "demob", ...).
-                            case "demoa": projectData.displayName = "Nurtsi-cruising"; break;
-                            case "demob": projectData.displayName = "Vesistövedätys"; break;
-                            case "democ": projectData.displayName = "Ralli-cross"; break;
-                            case "demod": projectData.displayName = "Yleisö-ek"; break;
-                            case "demoe": projectData.displayName = "Very slippery.."; break;
-                            case "demof": projectData.displayName = "You asked it.."; break;
-                            case "demog": projectData.displayName = "Bumps and jumps"; break;
-                            case "demoh": projectData.displayName = "Short and easy"; break;
-
-                            // Otherwise, use the project name as the display name.
-                            default: projectData.displayName = (projectData.name.charAt(0).toUpperCase() + projectData.name.slice(1));
-                        }
-
-                        // Find the project's $FT and DTA files inside the zip file.
-                        let manifestoFile = null, dtaFile = null;
-                        {
-                            files.forEach(file=>
-                            {
-                                if (manifestoFile && dtaFile) return;
-
-                                const suffix = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
-                                const basePath = file.name.slice(0, file.name.lastIndexOf(".")).toLowerCase();
-                                const baseName = basePath.slice(basePath.lastIndexOf("/") + 1);
-
-                                // Each resource file is expected to hold the same name as the project itself.
-                                if (baseName !== projectData.name) return;
-
-                                switch (suffix)
+                                if (entry.dir)
                                 {
-                                    case "$ft": manifestoFile = file; break;
-                                    case "dta": dtaFile = file; break;
-                                    default: break;
+                                    dirs.push(entry);
                                 }
+                                else files.push(entry);
                             });
 
-                            if (!manifestoFile || !dtaFile)
+                            if (dirs.length != 1)
                             {
-                                alert("The given RallySportED project zip file didn't contain all of the required .DTA and .$FT files.");
+                                alert("The RallySportED project zip file must contain at least one directory under which the project's .DTA and .$FT files are found.");
                                 return;
                             }
+
+                            projectData.name = dirs[0].name.slice(0, -1).toLowerCase();
+
+                            switch (projectData.name)
+                            {
+                                // For the original Rally-Sport tracks, have display names that reflect the in-game names
+                                // rather than the project names (like "demoa", "demob", ...).
+                                case "demoa": projectData.displayName = "Nurtsi-cruising"; break;
+                                case "demob": projectData.displayName = "Vesistövedätys"; break;
+                                case "democ": projectData.displayName = "Ralli-cross"; break;
+                                case "demod": projectData.displayName = "Yleisö-ek"; break;
+                                case "demoe": projectData.displayName = "Very slippery.."; break;
+                                case "demof": projectData.displayName = "You asked it.."; break;
+                                case "demog": projectData.displayName = "Bumps and jumps"; break;
+                                case "demoh": projectData.displayName = "Short and easy"; break;
+
+                                // Otherwise, use the project name as the display name.
+                                default: projectData.displayName = (projectData.name.charAt(0).toUpperCase() + projectData.name.slice(1));
+                            }
+
+                            // Find the project's $FT and DTA files inside the zip file.
+                            let manifestoFile = null, dtaFile = null;
+                            {
+                                files.forEach(file=>
+                                {
+                                    if (manifestoFile && dtaFile) return;
+
+                                    const suffix = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
+                                    const basePath = file.name.slice(0, file.name.lastIndexOf(".")).toLowerCase();
+                                    const baseName = basePath.slice(basePath.lastIndexOf("/") + 1);
+
+                                    // Each resource file is expected to hold the same name as the project itself.
+                                    if (baseName !== projectData.name) return;
+
+                                    switch (suffix)
+                                    {
+                                        case "$ft": manifestoFile = file; break;
+                                        case "dta": dtaFile = file; break;
+                                        default: break;
+                                    }
+                                });
+
+                                if (!manifestoFile || !dtaFile)
+                                {
+                                    alert("The given RallySportED project zip file didn't contain all of the required .DTA and .$FT files.");
+                                    return;
+                                }
+                            }
+
+                            // Extract the project's $FT and DTA files from the zip file.
+                            (async()=>
+                            {
+                                projectData.manifestoData = await manifestoFile.async("string");
+                                projectData.dtaData = await dtaFile.async("arraybuffer");
+
+                                returnCallback(projectData);
+                            })();
                         }
+                    })
+                    .catch((error)=>{Rsed.throw("Failed to extract project data (JSZip error: '" + error + "').");});
 
-                        // Extract the project's $FT and DTA files from the zip file.
-                        (async()=>
-                        {
-                            projectData.manifestoData = await manifestoFile.async("string");
-                            projectData.dtaData = await dtaFile.async("arraybuffer");
+                    break;
+                }
 
-                            returnCallback(projectData);
-                        })();
-                    }
-                })
-                .catch((error)=>{Rsed.throw("Failed to extract project data (JSZip error: '" + error + "').");});
-            }
-            else
-            {
-                Rsed.throw("Unknown file format for loading project data.");
+                default: Rsed.throw("Unknown file format for loading project data."); break;
             }
         }
 
@@ -351,72 +370,52 @@ const resource_loader_n = (function()
             Rsed.maasto_n.set_maasto(tilesPerSide, convertedHeightmap);
         }
 
-        // Loads from a JSON file resources of the given type.
-        publicInterface.load_json_resource = function(resourceType = "", filename = "")
-        {
-            Rsed.assert && ((typeof filename === "string") && (filename.length > 0))
-                        || Rsed.throw("Expected a non-null filename string.");
-
-            Rsed.assert && (jsonResourceTypes.includes(resourceType))
-                        || Rsed.throw("Expected a valid resource type.");
-
-            return new Promise((resolve, reject)=>
-            {
-                fetch(filename)
-                .then((response)=>response.json())
-                .then((data)=>
-                {
-                    switch (resourceType)
-                    {
-                        case "prop-meshes": load_prop_meshes(data); break;
-                        case "prop-locations": load_prop_locations(data); break;
-                        default: Rsed.throw("Unknown resource type."); reject(); break;
-                    }
-                    
-                    resolve();
-                })
-                .catch((error)=>{Rsed.throw("Failed to fetch resource file " + filename + ". Error: " + error)});
-            });
-        }
-
-        // Loads from a binary file resources of the given type; returning a promise resolved once the
+        // Loads from a file resources of the given type; returning a promise resolved once the
         // data has been loaded and processed. The receptacle is an object that can receive from this
         // function the raw data loaded from file (without subsequent processing by this function), and
         // is required for some of the resource types.
-        publicInterface.load_binary_resource = function(resourceType = "", filename = "", receptacle)
+        publicInterface.load_resources_from_file = function(resourceEncoding = "", resourceType = "", filename = "", receptacle)
         {
             Rsed.assert && (filename.length > 0)
                         || Rsed.throw("Expected a non-empty string.");
 
-            Rsed.assert && (binaryResourceTypes.includes(resourceType))
+            Rsed.assert && (resourceType.includes(resourceType))
                         || Rsed.throw("Expected a valid resource type.");
 
-            return new Promise((resolve, reject)=>
-            {
-                fetch(filename)
-                .then((response)=>response.arrayBuffer())
-                .then((dataBuffer)=>
-                {
-                    const bytes = new Uint8Array(dataBuffer);
+            return fetch(filename)
+                   .then(async(response)=>
+                   {
+                       if (!response.ok)
+                       {
+                           throw "Could not fetch the resource file " + filename + ".";
+                       }
 
-                    Rsed.assert && (bytes != null)
-                                || Rsed.throw("Received invalid binary file data.");
-
-                    switch (resourceType)
-                    {
-                        case "rsed-project-zip": receptacle(bytes); break;
-                        case "track-header": load_track_header(bytes); break;
-                        case "prop-textures": load_prop_textures(bytes); break;
-                        case "palat": publicInterface.load_palat_data(bytes); break;
-                        case "maasto": publicInterface.load_maasto_data(bytes); break;
-                        case "varimaa": publicInterface.load_varimaa_data(bytes); break;
-                        default: Rsed.throw("Unknown resource type."); reject(); break;
-                    }
-
-                    resolve();
-                })
-                .catch((error)=>{Rsed.throw("Failed to fetch resource file " + filename + ". Error: " + error)});
-            });
+                       switch (resourceEncoding)
+                       {
+                           case "binary": return new Uint8Array(await response.arrayBuffer());
+                           case "json": return response.json();
+                           case "plain": return response.text();
+                           default: Rsed.throw("Unknown resource encoding."); break;
+                       }
+                   })
+                   .then((data)=>
+                   {
+                       switch (resourceType)
+                       {
+                           case "text": receptacle(data); break;
+                           case "rsed-project-zip":
+                           case "rsed-project-raw": receptacle(data); break;
+                           case "track-header": load_track_header(data); break;
+                           case "prop-textures": load_prop_textures(data); break;
+                           case "palat": publicInterface.load_palat_data(data); break;
+                           case "maasto": publicInterface.load_maasto_data(data); break;
+                           case "varimaa": publicInterface.load_varimaa_data(data); break;
+                           case "prop-meshes": load_prop_meshes(data); break;
+                           case "prop-locations": load_prop_locations(data); break;
+                           default: throw "Unknown resource type.";
+                       }
+                   })
+                   .catch((error)=>{Rsed.throw("Failed to load resource file " + filename + ". Error: " + error)});
         }
     }
     return publicInterface;

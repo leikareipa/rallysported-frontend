@@ -18,8 +18,8 @@ Rsed.main_n = (function()
     let underlyingTrackId = 1;
 
     // Strings with which to build URLs to track assets.
-    const tracksFileExtension = ".zip";
     const tracksDirectory = "track-list/files/";
+    const sharedTracksDirectory = "track-list/shared/projects/";
 
     const renderScalingMultiplier = 0.25;
 
@@ -137,28 +137,27 @@ Rsed.main_n = (function()
     
         publicInterface.load_project = function(args = {})
         {
+            Rsed.assert && ((typeof args.locality !== "undefined") &&
+                            (typeof args.fileFormat !== "undefined"))
+                        || Rsed.throw("Missing arguments for loading a project.");
+             
             htmlUI.set_visible(false);
 
-            if (args.fromZip)
-            {
-                Rsed.assert && (args.locality != null && args.zipFile != null)
-                            || Rsed.throw("Received invalid arguments for loading a project from a zip file.");
+            project = Rsed.project_n.make_project_from_data(args.locality, args.fileFormat, args.fileReference,
+                                     (newProject)=>
+                                     {
+                                         project = newProject;
+                                         Rsed.project_n.verify_project_validity(project);
 
-                project = Rsed.project_n.make_project_from_zip(args.locality, args.zipFile,
-                                                               (newProject)=>
-                                                               {
-                                                                   project = newProject;
-                                                                   Rsed.project_n.verify_project_validity(project);
-                                                                   htmlUI.refresh();
-                                                                   htmlUI.set_visible(true);
-                                                               });
-            }
-            else
-            {
-                htmlUI.set_visible(true);
-
-                Rsed.throw("Was given no project no load. There should've been one.");
-            }
+                                         if (args.locality === "server-shared")
+                                         {
+                                             Rsed.shared_mode_n.register_as_participant();
+                                         }
+                                         else Rsed.shared_mode_n.unregister_as_participant(); // In case we were already registered.
+                                         
+                                         htmlUI.refresh();
+                                         htmlUI.set_visible(true);
+                                     });
         }
 
         // Starts the program. The renderer will keep requesting a new animation frame, and will call the
@@ -166,7 +165,9 @@ Rsed.main_n = (function()
         publicInterface.launch_rallysported = function(args = {})
         {
             check_browser_compatibility();
+
             renderer.run_renderer();
+
             this.load_project(args);
         }
 
@@ -208,10 +209,11 @@ Rsed.main_n = (function()
 
                 (async()=>
                 {
-                    await resource_loader_n.load_binary_resource("prop-textures", (exeAssetDir + "prop-textures.bin"));
-                    await resource_loader_n.load_json_resource("prop-meshes", (exeAssetDir + "prop-meshes.json"));
-                    await resource_loader_n.load_json_resource("prop-locations", (exeAssetDir + "prop-locations.json"));
-                    await resource_loader_n.load_binary_resource("track-header", (exeAssetDir + "track-header.bin"));
+                    await resource_loader_n.load_resources_from_file("binary", "prop-textures", (exeAssetDir + "prop-textures.bin"));
+                    await resource_loader_n.load_resources_from_file("json", "prop-meshes", (exeAssetDir + "prop-meshes.json"));
+                    await resource_loader_n.load_resources_from_file("json", "prop-locations", (exeAssetDir + "prop-locations.json"));
+                    await resource_loader_n.load_resources_from_file("binary", "track-header", (exeAssetDir + "track-header.bin"));
+
                     resolve();
                 })();
             });
@@ -233,12 +235,12 @@ Rsed.main_n = (function()
  
             if (!zipFile)
             {
-                k_message("The drag contained no RallySportED zip files. Ignoring it.");
+                k_message("The drop contained no RallySportED zip files. Ignoring it.");
                 return;
             }
 
-            // We now presumably have a zipped RallySportED project that we can load, so ket's do that.
-            Rsed.main_n.load_project({fromZip:true,locality:"local",zipFile});
+            // We now presumably have a zipped RallySportED project that we can load, so let's do that.
+            Rsed.main_n.load_project({fileFormat:"zip",locality:"local",fileReference:zipFile});
             /// TODO: .then(()=>{//cleanup.});
 
             // Clear the address bar's parameters to reflect the fact that the user has loaded a local
@@ -250,6 +252,7 @@ Rsed.main_n = (function()
         publicInterface.incapacitate_rallysported = function(message)
         {
             renderer.indicate_error(message);
+            htmlUI.set_visible(false);
             publicInterface.isOperational = false;
         }
 
@@ -262,8 +265,10 @@ Rsed.main_n = (function()
 
         publicInterface.underlying_track_id = function() { return underlyingTrackId; }
 
-        publicInterface.tracks_file_extension = function() { return tracksFileExtension; }
         publicInterface.tracks_directory = function() { return tracksDirectory; }
+        publicInterface.shared_tracks_directory = function() { return sharedTracksDirectory; }
+
+        publicInterface.current_project_name = function() { return project.name; }
 
         publicInterface.render_surface_id = function() { return renderer.renderSurfaceId; }
     }

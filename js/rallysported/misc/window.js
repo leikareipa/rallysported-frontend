@@ -28,52 +28,67 @@ window.onload = function(event)
     {
         const params = new URLSearchParams(window.location.search);
 
-        // Server-side custom tracks. These have an id string that identifies the track.
-        if (params.has("track"))
+        if (params.has("shared"))
         {
-            args.fromZip = true;
-            args.locality = "server";
-            args.zipFile = params.get("track");
-
-            // Sanitize input.
-            if (!(typeof args.zipFile === "string") ||
-                !(/^[a-k2-9]+$/.test(args.zipFile)))
+            // Give the input a sanity check.
+            if (!(/^[a-z]+$/.test(params.get("shared"))))
             {
                 Rsed.throw("Invalid track identifier detected. Can't continue.");
                 return;
             }
+
+            args.fileFormat = "raw";
+            args.locality = "server-shared";
+            args.fileReference = params.get("shared");
+
+            // Sanitize input.
+            /// TODO.
+        }
+        // Server-side custom tracks. These have an id string that identifies the track.
+        else if (params.has("track"))
+        {
+            // Give the input a sanity check.
+            if (!(/^[a-k2-9]+$/.test(params.get("track"))))
+            {
+                Rsed.throw("Invalid track identifier detected. Can't continue.");
+                return;
+            }
+
+            args.fileFormat = "zip";
+            args.locality = "server";
+            args.fileReference = (params.get("track") + ".zip");
         }
         // Server side original tracks from Rally-Sport's demo. These take a value in the range 1..8,
         // corresponding to the eight tracks in the demo.
         else if (params.has("original"))
         {
+            // Give the input a sanity check.
+            if (!(/^[a-z1-8]+$/.test(params.get("original"))))
+            {
+                Rsed.throw("Invalid track identifier detected. Can't continue.");
+                return;
+            }
+
             const trackId = parseInt(params.get("original"), 10);
             Rsed.assert && ((trackId >= 1) &&
                             (trackId <= 8))
                         || Rsed.throw("The given track id is out of bounds.");
 
-            args.fromZip = true;
+            args.fileFormat = "zip";
             args.locality = "server";
-            args.zipFile = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
-
-            // Sanitize input.
-            if (!(typeof args.zipFile === "string") ||
-                !(/^[a-z1-8]+$/.test(args.zipFile)))
-            {
-                Rsed.throw("Invalid track identifier detected. Can't continue.");
-                return;
-            }
+            args.fileReference = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1) + ".zip");
         }
         else // Default.
         {
-            args.fromZip = true;
+            args.fileFormat = "zip";
             args.locality = "server";
-            args.zipFile = "demod";
+            args.fileReference = "demod.zip";
         }
     }
 
-    args.zipFile = (Rsed.main_n.tracks_directory() + args.zipFile + Rsed.main_n.tracks_file_extension());
-    
+    if (args.locality === "server") args.fileReference = (Rsed.main_n.tracks_directory() + args.fileReference);
+    else if (args.locality === "server-shared") args.fileReference = (Rsed.main_n.shared_tracks_directory() + args.fileReference);
+
     Rsed.main_n.launch_rallysported(args);
 }
 
@@ -101,7 +116,8 @@ window.oncontextmenu = function(event)
     if (event.target.id !== Rsed.main_n.render_surface_id()) return;
 
     // Display a right-click menu for changing the type of the prop under the cursor.
-    if ((Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
+    if (!Rsed.shared_mode_n.enabled() &&
+        (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
         !Rsed.props_n.prop_name_for_idx(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const propDropdown = document.getElementById("prop-dropdown");

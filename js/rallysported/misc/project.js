@@ -125,10 +125,10 @@ Rsed.project_n = (function()
                         || Rsed.throw("Was asked to test the validity of a non-RallySportED project.");
 
             Rsed.assert && ((projectToVerify != null) && (projectToVerify.isValidProject))
-                        || Rsed.throw("Failed to load the given zipped RallySportED project file.");
+                        || Rsed.throw("Failed to load the given RallySportED project file.");
             
             Rsed.assert && (projectToVerify.name != null && projectToVerify.displayName != null)
-                        || Rsed.throw("Failed to load the given zipped RallySportED project file.");
+                        || Rsed.throw("Failed to load the given RallySportED project file.");
 
             console.log("'" + projectToVerify.displayName + "' is a valid RallySportED project.");
 
@@ -138,13 +138,55 @@ Rsed.project_n = (function()
         // Creates a project memory object from a zip file containing the files of a RallySportED project.
         // NOTE: There can be only one active project at a time in RallySportED, so calling this will
         //       cause any existing project data to be overwritten by the new data.
-        publicInterface.make_project_from_zip = function(locality = "local", zipFilename, broadcastFn)
+        publicInterface.make_project_from_data = function(locality = "local", dataType = "", fileReference, broadcastFn)
         {
-            switch (locality)
+            switch (dataType)
             {
-                case "local":
+                case "zip":
                 {
-                    resource_loader_n.load_project_data({fromZip:true,zipFile:zipFilename}, (projectData)=>
+                    switch (locality)
+                    {
+                        case "local":
+                        {
+                            resource_loader_n.load_project_data({fileFormat:"zip", fileReference}, (projectData)=>
+                            {
+                                /// Temp hack. Project loading will be redesigned in the future.
+                                const project = new publicInterface.project_o(projectData);
+                                Rsed.manifesto_n.apply_manifesto(project.manifestoFileContents)
+                                .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
+                                return;
+                            });
+        
+                            break;
+                        }
+                        case "server":
+                        {
+                            resource_loader_n.load_resources_from_file("binary", "rsed-project-zip", fileReference, (zipData)=>
+                            {
+                                resource_loader_n.load_project_data({fileFormat:"zip", fileReference:zipData}, (projectData)=>
+                                {
+                                    /// Temp hack. Project loading will be redesigned in the future.
+                                    const project = new publicInterface.project_o(projectData);
+                                    Rsed.manifesto_n.apply_manifesto(project.manifestoFileContents)
+                                    .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
+                                    return;
+                                });
+                            });
+        
+                            break;
+                        }
+                        default: Rsed.throw("Unknown RallySportED project zip file locality."); return null;
+                    }
+                    
+                    break;
+                }
+
+                case "raw":
+                {
+                    Rsed.assert && (locality === "server-shared")
+                                || Rsed.throw("Unsupported locality for loading raw project data.");
+
+                    resource_loader_n.load_project_data({fileFormat:"raw", fileReference}, (projectData)=>
                     {
                         /// Temp hack. Project loading will be redesigned in the future.
                         const project = new publicInterface.project_o(projectData);
@@ -155,23 +197,8 @@ Rsed.project_n = (function()
 
                     break;
                 }
-                case "server":
-                {
-                    resource_loader_n.load_binary_resource("rsed-project-zip", zipFilename, (zipFile)=>
-                    {
-                        resource_loader_n.load_project_data({fromZip:true,zipFile}, (projectData)=>
-                        {
-                            /// Temp hack. Project loading will be redesigned in the future.
-                            const project = new publicInterface.project_o(projectData);
-                            Rsed.manifesto_n.apply_manifesto(project.manifestoFileContents)
-                            .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
-                            return;
-                        });
-                    });
 
-                    break;
-                }
-                default: Rsed.throw("Unknown RallySportED project zip file locality."); return null;
+                default: Rsed.throw("Unknown data type."); break;
             }
         }
 

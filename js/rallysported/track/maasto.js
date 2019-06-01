@@ -106,6 +106,9 @@ Rsed.maasto_n = (function()
         
         publicInterface.move_prop = function(propIdx, deltaX, deltaZ)
         {
+            // For now, shared mode doesn't support moving props.
+            if (Rsed.shared_mode_n.enabled()) return;
+
             Rsed.assert && (propIdx >= 0 && propIdx < propLocations.length)
                         || Rsed.throw("Trying to move a prop whose index is out of bounds.");
 
@@ -115,6 +118,9 @@ Rsed.maasto_n = (function()
 
         publicInterface.level_terrain = function()
         {
+            // For now, shared mode doesn't support level the terrain (would be too easy to grief).
+            if (Rsed.shared_mode_n.enabled()) return;
+
             const heightString = window.prompt("Level the terrain to a height of...");
             if (heightString == null) return;
 
@@ -208,6 +214,9 @@ Rsed.maasto_n = (function()
 
         publicInterface.change_prop_type = function(propIdx, newPropIdx)
         {
+            // For now, shared mode doesn't support changing props' type.
+            if (Rsed.shared_mode_n.enabled()) return;
+
             Rsed.assert && (propIdx >= 0 && propIdx < propNames.length)
                         || Rsed.throw("Attempting to change prop type out of bounds.");
 

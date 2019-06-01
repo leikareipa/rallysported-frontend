@@ -5,6 +5,7 @@
 // FILES:
 //	../js/rallysported/rallysported.js
 //	../distributable/assets/hitable.txt.js
+//	../js/rallysported/misc/shared-mode.js
 //	../js/rallysported/misc/common.js
 //	../js/rallysported/visual/color.js
 //	../js/rallysported/visual/texture.js
@@ -281,6 +282,251 @@ const lut_hitable_txt =[0x41,0x2d,0x4a,0x75,0x6e,0x69,0x6f,0x72,0x69,0x00,0x20,0
                         0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,
                         0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x0d,0x0a];
   /*
+ * Most recent known filename: js/misc/shared-mode.js
+ *
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
+ * 
+ * Implements GET/POST communication with RallySportED-js's shared-mode server.
+ * 
+ * The central function is server_io(), which orchestrates the communication.
+ * But before communication can take place, register_as_participant() should be
+ * called to establish ourselves as a participant on the server.
+ *
+ */
+
+"use strict";
+
+Rsed.shared_mode_n = (function()
+{
+    // A string that uniquely identifies us as a participant in the shared editing. We'll
+    // need to provide this id any time we GET or POST data to the server.
+    let participantId = null;
+
+    // The number of milliseconds to wait between polling the server with/for data.
+    const serverPollingInterval = 5000;
+
+    // GETs from the server edits made by other participants for us to see. Will throw on
+    // errors.
+    function fetch_new_server_data()
+    {
+        return fetch("server/shared/get.php?projectName=" + Rsed.main_n.current_project_name() +
+                                          "&participantId=" + participantId)
+               .then(response=>
+               {
+                   if (!response.ok)
+                   {
+                       throw "A GET request to the server failed.";
+                   }
+
+                   return response.json();
+               })
+               .then(ticket=>
+               {
+                   if (!ticket.valid ||
+                       (typeof ticket.data === "undefined"))
+                   {
+                       throw ("The server sent a GET ticket marked invalid. It said: " + ticket.message);
+                   }
+
+                   return ticket.data;
+               })
+               .catch(error=>{ Rsed.throw(error); });
+    }
+
+    // POSTs our most recent edits to the server for other participants to see. Will throw
+    // on errors.
+    function send_local_caches_to_server(localCaches = {})
+    {
+        localCaches =
+        {
+            ...{
+                maasto:[],
+                varimaa:[]
+            },
+            ...localCaches
+        }
+
+        function cacheToDataArray(cache)
+        {
+            return ((dataArray = [])=>{ cache.forEach((v, idx)=>{ if (v != null) dataArray.push(idx, v); }); return dataArray; })();
+        };
+        
+        const postData =
+        {
+            participantId,
+            maasto: cacheToDataArray(localCaches["maasto"]),
+            varimaa: cacheToDataArray(localCaches["varimaa"]),
+        };
+
+        // If we have any data to post to the server, do so.
+        if (postData.maasto.length ||
+            postData.varimaa.length)
+        {
+            return fetch(("server/shared/post.php?projectName=" + Rsed.main_n.current_project_name() +
+                                                "&participantId=" + participantId),
+                   {
+                       method: "POST",
+                       headers: { "Content-Type": "application/json" },
+                       body: JSON.stringify(postData)
+                   })
+                   .then(response=>
+                   {
+                       if (!response.ok)
+                       {
+                           throw "A POST request to the server failed.";
+                       }
+        
+                       return response.json();
+                   })
+                   .then(ticket=>
+                   {
+                       if (!ticket.valid)
+                       {
+                           throw ("The server sent a POST ticket marked invalid. It said: " + ticket.message);
+                       }
+
+                       return ticket.valid;
+                   })
+                   .catch(error=>{ Rsed.throw(error); });
+        }
+    }
+
+    // Takes in an object holding edit data we've received from the server made by other
+    // participants, and applies those data to our local data (like our MAASTO heightmap
+    // and VARIMAA tilemap).
+    function apply_server_data_to_local_data(serverData)
+    {
+        if (!serverData) return;
+
+        const resources =
+        {
+            "maasto": Rsed.maasto_n.set_maasto_height_at,
+            "varimaa": Rsed.maasto_n.set_varimaa_tile_at,
+        };
+
+        for (const [resourceName, dataCallback] of Object.entries(resources))
+        {
+            if (Array.isArray(serverData[resourceName]))
+            {
+                for (let i = 0; i < serverData[resourceName].length; i += 2)
+                {
+                    dataCallback(...idx_to_xy(serverData[resourceName][i]), serverData[resourceName][i+1]);
+                }
+            }
+        }
+
+        // Converts a 1d array index into a 2d x,y coordinate pair.
+        function idx_to_xy(idx)
+        {
+            return [(idx % Rsed.maasto_n.track_side_length()),
+                    Math.floor(idx / Rsed.maasto_n.track_side_length())];
+        }
+    }
+
+    // Takes in an object holding edit data we've received from the server made by other
+    // participants, and overrides our local caches (containing edits that we've made,
+    // locally, but which haven't yet been pushed to the server) with the server-side
+    // data.
+    function override_local_caches_with_server_data(serverData, localCaches = {})
+    {
+        if (!serverData) return;
+
+        const resources = ["maasto", "varimaa"];
+
+        localCaches =
+        {
+            ...{
+                maasto:[],
+                varimaa:[]
+            },
+            ...localCaches
+        }
+
+        resources.forEach((resourceName)=>
+        {
+            if (Array.isArray(serverData[resourceName]))
+            {
+                for (let i = 0; i < serverData[resourceName].length; i += 2)
+                {
+                    localCaches[resourceName][serverData[resourceName][i]] = null;
+                }
+            }
+        });
+    }
+
+    // Uploads and downloads data from the server. Will first poll the server to find if there
+    // are any edits from other participants that we should receive; then uploads our latest
+    // edits to the server for other participants to see.
+    async function server_io(participantId = "")
+    {
+        if (!participantId) return;
+
+        // Tally up into caches the edits we've made since the last time we contacted the
+        // server. We can then upload them to the server.
+        const maastoCache = Rsed.ui_brush_n.flush_brush_cache("maasto");
+        const varimaaCache = Rsed.ui_brush_n.flush_brush_cache("varimaa");
+    
+        // Get and apply new edits from the other participants.
+        const newServerData = await fetch_new_server_data();
+        apply_server_data_to_local_data(newServerData);
+        override_local_caches_with_server_data({"maasto":maastoCache, "varimaa":varimaaCache}, newServerData);
+
+        // Upload our edits to the server.
+        await send_local_caches_to_server({"maasto":maastoCache, "varimaa":varimaaCache});
+
+        // Loop.
+        setTimeout(()=>{ server_io(participantId); }, serverPollingInterval);
+    }
+
+    const publicInterface = {};
+    {
+        // Returns null if shared mode is disabled; our participant id otherwise (which will be a
+        // truthy value).
+        publicInterface.enabled = function() { return participantId; };
+
+        // Asks the server to register us as a participant in the shared editing. Being a participant
+        // means we can have our edits broadcast to the server and to receive edits from the server made
+        // by other participants. If an error occurs while registering, the client side will be terminated.
+        publicInterface.register_as_participant = function()
+        {
+            fetch("server/shared/register-participant.php?projectName=" + Rsed.main_n.current_project_name())
+            .then(response=>
+            {
+                if (!response.ok)
+                {
+                    throw "A POST request to the server failed.";
+                }
+
+                return response.json();
+            })
+            .then(ticket=>
+            {
+                if (!ticket.valid || (typeof ticket.participantId === "undefined"))
+                {
+                    throw "Failed to register as a new participant in the shared editing.";
+                }
+
+                // Start two-way communication with the server.
+                participantId = ticket.participantId;
+                server_io(participantId);
+            })
+            .catch(error=>{ Rsed.throw("Error while registering as a participant in shared editing: " + error); });
+        };
+
+        // Tell the server that we no longer want to participate in the shared editing. Our edits
+        // will no longer be broadcast to the server, and we don't receive other participants'
+        // edits from the server.
+        publicInterface.unregister_as_participant = function()
+        {
+            participantId = null;
+
+            /// TODO. Maybe flush the latest local changes to the server, etc.
+        }
+    };
+    return publicInterface;
+})();
+/*
  * Most recent known filename: js/misc/common.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
@@ -1568,6 +1814,9 @@ Rsed.maasto_n = (function()
         
         publicInterface.move_prop = function(propIdx, deltaX, deltaZ)
         {
+            // For now, shared mode doesn't support moving props.
+            if (Rsed.shared_mode_n.enabled()) return;
+
             Rsed.assert && (propIdx >= 0 && propIdx < propLocations.length)
                         || Rsed.throw("Trying to move a prop whose index is out of bounds.");
 
@@ -1577,6 +1826,9 @@ Rsed.maasto_n = (function()
 
         publicInterface.level_terrain = function()
         {
+            // For now, shared mode doesn't support level the terrain (would be too easy to grief).
+            if (Rsed.shared_mode_n.enabled()) return;
+
             const heightString = window.prompt("Level the terrain to a height of...");
             if (heightString == null) return;
 
@@ -1670,6 +1922,9 @@ Rsed.maasto_n = (function()
 
         publicInterface.change_prop_type = function(propIdx, newPropIdx)
         {
+            // For now, shared mode doesn't support changing props' type.
+            if (Rsed.shared_mode_n.enabled()) return;
+
             Rsed.assert && (propIdx >= 0 && propIdx < propNames.length)
                         || Rsed.throw("Attempting to change prop type out of bounds.");
 
@@ -3132,6 +3387,15 @@ Rsed.ui_brush_n = (function()
     // Which PALA texture the brush paints with, currently.
     let brushPalaIdx = 3;
 
+    // When shared editing is enabled, we'll accumulate all brush strokes into caches,
+    // which we'll then upload to the server the next time we poll it; after which
+    // the caches are emptied and filled up again as we make new edits.
+    const brushCache = Object.freeze(
+    {
+        maasto:[],
+        varimaa:[]
+    });
+
     const publicInterface = {};
     {
         // Set to true to have the brush smoothen the terrain heightmap.
@@ -3179,11 +3443,21 @@ Rsed.ui_brush_n = (function()
                                 Rsed.maasto_n.set_maasto_height_at(tileX, tileZ, (Rsed.maasto_n.maasto_height_at(tileX, tileZ) + value));
                             }
 
+                            if (Rsed.shared_mode_n.enabled())
+                            {
+                                brushCache.maasto[tileX + tileZ * Rsed.maasto_n.track_side_length()] = Rsed.maasto_n.maasto_height_at(tileX, tileZ);
+                            }
+
                             break;
                         }
                         case this.brushAction.changePala:
                         {
                             Rsed.maasto_n.set_varimaa_tile_at(tileX, tileZ, value);
+
+                            if (Rsed.shared_mode_n.enabled())
+                            {
+                                brushCache.varimaa[tileX + tileZ * Rsed.maasto_n.track_side_length()] = Rsed.maasto_n.varimaa_tile_at(tileX, tileZ);
+                            }
 
                             break;
                         }
@@ -3217,6 +3491,17 @@ Rsed.ui_brush_n = (function()
         publicInterface.brush_pala_idx = function()
         {
             return brushPalaIdx;
+        }
+
+        // Empties out the given brush cache; returning a copy of the contents of the
+        // cache prior to its emptying.
+        publicInterface.flush_brush_cache = function(which = "")
+        {
+            return ((cache)=>
+            {
+                brushCache[which].length = 0;
+                return cache;
+            })(brushCache[which].slice());
         }
     }
     return publicInterface;
@@ -3550,7 +3835,7 @@ Rsed.ui_draw_n = (function()
 
             pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
 
-            draw_string(">RALLYSPORTED HAS CRASHED. SORRY ABOUT THAT!", 2, Rsed.ui_font_n.font_height());
+            draw_string("> RALLYSPORTED STOPPED WORKING. SORRY ABOUT THAT!", 2, Rsed.ui_font_n.font_height());
 
             renderSurface.exposed().putImageData(pixelSurface, 0, 0);
             pixelSurface = null;
@@ -4494,20 +4779,19 @@ Rsed.ngon_fill_n = (function()
 
 const resource_loader_n = (function()
 {
-    // The names of the types of binary resources we recognize.
-    // Any binary resource we're asked to load must be one of these types.
-    const binaryResourceTypes = Object.freeze(["palat",
-                                               "maasto",
-                                               "varimaa",
-                                               "kierros",
-                                               "track-header",
-                                               "prop-textures",
-                                               "rsed-project-zip"]);
-
-    // The names of the types of JSON resources we recognize.
-    // Any JSON resource we're asked to load must be one of these types.
-    const jsonResourceTypes = Object.freeze(["prop-meshes",
-                                             "prop-locations"]);
+    // The names of the types of resources we recognize. Any resource we're asked to load
+    // must be one of these types.
+    const resourceTypes = Object.freeze(["text",
+                                         "palat",
+                                         "maasto",
+                                         "varimaa",
+                                         "kierros",
+                                         "prop-meshes",
+                                         "track-header",
+                                         "prop-textures",
+                                         "prop-locations",
+                                         "rsed-project-zip",
+                                         "rsed-project-raw"]);
 
     // Takes in a JSON object describing the locations of each track's props; for instance,
     //
@@ -4645,97 +4929,117 @@ const resource_loader_n = (function()
 
             const projectData = {};
 
-            // Get the data from a zip file.
-            if (args.fromZip)
+            switch (args.fileFormat)
             {
-                const zipContents = new JSZip();
-
-                zipContents.loadAsync(args.zipFile)
-                .then(()=>
+                case "raw":
                 {
-                    // Parse the zip file's contents. We'll require that it contains exactly one directory, which stores
-                    // the project's $FT and DTA files.
-                    const files = [];
+                    projectData.name = args.fileReference.slice(args.fileReference.lastIndexOf("/")+1).toLowerCase();
+                    projectData.displayName = ("Shared/" + projectData.name);
+
+                    (async()=>
                     {
-                        const dirs = [];
-                        zipContents.forEach((path, entry)=>
+                        const baseFilename = (args.fileReference + "/" + projectData.name);
+
+                        await resource_loader_n.load_resources_from_file("plain", "text", (baseFilename + ".$ft"), (data)=>{projectData.manifestoData = data});
+                        await resource_loader_n.load_resources_from_file("binary", "rsed-project-raw", (baseFilename + ".dta"), (data)=>{projectData.dtaData = data.buffer});
+
+                        returnCallback(projectData);
+                    })();
+
+                    break;
+                }
+
+                case "zip":
+                {
+                    const zipContents = new JSZip();
+
+                    zipContents.loadAsync(args.fileReference)
+                    .then(()=>
+                    {
+                        // Parse the zip file's contents. We'll require that it contains exactly one directory, which stores
+                        // the project's $FT and DTA files.
+                        const files = [];
                         {
-                            if (entry.dir)
+                            const dirs = [];
+                            zipContents.forEach((path, entry)=>
                             {
-                                dirs.push(entry);
-                            }
-                            else files.push(entry);
-                        });
-
-                        if (dirs.length != 1)
-                        {
-                            alert("The RallySportED project zip file must contain at least one directory under which the project's .DTA and .$FT files are found.");
-                            return;
-                        }
-
-                        projectData.name = dirs[0].name.slice(0, -1).toLowerCase();
-
-                        switch (projectData.name)
-                        {
-                            // For the original Rally-Sport tracks, have display names that reflect the in-game names
-                            // rather than the project names (like "demoa", "demob", ...).
-                            case "demoa": projectData.displayName = "Nurtsi-cruising"; break;
-                            case "demob": projectData.displayName = "Vesistövedätys"; break;
-                            case "democ": projectData.displayName = "Ralli-cross"; break;
-                            case "demod": projectData.displayName = "Yleisö-ek"; break;
-                            case "demoe": projectData.displayName = "Very slippery.."; break;
-                            case "demof": projectData.displayName = "You asked it.."; break;
-                            case "demog": projectData.displayName = "Bumps and jumps"; break;
-                            case "demoh": projectData.displayName = "Short and easy"; break;
-
-                            // Otherwise, use the project name as the display name.
-                            default: projectData.displayName = (projectData.name.charAt(0).toUpperCase() + projectData.name.slice(1));
-                        }
-
-                        // Find the project's $FT and DTA files inside the zip file.
-                        let manifestoFile = null, dtaFile = null;
-                        {
-                            files.forEach(file=>
-                            {
-                                if (manifestoFile && dtaFile) return;
-
-                                const suffix = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
-                                const basePath = file.name.slice(0, file.name.lastIndexOf(".")).toLowerCase();
-                                const baseName = basePath.slice(basePath.lastIndexOf("/") + 1);
-
-                                // Each resource file is expected to hold the same name as the project itself.
-                                if (baseName !== projectData.name) return;
-
-                                switch (suffix)
+                                if (entry.dir)
                                 {
-                                    case "$ft": manifestoFile = file; break;
-                                    case "dta": dtaFile = file; break;
-                                    default: break;
+                                    dirs.push(entry);
                                 }
+                                else files.push(entry);
                             });
 
-                            if (!manifestoFile || !dtaFile)
+                            if (dirs.length != 1)
                             {
-                                alert("The given RallySportED project zip file didn't contain all of the required .DTA and .$FT files.");
+                                alert("The RallySportED project zip file must contain at least one directory under which the project's .DTA and .$FT files are found.");
                                 return;
                             }
+
+                            projectData.name = dirs[0].name.slice(0, -1).toLowerCase();
+
+                            switch (projectData.name)
+                            {
+                                // For the original Rally-Sport tracks, have display names that reflect the in-game names
+                                // rather than the project names (like "demoa", "demob", ...).
+                                case "demoa": projectData.displayName = "Nurtsi-cruising"; break;
+                                case "demob": projectData.displayName = "Vesistövedätys"; break;
+                                case "democ": projectData.displayName = "Ralli-cross"; break;
+                                case "demod": projectData.displayName = "Yleisö-ek"; break;
+                                case "demoe": projectData.displayName = "Very slippery.."; break;
+                                case "demof": projectData.displayName = "You asked it.."; break;
+                                case "demog": projectData.displayName = "Bumps and jumps"; break;
+                                case "demoh": projectData.displayName = "Short and easy"; break;
+
+                                // Otherwise, use the project name as the display name.
+                                default: projectData.displayName = (projectData.name.charAt(0).toUpperCase() + projectData.name.slice(1));
+                            }
+
+                            // Find the project's $FT and DTA files inside the zip file.
+                            let manifestoFile = null, dtaFile = null;
+                            {
+                                files.forEach(file=>
+                                {
+                                    if (manifestoFile && dtaFile) return;
+
+                                    const suffix = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
+                                    const basePath = file.name.slice(0, file.name.lastIndexOf(".")).toLowerCase();
+                                    const baseName = basePath.slice(basePath.lastIndexOf("/") + 1);
+
+                                    // Each resource file is expected to hold the same name as the project itself.
+                                    if (baseName !== projectData.name) return;
+
+                                    switch (suffix)
+                                    {
+                                        case "$ft": manifestoFile = file; break;
+                                        case "dta": dtaFile = file; break;
+                                        default: break;
+                                    }
+                                });
+
+                                if (!manifestoFile || !dtaFile)
+                                {
+                                    alert("The given RallySportED project zip file didn't contain all of the required .DTA and .$FT files.");
+                                    return;
+                                }
+                            }
+
+                            // Extract the project's $FT and DTA files from the zip file.
+                            (async()=>
+                            {
+                                projectData.manifestoData = await manifestoFile.async("string");
+                                projectData.dtaData = await dtaFile.async("arraybuffer");
+
+                                returnCallback(projectData);
+                            })();
                         }
+                    })
+                    .catch((error)=>{Rsed.throw("Failed to extract project data (JSZip error: '" + error + "').");});
 
-                        // Extract the project's $FT and DTA files from the zip file.
-                        (async()=>
-                        {
-                            projectData.manifestoData = await manifestoFile.async("string");
-                            projectData.dtaData = await dtaFile.async("arraybuffer");
+                    break;
+                }
 
-                            returnCallback(projectData);
-                        })();
-                    }
-                })
-                .catch((error)=>{Rsed.throw("Failed to extract project data (JSZip error: '" + error + "').");});
-            }
-            else
-            {
-                Rsed.throw("Unknown file format for loading project data.");
+                default: Rsed.throw("Unknown file format for loading project data."); break;
             }
         }
 
@@ -4833,72 +5137,52 @@ const resource_loader_n = (function()
             Rsed.maasto_n.set_maasto(tilesPerSide, convertedHeightmap);
         }
 
-        // Loads from a JSON file resources of the given type.
-        publicInterface.load_json_resource = function(resourceType = "", filename = "")
-        {
-            Rsed.assert && ((typeof filename === "string") && (filename.length > 0))
-                        || Rsed.throw("Expected a non-null filename string.");
-
-            Rsed.assert && (jsonResourceTypes.includes(resourceType))
-                        || Rsed.throw("Expected a valid resource type.");
-
-            return new Promise((resolve, reject)=>
-            {
-                fetch(filename)
-                .then((response)=>response.json())
-                .then((data)=>
-                {
-                    switch (resourceType)
-                    {
-                        case "prop-meshes": load_prop_meshes(data); break;
-                        case "prop-locations": load_prop_locations(data); break;
-                        default: Rsed.throw("Unknown resource type."); reject(); break;
-                    }
-                    
-                    resolve();
-                })
-                .catch((error)=>{Rsed.throw("Failed to fetch resource file " + filename + ". Error: " + error)});
-            });
-        }
-
-        // Loads from a binary file resources of the given type; returning a promise resolved once the
+        // Loads from a file resources of the given type; returning a promise resolved once the
         // data has been loaded and processed. The receptacle is an object that can receive from this
         // function the raw data loaded from file (without subsequent processing by this function), and
         // is required for some of the resource types.
-        publicInterface.load_binary_resource = function(resourceType = "", filename = "", receptacle)
+        publicInterface.load_resources_from_file = function(resourceEncoding = "", resourceType = "", filename = "", receptacle)
         {
             Rsed.assert && (filename.length > 0)
                         || Rsed.throw("Expected a non-empty string.");
 
-            Rsed.assert && (binaryResourceTypes.includes(resourceType))
+            Rsed.assert && (resourceType.includes(resourceType))
                         || Rsed.throw("Expected a valid resource type.");
 
-            return new Promise((resolve, reject)=>
-            {
-                fetch(filename)
-                .then((response)=>response.arrayBuffer())
-                .then((dataBuffer)=>
-                {
-                    const bytes = new Uint8Array(dataBuffer);
+            return fetch(filename)
+                   .then(async(response)=>
+                   {
+                       if (!response.ok)
+                       {
+                           throw "Could not fetch the resource file " + filename + ".";
+                       }
 
-                    Rsed.assert && (bytes != null)
-                                || Rsed.throw("Received invalid binary file data.");
-
-                    switch (resourceType)
-                    {
-                        case "rsed-project-zip": receptacle(bytes); break;
-                        case "track-header": load_track_header(bytes); break;
-                        case "prop-textures": load_prop_textures(bytes); break;
-                        case "palat": publicInterface.load_palat_data(bytes); break;
-                        case "maasto": publicInterface.load_maasto_data(bytes); break;
-                        case "varimaa": publicInterface.load_varimaa_data(bytes); break;
-                        default: Rsed.throw("Unknown resource type."); reject(); break;
-                    }
-
-                    resolve();
-                })
-                .catch((error)=>{Rsed.throw("Failed to fetch resource file " + filename + ". Error: " + error)});
-            });
+                       switch (resourceEncoding)
+                       {
+                           case "binary": return new Uint8Array(await response.arrayBuffer());
+                           case "json": return response.json();
+                           case "plain": return response.text();
+                           default: Rsed.throw("Unknown resource encoding."); break;
+                       }
+                   })
+                   .then((data)=>
+                   {
+                       switch (resourceType)
+                       {
+                           case "text": receptacle(data); break;
+                           case "rsed-project-zip":
+                           case "rsed-project-raw": receptacle(data); break;
+                           case "track-header": load_track_header(data); break;
+                           case "prop-textures": load_prop_textures(data); break;
+                           case "palat": publicInterface.load_palat_data(data); break;
+                           case "maasto": publicInterface.load_maasto_data(data); break;
+                           case "varimaa": publicInterface.load_varimaa_data(data); break;
+                           case "prop-meshes": load_prop_meshes(data); break;
+                           case "prop-locations": load_prop_locations(data); break;
+                           default: throw "Unknown resource type.";
+                       }
+                   })
+                   .catch((error)=>{Rsed.throw("Failed to load resource file " + filename + ". Error: " + error)});
         }
     }
     return publicInterface;
@@ -5030,10 +5314,10 @@ Rsed.project_n = (function()
                         || Rsed.throw("Was asked to test the validity of a non-RallySportED project.");
 
             Rsed.assert && ((projectToVerify != null) && (projectToVerify.isValidProject))
-                        || Rsed.throw("Failed to load the given zipped RallySportED project file.");
+                        || Rsed.throw("Failed to load the given RallySportED project file.");
             
             Rsed.assert && (projectToVerify.name != null && projectToVerify.displayName != null)
-                        || Rsed.throw("Failed to load the given zipped RallySportED project file.");
+                        || Rsed.throw("Failed to load the given RallySportED project file.");
 
             console.log("'" + projectToVerify.displayName + "' is a valid RallySportED project.");
 
@@ -5043,13 +5327,55 @@ Rsed.project_n = (function()
         // Creates a project memory object from a zip file containing the files of a RallySportED project.
         // NOTE: There can be only one active project at a time in RallySportED, so calling this will
         //       cause any existing project data to be overwritten by the new data.
-        publicInterface.make_project_from_zip = function(locality = "local", zipFilename, broadcastFn)
+        publicInterface.make_project_from_data = function(locality = "local", dataType = "", fileReference, broadcastFn)
         {
-            switch (locality)
+            switch (dataType)
             {
-                case "local":
+                case "zip":
                 {
-                    resource_loader_n.load_project_data({fromZip:true,zipFile:zipFilename}, (projectData)=>
+                    switch (locality)
+                    {
+                        case "local":
+                        {
+                            resource_loader_n.load_project_data({fileFormat:"zip", fileReference}, (projectData)=>
+                            {
+                                /// Temp hack. Project loading will be redesigned in the future.
+                                const project = new publicInterface.project_o(projectData);
+                                Rsed.manifesto_n.apply_manifesto(project.manifestoFileContents)
+                                .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
+                                return;
+                            });
+        
+                            break;
+                        }
+                        case "server":
+                        {
+                            resource_loader_n.load_resources_from_file("binary", "rsed-project-zip", fileReference, (zipData)=>
+                            {
+                                resource_loader_n.load_project_data({fileFormat:"zip", fileReference:zipData}, (projectData)=>
+                                {
+                                    /// Temp hack. Project loading will be redesigned in the future.
+                                    const project = new publicInterface.project_o(projectData);
+                                    Rsed.manifesto_n.apply_manifesto(project.manifestoFileContents)
+                                    .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
+                                    return;
+                                });
+                            });
+        
+                            break;
+                        }
+                        default: Rsed.throw("Unknown RallySportED project zip file locality."); return null;
+                    }
+                    
+                    break;
+                }
+
+                case "raw":
+                {
+                    Rsed.assert && (locality === "server-shared")
+                                || Rsed.throw("Unsupported locality for loading raw project data.");
+
+                    resource_loader_n.load_project_data({fileFormat:"raw", fileReference}, (projectData)=>
                     {
                         /// Temp hack. Project loading will be redesigned in the future.
                         const project = new publicInterface.project_o(projectData);
@@ -5060,23 +5386,8 @@ Rsed.project_n = (function()
 
                     break;
                 }
-                case "server":
-                {
-                    resource_loader_n.load_binary_resource("rsed-project-zip", zipFilename, (zipFile)=>
-                    {
-                        resource_loader_n.load_project_data({fromZip:true,zipFile}, (projectData)=>
-                        {
-                            /// Temp hack. Project loading will be redesigned in the future.
-                            const project = new publicInterface.project_o(projectData);
-                            Rsed.manifesto_n.apply_manifesto(project.manifestoFileContents)
-                            .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
-                            return;
-                        });
-                    });
 
-                    break;
-                }
-                default: Rsed.throw("Unknown RallySportED project zip file locality."); return null;
+                default: Rsed.throw("Unknown data type."); break;
             }
         }
 
@@ -5169,8 +5480,8 @@ Rsed.main_n = (function()
     let underlyingTrackId = 1;
 
     // Strings with which to build URLs to track assets.
-    const tracksFileExtension = ".zip";
     const tracksDirectory = "track-list/files/";
+    const sharedTracksDirectory = "track-list/shared/projects/";
 
     const renderScalingMultiplier = 0.25;
 
@@ -5288,28 +5599,27 @@ Rsed.main_n = (function()
     
         publicInterface.load_project = function(args = {})
         {
+            Rsed.assert && ((typeof args.locality !== "undefined") &&
+                            (typeof args.fileFormat !== "undefined"))
+                        || Rsed.throw("Missing arguments for loading a project.");
+             
             htmlUI.set_visible(false);
 
-            if (args.fromZip)
-            {
-                Rsed.assert && (args.locality != null && args.zipFile != null)
-                            || Rsed.throw("Received invalid arguments for loading a project from a zip file.");
+            project = Rsed.project_n.make_project_from_data(args.locality, args.fileFormat, args.fileReference,
+                                     (newProject)=>
+                                     {
+                                         project = newProject;
+                                         Rsed.project_n.verify_project_validity(project);
 
-                project = Rsed.project_n.make_project_from_zip(args.locality, args.zipFile,
-                                                               (newProject)=>
-                                                               {
-                                                                   project = newProject;
-                                                                   Rsed.project_n.verify_project_validity(project);
-                                                                   htmlUI.refresh();
-                                                                   htmlUI.set_visible(true);
-                                                               });
-            }
-            else
-            {
-                htmlUI.set_visible(true);
-
-                Rsed.throw("Was given no project no load. There should've been one.");
-            }
+                                         if (args.locality === "server-shared")
+                                         {
+                                             Rsed.shared_mode_n.register_as_participant();
+                                         }
+                                         else Rsed.shared_mode_n.unregister_as_participant(); // In case we were already registered.
+                                         
+                                         htmlUI.refresh();
+                                         htmlUI.set_visible(true);
+                                     });
         }
 
         // Starts the program. The renderer will keep requesting a new animation frame, and will call the
@@ -5317,7 +5627,9 @@ Rsed.main_n = (function()
         publicInterface.launch_rallysported = function(args = {})
         {
             check_browser_compatibility();
+
             renderer.run_renderer();
+
             this.load_project(args);
         }
 
@@ -5359,10 +5671,11 @@ Rsed.main_n = (function()
 
                 (async()=>
                 {
-                    await resource_loader_n.load_binary_resource("prop-textures", (exeAssetDir + "prop-textures.bin"));
-                    await resource_loader_n.load_json_resource("prop-meshes", (exeAssetDir + "prop-meshes.json"));
-                    await resource_loader_n.load_json_resource("prop-locations", (exeAssetDir + "prop-locations.json"));
-                    await resource_loader_n.load_binary_resource("track-header", (exeAssetDir + "track-header.bin"));
+                    await resource_loader_n.load_resources_from_file("binary", "prop-textures", (exeAssetDir + "prop-textures.bin"));
+                    await resource_loader_n.load_resources_from_file("json", "prop-meshes", (exeAssetDir + "prop-meshes.json"));
+                    await resource_loader_n.load_resources_from_file("json", "prop-locations", (exeAssetDir + "prop-locations.json"));
+                    await resource_loader_n.load_resources_from_file("binary", "track-header", (exeAssetDir + "track-header.bin"));
+
                     resolve();
                 })();
             });
@@ -5384,12 +5697,12 @@ Rsed.main_n = (function()
  
             if (!zipFile)
             {
-                k_message("The drag contained no RallySportED zip files. Ignoring it.");
+                k_message("The drop contained no RallySportED zip files. Ignoring it.");
                 return;
             }
 
-            // We now presumably have a zipped RallySportED project that we can load, so ket's do that.
-            Rsed.main_n.load_project({fromZip:true,locality:"local",zipFile});
+            // We now presumably have a zipped RallySportED project that we can load, so let's do that.
+            Rsed.main_n.load_project({fileFormat:"zip",locality:"local",fileReference:zipFile});
             /// TODO: .then(()=>{//cleanup.});
 
             // Clear the address bar's parameters to reflect the fact that the user has loaded a local
@@ -5401,6 +5714,7 @@ Rsed.main_n = (function()
         publicInterface.incapacitate_rallysported = function(message)
         {
             renderer.indicate_error(message);
+            htmlUI.set_visible(false);
             publicInterface.isOperational = false;
         }
 
@@ -5413,8 +5727,10 @@ Rsed.main_n = (function()
 
         publicInterface.underlying_track_id = function() { return underlyingTrackId; }
 
-        publicInterface.tracks_file_extension = function() { return tracksFileExtension; }
         publicInterface.tracks_directory = function() { return tracksDirectory; }
+        publicInterface.shared_tracks_directory = function() { return sharedTracksDirectory; }
+
+        publicInterface.current_project_name = function() { return project.name; }
 
         publicInterface.render_surface_id = function() { return renderer.renderSurfaceId; }
     }
@@ -5450,52 +5766,67 @@ window.onload = function(event)
     {
         const params = new URLSearchParams(window.location.search);
 
-        // Server-side custom tracks. These have an id string that identifies the track.
-        if (params.has("track"))
+        if (params.has("shared"))
         {
-            args.fromZip = true;
-            args.locality = "server";
-            args.zipFile = params.get("track");
-
-            // Sanitize input.
-            if (!(typeof args.zipFile === "string") ||
-                !(/^[a-k2-9]+$/.test(args.zipFile)))
+            // Give the input a sanity check.
+            if (!(/^[a-z]+$/.test(params.get("shared"))))
             {
                 Rsed.throw("Invalid track identifier detected. Can't continue.");
                 return;
             }
+
+            args.fileFormat = "raw";
+            args.locality = "server-shared";
+            args.fileReference = params.get("shared");
+
+            // Sanitize input.
+            /// TODO.
+        }
+        // Server-side custom tracks. These have an id string that identifies the track.
+        else if (params.has("track"))
+        {
+            // Give the input a sanity check.
+            if (!(/^[a-k2-9]+$/.test(params.get("track"))))
+            {
+                Rsed.throw("Invalid track identifier detected. Can't continue.");
+                return;
+            }
+
+            args.fileFormat = "zip";
+            args.locality = "server";
+            args.fileReference = (params.get("track") + ".zip");
         }
         // Server side original tracks from Rally-Sport's demo. These take a value in the range 1..8,
         // corresponding to the eight tracks in the demo.
         else if (params.has("original"))
         {
+            // Give the input a sanity check.
+            if (!(/^[a-z1-8]+$/.test(params.get("original"))))
+            {
+                Rsed.throw("Invalid track identifier detected. Can't continue.");
+                return;
+            }
+
             const trackId = parseInt(params.get("original"), 10);
             Rsed.assert && ((trackId >= 1) &&
                             (trackId <= 8))
                         || Rsed.throw("The given track id is out of bounds.");
 
-            args.fromZip = true;
+            args.fileFormat = "zip";
             args.locality = "server";
-            args.zipFile = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
-
-            // Sanitize input.
-            if (!(typeof args.zipFile === "string") ||
-                !(/^[a-z1-8]+$/.test(args.zipFile)))
-            {
-                Rsed.throw("Invalid track identifier detected. Can't continue.");
-                return;
-            }
+            args.fileReference = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1) + ".zip");
         }
         else // Default.
         {
-            args.fromZip = true;
+            args.fileFormat = "zip";
             args.locality = "server";
-            args.zipFile = "demod";
+            args.fileReference = "demod.zip";
         }
     }
 
-    args.zipFile = (Rsed.main_n.tracks_directory() + args.zipFile + Rsed.main_n.tracks_file_extension());
-    
+    if (args.locality === "server") args.fileReference = (Rsed.main_n.tracks_directory() + args.fileReference);
+    else if (args.locality === "server-shared") args.fileReference = (Rsed.main_n.shared_tracks_directory() + args.fileReference);
+
     Rsed.main_n.launch_rallysported(args);
 }
 
@@ -5523,7 +5854,8 @@ window.oncontextmenu = function(event)
     if (event.target.id !== Rsed.main_n.render_surface_id()) return;
 
     // Display a right-click menu for changing the type of the prop under the cursor.
-    if ((Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
+    if (!Rsed.shared_mode_n.enabled() &&
+        (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
         !Rsed.props_n.prop_name_for_idx(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const propDropdown = document.getElementById("prop-dropdown");
