@@ -14,7 +14,7 @@ Rsed.maasto_n = (function()
     let maastoSideLength = 0
 
     const maxHeightmapValue = 255;
-    const minHeightmapValue = -511;
+    const minHeightmapValue = -510;
 
     // The checkpoint is a point on the track next to which the player's car must pass for the
     // lap to be counted as valid.

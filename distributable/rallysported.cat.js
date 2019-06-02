@@ -304,7 +304,7 @@ Rsed.shared_mode_n = (function()
     let participantId = null;
 
     // The number of milliseconds to wait between polling the server with/for data.
-    const serverPollingInterval = 5000;
+    const serverPollingInterval = 6000;
 
     // GETs from the server edits made by other participants for us to see. Will throw on
     // errors.
@@ -490,7 +490,7 @@ Rsed.shared_mode_n = (function()
         // by other participants. If an error occurs while registering, the client side will be terminated.
         publicInterface.register_as_participant = function()
         {
-            fetch("server/shared/register-participant.php?projectName=" + Rsed.main_n.current_project_name())
+            fetch("server/shared/register.php?projectName=" + Rsed.main_n.current_project_name())
             .then(response=>
             {
                 if (!response.ok)
@@ -1722,7 +1722,7 @@ Rsed.maasto_n = (function()
     let maastoSideLength = 0
 
     const maxHeightmapValue = 255;
-    const minHeightmapValue = -511;
+    const minHeightmapValue = -510;
 
     // The checkpoint is a point on the track next to which the player's car must pass for the
     // lap to be counted as valid.

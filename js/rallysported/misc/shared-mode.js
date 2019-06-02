@@ -21,7 +21,7 @@ Rsed.shared_mode_n = (function()
     let participantId = null;
 
     // The number of milliseconds to wait between polling the server with/for data.
-    const serverPollingInterval = 5000;
+    const serverPollingInterval = 6000;
 
     // GETs from the server edits made by other participants for us to see. Will throw on
     // errors.
