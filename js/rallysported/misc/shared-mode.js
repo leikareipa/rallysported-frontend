@@ -4,7 +4,7 @@
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
  * 
- * Implements GET/POST communication with RallySportED-js's shared-mode server.
+ * Implements client-side communication with RallySportED-js's shared-mode server.
  * 
  * The central function is server_io(), which orchestrates the communication.
  * But before communication can take place, register_as_participant() should be
@@ -170,19 +170,18 @@ Rsed.shared_mode_n = (function()
         });
     }
 
-    // Uploads and downloads data from the server. Will first poll the server to find if there
-    // are any edits from other participants that we should receive; then uploads our latest
-    // edits to the server for other participants to see.
+    // Sends the server a POST request containing the local edits we've made since the last
+    // time we contacted the server in this manner. Will receive back from the server any
+    // edits made by the other participants in the shared editing.
     async function server_io(participantId = "")
     {
         if (!participantId) return;
 
-       /* if (Rsed.ui_input_n.are_editing_keys_pressed())
+        if (Rsed.ui_input_n.are_editing_keys_pressed())
         {
-            console.log("not yet");
-            setTimeout(()=>{ server_io(participantId); }, 500);
+            setTimeout(poll_server, 500);
             return;
-        }*/
+        }
 
         const newServerData = await send_local_caches_to_server({
             maasto: Rsed.ui_brush_n.flush_brush_cache("maasto"),
@@ -192,7 +191,9 @@ Rsed.shared_mode_n = (function()
         apply_server_data_to_local_data(newServerData);
 
         // Loop.
-        setTimeout(()=>{ server_io(participantId); }, serverPollingInterval);
+        setTimeout(poll_server, serverPollingInterval);
+
+        function poll_server() { server_io(participantId); };
     }
 
     const publicInterface = {};
