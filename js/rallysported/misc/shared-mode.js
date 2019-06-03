@@ -137,39 +137,6 @@ Rsed.shared_mode_n = (function()
         }
     }
 
-    // Takes in an object holding edit data we've received from the server made by other
-    // participants, and overrides our local caches (containing edits that we've made,
-    // locally, but which haven't yet been pushed to the server) with the server-side
-    // data.
-    function override_local_caches_with_server_data(serverData, localCaches = {})
-    {
-        if (!serverData) return;
-
-        const resources = ["maasto", "varimaa"];
-
-        localCaches =
-        {
-            ...{
-                maasto:[],
-                varimaa:[]
-            },
-            ...localCaches
-        }
-
-        resources.forEach((resourceName)=>
-        {
-            if (Array.isArray(serverData[resourceName]))
-            {
-                for (let i = 0; i < serverData[resourceName].length; i += 2)
-                {
-                    const idx = serverData[resourceName][i];
-
-                    localCaches[resourceName][idx] = null;
-                }
-            }
-        });
-    }
-
     // Sends the server a POST request containing the local edits we've made since the last
     // time we contacted the server in this manner. Will receive back from the server any
     // edits made by the other participants in the shared editing.

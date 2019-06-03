@@ -19,7 +19,7 @@ Rsed.main_n = (function()
 
     // Strings with which to build URLs to track assets.
     const tracksDirectory = "track-list/files/";
-    const sharedTracksDirectory = "track-list/shared/projects/";
+    const sharedTracksDirectory = "track-list/shared/";
 
     const renderScalingMultiplier = 0.25;
 
