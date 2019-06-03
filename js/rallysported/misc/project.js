@@ -184,9 +184,9 @@ Rsed.project_n = (function()
                 case "raw":
                 {
                     Rsed.assert && (locality === "server-shared")
-                                || Rsed.throw("Unsupported locality for loading raw project data.");
+                                || Rsed.throw("Expected raw project data to be associated only with shared-mode projects.");
 
-                    resource_loader_n.load_project_data({fileFormat:"raw", fileReference}, (projectData)=>
+                    resource_loader_n.load_project_data({fileFormat:"raw", fileReference, locality}, (projectData)=>
                     {
                         /// Temp hack. Project loading will be redesigned in the future.
                         const project = new publicInterface.project_o(projectData);

@@ -149,11 +149,13 @@ Rsed.main_n = (function()
                                          project = newProject;
                                          Rsed.project_n.verify_project_validity(project);
 
-                                         if (args.locality === "server-shared")
+                                         /// TODO. This needs to be implemented in a better way and/or somewhere
+                                         /// else - ideally so you don't have to manually start the poll loop;
+                                         /// so you don't risk starting it twice or whatever.
+                                         if (Rsed.shared_mode_n.enabled())
                                          {
-                                             Rsed.shared_mode_n.register_as_participant();
+                                             Rsed.shared_mode_n.start_polling_server();
                                          }
-                                         else Rsed.shared_mode_n.unregister_as_participant(); // In case we were already registered.
                                          
                                          htmlUI.refresh();
                                          htmlUI.set_visible(true);

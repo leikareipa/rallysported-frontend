@@ -44,10 +44,10 @@ const resource_loader_n = (function()
     //
     function load_prop_locations(data = Object)
     {
-        Rsed.assert && (data.tracks != null) || "Expected a JSON object containing track prop locations.";
+        Rsed.assert && (data.tracks != null) || Rsed.throw("Expected a JSON object containing track prop locations.");
         data.tracks.forEach(track=>
         {
-            Rsed.assert && (track.props != null) || "Expected a JSON object containing track prop locations.";
+            Rsed.assert && (track.props != null) || Rsed.throw("Expected a JSON object containing track prop locations.");
             track.props.forEach(prop=>
             {
                 Rsed.maasto_n.add_prop_location(track.trackId, prop.name, prop.x, prop.y, prop.z);
@@ -166,12 +166,20 @@ const resource_loader_n = (function()
             {
                 case "raw":
                 {
+                    Rsed.assert && (args.locality === "server-shared")
+                                || Rsed.throw("Expected the raw project format only with shared-mode projects.");
+
                     projectData.name = args.fileReference.slice(args.fileReference.lastIndexOf("/")+1).toLowerCase();
                     projectData.displayName = ("Shared/" + projectData.name);
 
                     (async()=>
                     {
                         const baseFilename = (args.fileReference + "/" + projectData.name);
+
+                        if (args.locality === "server-shared")
+                        {
+                            await Rsed.shared_mode_n.register_as_participant_in_project(projectData.name);
+                        }
 
                         await resource_loader_n.load_resources_from_file("plain", "text", (baseFilename + ".$ft"), (data)=>{projectData.manifestoData = data});
                         await resource_loader_n.load_resources_from_file("binary", "rsed-project-raw", (baseFilename + ".dta"), (data)=>{projectData.dtaData = data.buffer});

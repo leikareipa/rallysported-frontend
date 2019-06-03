@@ -306,34 +306,6 @@ Rsed.shared_mode_n = (function()
     // The number of milliseconds to wait between polling the server with/for data.
     const serverPollingInterval = 6000;
 
-    // GETs from the server edits made by other participants for us to see. Will throw on
-    // errors.
-    function fetch_new_server_data()
-    {
-        return fetch("server/shared/get.php?projectName=" + Rsed.main_n.current_project_name() +
-                                          "&participantId=" + participantId)
-               .then(response=>
-               {
-                   if (!response.ok)
-                   {
-                       throw "A GET request to the server failed.";
-                   }
-
-                   return response.json();
-               })
-               .then(ticket=>
-               {
-                   if (!ticket.valid ||
-                       (typeof ticket.data === "undefined"))
-                   {
-                       throw ("The server sent a GET ticket marked invalid. It said: " + ticket.message);
-                   }
-
-                   return ticket.data;
-               })
-               .catch(error=>{ Rsed.throw(error); });
-    }
-
     // POSTs our most recent edits to the server for other participants to see. Will throw
     // on errors.
     function send_local_caches_to_server(localCaches = {})
@@ -420,45 +392,12 @@ Rsed.shared_mode_n = (function()
         }
     }
 
-    // Takes in an object holding edit data we've received from the server made by other
-    // participants, and overrides our local caches (containing edits that we've made,
-    // locally, but which haven't yet been pushed to the server) with the server-side
-    // data.
-    function override_local_caches_with_server_data(serverData, localCaches = {})
-    {
-        if (!serverData) return;
-
-        const resources = ["maasto", "varimaa"];
-
-        localCaches =
-        {
-            ...{
-                maasto:[],
-                varimaa:[]
-            },
-            ...localCaches
-        }
-
-        resources.forEach((resourceName)=>
-        {
-            if (Array.isArray(serverData[resourceName]))
-            {
-                for (let i = 0; i < serverData[resourceName].length; i += 2)
-                {
-                    const idx = serverData[resourceName][i];
-
-                    localCaches[resourceName][idx] = null;
-                }
-            }
-        });
-    }
-
     // Sends the server a POST request containing the local edits we've made since the last
     // time we contacted the server in this manner. Will receive back from the server any
     // edits made by the other participants in the shared editing.
     async function server_io(participantId = "")
     {
-        if (!participantId) return;
+        if (!publicInterface.enabled()) return;
 
         if (Rsed.ui_input_n.are_editing_keys_pressed())
         {
@@ -485,39 +424,51 @@ Rsed.shared_mode_n = (function()
         // truthy value).
         publicInterface.enabled = function() { return participantId; };
 
+        // Start two-way communication with the shared-mode server.
+        publicInterface.start_polling_server = function()
+        {
+            Rsed.assert && (publicInterface.enabled())
+                        || Rsed.throw("Was asked to start polling the shared-mode server before having registered as a participant in it.");
+
+            server_io(participantId);
+
+            return;
+        }
+
         // Asks the server to register us as a participant in the shared editing. Being a participant
         // means we can have our edits broadcast to the server and to receive edits from the server made
         // by other participants. If an error occurs while registering, the client side will be terminated.
-        publicInterface.register_as_participant = function()
+        publicInterface.register_as_participant_in_project = function(projectName = "")
         {
-            fetch("server/shared/register.php?projectName=" + Rsed.main_n.current_project_name())
-            .then(response=>
-            {
-                if (!response.ok)
-                {
-                    throw "A POST request to the server failed.";
-                }
+            // If we were already registered as a participant, unregister that previous registration, first.
+            if (publicInterface.enabled()) publicInterface.unregister_current_registration();
 
-                return response.json();
-            })
-            .then(ticket=>
-            {
-                if (!ticket.valid || (typeof ticket.participantId === "undefined"))
-                {
-                    throw "Failed to register as a new participant in the shared editing.";
-                }
+            return fetch("server/shared/register.php?projectName=" + projectName)
+                    .then(response=>
+                    {
+                        if (!response.ok)
+                        {
+                            throw "A POST request to the server failed.";
+                        }
 
-                // Start two-way communication with the server.
-                participantId = ticket.participantId;
-                server_io(participantId);
-            })
-            .catch(error=>{ Rsed.throw("Error while registering as a participant in shared editing: " + error); });
+                        return response.json();
+                    })
+                    .then(ticket=>
+                    {
+                        if (!ticket.valid || (typeof ticket.participantId === "undefined"))
+                        {
+                            throw "Failed to register as a new participant in the shared editing.";
+                        }
+
+                        participantId = ticket.participantId;
+                    })
+                    .catch(error=>{ Rsed.throw("Error while registering as a participant in shared editing: " + error); });
         };
 
         // Tell the server that we no longer want to participate in the shared editing. Our edits
         // will no longer be broadcast to the server, and we don't receive other participants'
         // edits from the server.
-        publicInterface.unregister_as_participant = function()
+        publicInterface.unregister_current_registration = function()
         {
             participantId = null;
 
@@ -4813,10 +4764,10 @@ const resource_loader_n = (function()
     //
     function load_prop_locations(data = Object)
     {
-        Rsed.assert && (data.tracks != null) || "Expected a JSON object containing track prop locations.";
+        Rsed.assert && (data.tracks != null) || Rsed.throw("Expected a JSON object containing track prop locations.");
         data.tracks.forEach(track=>
         {
-            Rsed.assert && (track.props != null) || "Expected a JSON object containing track prop locations.";
+            Rsed.assert && (track.props != null) || Rsed.throw("Expected a JSON object containing track prop locations.");
             track.props.forEach(prop=>
             {
                 Rsed.maasto_n.add_prop_location(track.trackId, prop.name, prop.x, prop.y, prop.z);
@@ -4935,12 +4886,20 @@ const resource_loader_n = (function()
             {
                 case "raw":
                 {
+                    Rsed.assert && (args.locality === "server-shared")
+                                || Rsed.throw("Expected the raw project format only with shared-mode projects.");
+
                     projectData.name = args.fileReference.slice(args.fileReference.lastIndexOf("/")+1).toLowerCase();
                     projectData.displayName = ("Shared/" + projectData.name);
 
                     (async()=>
                     {
                         const baseFilename = (args.fileReference + "/" + projectData.name);
+
+                        if (args.locality === "server-shared")
+                        {
+                            await Rsed.shared_mode_n.register_as_participant_in_project(projectData.name);
+                        }
 
                         await resource_loader_n.load_resources_from_file("plain", "text", (baseFilename + ".$ft"), (data)=>{projectData.manifestoData = data});
                         await resource_loader_n.load_resources_from_file("binary", "rsed-project-raw", (baseFilename + ".dta"), (data)=>{projectData.dtaData = data.buffer});
@@ -5375,9 +5334,9 @@ Rsed.project_n = (function()
                 case "raw":
                 {
                     Rsed.assert && (locality === "server-shared")
-                                || Rsed.throw("Unsupported locality for loading raw project data.");
+                                || Rsed.throw("Expected raw project data to be associated only with shared-mode projects.");
 
-                    resource_loader_n.load_project_data({fileFormat:"raw", fileReference}, (projectData)=>
+                    resource_loader_n.load_project_data({fileFormat:"raw", fileReference, locality}, (projectData)=>
                     {
                         /// Temp hack. Project loading will be redesigned in the future.
                         const project = new publicInterface.project_o(projectData);
@@ -5613,11 +5572,13 @@ Rsed.main_n = (function()
                                          project = newProject;
                                          Rsed.project_n.verify_project_validity(project);
 
-                                         if (args.locality === "server-shared")
+                                         /// TODO. This needs to be implemented in a better way and/or somewhere
+                                         /// else - ideally so you don't have to manually start the poll loop;
+                                         /// so you don't risk starting it twice or whatever.
+                                         if (Rsed.shared_mode_n.enabled())
                                          {
-                                             Rsed.shared_mode_n.register_as_participant();
+                                             Rsed.shared_mode_n.start_polling_server();
                                          }
-                                         else Rsed.shared_mode_n.unregister_as_participant(); // In case we were already registered.
                                          
                                          htmlUI.refresh();
                                          htmlUI.set_visible(true);
