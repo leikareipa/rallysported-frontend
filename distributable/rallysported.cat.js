@@ -1729,6 +1729,14 @@ Rsed.maasto_n = (function()
 
         publicInterface.remove_prop = function(propIdx)
         {
+            // For now, shared mode doesn't support removing props.
+            /// TODO. We expect this function to be called as a result of the user interacting
+            /// with the UI to remove the given prop. But it's possible that someone might also
+            /// come to call this function for some other purpose; which might have nothing to
+            /// do with shared mode. So, ideally, this function should better convey to the coder
+            /// that it's only meant to be used in connection with events trigged by the user.
+            if (Rsed.shared_mode_n.enabled()) return;
+
             Rsed.assert && (propIdx >= 0 && propIdx < propLocations.length)
                         || Rsed.throw("Trying to delete a prop whose index is out of bounds.");
 
@@ -4022,7 +4030,8 @@ Rsed.ui_input_n = (function()
                 if (shiftPressed)
                 {
                     // Add a new prop.
-                    if (mouseLeftPressed)
+                    if (mouseLeftPressed &&
+                        !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
                     {
                         const x = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * Rsed.maasto_n.tile_size());
                         const z = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * Rsed.maasto_n.tile_size());
@@ -4052,6 +4061,9 @@ Rsed.ui_input_n = (function()
             }
             case "prop":
             {
+                // For now, shared mode doesn't support interacting with props.
+                if (Rsed.shared_mode_n.enabled()) break;
+
                 Rsed.assert && (mouseLock.propTrackId != null)
                             || Rsed.throw("Expected the prop track id as a parameter to prop grabs.");
 

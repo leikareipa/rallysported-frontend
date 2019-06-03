@@ -124,7 +124,8 @@ Rsed.ui_input_n = (function()
                 if (shiftPressed)
                 {
                     // Add a new prop.
-                    if (mouseLeftPressed)
+                    if (mouseLeftPressed &&
+                        !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
                     {
                         const x = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * Rsed.maasto_n.tile_size());
                         const z = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * Rsed.maasto_n.tile_size());
@@ -154,6 +155,9 @@ Rsed.ui_input_n = (function()
             }
             case "prop":
             {
+                // For now, shared mode doesn't support interacting with props.
+                if (Rsed.shared_mode_n.enabled()) break;
+
                 Rsed.assert && (mouseLock.propTrackId != null)
                             || Rsed.throw("Expected the prop track id as a parameter to prop grabs.");
 
