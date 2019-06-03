@@ -52,6 +52,7 @@ Rsed.shared_mode_n = (function()
                                             "&participantId=" + participantId),
                 {
                     method: "POST",
+                    cache: "no-store",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(postData)
                 })
@@ -160,7 +161,7 @@ Rsed.shared_mode_n = (function()
             // If we were already registered as a participant, unregister that previous registration, first.
             if (publicInterface.enabled()) publicInterface.unregister_current_registration();
 
-            return fetch("server/shared/register.php?projectName=" + projectName)
+            return fetch(("server/shared/register.php?projectName=" + projectName), {cache: "no-store"})
                     .then(response=>
                     {
                         if (!response.ok)

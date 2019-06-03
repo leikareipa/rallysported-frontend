@@ -335,6 +335,7 @@ Rsed.shared_mode_n = (function()
                                             "&participantId=" + participantId),
                 {
                     method: "POST",
+                    cache: "no-store",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(postData)
                 })
@@ -443,7 +444,7 @@ Rsed.shared_mode_n = (function()
             // If we were already registered as a participant, unregister that previous registration, first.
             if (publicInterface.enabled()) publicInterface.unregister_current_registration();
 
-            return fetch("server/shared/register.php?projectName=" + projectName)
+            return fetch(("server/shared/register.php?projectName=" + projectName), {cache: "no-store"})
                     .then(response=>
                     {
                         if (!response.ok)
@@ -5110,7 +5111,10 @@ const resource_loader_n = (function()
             Rsed.assert && (resourceType.includes(resourceType))
                         || Rsed.throw("Expected a valid resource type.");
 
-            return fetch(filename)
+            /// TODO. Fetch's caching should be disabled for shared-mode editing, but can be on for other modes.
+            /// For now, we just disable the cache in all cases, until we implement a way to differentiate the
+            /// different modes in this function.
+            return fetch(filename, {cache: "no-store"})
                    .then(async(response)=>
                    {
                        if (!response.ok)
