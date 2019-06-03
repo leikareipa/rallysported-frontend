@@ -359,37 +359,33 @@ Rsed.shared_mode_n = (function()
             varimaa: cacheToDataArray(localCaches["varimaa"]),
         };
 
-        // If we have any data to post to the server, do so.
-        if (postData.maasto.length ||
-            postData.varimaa.length)
-        {
-            return fetch(("server/shared/post.php?projectName=" + Rsed.main_n.current_project_name() +
-                                                "&participantId=" + participantId),
-                   {
-                       method: "POST",
-                       headers: { "Content-Type": "application/json" },
-                       body: JSON.stringify(postData)
-                   })
-                   .then(response=>
-                   {
-                       if (!response.ok)
-                       {
-                           throw "A POST request to the server failed.";
-                       }
-        
-                       return response.json();
-                   })
-                   .then(ticket=>
-                   {
-                       if (!ticket.valid)
-                       {
-                           throw ("The server sent a POST ticket marked invalid. It said: " + ticket.message);
-                       }
+        return fetch(("server/shared/post.php?projectName=" + Rsed.main_n.current_project_name() +
+                                            "&participantId=" + participantId),
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(postData)
+                })
+                .then(response=>
+                {
+                    if (!response.ok)
+                    {
+                        throw "A POST request to the server failed.";
+                    }
+    
+                    return response.json();
+                })
+                .then(ticket=>
+                {
+                    if (!ticket.valid ||
+                        (typeof ticket.data === "undefined"))
+                    {
+                        throw ("The server sent a POST ticket marked invalid. It said: " + ticket.message);
+                    }
 
-                       return ticket.valid;
-                   })
-                   .catch(error=>{ Rsed.throw(error); });
-        }
+                    return ticket.data;
+                })
+                .catch(error=>{ Rsed.throw(error); });
     }
 
     // Takes in an object holding edit data we've received from the server made by other
@@ -449,7 +445,9 @@ Rsed.shared_mode_n = (function()
             {
                 for (let i = 0; i < serverData[resourceName].length; i += 2)
                 {
-                    localCaches[resourceName][serverData[resourceName][i]] = null;
+                    const idx = serverData[resourceName][i];
+
+                    localCaches[resourceName][idx] = null;
                 }
             }
         });
@@ -462,18 +460,19 @@ Rsed.shared_mode_n = (function()
     {
         if (!participantId) return;
 
-        // Tally up into caches the edits we've made since the last time we contacted the
-        // server. We can then upload them to the server.
-        const maastoCache = Rsed.ui_brush_n.flush_brush_cache("maasto");
-        const varimaaCache = Rsed.ui_brush_n.flush_brush_cache("varimaa");
-    
-        // Get and apply new edits from the other participants.
-        const newServerData = await fetch_new_server_data();
-        apply_server_data_to_local_data(newServerData);
-        override_local_caches_with_server_data({"maasto":maastoCache, "varimaa":varimaaCache}, newServerData);
+       /* if (Rsed.ui_input_n.are_editing_keys_pressed())
+        {
+            console.log("not yet");
+            setTimeout(()=>{ server_io(participantId); }, 500);
+            return;
+        }*/
 
-        // Upload our edits to the server.
-        await send_local_caches_to_server({"maasto":maastoCache, "varimaa":varimaaCache});
+        const newServerData = await send_local_caches_to_server({
+            maasto: Rsed.ui_brush_n.flush_brush_cache("maasto"),
+            varimaa: Rsed.ui_brush_n.flush_brush_cache("varimaa")
+        });
+
+        apply_server_data_to_local_data(newServerData);
 
         // Loop.
         setTimeout(()=>{ server_io(participantId); }, serverPollingInterval);
@@ -4407,6 +4406,8 @@ Rsed.ui_input_n = (function()
         publicInterface.set_left_click = function(isDown) { mouseLeftPressed = isDown; }
         publicInterface.set_right_click = function(isDown) { mouseRightPressed = isDown; }
         publicInterface.set_middle_click = function(isDown) { mouseMiddlePressed = isDown; }
+
+        publicInterface.are_editing_keys_pressed = function() { return (mouseLeftPressed | mouseRightPressed | mouseMiddlePressed); }
     }
     return publicInterface;
 })();

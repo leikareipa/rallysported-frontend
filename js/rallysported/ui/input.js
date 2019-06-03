@@ -461,6 +461,8 @@ Rsed.ui_input_n = (function()
         publicInterface.set_left_click = function(isDown) { mouseLeftPressed = isDown; }
         publicInterface.set_right_click = function(isDown) { mouseRightPressed = isDown; }
         publicInterface.set_middle_click = function(isDown) { mouseMiddlePressed = isDown; }
+
+        publicInterface.are_editing_keys_pressed = function() { return (mouseLeftPressed | mouseRightPressed | mouseMiddlePressed); }
     }
     return publicInterface;
 })();

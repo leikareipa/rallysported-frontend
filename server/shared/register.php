@@ -31,15 +31,14 @@ if (!preg_match('/^[a-z]+$/', $_GET["projectName"]))
     exit(failure("Malformed project name."));
 }
 
-// Create a random-ish, (hopefully) unique user id.
-$newParticipantId = strtolower(str_shuffle(uniqid() . bin2hex(random_bytes(10))));
-
 // To register the user on the server, we'll create for them a server-side cache file.
 // All edits by other participants will be accumulated into this file, and its contents
 // will be sent to the client when they request for it.
 {
-    $clientCacheFileName = ("../../track-list/shared/projects/" . $_GET["projectName"] . "/participants/" . $newParticipantId . ".json");
+    // Derive a random-ish, (hopefully) unique user id.
+    $newParticipantId = strtolower(str_shuffle(uniqid() . bin2hex(random_bytes(10))));
 
+    $clientCacheFileName = ("../../track-list/shared/projects/" . $_GET["projectName"] . "/participants/" . $newParticipantId . ".json");
     if (file_exists($clientCacheFileName))
     {
         exit(failure("A participant of the given name already exists."));
@@ -58,11 +57,11 @@ $newParticipantId = strtolower(str_shuffle(uniqid() . bin2hex(random_bytes(10)))
         // them as a participant (and delete their cache file).
         if (!fputs($jsonFile, '{"timestamp":' . time() . '}'))
         {
-            fflush($jsonFile);
             flock($jsonFile, LOCK_UN);
-            exit(failure("Server-side data IO failure."));
+            exit(failure("Server-side IO failure."));
         }
     }
+
     fflush($jsonFile);
     flock($jsonFile, LOCK_UN);
 }
