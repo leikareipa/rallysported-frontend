@@ -48,7 +48,6 @@
 
         <!-- Third-party JavaScript.-->
         <script src="./distributable/3rd-party/jszip/jszip.min.js" defer></script>
-        <script src="./distributable/polyfill.js" defer></script>
 
         <!-- RallySportED's JavaScript.-->
         <script src="./distributable/rallysported.cat.js" defer></script>
