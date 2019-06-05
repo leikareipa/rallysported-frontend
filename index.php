@@ -43,13 +43,7 @@
              <!-- The rendering goes here.-->
         </div>
 
-        <!-- Vue.-->
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
-
-        <!-- Third-party JavaScript.-->
-        <script src="./distributable/3rd-party/jszip/jszip.min.js" defer></script>
-
-        <!-- RallySportED's JavaScript.-->
         <script src="./distributable/rallysported.cat.js" defer></script>
     </body>
 </html>
