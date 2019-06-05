@@ -1,11 +1,11 @@
 `A note to the recruiter!` This was my second-ever project in JavaScript, and will by that nature contain some decisions of design and/or implementation that I might or would make differently today. That said, it's still a pretty cool and unique single-page app!
 
-# RallySportED-JS
+# RallySportED-js
 A version of [RallySportED](../../../rallysported)'s track editor for browsers, written in JavaScript. You should find it capable of running in a modern browser on a desktop system. (Mobile support is on the cards but not yet available.)
 
 You can find more information about RallySportED in general, including more technically-oriented documentation, in [RallySportED's umbrella repo](../../../rallysported).
 
-A live page of RallySportED-JS is available [here](http://tarpeeksihyvaesoft.com/rallysported/).
+A live page of RallySportED-js is available [here](http://tarpeeksihyvaesoft.com/rallysported/).
 
 ### Features!
 - Edit Rally-Sport's tracks in your browser!
@@ -19,30 +19,30 @@ A live page of RallySportED-JS is available [here](http://tarpeeksihyvaesoft.com
 
 # How to use
 ### User's guide
-You can find the RallySportED-JS  user's guide by following the _User guide_ link at the top of the editor's page.
+You can find the RallySportED-js  user's guide by following the _User guide_ link at the top of the editor's page.
 
-The guide will walk you through the basics of getting started with RallySportED-JS, making a new track from scratch, and playing the tracks in Rally-Sport. 
+The guide will walk you through the basics of getting started with RallySportED-js, making a new track from scratch, and playing the tracks in Rally-Sport. 
 
 ### Setting up on a server
-If you want to set up RallySportED-JS on a server, simply copy over the following items:
+If you want to set up RallySportED-js on a server, simply copy over the following items:
 - [index.php](index.php)
 - [index.css](index.css)
 - The [track-list/](track-list/) directory
 - The [distributable/](distributable/) directory
 
-You can use the address parameter `track` to have RallySportED-JS load a particular track on page load. For instance, `?track=abc` will load the sample track `abc.zip` from [track-list/files/](track-list/files/).
+You can use the address parameter `track` to have RallySportED-js load a particular track on page load. For instance, `?track=abc` will load the sample track `abc.zip` from [track-list/files/](track-list/files/).
 
 # Project status
-RallySportED-JS is currently in beta, with development occurring in sporadic increments.
+RallySportED-js is currently in beta, with development occurring in sporadic increments.
 
 You can check out the [to-do list](#to-do) to get a rough idea of what's to come for the project in the nearest future.
 
 ### System requirements
-**User interface.** At present, a mouse and keyboard are required to operate the RallySportED-JS user interface. There are plans to implement a mobile-friendly UI, but no concrete schedule exists for it at this time.
+**User interface.** At present, a mouse and keyboard are required to operate the RallySportED-js user interface. There are plans to implement a mobile-friendly UI, but no concrete schedule exists for it at this time.
 
-**Processing power.** RallySportED-JS uses a software 3d renderer, so it requires a little bit of processing power from the host CPU. No specific figures have yet been established, but a reasonable desktop CPU released in the last five years or so should be up to the job. GPU performance is less important.
+**Processing power.** RallySportED-js uses a software 3d renderer, so it requires a little bit of processing power from the host CPU. No specific figures have yet been established, but a reasonable desktop CPU released in the last five years or so should be up to the job. GPU performance is less important.
 
-**Browser compatibility.** Below are rough estimates of the required browser versions to run a given version of RallySportED-JS. Browsers marked with "No" are not compatible at all.
+**Browser compatibility.** Below are rough estimates of the required browser versions to run a given version of RallySportED-js. Browsers marked with "No" are not compatible at all.
 
 <table>
     <tr>
@@ -78,7 +78,7 @@ You can check out the [to-do list](#to-do) to get a rough idea of what's to come
         <td align="center">48</td>
         <td align="center">51</td>
         <td align="center">11?</td>
-        <td align="center">14?</td>
+        <td align="center">15?</td>
         <td align="center">No</td>
     </tr>
     <tr>
@@ -111,9 +111,9 @@ You can check out the [to-do list](#to-do) to get a rough idea of what's to come
 - [ ] An indicator rectangle in the texture pane around the texture that's currently selected
 
 # Authors and credits
-The principal author of RallySportED-JS is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](http://www.tarpeeksihyvaesoft.com)).
+The principal author of RallySportED-js is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](http://www.tarpeeksihyvaesoft.com)).
 
-RallySportED-JS makes use of [JSZip](https://stuk.github.io/jszip/).
+RallySportED-js makes use of [JSZip](https://stuk.github.io/jszip/).
 
 The implementation of the Bresenham line algo in [js/rallysported/render/line-draw.js](js/rallysported/render/line-draw.js) has been adapted, with changes, from the one given by [Phrogz](https://stackoverflow.com/users/405017/phrogz) on [Stack Overflow](https://stackoverflow.com/a/4672319).
 
