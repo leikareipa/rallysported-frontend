@@ -113,7 +113,7 @@ You can check out the [to-do list](#to-do) to get a rough idea of what's to come
 # Authors and credits
 The principal author of RallySportED-JS is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](http://www.tarpeeksihyvaesoft.com)).
 
-RallySportED-JS makes use of [JSZip](https://stuk.github.io/jszip/) and [FileSaver.js](https://github.com/eligrey/FileSaver.js/).
+RallySportED-JS makes use of [JSZip](https://stuk.github.io/jszip/).
 
 The implementation of the Bresenham line algo in [js/rallysported/render/line-draw.js](js/rallysported/render/line-draw.js) has been adapted, with changes, from the one given by [Phrogz](https://stackoverflow.com/users/405017/phrogz) on [Stack Overflow](https://stackoverflow.com/a/4672319).
 
