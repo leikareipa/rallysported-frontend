@@ -8,15 +8,11 @@
 
 "use strict";
 
-Rsed.main_n = (function()
+Rsed.core = (function()
 {
     // The project we've currently got loaded. When the user makes edits or requests a save,
     // this is the target project.
     let project = Rsed.project.placeholder;
-
-    // Strings with which to build URLs to track assets.
-    const tracksDirectory = "track-list/files/";
-    const sharedTracksDirectory = "track-list/shared/";
 
     const renderScalingMultiplier = 0.25;
 
@@ -87,9 +83,9 @@ Rsed.main_n = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop:function(name = "")
                 {
-                    Rsed.main_n.project().props.change_prop_type(Rsed.main_n.project().track_id(),
+                    Rsed.core.project().props.change_prop_type(Rsed.core.project().track_id(),
                                                                  Rsed.ui_input_n.mouse_hover_args().trackId,
-                                                                 Rsed.main_n.project().props.id_for_name(name));
+                                                                 Rsed.core.project().props.id_for_name(name));
                     window.close_dropdowns();
 
                     return;
@@ -97,8 +93,8 @@ Rsed.main_n = (function()
                 
                 refresh:function()
                 {
-                    this.trackName = Rsed.main_n.project().name;
-                    this.propList = Rsed.main_n.project().props.names()
+                    this.trackName = Rsed.core.project().name;
+                    this.propList = Rsed.core.project().props.names()
                                                .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
                                                .map(propName=>({propName}));
 
@@ -126,20 +122,20 @@ Rsed.main_n = (function()
         return publicInterface;
     })();
 
-    const publicInterface = {};
+    const publicInterface =
     {
-        publicInterface.project = function() { return project; };
+        project: function() { return project; },
 
         // Set to false if you want to incapacitate the program, e.g. as a result of an error throwing.
         // If not operational, the program won't respond to user input and won't display anything to
         // the user.
-        publicInterface.isOperational = true;
+        isOperational: true,
 
-        publicInterface.fps_counter_enabled = function() { return fpsCounterEnabled; }
+        fps_counter_enabled: function() { return fpsCounterEnabled; },
 
-        publicInterface.scaling_multiplier = function() { return renderScalingMultiplier; }
+        scaling_multiplier: function() { return renderScalingMultiplier; },
     
-        publicInterface.load_project = async function(args = {})
+        load_project: async function(args = {})
         {
             Rsed.assert && ((typeof args.editMode !== "undefined") &&
                             (typeof args.projectName !== "undefined"))
@@ -168,11 +164,11 @@ Rsed.main_n = (function()
             {
                 Rsed.shared_mode_n.start_polling_server();
             }
-        }
+        },
 
         // Starts the program. The renderer will keep requesting a new animation frame, and will call the
         // callback functions we've set at that rate.
-        publicInterface.launch_rallysported = function(startupArgs = {})
+        launch_rallysported: function(startupArgs = {})
         {
             Rsed.assert && ((typeof startupArgs.projectLocality !== "undefined") &&
                             (typeof startupArgs.projectName !== "undefined"))
@@ -191,10 +187,10 @@ Rsed.main_n = (function()
                 htmlUI.refresh();
                 htmlUI.set_visible(true);
             })();
-        }
+        },
 
         // Exports the project's data into a zip file the user can download.
-        publicInterface.save_project_to_disk = function()
+        save_project_to_disk: function()
         {
             if (project == null)
             {
@@ -203,12 +199,12 @@ Rsed.main_n = (function()
             }
 
             Rsed.project_n.generate_download_of_project(project);
-        }
+        },
 
         // Gets called when something is dropped onto RallySportED's render canvas. We expect
         // the drop to be a zip file containing the files of a RallySportED project for us to
         // load up. If it's not, we'll ignore the drop.
-        publicInterface.drop_handler = function(event)
+        drop_handler: function(event)
         {
             // Don't let the browser handle the drop.
             event.preventDefault();
@@ -226,35 +222,28 @@ Rsed.main_n = (function()
             }
 
             // We now presumably have a zipped RallySportED project that we can load, so let's do that.
-            Rsed.main_n.load_project({fileFormat:"zip",locality:"local",fileReference:zipFile});
+            Rsed.core.load_project({fileFormat:"zip",locality:"local",fileReference:zipFile});
             /// TODO: .then(()=>{//cleanup.});
 
             // Clear the address bar's parameters to reflect the fact that the user has loaded a local
             // track resource instead of specifying a server-side resource via the address bar.
             const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
             window.history.replaceState({}, document.title, basePath);
-        }
+        },
 
-        publicInterface.incapacitate_rallysported = function(message)
+        incapacitate_rallysported: function(message)
         {
             renderer.indicate_error(message);
             htmlUI.set_visible(false);
             publicInterface.isOperational = false;
-        }
+        },
 
-        publicInterface.render_width = function() { return renderer.render_width(); }
-        publicInterface.render_height = function() { return renderer.render_height(); }
-
-        publicInterface.render_latency = function() { return renderer.previousFrameLatencyMs; }
-
-        publicInterface.mouse_pick_buffer_value_at = function(x, y) { return renderer.mouse_pick_buffer_value_at(x, y); }
-
-        publicInterface.tracks_directory = function() { return tracksDirectory; }
-        publicInterface.shared_tracks_directory = function() { return sharedTracksDirectory; }
-
-        publicInterface.current_project_name = function() { return project.name; }
-
-        publicInterface.render_surface_id = function() { return renderer.renderSurfaceId; }
+        render_width: ()=>renderer.render_width(),
+        render_height: ()=>renderer.render_height(),
+        render_latency: ()=>renderer.previousFrameLatencyMs,
+        render_surface_id: ()=>renderer.renderSurfaceId,
+        mouse_pick_buffer_value_at: (x, y)=>renderer.mouse_pick_buffer_value_at(x, y),
     }
+
     return publicInterface;
 })();

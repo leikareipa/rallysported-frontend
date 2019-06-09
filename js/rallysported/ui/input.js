@@ -127,8 +127,8 @@ Rsed.ui_input_n = (function()
                     if (mouseLeftPressed &&
                         !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
                     {
-                        Rsed.main_n.project().props.add_location(Rsed.main_n.project().track_id(),
-                                                                 Rsed.main_n.project().props.id_for_name("tree"),
+                        Rsed.core.project().props.add_location(Rsed.core.project().track_id(),
+                                                                 Rsed.core.project().props.id_for_name("tree"),
                                                                  {
                                                                      x: (hoverArgs.tileX * Rsed.constants.groundTileSize),
                                                                      z: (hoverArgs.tileZ * Rsed.constants.groundTileSize),
@@ -168,7 +168,7 @@ Rsed.ui_input_n = (function()
                     // Remove the selected prop.
                     if (shiftPressed)
                     {
-                        Rsed.main_n.project().props.remove(Rsed.main_n.project().track_id(), mouseLock.propTrackId);
+                        Rsed.core.project().props.remove(Rsed.core.project().track_id(), mouseLock.propTrackId);
                         mouseLock.hibernating = true;
                     }
                     // Drag the prop.
@@ -177,7 +177,7 @@ Rsed.ui_input_n = (function()
                         // For now, don't allow moving the starting line (prop #0).
                         if (mouseLock.propTrackId !== 0)
                         {
-                            Rsed.main_n.project().props.move(Rsed.main_n.project().track_id(),
+                            Rsed.core.project().props.move(Rsed.core.project().track_id(),
                                                              mouseLock.propTrackId,
                                                              {
                                                                  x: Rsed.ui_input_n.mouse_pos_delta_x()*6,
@@ -308,8 +308,8 @@ Rsed.ui_input_n = (function()
                     // The tile coordinates can be out of bounds when the camera is moved outside of the
                     // track's boundaries. In that case, simply ignore them, since there's no interactible
                     // ground elements outside of the track.
-                    if ((args.tileX < 0) || (args.tileX >= Rsed.main_n.project().maasto.width) ||
-                        (args.tileZ < 0) || (args.tileZ >= Rsed.main_n.project().maasto.width))
+                    if ((args.tileX < 0) || (args.tileX >= Rsed.core.project().maasto.width) ||
+                        (args.tileZ < 0) || (args.tileZ >= Rsed.core.project().maasto.width))
                     {
                         return null;
                     }
@@ -393,8 +393,8 @@ Rsed.ui_input_n = (function()
         publicInterface.set_mouse_pos = function(x = 0, y = 0)
         {
             // Don't set the mouse position out of bounds.
-            if ((x < 0 || x >= Rsed.main_n.render_width()) ||
-                (y < 0 || y >= Rsed.main_n.render_height()))
+            if ((x < 0 || x >= Rsed.core.render_width()) ||
+                (y < 0 || y >= Rsed.core.render_height()))
             {
                 return;
             }
@@ -409,7 +409,7 @@ Rsed.ui_input_n = (function()
             {
                 reset_mouse_hover_info();
 
-                const mousePickValue = Rsed.main_n.mouse_pick_buffer_value_at(x, y);
+                const mousePickValue = Rsed.core.mouse_pick_buffer_value_at(x, y);
                 hoverPickType = this.get_mouse_picking_type(mousePickValue);
                 hoverArgs = this.get_mouse_picking_args(mousePickValue, hoverPickType);
 

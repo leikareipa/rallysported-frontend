@@ -82,7 +82,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
     // The render loop. This will run continuously once called.
     this.run_renderer = function(timestamp = 0)
     {
-        if (!Rsed.main_n.isOperational) return;
+        if (!Rsed.core.isOperational) return;
         
         this.previousFrameLatencyMs = (timestamp - this.previousRenderTimestamp);
         this.previousRenderTimestamp = timestamp; 

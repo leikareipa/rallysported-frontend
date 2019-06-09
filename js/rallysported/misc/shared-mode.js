@@ -48,7 +48,7 @@ Rsed.shared_mode_n = (function()
             varimaa: cacheToDataArray(localCaches["varimaa"]),
         };
 
-        return fetch(("server/shared/post.php?projectName=" + Rsed.main_n.current_project_name() +
+        return fetch(("server/shared/post.php?projectName=" + Rsed.core.project().name +
                                             "&participantId=" + participantId),
                 {
                     method: "POST",
@@ -87,8 +87,8 @@ Rsed.shared_mode_n = (function()
 
         const resources =
         {
-            "maasto": Rsed.main_n.project().maasto.set_tile_value_at,
-            "varimaa": Rsed.main_n.project().varimaa.set_tile_value_at,
+            "maasto": Rsed.core.project().maasto.set_tile_value_at,
+            "varimaa": Rsed.core.project().varimaa.set_tile_value_at,
         };
 
         for (const [resourceName, dataCallback] of Object.entries(resources))
@@ -105,8 +105,8 @@ Rsed.shared_mode_n = (function()
         // Converts a 1d array index into a 2d x,y coordinate pair.
         function idx_to_xy(idx)
         {
-            return [(idx % Rsed.main_n.project().maasto.width),
-                    Math.floor(idx / Rsed.main_n.project().maasto.width)];
+            return [(idx % Rsed.core.project().maasto.width),
+                    Math.floor(idx / Rsed.core.project().maasto.width)];
         }
     }
 

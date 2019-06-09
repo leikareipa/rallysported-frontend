@@ -23,7 +23,7 @@ const Rsed = {};
 
     Rsed.throw = (errMessage = "")=>
     {
-        Rsed.main_n.incapacitate_rallysported(errMessage);
+        Rsed.core.incapacitate_rallysported(errMessage);
 
         alert("RallySportED error: " + errMessage);
         throw Error("RallySportED error: " + errMessage);

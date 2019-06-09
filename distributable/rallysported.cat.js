@@ -77,7 +77,7 @@ const Rsed = {};
 
     Rsed.throw = (errMessage = "")=>
     {
-        Rsed.main_n.incapacitate_rallysported(errMessage);
+        Rsed.core.incapacitate_rallysported(errMessage);
 
         alert("RallySportED error: " + errMessage);
         throw Error("RallySportED error: " + errMessage);
@@ -495,7 +495,7 @@ Rsed.worldBuilder = function()
 
                     const tilePalaIdx = (()=>
                     {
-                        let idx = Rsed.main_n.project().varimaa.tile_at(tileX, (tileZ - 1));
+                        let idx = Rsed.core.project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
                         if ((tileX === Rsed.ui_input_n.mouse_tile_hover_x()) &&
@@ -510,10 +510,10 @@ Rsed.worldBuilder = function()
                     // Construct the ground quad polygon.
                     {
                         // The heights of the ground quad's corner points.
-                        const height1 = centerView.y + Rsed.main_n.project().maasto.tile_at( tileX,       tileZ);
-                        const height2 = centerView.y + Rsed.main_n.project().maasto.tile_at((tileX + 1),  tileZ);
-                        const height3 = centerView.y + Rsed.main_n.project().maasto.tile_at((tileX + 1), (tileZ - 1));
-                        const height4 = centerView.y + Rsed.main_n.project().maasto.tile_at( tileX,      (tileZ - 1));
+                        const height1 = centerView.y + Rsed.core.project().maasto.tile_at( tileX,       tileZ);
+                        const height2 = centerView.y + Rsed.core.project().maasto.tile_at((tileX + 1),  tileZ);
+                        const height3 = centerView.y + Rsed.core.project().maasto.tile_at((tileX + 1), (tileZ - 1));
+                        const height4 = centerView.y + Rsed.core.project().maasto.tile_at( tileX,      (tileZ - 1));
                         
                         const groundQuad = new Rsed.geometry_n.polygon_o(4);
                         groundQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX, height1, vertZ);
@@ -522,7 +522,7 @@ Rsed.worldBuilder = function()
                         groundQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, height4, (vertZ + Rsed.constants.groundTileSize));
                         
                         groundQuad.hasWireframe = Rsed.ui_view_n.show3dWireframe;
-                        groundQuad.texture = Rsed.main_n.project().palat.texture(tilePalaIdx);
+                        groundQuad.texture = Rsed.core.project().palat.texture(tilePalaIdx);
 
                         // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
                         // rasterization we'll write into the mouse-picking buffer, so we can later determine which
@@ -536,7 +536,7 @@ Rsed.worldBuilder = function()
                     // If this tile has a billboard, add that too.
                     if (tilePalaIdx > 239 && tilePalaIdx < 248)
                     {
-                        const baseHeight = centerView.y + Rsed.main_n.project().maasto.tile_at(tileX, (tileZ - 1));
+                        const baseHeight = centerView.y + Rsed.core.project().maasto.tile_at(tileX, (tileZ - 1));
 
                         const billboardQuad = new Rsed.geometry_n.polygon_o(4);
                         billboardQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX, baseHeight, vertZ);
@@ -549,18 +549,18 @@ Rsed.worldBuilder = function()
                             // Spectators.
                             case 240:
                             case 241:
-                            case 242: billboardQuad.texture = Rsed.main_n.project().palat.texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
+                            case 242: billboardQuad.texture = Rsed.core.project().palat.texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
                             break;
         
                             // Shrubs.
-                            case 243: billboardQuad.texture = Rsed.main_n.project().palat.texture(208, {alpha:true}); break;
-                            case 244: billboardQuad.texture = Rsed.main_n.project().palat.texture(209, {alpha:true}); break;
-                            case 245: billboardQuad.texture = Rsed.main_n.project().palat.texture(210, {alpha:true}); break;
+                            case 243: billboardQuad.texture = Rsed.core.project().palat.texture(208, {alpha:true}); break;
+                            case 244: billboardQuad.texture = Rsed.core.project().palat.texture(209, {alpha:true}); break;
+                            case 245: billboardQuad.texture = Rsed.core.project().palat.texture(210, {alpha:true}); break;
         
                             // Small poles.
                             case 246:
-                            case 247: billboardQuad.texture = Rsed.main_n.project().palat.texture(211, {alpha:true}); break;
-                            case 250: bbillboardQuadll.texture = Rsed.main_n.project().palat.texture(212, {alpha:true}); break;
+                            case 247: billboardQuad.texture = Rsed.core.project().palat.texture(211, {alpha:true}); break;
+                            case 250: bbillboardQuadll.texture = Rsed.core.project().palat.texture(212, {alpha:true}); break;
         
                             default: Rsed.throw("Unrecognized billboard texture."); continue;
                         }
@@ -576,7 +576,7 @@ Rsed.worldBuilder = function()
                         bridgeQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize));
                         bridgeQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize));
 
-                        bridgeQuad.texture = Rsed.main_n.project().palat.texture(177, true);
+                        bridgeQuad.texture = Rsed.core.project().palat.texture(177, true);
 
                         trackPolygons.push(bridgeQuad);
                     }
@@ -584,7 +584,7 @@ Rsed.worldBuilder = function()
             }
 
             // Add any track prop meshes that should be visible on the currently-drawn track.
-            const propLocations = Rsed.main_n.project().props.locations_of_props_on_track(Rsed.main_n.project().track_id());
+            const propLocations = Rsed.core.project().props.locations_of_props_on_track(Rsed.core.project().track_id());
             propLocations.forEach((pos, idx)=>
             {
                 if ((pos.x >= (Rsed.camera_n.pos_x() * Rsed.constants.groundTileSize)) &&
@@ -594,7 +594,7 @@ Rsed.worldBuilder = function()
                 {
                     const x = (pos.x + centerView.x - (viewPos.x * Rsed.constants.groundTileSize));
                     const z = (centerView.z - pos.z + (viewPos.z * Rsed.constants.groundTileSize));
-                    const groundHeight = centerView.y + Rsed.main_n.project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
+                    const groundHeight = centerView.y + Rsed.core.project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
                     const y = (groundHeight + pos.y);
 
                     trackPolygons.push(...this.prop_mesh(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
@@ -621,7 +621,7 @@ Rsed.worldBuilder = function()
                 ...args
             };
 
-            const srcMesh = Rsed.main_n.project().props.mesh(propId);
+            const srcMesh = Rsed.core.project().props.mesh(propId);
             const dstMesh = [];
 
             srcMesh.ngons.forEach(ngon=>
@@ -642,7 +642,7 @@ Rsed.worldBuilder = function()
 
                 if (ngon.fill.type === "texture")
                 {
-                    newPoly.texture = Rsed.main_n.project().props.texture(ngon.fill.idx);
+                    newPoly.texture = Rsed.core.project().props.texture(ngon.fill.idx);
                 }
                 else
                 {
@@ -671,7 +671,7 @@ Rsed.worldBuilder = function()
     {
         const firstSpectatorTexIdx = 236; // Index of the first PALA representing a (standing) spectator. Assumes consecutive arrangement.
         const numSkins = 4;
-        const sameRows = ((Rsed.main_n.project().maasto.width === 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
+        const sameRows = ((Rsed.core.project().maasto.width === 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
 
         const yOffs = (Math.floor(tileY / sameRows)) % numSkins;
         const texOffs = ((tileX + (numSkins - 1)) + (yOffs * (numSkins - 1))) % numSkins;
@@ -948,7 +948,7 @@ Rsed.shared_mode_n = (function()
             varimaa: cacheToDataArray(localCaches["varimaa"]),
         };
 
-        return fetch(("server/shared/post.php?projectName=" + Rsed.main_n.current_project_name() +
+        return fetch(("server/shared/post.php?projectName=" + Rsed.core.project().name +
                                             "&participantId=" + participantId),
                 {
                     method: "POST",
@@ -987,8 +987,8 @@ Rsed.shared_mode_n = (function()
 
         const resources =
         {
-            "maasto": Rsed.main_n.project().maasto.set_tile_value_at,
-            "varimaa": Rsed.main_n.project().varimaa.set_tile_value_at,
+            "maasto": Rsed.core.project().maasto.set_tile_value_at,
+            "varimaa": Rsed.core.project().varimaa.set_tile_value_at,
         };
 
         for (const [resourceName, dataCallback] of Object.entries(resources))
@@ -1005,8 +1005,8 @@ Rsed.shared_mode_n = (function()
         // Converts a 1d array index into a 2d x,y coordinate pair.
         function idx_to_xy(idx)
         {
-            return [(idx % Rsed.main_n.project().maasto.width),
-                    Math.floor(idx / Rsed.main_n.project().maasto.width)];
+            return [(idx % Rsed.core.project().maasto.width),
+                    Math.floor(idx / Rsed.core.project().maasto.width)];
         }
     }
 
@@ -1969,8 +1969,8 @@ Rsed.camera_n = (function()
             {
                 if (position.x < 0) position.x = 0;
                 if (position.z < 1) position.z = 1;
-                if (position.x > (Rsed.main_n.project().maasto.width - this.view_width())) position.x = (Rsed.main_n.project().maasto.width - this.view_width());
-                if (position.z > (Rsed.main_n.project().maasto.width - this.view_height()+1)) position.z = (Rsed.main_n.project().maasto.width - this.view_height()+1);
+                if (position.x > (Rsed.core.project().maasto.width - this.view_width())) position.x = (Rsed.core.project().maasto.width - this.view_width());
+                if (position.z > (Rsed.core.project().maasto.width - this.view_height()+1)) position.z = (Rsed.core.project().maasto.width - this.view_height()+1);
             }
         }
 
@@ -2074,7 +2074,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
     // The render loop. This will run continuously once called.
     this.run_renderer = function(timestamp = 0)
     {
-        if (!Rsed.main_n.isOperational) return;
+        if (!Rsed.core.isOperational) return;
         
         this.previousFrameLatencyMs = (timestamp - this.previousRenderTimestamp);
         this.previousRenderTimestamp = timestamp; 
@@ -2891,7 +2891,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     function clamped_to_prop_margins(value)
     {
         const min = (Rsed.constants.propTileMargin * Rsed.constants.groundTileSize);
-        const max = ((Rsed.main_n.project().maasto.width - Rsed.constants.propTileMargin) * Rsed.constants.groundTileSize);
+        const max = ((Rsed.core.project().maasto.width - Rsed.constants.propTileMargin) * Rsed.constants.groundTileSize);
 
         return Rsed.clamp(value, min, max);
     }
@@ -3648,12 +3648,12 @@ Rsed.ui_brush_n = (function()
             for (let by = -brushSize; by <= brushSize; by++)
             {
                 const tileZ = (y + by);
-                if (tileZ < 0 || tileZ >= Rsed.main_n.project().maasto.width) continue;
+                if (tileZ < 0 || tileZ >= Rsed.core.project().maasto.width) continue;
 
                 for (let bx = -brushSize; bx <= brushSize; bx++)
                 {
                     const tileX = (x + bx);
-                    if (tileX < 0 || tileX >= Rsed.main_n.project().maasto.width) continue;
+                    if (tileX < 0 || tileX >= Rsed.core.project().maasto.width) continue;
 
                     switch (brushAction)
                     {
@@ -3661,41 +3661,41 @@ Rsed.ui_brush_n = (function()
                         {
                             if (this.brushSmoothens)
                             {
-                                if (tileX < 1 || tileX >=  (Rsed.main_n.project().maasto.width - 1)) continue;
-                                if (tileZ < 1 || tileZ >= (Rsed.main_n.project().maasto.width - 1)) continue;
+                                if (tileX < 1 || tileX >=  (Rsed.core.project().maasto.width - 1)) continue;
+                                if (tileZ < 1 || tileZ >= (Rsed.core.project().maasto.width - 1)) continue;
     
                                 let avgHeight = 0;
-                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX+1, tileZ);
-                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX-1, tileZ);
-                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX, tileZ+1);
-                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX, tileZ-1);
-                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX+1, tileZ+1);
-                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX+1, tileZ-1);
-                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX-1, tileZ+1);
-                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX-1, tileZ-1);
+                                avgHeight += Rsed.core.project().maasto.tile_at(tileX+1, tileZ);
+                                avgHeight += Rsed.core.project().maasto.tile_at(tileX-1, tileZ);
+                                avgHeight += Rsed.core.project().maasto.tile_at(tileX, tileZ+1);
+                                avgHeight += Rsed.core.project().maasto.tile_at(tileX, tileZ-1);
+                                avgHeight += Rsed.core.project().maasto.tile_at(tileX+1, tileZ+1);
+                                avgHeight += Rsed.core.project().maasto.tile_at(tileX+1, tileZ-1);
+                                avgHeight += Rsed.core.project().maasto.tile_at(tileX-1, tileZ+1);
+                                avgHeight += Rsed.core.project().maasto.tile_at(tileX-1, tileZ-1);
                                 avgHeight /= 8;
                                     
-                                Rsed.main_n.project().maasto.set_tile_value_at(tileX, tileZ, Math.floor(((avgHeight + Rsed.main_n.project().maasto.tile_at(tileX, tileZ) * 7) / 8)));
+                                Rsed.core.project().maasto.set_tile_value_at(tileX, tileZ, Math.floor(((avgHeight + Rsed.core.project().maasto.tile_at(tileX, tileZ) * 7) / 8)));
                             }
                             else
                             {
-                                Rsed.main_n.project().maasto.set_tile_value_at(tileX, tileZ, (Rsed.main_n.project().maasto.tile_at(tileX, tileZ) + value));
+                                Rsed.core.project().maasto.set_tile_value_at(tileX, tileZ, (Rsed.core.project().maasto.tile_at(tileX, tileZ) + value));
                             }
 
                             if (Rsed.shared_mode_n.enabled())
                             {
-                                brushCache.maasto[tileX + tileZ * Rsed.main_n.project().maasto.width] = Rsed.main_n.project().maasto.tile_at(tileX, tileZ);
+                                brushCache.maasto[tileX + tileZ * Rsed.core.project().maasto.width] = Rsed.core.project().maasto.tile_at(tileX, tileZ);
                             }
 
                             break;
                         }
                         case this.brushAction.changePala:
                         {
-                            Rsed.main_n.project().varimaa.set_tile_value_at(tileX, tileZ, value);
+                            Rsed.core.project().varimaa.set_tile_value_at(tileX, tileZ, value);
 
                             if (Rsed.shared_mode_n.enabled())
                             {
-                                brushCache.varimaa[tileX + tileZ * Rsed.main_n.project().maasto.width] = Rsed.main_n.project().varimaa.tile_at(tileX, tileZ);
+                                brushCache.varimaa[tileX + tileZ * Rsed.core.project().maasto.width] = Rsed.core.project().varimaa.tile_at(tileX, tileZ);
                             }
 
                             break;
@@ -3909,9 +3909,9 @@ Rsed.ui_draw_n = (function()
             {
                 const xStr = String(x).padStart(3, "0");
                 const yStr = String(y).padStart(3, "0");
-                const heightStr = (Rsed.main_n.project().maasto.tile_at(x, y) < 0? "-" : "+") +
-                                  String(Math.abs(Rsed.main_n.project().maasto.tile_at(x, y))).padStart(3, "0");
-                const palaStr = String(Rsed.main_n.project().varimaa.tile_at(x, y)).padStart(3, "0");
+                const heightStr = (Rsed.core.project().maasto.tile_at(x, y) < 0? "-" : "+") +
+                                  String(Math.abs(Rsed.core.project().maasto.tile_at(x, y))).padStart(3, "0");
+                const palaStr = String(Rsed.core.project().varimaa.tile_at(x, y)).padStart(3, "0");
 
                 str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
 
@@ -3919,17 +3919,17 @@ Rsed.ui_draw_n = (function()
             }
             case Rsed.ui_input_n.mousePickingType.prop:
             {
-                str = "PROP:" + Rsed.main_n.project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
+                str = "PROP:" + Rsed.core.project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
                       " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
             }
         }
 
-        draw_string(str, 0, Rsed.main_n.render_height() - Rsed.ui_font_n.font_height()-0);
+        draw_string(str, 0, Rsed.core.render_height() - Rsed.ui_font_n.font_height()-0);
     }
 
     function draw_fps()
     {
-        const fpsString = "FPS: " + Math.round((1000 / (Rsed.main_n.render_latency() || 1)));
+        const fpsString = "FPS: " + Math.round((1000 / (Rsed.core.render_latency() || 1)));
         draw_string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui_font_n.font_width()/2) - 73, 3);
     }
 
@@ -3948,8 +3948,8 @@ Rsed.ui_draw_n = (function()
         /// TODO: You can pre-generate the image rather than re-generating it each frame.
         const width = 64;
         const height = 32;
-        const xMul = (Rsed.main_n.project().maasto.width / width);
-        const yMul = (Rsed.main_n.project().maasto.width / height);
+        const xMul = (Rsed.core.project().maasto.width / width);
+        const yMul = (Rsed.core.project().maasto.width / height);
         const image = [];   // An array of palette indices that forms the minimap image.
         const mousePick = [];
         for (let y = 0; y < height; y++)
@@ -3959,7 +3959,7 @@ Rsed.ui_draw_n = (function()
                 const tileX = (x * xMul);
                 const tileZ = (y * yMul);
 
-                const pala = Rsed.main_n.project().palat.texture(Rsed.main_n.project().varimaa.tile_at(tileX, tileZ));
+                const pala = Rsed.core.project().palat.texture(Rsed.core.project().varimaa.tile_at(tileX, tileZ));
                 let color = ((pala == null)? 0 : pala.indices[1]);
 
                 // Have a black outline.
@@ -4006,7 +4006,7 @@ Rsed.ui_draw_n = (function()
     function draw_active_pala()
     {
         const currentPala = Rsed.ui_brush_n.brush_pala_idx();
-        const pala = Rsed.main_n.project().palat.texture(currentPala);
+        const pala = Rsed.core.project().palat.texture(currentPala);
 
         if (pala != null)
         {
@@ -4020,11 +4020,11 @@ Rsed.ui_draw_n = (function()
     function draw_paint_view()
     {
         // Draw a large minimap of the track in the middle of the screen.
-        const width = Math.floor(Rsed.main_n.render_width() * 0.81);
-        const height = Math.floor(Rsed.main_n.render_height() * 0.72);
+        const width = Math.floor(Rsed.core.render_width() * 0.81);
+        const height = Math.floor(Rsed.core.render_height() * 0.72);
         {
-            const xMul = (Rsed.main_n.project().maasto.width / width);
-            const zMul = (Rsed.main_n.project().maasto.width / height);
+            const xMul = (Rsed.core.project().maasto.width / width);
+            const zMul = (Rsed.core.project().maasto.width / height);
             const image = [];   // An array of palette indices that forms the minimap image.
             const mousePick = [];
 
@@ -4035,7 +4035,7 @@ Rsed.ui_draw_n = (function()
                     const tileX = Math.floor(x * xMul);
                     const tileZ = Math.floor(z * zMul);
 
-                    const pala = Rsed.main_n.project().palat.texture(Rsed.main_n.project().varimaa.tile_at(tileX, tileZ));
+                    const pala = Rsed.core.project().palat.texture(Rsed.core.project().varimaa.tile_at(tileX, tileZ));
                     let color = ((pala == null)? 0 : pala.indices[1]);
 
                     // Create an outline.
@@ -4062,7 +4062,7 @@ Rsed.ui_draw_n = (function()
             draw_image(image, mousePick, width, height, ((pixelSurface.width / 2) - (width / 2)), ((pixelSurface.height / 2) - (height / 2)), false);
         }
 
-        draw_string("TRACK SIZE:" + Rsed.main_n.project().maasto.width + "," + Rsed.main_n.project().maasto.width,
+        draw_string("TRACK SIZE:" + Rsed.core.project().maasto.width + "," + Rsed.core.project().maasto.width,
                     ((pixelSurface.width / 2) - (width / 2)),
                     ((pixelSurface.height / 2) - (height / 2)) - Rsed.ui_font_n.font_height());
     }
@@ -4100,7 +4100,7 @@ Rsed.ui_draw_n = (function()
                     case "3d":
                     case "3d-topdown":
                     {
-                        if (Rsed.main_n.fps_counter_enabled()) draw_fps();
+                        if (Rsed.core.fps_counter_enabled()) draw_fps();
                         draw_watermark();
                         draw_minimap();
                         draw_active_pala();
@@ -4141,7 +4141,7 @@ Rsed.ui_draw_n = (function()
 
             // Recompute the pane's dimensions based on the current display size.
             /// FIXME: Leaves unnecessary empty rows for some resolutions.
-            numPalatPaneRows = (Math.floor(Rsed.main_n.render_height() / 8) - 1);
+            numPalatPaneRows = (Math.floor(Rsed.core.render_height() / 8) - 1);
             numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
             palatPaneWidth = ((numPalatPaneCols * (palaWidth / 2)) + 1);
             palatPaneHeight = ((numPalatPaneRows * (palaHeight / 2)) + 1);
@@ -4153,7 +4153,7 @@ Rsed.ui_draw_n = (function()
                 {
                     if (palaIdx > maxNumPalas) break;
 
-                    const pala = Rsed.main_n.project().palat.texture(palaIdx);
+                    const pala = Rsed.core.project().palat.texture(palaIdx);
                     for (let py = 0; py < palaHeight; py++)
                     {
                         for (let px = 0; px < palaWidth; px++)
@@ -4318,8 +4318,8 @@ Rsed.ui_input_n = (function()
                     if (mouseLeftPressed &&
                         !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
                     {
-                        Rsed.main_n.project().props.add_location(Rsed.main_n.project().track_id(),
-                                                                 Rsed.main_n.project().props.id_for_name("tree"),
+                        Rsed.core.project().props.add_location(Rsed.core.project().track_id(),
+                                                                 Rsed.core.project().props.id_for_name("tree"),
                                                                  {
                                                                      x: (hoverArgs.tileX * Rsed.constants.groundTileSize),
                                                                      z: (hoverArgs.tileZ * Rsed.constants.groundTileSize),
@@ -4359,7 +4359,7 @@ Rsed.ui_input_n = (function()
                     // Remove the selected prop.
                     if (shiftPressed)
                     {
-                        Rsed.main_n.project().props.remove(Rsed.main_n.project().track_id(), mouseLock.propTrackId);
+                        Rsed.core.project().props.remove(Rsed.core.project().track_id(), mouseLock.propTrackId);
                         mouseLock.hibernating = true;
                     }
                     // Drag the prop.
@@ -4368,7 +4368,7 @@ Rsed.ui_input_n = (function()
                         // For now, don't allow moving the starting line (prop #0).
                         if (mouseLock.propTrackId !== 0)
                         {
-                            Rsed.main_n.project().props.move(Rsed.main_n.project().track_id(),
+                            Rsed.core.project().props.move(Rsed.core.project().track_id(),
                                                              mouseLock.propTrackId,
                                                              {
                                                                  x: Rsed.ui_input_n.mouse_pos_delta_x()*6,
@@ -4499,8 +4499,8 @@ Rsed.ui_input_n = (function()
                     // The tile coordinates can be out of bounds when the camera is moved outside of the
                     // track's boundaries. In that case, simply ignore them, since there's no interactible
                     // ground elements outside of the track.
-                    if ((args.tileX < 0) || (args.tileX >= Rsed.main_n.project().maasto.width) ||
-                        (args.tileZ < 0) || (args.tileZ >= Rsed.main_n.project().maasto.width))
+                    if ((args.tileX < 0) || (args.tileX >= Rsed.core.project().maasto.width) ||
+                        (args.tileZ < 0) || (args.tileZ >= Rsed.core.project().maasto.width))
                     {
                         return null;
                     }
@@ -4584,8 +4584,8 @@ Rsed.ui_input_n = (function()
         publicInterface.set_mouse_pos = function(x = 0, y = 0)
         {
             // Don't set the mouse position out of bounds.
-            if ((x < 0 || x >= Rsed.main_n.render_width()) ||
-                (y < 0 || y >= Rsed.main_n.render_height()))
+            if ((x < 0 || x >= Rsed.core.render_width()) ||
+                (y < 0 || y >= Rsed.core.render_height()))
             {
                 return;
             }
@@ -4600,7 +4600,7 @@ Rsed.ui_input_n = (function()
             {
                 reset_mouse_hover_info();
 
-                const mousePickValue = Rsed.main_n.mouse_pick_buffer_value_at(x, y);
+                const mousePickValue = Rsed.core.mouse_pick_buffer_value_at(x, y);
                 hoverPickType = this.get_mouse_picking_type(mousePickValue);
                 hoverArgs = this.get_mouse_picking_args(mousePickValue, hoverPickType);
 
@@ -5035,15 +5035,11 @@ Rsed.ngon_fill_n = (function()
 
 "use strict";
 
-Rsed.main_n = (function()
+Rsed.core = (function()
 {
     // The project we've currently got loaded. When the user makes edits or requests a save,
     // this is the target project.
     let project = Rsed.project.placeholder;
-
-    // Strings with which to build URLs to track assets.
-    const tracksDirectory = "track-list/files/";
-    const sharedTracksDirectory = "track-list/shared/";
 
     const renderScalingMultiplier = 0.25;
 
@@ -5114,9 +5110,9 @@ Rsed.main_n = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop:function(name = "")
                 {
-                    Rsed.main_n.project().props.change_prop_type(Rsed.main_n.project().track_id(),
+                    Rsed.core.project().props.change_prop_type(Rsed.core.project().track_id(),
                                                                  Rsed.ui_input_n.mouse_hover_args().trackId,
-                                                                 Rsed.main_n.project().props.id_for_name(name));
+                                                                 Rsed.core.project().props.id_for_name(name));
                     window.close_dropdowns();
 
                     return;
@@ -5124,8 +5120,8 @@ Rsed.main_n = (function()
                 
                 refresh:function()
                 {
-                    this.trackName = Rsed.main_n.project().name;
-                    this.propList = Rsed.main_n.project().props.names()
+                    this.trackName = Rsed.core.project().name;
+                    this.propList = Rsed.core.project().props.names()
                                                .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
                                                .map(propName=>({propName}));
 
@@ -5153,20 +5149,20 @@ Rsed.main_n = (function()
         return publicInterface;
     })();
 
-    const publicInterface = {};
+    const publicInterface =
     {
-        publicInterface.project = function() { return project; };
+        project: function() { return project; },
 
         // Set to false if you want to incapacitate the program, e.g. as a result of an error throwing.
         // If not operational, the program won't respond to user input and won't display anything to
         // the user.
-        publicInterface.isOperational = true;
+        isOperational: true,
 
-        publicInterface.fps_counter_enabled = function() { return fpsCounterEnabled; }
+        fps_counter_enabled: function() { return fpsCounterEnabled; },
 
-        publicInterface.scaling_multiplier = function() { return renderScalingMultiplier; }
+        scaling_multiplier: function() { return renderScalingMultiplier; },
     
-        publicInterface.load_project = async function(args = {})
+        load_project: async function(args = {})
         {
             Rsed.assert && ((typeof args.editMode !== "undefined") &&
                             (typeof args.projectName !== "undefined"))
@@ -5195,11 +5191,11 @@ Rsed.main_n = (function()
             {
                 Rsed.shared_mode_n.start_polling_server();
             }
-        }
+        },
 
         // Starts the program. The renderer will keep requesting a new animation frame, and will call the
         // callback functions we've set at that rate.
-        publicInterface.launch_rallysported = function(startupArgs = {})
+        launch_rallysported: function(startupArgs = {})
         {
             Rsed.assert && ((typeof startupArgs.projectLocality !== "undefined") &&
                             (typeof startupArgs.projectName !== "undefined"))
@@ -5218,10 +5214,10 @@ Rsed.main_n = (function()
                 htmlUI.refresh();
                 htmlUI.set_visible(true);
             })();
-        }
+        },
 
         // Exports the project's data into a zip file the user can download.
-        publicInterface.save_project_to_disk = function()
+        save_project_to_disk: function()
         {
             if (project == null)
             {
@@ -5230,12 +5226,12 @@ Rsed.main_n = (function()
             }
 
             Rsed.project_n.generate_download_of_project(project);
-        }
+        },
 
         // Gets called when something is dropped onto RallySportED's render canvas. We expect
         // the drop to be a zip file containing the files of a RallySportED project for us to
         // load up. If it's not, we'll ignore the drop.
-        publicInterface.drop_handler = function(event)
+        drop_handler: function(event)
         {
             // Don't let the browser handle the drop.
             event.preventDefault();
@@ -5253,36 +5249,29 @@ Rsed.main_n = (function()
             }
 
             // We now presumably have a zipped RallySportED project that we can load, so let's do that.
-            Rsed.main_n.load_project({fileFormat:"zip",locality:"local",fileReference:zipFile});
+            Rsed.core.load_project({fileFormat:"zip",locality:"local",fileReference:zipFile});
             /// TODO: .then(()=>{//cleanup.});
 
             // Clear the address bar's parameters to reflect the fact that the user has loaded a local
             // track resource instead of specifying a server-side resource via the address bar.
             const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
             window.history.replaceState({}, document.title, basePath);
-        }
+        },
 
-        publicInterface.incapacitate_rallysported = function(message)
+        incapacitate_rallysported: function(message)
         {
             renderer.indicate_error(message);
             htmlUI.set_visible(false);
             publicInterface.isOperational = false;
-        }
+        },
 
-        publicInterface.render_width = function() { return renderer.render_width(); }
-        publicInterface.render_height = function() { return renderer.render_height(); }
-
-        publicInterface.render_latency = function() { return renderer.previousFrameLatencyMs; }
-
-        publicInterface.mouse_pick_buffer_value_at = function(x, y) { return renderer.mouse_pick_buffer_value_at(x, y); }
-
-        publicInterface.tracks_directory = function() { return tracksDirectory; }
-        publicInterface.shared_tracks_directory = function() { return sharedTracksDirectory; }
-
-        publicInterface.current_project_name = function() { return project.name; }
-
-        publicInterface.render_surface_id = function() { return renderer.renderSurfaceId; }
+        render_width: ()=>renderer.render_width(),
+        render_height: ()=>renderer.render_height(),
+        render_latency: ()=>renderer.previousFrameLatencyMs,
+        render_surface_id: ()=>renderer.renderSurfaceId,
+        mouse_pick_buffer_value_at: (x, y)=>renderer.mouse_pick_buffer_value_at(x, y),
     }
+
     return publicInterface;
 })();
 /*
@@ -5375,7 +5364,7 @@ window.onload = function(event)
         }
     }
 
-    Rsed.main_n.launch_rallysported(rsedStartupArgs);
+    Rsed.core.launch_rallysported(rsedStartupArgs);
 }
 
 window.close_dropdowns = function()
@@ -5399,12 +5388,12 @@ window.oncontextmenu = function(event)
         return false;
     }
 
-    if (event.target.id !== Rsed.main_n.render_surface_id()) return;
+    if (event.target.id !== Rsed.core.render_surface_id()) return;
 
     // Display a right-click menu for changing the type of the prop under the cursor.
     if (!Rsed.shared_mode_n.enabled() &&
         (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
-        !Rsed.main_n.project().props.name(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+        !Rsed.core.project().props.name(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const propDropdown = document.getElementById("prop-dropdown");
         propDropdown.style.transform = "translate(" + (RSED_MOUSE_POS.x - 40) + "px, " + (RSED_MOUSE_POS.y - 0) + "px)";
@@ -5421,7 +5410,7 @@ window.oncontextmenu = function(event)
 window.onclick = function(event)
 {
     if (RSED_DROPDOWN_ACTIVATED &&
-        (event.target.id === Rsed.main_n.render_surface_id()))
+        (event.target.id === Rsed.core.render_surface_id()))
     {
         window.close_dropdowns();
         return false;
@@ -5452,7 +5441,7 @@ window.onmouseup = function(event)
 
 window.onmousemove = function(event)
 {
-    if (event.target.id !== Rsed.main_n.render_surface_id())
+    if (event.target.id !== Rsed.core.render_surface_id())
     {
         /// Temp hack. Prevent mouse clicks over prop dropdown dialogs from falling through and
         /// inadvertently editing the terrain.
@@ -5469,8 +5458,8 @@ window.onmousemove = function(event)
         RSED_MOUSE_POS.x = (event.clientX - event.target.getBoundingClientRect().left);
         RSED_MOUSE_POS.y = (event.clientY - event.target.getBoundingClientRect().top);
 
-        Rsed.ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * Rsed.main_n.scaling_multiplier()),
-                                      Math.floor(RSED_MOUSE_POS.y * Rsed.main_n.scaling_multiplier()));
+        Rsed.ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * Rsed.core.scaling_multiplier()),
+                                      Math.floor(RSED_MOUSE_POS.y * Rsed.core.scaling_multiplier()));
     }
 }
 
@@ -5488,7 +5477,7 @@ window.onkeydown = function(event)
             case "w": case 87: Rsed.ui_view_n.show3dWireframe = !Rsed.ui_view_n.show3dWireframe; break;
             case "a": case 65: Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane; break;
             case "r": case 82: Rsed.ui_view_n.toggle_view("3d", "3d-topdown"); break;
-            case "l": case 76: Rsed.main_n.project().maasto.bulldoze(window.prompt("Level the terrain to a height of...")); break;
+            case "l": case 76: Rsed.core.project().maasto.bulldoze(window.prompt("Level the terrain to a height of...")); break;
             case "b": case 66: Rsed.ui_view_n.hideProps = !Rsed.ui_view_n.hideProps; break;
             case "spacebar": case 32: Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens; event.preventDefault(); break;
             case "1": case 49: Rsed.ui_brush_n.set_brush_size(0); break;
