@@ -170,20 +170,20 @@ Rsed.palette_n = (function()
 
         publicInterface.set_palette_for_track = function(trackId = 0)
         {
-            Rsed.assert && ((trackId >= 1) &&
-                            (trackId <= 8))
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId <= 7))
                         || Rsed.throw("Trying to set palette for a track index out of bounds.");
 
             switch (trackId)
             {
+                case 0:
                 case 1:
                 case 2:
                 case 3:
-                case 4:
-                case 6:
-                case 7: currentPalette = 0; break;
-                case 5: currentPalette = 1; break;
-                case 8: currentPalette = 3; break;
+                case 5:
+                case 6: currentPalette = 0; break;
+                case 4: currentPalette = 1; break;
+                case 7: currentPalette = 3; break;
                 default: Rsed.throw("Unknown track id for setting a palette."); break;
             }
         }
@@ -210,9 +210,12 @@ Rsed.palette_n = (function()
                 case "gold": return new Rsed.color_n.rgba_o(179, 112, 25, 255);
                 
                 // Rally-Sport's palettes.
-                default: return palettes[currentPalette][idx||0];
+                default: return (palettes[currentPalette][idx] || palettes[currentPalette][0]);
             }
         }
     }
+
+    publicInterface.reset_palettes();
+
     return publicInterface;
 })();

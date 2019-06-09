@@ -22,9 +22,17 @@ const RSED_MOUSE_POS = {x:0, y:0};
 // Parses any address bar parameters, then launches RallySportED.
 window.onload = function(event)
 {
+    // The default start-up parameters to provide to RallySportED when we launch it. These may
+    // be modified by the user via address parameters, which we parse for in the code below.
+    const rsedStartupArgs =
+    {
+        editMode: "local",
+        projectLocality: "server",
+        projectName: "demod",
+    };
+    
     // Parse any parameters the user supplied on the address line. Generally speaking, these
     // will direct which track's assets RallySportED should load up when it starts.
-    const args = {};
     {
         const params = new URLSearchParams(window.location.search);
 
@@ -37,9 +45,9 @@ window.onload = function(event)
                 return;
             }
 
-            args.fileFormat = "raw";
-            args.locality = "server-shared";
-            args.fileReference = params.get("shared");
+            rsedStartupArgs.editMode = "shared";
+            rsedStartupArgs.projectLocality = "server";
+            rsedStartupArgs.projectName = params.get("shared");
 
             // Sanitize input.
             /// TODO.
@@ -54,9 +62,9 @@ window.onload = function(event)
                 return;
             }
 
-            args.fileFormat = "zip";
-            args.locality = "server";
-            args.fileReference = (params.get("track") + ".zip");
+            rsedStartupArgs.editMode = "local";
+            rsedStartupArgs.projectLocality = "server";
+            rsedStartupArgs.projectName = params.get("track");
         }
         // Server side original tracks from Rally-Sport's demo. These take a value in the range 1..8,
         // corresponding to the eight tracks in the demo.
@@ -74,22 +82,13 @@ window.onload = function(event)
                             (trackId <= 8))
                         || Rsed.throw("The given track id is out of bounds.");
 
-            args.fileFormat = "zip";
-            args.locality = "server";
-            args.fileReference = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1) + ".zip");
-        }
-        else // Default.
-        {
-            args.fileFormat = "zip";
-            args.locality = "server";
-            args.fileReference = "demod.zip";
+            rsedStartupArgs.editMode = "local";
+            rsedStartupArgs.projectLocality = "server";
+            rsedStartupArgs.projectName = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
         }
     }
 
-    if (args.locality === "server") args.fileReference = (Rsed.main_n.tracks_directory() + args.fileReference);
-    else if (args.locality === "server-shared") args.fileReference = (Rsed.main_n.shared_tracks_directory() + args.fileReference);
-
-    Rsed.main_n.launch_rallysported(args);
+    Rsed.main_n.launch_rallysported(rsedStartupArgs);
 }
 
 window.close_dropdowns = function()
@@ -118,7 +117,7 @@ window.oncontextmenu = function(event)
     // Display a right-click menu for changing the type of the prop under the cursor.
     if (!Rsed.shared_mode_n.enabled() &&
         (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
-        !Rsed.props_n.prop_name_for_idx(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+        !Rsed.main_n.project().props.name(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const propDropdown = document.getElementById("prop-dropdown");
         propDropdown.style.transform = "translate(" + (RSED_MOUSE_POS.x - 40) + "px, " + (RSED_MOUSE_POS.y - 0) + "px)";

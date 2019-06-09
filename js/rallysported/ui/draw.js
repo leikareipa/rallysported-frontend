@@ -25,8 +25,8 @@ Rsed.ui_draw_n = (function()
     const palatPaneMousePick = [];
     let numPalatPaneCols = 9;
     let numPalatPaneRows = 29;
-    let palatPaneWidth = ((numPalatPaneCols * (Rsed.palat_n.pala_width() / 2)) + 1);
-    let palatPaneHeight = ((numPalatPaneRows * (Rsed.palat_n.pala_height() / 2)) + 1);
+    let palatPaneWidth = ((numPalatPaneCols * (Rsed.constants.palaWidth / 2)) + 1);
+    let palatPaneHeight = ((numPalatPaneRows * (Rsed.constants.palaHeight / 2)) + 1);
     
     function put_pixel(x = 0, y = 0, r = 255, g = 255, b = 255)
     {
@@ -162,9 +162,9 @@ Rsed.ui_draw_n = (function()
             {
                 const xStr = String(x).padStart(3, "0");
                 const yStr = String(y).padStart(3, "0");
-                const heightStr = (Rsed.maasto_n.maasto_height_at(x, y) < 0? "-" : "+") +
-                                  String(Math.abs(Rsed.maasto_n.maasto_height_at(x, y))).padStart(3, "0");
-                const palaStr = String(Rsed.maasto_n.varimaa_tile_at(x, y)).padStart(3, "0");
+                const heightStr = (Rsed.main_n.project().maasto.tile_at(x, y) < 0? "-" : "+") +
+                                  String(Math.abs(Rsed.main_n.project().maasto.tile_at(x, y))).padStart(3, "0");
+                const palaStr = String(Rsed.main_n.project().varimaa.tile_at(x, y)).padStart(3, "0");
 
                 str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
 
@@ -172,7 +172,7 @@ Rsed.ui_draw_n = (function()
             }
             case Rsed.ui_input_n.mousePickingType.prop:
             {
-                str = "PROP:" + Rsed.props_n.prop_name_for_idx(Rsed.ui_input_n.mouse_hover_args().idx) +
+                str = "PROP:" + Rsed.main_n.project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
                       " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
             }
         }
@@ -201,8 +201,8 @@ Rsed.ui_draw_n = (function()
         /// TODO: You can pre-generate the image rather than re-generating it each frame.
         const width = 64;
         const height = 32;
-        const xMul = (Rsed.maasto_n.track_side_length() / width);
-        const yMul = (Rsed.maasto_n.track_side_length() / height);
+        const xMul = (Rsed.main_n.project().maasto.width / width);
+        const yMul = (Rsed.main_n.project().maasto.width / height);
         const image = [];   // An array of palette indices that forms the minimap image.
         const mousePick = [];
         for (let y = 0; y < height; y++)
@@ -212,8 +212,8 @@ Rsed.ui_draw_n = (function()
                 const tileX = (x * xMul);
                 const tileZ = (y * yMul);
 
-                const pala = Rsed.palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
-                let color = ((pala == null)? 0 : pala.paletteIndices[1]);
+                const pala = Rsed.main_n.project().palat.texture(Rsed.main_n.project().varimaa.tile_at(tileX, tileZ));
+                let color = ((pala == null)? 0 : pala.indices[1]);
 
                 // Have a black outline.
                 if (y % (height - 1) === 0) color = "black";
@@ -221,8 +221,11 @@ Rsed.ui_draw_n = (function()
 
                 image.push(color);
                 mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
-                                                                  {elementId:Rsed.ui_input_n.uiElement.minimap,
-                                                                   uiX:tileX, uiY:tileZ}));
+                                                                       {
+                                                                           elementId: Rsed.ui_input_n.uiElement.minimap,
+                                                                           uiX: tileX,
+                                                                           uiY: tileZ
+                                                                       }));
             }
         }
 
@@ -256,11 +259,11 @@ Rsed.ui_draw_n = (function()
     function draw_active_pala()
     {
         const currentPala = Rsed.ui_brush_n.brush_pala_idx();
-        const pala = Rsed.palat_n.pala_texture(currentPala);
+        const pala = Rsed.main_n.project().palat.texture(currentPala);
 
         if (pala != null)
         {
-            draw_image(pala.paletteIndices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false);
+            draw_image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false);
             draw_string((Rsed.ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
         }
     }
@@ -273,8 +276,8 @@ Rsed.ui_draw_n = (function()
         const width = Math.floor(Rsed.main_n.render_width() * 0.81);
         const height = Math.floor(Rsed.main_n.render_height() * 0.72);
         {
-            const xMul = (Rsed.maasto_n.track_side_length() / width);
-            const zMul = (Rsed.maasto_n.track_side_length() / height);
+            const xMul = (Rsed.main_n.project().maasto.width / width);
+            const zMul = (Rsed.main_n.project().maasto.width / height);
             const image = [];   // An array of palette indices that forms the minimap image.
             const mousePick = [];
 
@@ -285,8 +288,8 @@ Rsed.ui_draw_n = (function()
                     const tileX = Math.floor(x * xMul);
                     const tileZ = Math.floor(z * zMul);
 
-                    const pala = Rsed.palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
-                    let color = ((pala == null)? 0 : pala.paletteIndices[1]);
+                    const pala = Rsed.main_n.project().palat.texture(Rsed.main_n.project().varimaa.tile_at(tileX, tileZ));
+                    let color = ((pala == null)? 0 : pala.indices[1]);
 
                     // Create an outline.
                     if (z % (height - 1) === 0) color = "gray";
@@ -311,7 +314,7 @@ Rsed.ui_draw_n = (function()
             draw_image(image, mousePick, width, height, ((pixelSurface.width / 2) - (width / 2)), ((pixelSurface.height / 2) - (height / 2)), false);
         }
 
-        draw_string("TRACK SIZE:" + Rsed.maasto_n.track_side_length() + "," + Rsed.maasto_n.track_side_length(),
+        draw_string("TRACK SIZE:" + Rsed.main_n.project().maasto.width + "," + Rsed.main_n.project().maasto.width,
                     ((pixelSurface.width / 2) - (width / 2)),
                     ((pixelSurface.height / 2) - (height / 2)) - Rsed.ui_font_n.font_height());
     }
@@ -381,7 +384,9 @@ Rsed.ui_draw_n = (function()
         publicInterface.prebake_palat_pane = function()
         {
             const maxNumPalas = 253;
-            if (Rsed.palat_n.num_palas() < maxNumPalas) return;
+
+            const palaWidth = Rsed.constants.palaWidth;
+            const palaHeight = Rsed.constants.palaHeight;
 
             palatPaneBuffer.length = 0;
             palatPaneMousePick.length = 0;
@@ -390,8 +395,8 @@ Rsed.ui_draw_n = (function()
             /// FIXME: Leaves unnecessary empty rows for some resolutions.
             numPalatPaneRows = (Math.floor(Rsed.main_n.render_height() / 8) - 1);
             numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
-            palatPaneWidth = ((numPalatPaneCols * (Rsed.palat_n.pala_width() / 2)) + 1);
-            palatPaneHeight = ((numPalatPaneRows * (Rsed.palat_n.pala_height() / 2)) + 1);
+            palatPaneWidth = ((numPalatPaneCols * (palaWidth / 2)) + 1);
+            palatPaneHeight = ((numPalatPaneRows * (palaHeight / 2)) + 1);
         
             let palaIdx = 0;
             for (let y = 0; y < numPalatPaneRows; y++)
@@ -400,36 +405,36 @@ Rsed.ui_draw_n = (function()
                 {
                     if (palaIdx > maxNumPalas) break;
 
-                    const pala = Rsed.palat_n.pala_texture(palaIdx);
-                    for (let py = 0; py < Rsed.palat_n.pala_height(); py++)
+                    const pala = Rsed.main_n.project().palat.texture(palaIdx);
+                    for (let py = 0; py < palaHeight; py++)
                     {
-                        for (let px = 0; px < Rsed.palat_n.pala_width(); px++)
+                        for (let px = 0; px < palaWidth; px++)
                         {
-                            const palaTexel = Math.floor(px + py * Rsed.palat_n.pala_width());
-                            const bufferTexel = Math.floor((Math.floor(x * Rsed.palat_n.pala_width() + px) / 2) +
-                                                            Math.floor((y * Rsed.palat_n.pala_height() + py) / 2) * palatPaneWidth);
+                            const palaTexel = Math.floor(px + py * palaWidth);
+                            const bufferTexel = Math.floor((Math.floor(x * palaWidth + px) / 2) +
+                                                            Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
 
-                            palatPaneBuffer[bufferTexel] = Rsed.palette_n.palette_idx_to_rgba(pala.paletteIndices[palaTexel]);
+                            palatPaneBuffer[bufferTexel] = Rsed.palette_n.palette_idx_to_rgba(pala.indices[palaTexel]);
                             palatPaneMousePick[bufferTexel] = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
-                                                                                                 {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
+                                                                                                      {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
                         }
                     }
                 }
             }
 
             // Draw a grid over the PALA thumbnails.
-            for (let i = 0; i < numPalatPaneRows * Rsed.palat_n.pala_height()/2; i++)
+            for (let i = 0; i < numPalatPaneRows * palaHeight/2; i++)
             {
                 for (let x = 0; x < numPalatPaneCols; x++)
                 {
-                    palatPaneBuffer[(x * Rsed.palat_n.pala_width()/2) + i * palatPaneWidth] = "black";
+                    palatPaneBuffer[(x * palaWidth/2) + i * palatPaneWidth] = "black";
                 }
             }
-            for (let i = 0; i < numPalatPaneCols * Rsed.palat_n.pala_width()/2; i++)
+            for (let i = 0; i < numPalatPaneCols * palaWidth/2; i++)
             {
                 for (let y = 0; y < numPalatPaneRows; y++)
                 {
-                    palatPaneBuffer[i + (y * Rsed.palat_n.pala_height()/2) * palatPaneWidth] = "black";
+                    palatPaneBuffer[i + (y * palaHeight/2) * palatPaneWidth] = "black";
                 }
             }
         }

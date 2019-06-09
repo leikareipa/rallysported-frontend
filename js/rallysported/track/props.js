@@ -1,127 +1,309 @@
 /*
  * Most recent known filename: js/track/props.js
  *
- * Tarpeeksi Hyvae Soft 2018 /
+ * 2019 Tarpeeksi Hyvae Soft /
  * RallySportED-js
  *
  */
 
 "use strict";
 
-Rsed.props_n = (function()
+Rsed.track = Rsed.track || {};
+
+Rsed.track.props = async function(textureAtlas = Uint8Array)
 {
-    // The collection of prop meshes we know about, as an array of vertices for each mesh.
-    const propMeshes = [];
+    const data = await fetch_prop_metadata_from_server();
 
-    // The name of each prop in the prop meshes array.
-    const propNames = [];
+    Rsed.assert && ((typeof data.propMeshes !== "undefined") &&
+                    (typeof data.propLocations !== "undefined") &&
+                    (typeof data.propNames !== "undefined"))
+                || Rsed.throw("Missing properties in prop metadata.");
 
-    // A list of the textures we can use on props.
-    const propTextures = [];
+    // Filter out comments and other auxiliary info from the JSON data; and sort by the relevant
+    // index, so we can access the desired element with [x].
+    const names = data.propNames.filter(m=>(typeof m.propId !== "undefined"))
+                                 .sort((a, b)=>((a.propId === b.propId)? 0 : ((a.propId > b.propId)? 1 : -1)));
 
-    const publicInterface = {};
+    const meshes = data.propMeshes.filter(m=>(typeof m.propId !== "undefined"))
+                                  .sort((a, b)=>((a.propId === b.propId)? 0 : ((a.propId > b.propId)? 1 : -1)));
+
+    const locations = data.propLocations.filter(m=>(typeof m.trackId !== "undefined"))
+                                        .sort((a, b)=>((a.trackId === b.trackId)? 0 : ((a.trackId > b.trackId)? 1 : -1)));
+
+    const textureRects = data.propTextureRects.filter(m=>(typeof m.textureId !== "undefined"))
+                                              .sort((a, b)=>((a.textureId === b.textureId)? 0 : ((a.textureId > b.textureId)? 1 : -1)));
+
+    // Manifesto files can manipulate the number of props on a given track; we'll offer
+    // that functionality by only returning the first x prop locations on that track.
+    locations.maxCount = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
+    locations.count = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
+
+    const publicInterface =
     {
-        publicInterface.clear_prop_textures = function()
+        // Returns an object containing the given prop's 3d mesh (with properties copied by
+        // value). The mesh object will be of the following form:
+        //
+        //     {
+        //         ngons:
+        //         [
+        //             {
+        //                 fill:
+        //                 {
+        //                     type: "color" | "texture",
+        //                     idx: ...
+        //                 }
+        //                 vertices:
+        //                 [
+        //                     {x: ..., y: ..., z: ...},
+        //                     {x: ..., y: ..., z: ...},
+        //                     {x: ..., y: ..., z: ...},
+        //                     ...
+        //                 ]
+        //             },
+        //             {
+        //                 fill: {type: ..., idx: ...}
+        //                 vertices: [{...}]
+        //             },
+        //             ...
+        //         ]
+        //     }
+        //
+        // That is, each mesh consists of one or more n-gons, which themselves consist of
+        // a fill property, which describes whether the n-gon should be filled with a solid
+        // color or a texture (the fill.idx property defines either the color's palette index
+        // or the texture's index, depending on the fill type); and a list of the n vertices
+        // that define the n-gon.
+        //
+        mesh: (propId = 0)=>
         {
-            propTextures.length = 0;
-        }
+            Rsed.assert && ((propId >= 0) &&
+                            (propId < meshes.length))
+                        || Rsed.throw("Querying a prop mesh out of bounds (" + propId + ").");
 
-        publicInterface.clear_prop_data = function()
-        {
-            propMeshes.length = 0;
-            propNames.length = 0;
-            propTextures.length = 0;
-        }
-
-        publicInterface.add_prop_texture = function(texture = Rsed.texture_n.texture_o)
-        {
-            Rsed.assert && (texture instanceof Rsed.texture_n.texture_o)
-                        || Rsed.throw("Expected a texture object.");
-
-            texture.hasAlpha = true;
-            propTextures.push(texture);
-        }
-
-        publicInterface.add_prop_mesh = function(name = "", polygons = [Rsed.geometry_n.polygon_o])
-        {
-            Rsed.assert && (polygons[0] instanceof Rsed.geometry_n.polygon_o)
-                        || Rsed.throw("Expected a polygon mesh.");
-
-            Rsed.assert && (name.length > 0)
-                        || Rsed.throw("Expected a non-empty prop name string.");
-
-            Rsed.assert && (polygons.length > 0)
-                        || Rsed.throw("Expected a non-empty mesh.");
-            
-            propMeshes.push(polygons);
-            propNames.push(name);
-        }
-
-        publicInterface.prop_name_for_idx = function(propIdx)
-        {
-            Rsed.assert && (propIdx >= 0 && propIdx < propNames.length)
-                        || Rsed.throw("Querying a prop name out of bounds.");
-
-            return propNames[propIdx];
-        }
-
-        publicInterface.prop_idx_for_name = function(propName = "")
-        {
-            const propIdx = propNames.indexOf(propName);
-
-            Rsed.assert && (propIdx >= 0 && propIdx < propNames.length)
-                        || Rsed.throw("Can't find the given prop name to return an index.");
-
-            return propIdx;
-        }
-
-        // Returns a copy of the mesh of the prop of the given name, offset by the given x,y,z.
-        publicInterface.prop_mesh = function(name = "", idOnTrack = 0, offsetX = 0, offsetY = 0, offsetZ = 0, wireframeEnabled = false)
-        {
-            Rsed.assert && (name.length > 0)
-                        || Rsed.throw("Expected a non-empty prop mesh name string.");
-
-            const idx = propNames.indexOf(name);
-            const sourceMesh = propMeshes[idx];
-
-            Rsed.assert && (idx >= 0)
-                        || Rsed.throw("Couldn't find a prop with the given name.");
-
-            const copyMesh = [];
-            for (let i = 0; i < sourceMesh.length; i++)
-            {
-                copyMesh.push(new Rsed.geometry_n.polygon_o(sourceMesh[i].verts.length));
-                copyMesh[i].clone_from(sourceMesh[i]);
-
-                copyMesh[i].hasWireframe = wireframeEnabled;
-
-                copyMesh[i].isEthereal = Rsed.ui_view_n.hideProps;
-
-                copyMesh[i].mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
-                                                                             {propIdx:idx, propTrackId:idOnTrack});
-
-                for (let v = 0; v < copyMesh[i].verts.length; v++)
+            return {
+                ngons:meshes[propId].ngons.map(ngon=>
                 {
-                    copyMesh[i].verts[v].x += offsetX;
-                    copyMesh[i].verts[v].y += offsetY;
-                    copyMesh[i].verts[v].z += offsetZ;
+                    const meshNgon =
+                    {
+                        fill:Object.freeze(
+                        {
+                            type: ngon.fill.type.slice(),
+                            idx: ngon.fill.idx
+                        }),
+                        vertices:ngon.vertices.map(vert=>(Object.freeze(
+                        {
+                            x: vert.x,
+                            y: -vert.y,
+                            z: -vert.z
+                        }))),
+                    };
+
+                    Object.freeze(meshNgon.vertices);
+
+                    return meshNgon;
+                }),
+            }
+        },
+
+        // Returns a by-value copy of the given prop texture.
+        texture: (textureId = 0, args = {})=>
+        {
+            args =
+            {
+                ...
+                {
+                    alpha: true,
+                    flipped: "vertical",
+                },
+                ...args
+            };
+            
+            Rsed.assert && ((textureId >= 0) &&
+                            (textureId < textureRects.length))
+                        || Rsed.throw("Querying a prop texture out of bounds.");
+
+            const width = textureRects[textureId].rect.width;
+            const height = textureRects[textureId].rect.height;
+            const pixels = [];
+            const indices = [];
+
+            // Copy the texture's pixel region from the texture atlas.
+            for (let y = 0; y < height; y++)
+            {
+                for (let x = 0; x < width; x++)
+                {
+                    const idx = ((textureRects[textureId].rect.topLeft.x + x) + (textureRects[textureId].rect.topLeft.y + y) * 128);
+
+                    indices.push(textureAtlas[idx]);
+                    pixels.push(Rsed.palette_n.palette_idx_to_rgba(textureAtlas[idx]));
                 }
             }
 
-            return copyMesh;
-        }
+            return Rsed.texture(
+            {
+                width,
+                height,
+                pixels: pixels,
+                indices: indices,
+                ...args,
+            });
+        },
 
-        publicInterface.prop_texture = function(idx)
+        name: (propId = 0)=>
         {
-            if (idx == null) return null;
+            Rsed.assert && ((propId >= 0) &&
+                            (propId < meshes.length))
+                        || Rsed.throw("Querying a prop mesh out of bounds (" + propId + ").");
 
-            Rsed.assert && (idx >= 0 && idx < propTextures.length)
-                        || Rsed.throw("Tried to access a prop texture out of bounds.");
+            return names[propId].name;
+        },
 
-            return propTextures[idx];
-        }
+        names: ()=>
+        {
+            return names.map(nameObj=>nameObj.name);
+        },
 
-        publicInterface.prop_names = function() { return propNames.slice(0); }
-    }
+        // Returns the id of a prop with the supplied name. Throws if no such prop was found.
+        id_for_name: (propName = "")=>
+        {
+            const idx = names.map(nameObj=>nameObj.name).indexOf(propName);
+
+            Rsed.assert && (idx !== -1)
+                        || Rsed.throw("Failed to find a prop called " + propName + ".");
+
+            return names[idx].propId;
+        },
+
+        // Moves the propIdx'th prop on the given track by the given delta.
+        move: (trackId = 0, propIdx = 0, delta = {x:0,y:0,z:0})=>
+        {
+            // For now, shared mode doesn't support moving props.
+            if (Rsed.shared_mode_n.enabled()) return;
+
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId <= 7))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            Rsed.assert && ((propIdx >= 0) &&
+                            (propIdx < locations[trackId].locations.length))
+                        || Rsed.throw("Querying a prop location out of bounds.");
+
+            const currentLocation = locations[trackId].locations[propIdx];
+
+            delta =
+            {
+                ...{x:0,y:0,z:0},
+                ...delta,
+            };
+
+            currentLocation.x = clamped_to_track_prop_boundaries(currentLocation.x + delta.x);
+            currentLocation.y = (currentLocation.y + delta.y);
+            currentLocation.z = clamped_to_track_prop_boundaries(currentLocation.z + delta.z);
+
+            function clamped_to_track_prop_boundaries(value)
+            {
+                const min = (Rsed.constants.propTileMargin * Rsed.constants.groundTileSize);
+                const max = ((Rsed.main_n.project().maasto.width - Rsed.constants.propTileMargin) * Rsed.constants.groundTileSize);
+
+                return Rsed.clamp(value, min, max);
+            }
+        },
+
+        // Assigns a new location to the propIdx'th prop on the given track.
+        set_prop_location: (trackId = 0, propIdx = 0, location = {x:0,y:0,z:0})=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId < 8))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            Rsed.assert && ((propIdx >= 0) &&
+                            (propIdx < locations[trackId].locations.length))
+                        || Rsed.throw("Querying a prop location out of bounds.");
+
+            location =
+            {
+                ...
+                {
+                    x: locations[trackId].locations[propIdx].x,
+                    y: locations[trackId].locations[propIdx].y,
+                    z: locations[trackId].locations[propIdx].z,
+                },
+                ...location,
+            }
+
+            locations[trackId].locations[propIdx].x = location.x;
+            locations[trackId].locations[propIdx].y = location.y;
+            locations[trackId].locations[propIdx].z = location.z;
+        },
+
+        set_prop_count: (trackId = 0, newPropCount = 0)=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId < 8))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            Rsed.assert && ((newPropCount >= 0) &&
+                            (newPropCount < locations.maxCount[trackId]))
+                    || Rsed.throw("Trying to set a new prop count out of bounds.");
+
+            locations.count[trackId] = newPropCount;
+        },
+
+        change_prop_type: (trackId = 0, propIdx = 0, newPropId = 0)=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId < 8))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            Rsed.assert && ((propIdx >= 0) &&
+                            (propIdx < locations[trackId].locations.length))
+                        || Rsed.throw("Querying a prop location out of bounds.");
+
+            locations[trackId].locations[propIdx].propId = newPropId;
+
+            console.log(trackId, propIdx, newPropId, locations[trackId].locations[propIdx].propId)
+        },
+
+        // Returns by value the locations of all the props on the given track.
+        locations_of_props_on_track: (trackId = 0)=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId < 8))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            return Object.freeze(locations[trackId].locations.slice(0, locations.count[trackId]).map(loc=>(
+            {
+                propId: loc.propId,
+                x: loc.x,
+                y: loc.y,
+                z: loc.z
+            })));
+        },
+    };
+
     return publicInterface;
-})();
+
+    async function fetch_prop_metadata_from_server()
+    {
+        return fetch("server/get-prop-metadata.php")
+               .then(response=>
+               {
+                   if (!response.ok)
+                   {
+                       throw "A GET request to the server failed.";
+                   }
+
+                   return response.json();
+               })
+               .then(ticket=>
+               {
+                   if (!ticket.valid || (typeof ticket.data === "undefined"))
+                   {
+                       throw ("The server sent a GET ticket marked invalid. It said: " + ticket.message);
+                   }
+
+                   return JSON.parse(ticket.data);
+               })
+               .catch(error=>{ Rsed.throw(error); });
+    }
+}

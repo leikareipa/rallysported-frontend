@@ -6,6 +6,10 @@
 // FILES:
 //	../js/jszip/jszip.min.js
 //	../js/rallysported/rallysported.js
+//	../js/rallysported/project/manifesto.js
+//	../js/rallysported/project/project.js
+//	../js/rallysported/constants.js
+//	../js/rallysported/world-builder.js
 //	../distributable/assets/hitable.txt.js
 //	../js/rallysported/misc/shared-mode.js
 //	../js/rallysported/misc/common.js
@@ -18,10 +22,10 @@
 //	../js/rallysported/render/camera.js
 //	../js/rallysported/render/renderer.js
 //	../js/rallysported/render/render-surface.js
+//	../js/rallysported/track/varimaa.js
 //	../js/rallysported/track/maasto.js
 //	../js/rallysported/track/palat.js
 //	../js/rallysported/track/props.js
-//	../js/rallysported/track/manifesto.js
 //	../js/rallysported/ui/font.js
 //	../js/rallysported/ui/view.js
 //	../js/rallysported/ui/brush.js
@@ -29,8 +33,6 @@
 //	../js/rallysported/ui/input.js
 //	../js/rallysported/render/line-draw.js
 //	../js/rallysported/render/ngon-fill.js
-//	../js/rallysported/file/resource-loader.js
-//	../js/rallysported/misc/project.js
 //	../js/rallysported/main.js
 //	../js/rallysported/misc/window.js
 /////////////////////////////////////////////////
@@ -80,7 +82,751 @@ const Rsed = {};
         alert("RallySportED error: " + errMessage);
         throw Error("RallySportED error: " + errMessage);
     }
+
+    // Linear interpolation.
+    Rsed.lerp = (x = 0, y = 0, interval = 0)=>(x + (interval * (y - x)));
+
+    Rsed.clamp = (value = 0, min = 0, max = 1)=>Math.min(Math.max(value, min), max);
 }
+/*
+ * Most recent known filename: js/misc/manifesto.js
+ *
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
+ *
+ */
+
+"use strict";
+
+Rsed.apply_manifesto = function(project = Rsed.project)
+{
+    Rsed.assert && (!project.isPlaceholder)
+                || Rsed.throw("Can't apply manifestos to placeholder projects.");
+
+    const commands = project.manifesto.split("\n").filter(Boolean);
+
+    Rsed.assert && (commands.length >= 2)
+                || Rsed.throw("Invalid number of lines in the manifesto.");
+
+    Rsed.assert && (commands[0].startsWith("0 "))
+                || Rsed.throw("Expected the manifesto to begin with the command 0, but it doesn't.");
+
+    Rsed.assert && (commands[commands.length-1] === "99")
+                || Rsed.throw("Expected the manifesto to end with the command 99, but it doesn't.");
+
+    commands.forEach(command=>
+    {
+        apply_command(command);
+    });
+
+    return;
+
+    function apply_command(commandLine)
+    {
+        const params = commandLine.split(" ");
+        const command = Number(params.shift());
+
+        eval("apply_" + command)(params);
+    }
+
+    // Command: REQUIRE. Specifies which of Rally-Sport's eight tracks (in the demo version) the project
+    // is based on.
+    function apply_0(args = [])
+    {
+        Rsed.assert && (args.length === 3)
+                    || Rsed.throw("Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
+
+        const trackId = Math.floor(Number(args[0])); // Note: The track id starts from 1.
+        const palatId = Math.floor(Number(args[1]));
+        const minRSEDLoaderVersion = Number(args[2]);
+
+        project.set_track_id(trackId - 1);
+    }
+
+    // Command: ROAD. Sets up the game's driving physics for various kinds of road surfaces.
+    function apply_1(args = [])
+    {
+        Rsed.assert && (args.length === 1)
+                    || Rsed.throw("Invalid number of arguments to manifesto command 1. Expected 1 but received " + args.length + ".");
+    }
+
+    // Command: NUM_OBJS. Sets the number of props (in addition to the starting line) on the track.
+    function apply_2(args = [])
+    {
+        Rsed.assert && (args.length === 1)
+                    || Rsed.throw("Invalid number of arguments to manifesto command 2. Expected 1 but received " + args.length + ".");
+
+        const numObjs = Math.floor(Number(args[0]));
+
+        project.props.set_prop_count(numObjs);
+    }
+
+    // Command: ADD_OBJ. Adds a new prop to the track.
+    function apply_3(args = [])
+    {
+        Rsed.assert && (args.length === 5)
+                    || Rsed.throw("Invalid number of arguments to manifesto command 3. Expected 5 but received " + args.length + ".");
+
+        const propTypeIdx = Math.floor(Number(args[0]) - 1);
+        const posX = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
+        const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
+
+        Rsed.maasto_n.add_prop_location(Rsed.main_n.project().track_id(), Rsed.main_n.project().props.name(propTypeIdx), posX, 0, posZ);
+    }
+
+    // Command: CHANGE_OBJ_TYPE. Changes the type of the given prop.
+    function apply_4(args = [])
+    {
+        Rsed.assert && (args.length === 2)
+                    || Rsed.throw("Invalid number of arguments to manifesto command 4. Expected 2 but received " + args.length + ".");
+
+        const targetPropIdx = Math.floor(Number(args[0]) - 1);
+        const newPropId = Math.floor(Number(args[1]) - 1);
+
+        project.props.change_prop_type(project.trackId, targetPropIdx, newPropId);
+    }
+
+    // Command: MOVE_OBJ. Moves the position of the given prop.
+    function apply_5(args = [])
+    {
+        Rsed.assert && (args.length === 5)
+                    || Rsed.throw("Invalid number of arguments to manifesto command 5. Expected 5 but received " + args.length + ".");
+
+        const targetPropIdx = Math.floor(Number(args[0]) - 1);
+        const x = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
+        const z = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
+
+        project.props.set_prop_location(project.trackId, targetPropIdx, {x, z});
+    }
+
+    // Command: MOVE_STARTING_POS. Moves the starting line. Note that this doesn't move the
+    // starting line prop, but the starting position of the player's car. So we can ignore
+    // it in the editor.
+    function apply_6(args = [])
+    {
+        Rsed.assert && (args.length === 4)
+                    || Rsed.throw("Invalid number of arguments to manifesto command 6. Expected 4 but received " + args.length + ".");
+    }
+
+    // Command: CHANGE_PALETTE_ENTRY. Changes the given palette index to the given r,g,b values.
+    function apply_10(args = [])
+    {
+        Rsed.assert && (args.length === 4)
+                    || Rsed.throw("Invalid number of arguments to manifesto command 10. Expected 4 but received " + args.length + ".");
+
+        const targetPaletteIdx = Math.floor(Number(args[0]));
+        const r = Math.floor(Number(args[1] * 4));
+        const g = Math.floor(Number(args[2] * 4));
+        const b = Math.floor(Number(args[3] * 4));
+        
+        Rsed.palette_n.modify_palette_entry(targetPaletteIdx, r, g, b);
+    }
+
+    // Command: STOP. Stops parsing the manifesto file.
+    function apply_99(args = [])
+    {
+        Rsed.assert && (args.length === 0)
+                    || Rsed.throw("Invalid number of arguments to manifesto command 99. Expected no arguments but received " + args.length + ".");
+    }
+};
+/*
+ * Most recent known filename: js/misc/project.js
+ *
+ * 2018-2019 Tarpeeksi Hyvae Soft /
+ * RallySportED-js
+ *
+ */
+
+"use strict";
+
+Rsed.texture = function(args = {})
+{
+    args =
+    {
+        ...{pixels:[],
+            indices:[],
+            width:0,
+            height:0,
+            alpha:false,
+            flipped:"no", // | "vertical"
+        },
+        ...args
+    };
+
+    Rsed.assert && ((args.width > 0) &&
+                    (args.height > 0))
+                || Rsed.throw("Expected texture width and height to be positive and non-zero.");
+
+    switch (args.flipped)
+    {
+        case "no": break;
+        case "vertical":
+        {
+            for (let y = 0; y < args.height/2; y++)
+            {
+                // Swap horizontal rows vertically.
+                for (let x = 0; x < args.width; x++)
+                {
+                    const idxTop = (x + y * args.width);
+                    const idxBottom = (x + (args.height - y - 1) * args.width);
+
+                    [args.pixels[idxTop], args.pixels[idxBottom]] = [args.pixels[idxBottom], args.pixels[idxTop]];
+                    [args.indices[idxTop], args.indices[idxBottom]] = [args.indices[idxBottom], args.indices[idxTop]];
+                }
+            }
+
+            break;
+        }
+        default: Rsed.throw("Unknown texture-flipping mode."); break;
+    }
+
+    const publicInterface =
+    {
+        ...args
+    };
+
+    return publicInterface;
+}
+
+Rsed.project = async function(projectName = "")
+{
+    Rsed.assert && is_valid_project_name(projectName)
+                || Rsed.throw("Invalid project name.");
+
+    // Which of Rally-Sport's eight tracks (in the demo version) this project is for.
+    let trackId = 0;
+
+    const projectData = await fetch_project_data_from_server(projectName);
+
+    Rsed.assert && ((projectData.trackWidth > 0) &&
+                    (projectData.trackHeight > 0) &&
+                    (projectData.trackWidth === projectData.trackHeight))
+                || Rsed.throw("Invalid track dimensions for a project.");
+
+    const projectDataContainer = Object.freeze(
+    {
+        dataBuffer: (()=>
+        {
+            const containerDecoded = atob(projectData.container);
+            const buffer = new ArrayBuffer(containerDecoded.length);
+            const view = new Uint8Array(buffer);
+    
+            for (let i = 0; i < containerDecoded.length; i++)
+            {
+                view[i] = containerDecoded.charCodeAt(i);
+            };
+    
+            return buffer;
+        })(),
+
+        byteSize: function()
+        {
+            const maasto = (new DataView(this.dataBuffer, 0, 4)).getUint32(0, true);
+            const varimaa = (new DataView(this.dataBuffer, (maasto + 4), 4)).getUint32(0, true);
+            const palat = (new DataView(this.dataBuffer, (maasto + varimaa + 8), 4)).getUint32(0, true);
+            const anims = (new DataView(this.dataBuffer, (maasto + varimaa + palat + 12), 4)).getUint32(0, true);
+            const text = (new DataView(this.dataBuffer, (maasto + varimaa + palat + anims + 16), 4)).getUint32(0, true);
+            
+            return Object.freeze({maasto, varimaa, palat, anims, text});
+        },
+
+        byteOffset: function()
+        {
+            const byteSize = this.byteSize();
+
+            const maasto = 4;
+            const varimaa = (byteSize.maasto + 8);
+            const palat = (byteSize.maasto + byteSize.varimaa + 12);
+            const anims = (byteSize.maasto + byteSize.varimaa + byteSize.palat + 16);
+            const text = (byteSize.maasto + byteSize.varimaa + byteSize.palat + byteSize.anims + 20);
+
+            return Object.freeze({maasto, varimaa, palat, anims, text});
+        },
+    });
+
+    const maasto = Rsed.track.maasto(projectData.trackWidth, projectData.trackHeight,
+                                     new Uint8Array(projectDataContainer.dataBuffer,
+                                                    projectDataContainer.byteOffset().maasto,
+                                                    projectDataContainer.byteSize().maasto));
+
+    const varimaa = Rsed.track.varimaa(projectData.trackWidth, projectData.trackHeight,
+                                       new Uint8Array(projectDataContainer.dataBuffer,
+                                                      projectDataContainer.byteOffset().varimaa,
+                                                      projectDataContainer.byteSize().varimaa));
+
+    const palat = Rsed.track.palat(Rsed.constants.palaWidth, Rsed.constants.palaHeight,
+                                   new Uint8Array(projectDataContainer.dataBuffer,
+                                                  projectDataContainer.byteOffset().palat,
+                                                  projectDataContainer.byteSize().palat));
+
+    const props = await Rsed.track.props(new Uint8Array(projectDataContainer.dataBuffer,
+                                                        projectDataContainer.byteOffset().text,
+                                                        projectDataContainer.byteSize().text));
+
+    const manifesto = projectData.manifesto;
+
+    const publicInterface = Object.freeze(
+    {
+        name: projectName,
+        maasto,
+        varimaa,
+        palat,
+        props,
+        manifesto,
+
+        track_id: ()=>trackId,
+
+        set_track_id: (id)=>
+        {
+            Rsed.assert && ((id >= 0) &&
+                            (id <= 7))
+                        || Rsed.throw("Track id out of bounds.");
+
+            trackId = id;
+        },
+    });
+    
+    return publicInterface;
+
+    function is_valid_project_name()
+    {
+        /// TODO.
+        return true;
+    }
+
+    function save_to_disk()
+    {
+        /// TODO.
+        return false;
+    }
+
+    async function fetch_project_data_from_server(projectName = "")
+    {
+        return fetch("server/get-project-data.php?projectName=" + projectName)
+               .then(response=>
+               {
+                   if (!response.ok)
+                   {
+                       throw "A GET request to the server failed.";
+                   }
+
+                   return response.json();
+               })
+               .then(ticket=>
+               {
+                   if (!ticket.valid || (typeof ticket.data === "undefined"))
+                   {
+                       throw ("The server sent a GET ticket marked invalid. It said: " + ticket.message);
+                   }
+
+                   return JSON.parse(ticket.data);
+               })
+               .catch(error=>{ Rsed.throw(error); });
+    }
+}
+
+// An empty project that lets the renderer etc. spin.
+Rsed.project.placeholder =
+{
+    isPlaceholder: true,
+    name: "",
+    manifesto: "",
+    set_track_id: ()=>{Rsed.throw("Can't set the track id of a null project.");},
+    varimaa:
+    {
+        width: 0,
+        height: 0,
+        tile_at:()=>0,
+        set_tile_value_at:()=>{},
+    },
+    maasto:
+    {
+        width: 0,
+        height: 0,
+        tile_at: ()=>0,
+        set_tile_value_at: ()=>{},
+    },
+    palat:
+    {
+        texture:()=>{},
+    },
+    props:
+    {
+        name: ()=>("undefined"),
+        mesh: ()=>{},
+        texture: ()=>{},
+    },
+};
+
+Rsed.project.manifesto = (function()
+{
+    const publicInterface =
+    {
+        apply_manifesto_to_project(project)
+        {
+
+
+            return;
+        }
+    };
+
+    return publicInterface;
+});
+
+Rsed.project_n = (function()
+{
+    // Maximum number of characters allowed in the project file name.
+    const maxProjectNameLen = 8;
+
+    // The range of characters allowed in the project name; successively from the first character to
+    // the last one.
+    const projectNameCharset = Object.freeze(["a", "z"]);
+
+    // Returns true if the given project name is valid; false is returned otherwise.
+    function is_valid_project_name(name = "")
+    {
+        if (name.length <= 1)
+        {
+            alert("The RallySportED project name is too short");
+            return false;
+        }
+        else if (name.length > maxProjectNameLen)
+        {
+            alert("The RallySportED project name '" + name + "' is too long. The maximum number of characters allowed is " + maxProjectNameLen + ".");
+            return false;
+        }
+
+        for (let i = 0; i < name.length; i++)
+        {
+            if ((name[i] < projectNameCharset[0]) ||
+                (name[i] > projectNameCharset[1]))
+            {
+                alert("The RallySportED project name '" + name + "' containts invalid characters. Only the characters " +
+                      projectNameCharset[0] + "-" + projectNameCharset[1] + " are allowed.");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    const publicInterface = {};
+    {
+        // Will return true if the given project is valid. Otherwise, will throw an error.
+        publicInterface.verify_project_validity = function(projectToVerify)
+        {
+            Rsed.assert && (projectToVerify instanceof Rsed.project_n.project_o)
+                        || Rsed.throw("Was asked to test the validity of a non-RallySportED project.");
+
+            Rsed.assert && ((projectToVerify != null) && (projectToVerify.isValidProject))
+                        || Rsed.throw("Failed to load the given RallySportED project file.");
+            
+            Rsed.assert && (projectToVerify.name != null && projectToVerify.displayName != null)
+                        || Rsed.throw("Failed to load the given RallySportED project file.");
+
+            console.log("'" + projectToVerify.displayName + "' is a valid RallySportED project.");
+
+            return true;
+        }
+
+        publicInterface.generate_download_of_project = function(project = Rsed.project_n.project_o)
+        {
+            Rsed.assert && (project instanceof Rsed.project_n.project_o)
+                        || Rsed.throw("Expected a RallySportED project object.");
+
+            const saveName = project.name.toUpperCase();
+
+            k_message("Saving project '" + project.displayName + "'.");
+
+            if (project.projectFileContents == null)
+            {
+                k_message("The given project has empty contents. Skipping saving it.");
+                return;
+            }
+
+            // Replace the existing project bytes with the current data.
+            {
+                const maastoBytes = Rsed.maasto_n.get_saveable_maasto();
+                const varimaaBytes = Rsed.maasto_n.get_saveable_varimaa();
+                const palatBytes = Rsed.palat_n.get_saveable_palat();
+
+                project.projectFileContents.set(maastoBytes, 4);
+                project.projectFileContents.set(varimaaBytes, (maastoBytes.byteLength + 4*2));
+                project.projectFileContents.set(palatBytes, (maastoBytes.byteLength + varimaaBytes.byteLength + 4*3));
+            }
+
+            // Zip up the project file, and have the browser initiate a download of it.
+            const zip = new JSZip();
+
+           //zip.file(saveName + ".TXT", lut_readme_txt.replace(/%TRACK/g, project.name.toUpperCase()));
+            zip.file(saveName + "/" + saveName + ".DTA", project.projectFileContents);
+            zip.file(saveName + "/" + saveName + ".$FT", Rsed.manifesto_n.get_saveable_manifesto(project.manifestoFileContents));
+            zip.file(saveName + "/" + "HITABLE.TXT", lut_hitable_txt);
+
+            zip.generateAsync({type:"blob", compression:"DEFLATE", compressionOptions:{level: 1}})
+            .then(function(blob)
+            {
+                saveAs(blob, saveName + ".ZIP");
+            })
+            .catch((error)=>{Rsed.throw(error);});
+        }
+    }
+    return publicInterface;
+})();
+/*
+ * Most recent known filename: js/constants.js
+ *
+ * Tarpeeksi Hyvae Soft 2019 /
+ * RallySportED-js
+ *
+ */
+
+"use strict";
+
+Rsed.constants = Object.freeze(
+{
+    // The resolution of a PALA texture.
+    palaWidth: 16,
+    palaHeight: 16,
+
+    // For rendering; the side length, in world units, of a single ground tile.
+    groundTileSize: 128,
+
+    // The margins, in number of tiles, on the sides of the track past which the user is
+    // not allowed to move props (so that they don't accidentally get moved out of reach,
+    // etc.).
+    propTileMargin: 2,
+});
+/*
+ * Most recent known filename: js/world-builder.js
+ *
+ * 2019 Tarpeeksi Hyvae Soft /
+ * RallySportED-js
+ *
+ */
+
+"use strict";
+
+Rsed.worldBuilder = function()
+{
+    const publicInterface =
+    {
+        // Returns a renderable 3d mesh of the track from the given viewing position (in tile units).
+        track_mesh: function(viewPos = {x:0,y:0,z:0})
+        {
+            this.prop_mesh(0, 0);
+
+            // The polygons that make up the track mesh.
+            const trackPolygons = [];
+
+            const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
+
+            // We'll shift the track mesh by these values (world units) to center the mesh on screen.
+            const centerView = {x: (isTopdownView? -1152 : -1088),
+                                y: (isTopdownView? -1800 : -680),
+                                z: (isTopdownView? 700 : 2612)};
+
+            // Add the ground tiles.
+            for (let z = 0; z < Rsed.camera_n.view_height(); z++)
+            {
+                for (let x = 0; x < Rsed.camera_n.view_width(); x++)
+                {
+                    // Coordinates of the current ground tile.
+                    const tileX = (x + viewPos.x);
+                    const tileZ = (z + viewPos.z);
+
+                    // Coordinates in world units of the ground tile's top left vertex.
+                    const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
+                    const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
+
+                    const tilePalaIdx = (()=>
+                    {
+                        let idx = Rsed.main_n.project().varimaa.tile_at(tileX, (tileZ - 1));
+
+                        // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
+                        if ((tileX === Rsed.ui_input_n.mouse_tile_hover_x()) &&
+                            ((tileZ - 1) === Rsed.ui_input_n.mouse_tile_hover_y()))
+                        {
+                            idx = Rsed.ui_brush_n.brush_pala_idx();
+                        }
+
+                        return idx;
+                    })();
+
+                    // Construct the ground quad polygon.
+                    {
+                        // The heights of the ground quad's corner points.
+                        const height1 = centerView.y + Rsed.main_n.project().maasto.tile_at( tileX,       tileZ);
+                        const height2 = centerView.y + Rsed.main_n.project().maasto.tile_at((tileX + 1),  tileZ);
+                        const height3 = centerView.y + Rsed.main_n.project().maasto.tile_at((tileX + 1), (tileZ - 1));
+                        const height4 = centerView.y + Rsed.main_n.project().maasto.tile_at( tileX,      (tileZ - 1));
+                        
+                        const groundQuad = new Rsed.geometry_n.polygon_o(4);
+                        groundQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX, height1, vertZ);
+                        groundQuad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), height2, vertZ);
+                        groundQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize));
+                        groundQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, height4, (vertZ + Rsed.constants.groundTileSize));
+                        
+                        groundQuad.hasWireframe = Rsed.ui_view_n.show3dWireframe;
+                        groundQuad.texture = Rsed.main_n.project().palat.texture(tilePalaIdx);
+
+                        // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
+                        // rasterization we'll write into the mouse-picking buffer, so we can later determine which
+                        // quad the mouse cursor is hovering over.
+                        groundQuad.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
+                                                                                         {tileX, tileZ: (tileZ - 1)});
+
+                        trackPolygons.push(groundQuad);
+                    }
+
+                    // If this tile has a billboard, add that too.
+                    if (tilePalaIdx > 239 && tilePalaIdx < 248)
+                    {
+                        const baseHeight = centerView.y + Rsed.main_n.project().maasto.tile_at(tileX, (tileZ - 1));
+
+                        const billboardQuad = new Rsed.geometry_n.polygon_o(4);
+                        billboardQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX, baseHeight, vertZ);
+                        billboardQuad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), baseHeight, vertZ);
+                        billboardQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), baseHeight+Rsed.constants.groundTileSize, vertZ);
+                        billboardQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, baseHeight+Rsed.constants.groundTileSize, vertZ);
+
+                        switch (tilePalaIdx)
+                        {
+                            // Spectators.
+                            case 240:
+                            case 241:
+                            case 242: billboardQuad.texture = Rsed.main_n.project().palat.texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
+                            break;
+        
+                            // Shrubs.
+                            case 243: billboardQuad.texture = Rsed.main_n.project().palat.texture(208, {alpha:true}); break;
+                            case 244: billboardQuad.texture = Rsed.main_n.project().palat.texture(209, {alpha:true}); break;
+                            case 245: billboardQuad.texture = Rsed.main_n.project().palat.texture(210, {alpha:true}); break;
+        
+                            // Small poles.
+                            case 246:
+                            case 247: billboardQuad.texture = Rsed.main_n.project().palat.texture(211, {alpha:true}); break;
+                            case 250: bbillboardQuadll.texture = Rsed.main_n.project().palat.texture(212, {alpha:true}); break;
+        
+                            default: Rsed.throw("Unrecognized billboard texture."); continue;
+                        }
+
+                        trackPolygons.push(billboardQuad);
+                    }
+                    // If the tile has a bridge, add that.
+                    else if (tilePalaIdx === 248 || tilePalaIdx === 249)
+                    {
+                        const bridgeQuad = new Rsed.geometry_n.polygon_o(4);
+                        bridgeQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX,  centerView.y, vertZ);
+                        bridgeQuad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), centerView.y, vertZ);
+                        bridgeQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize));
+                        bridgeQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize));
+
+                        bridgeQuad.texture = Rsed.main_n.project().palat.texture(177, true);
+
+                        trackPolygons.push(bridgeQuad);
+                    }
+                }
+            }
+
+            // Add any track prop meshes that should be visible on the currently-drawn track.
+            const propLocations = Rsed.main_n.project().props.locations_of_props_on_track(Rsed.main_n.project().track_id());
+            propLocations.forEach((pos, idx)=>
+            {
+                if ((pos.x >= (Rsed.camera_n.pos_x() * Rsed.constants.groundTileSize)) &&
+                    (pos.x <= ((Rsed.camera_n.pos_x() + Rsed.camera_n.view_width()) * Rsed.constants.groundTileSize)) &&
+                    (pos.z >= (Rsed.camera_n.pos_z() * Rsed.constants.groundTileSize)) &&
+                    (pos.z <= ((Rsed.camera_n.pos_z() + Rsed.camera_n.view_height()) * Rsed.constants.groundTileSize)))
+                {
+                    const x = (pos.x + centerView.x - (viewPos.x * Rsed.constants.groundTileSize));
+                    const z = (centerView.z - pos.z + (viewPos.z * Rsed.constants.groundTileSize));
+                    const groundHeight = centerView.y + Rsed.main_n.project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
+                    const y = (groundHeight + pos.y);
+
+                    trackPolygons.push(...this.prop_mesh(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
+                }
+            });
+
+            /// Temp hack. We're tilting down all the ground elements to get the viewing angle we want,
+            /// but really it should be the camera's view vector that's pointed down and not the objects
+            /// themselves.
+            return new Rsed.geometry_n.polygon_mesh_o(trackPolygons, new Rsed.geometry_n.vector3_o(0, 0, 0),
+                                                                     new Rsed.geometry_n.vector3_o(isTopdownView? (-Math.PI / 2) : -0.45, 0, 0));
+        },
+
+        // Returns a renderable 3d mesh of the given prop at the given world position.
+        prop_mesh: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
+        {
+            args =
+            {
+                ...
+                {
+                    // Whether the renderer should draw a wireframe around this mesh.
+                    wireframe:false, // | true
+                },
+                ...args
+            };
+
+            const srcMesh = Rsed.main_n.project().props.mesh(propId);
+            const dstMesh = [];
+
+            srcMesh.ngons.forEach(ngon=>
+            {
+                const newPoly = new Rsed.geometry_n.polygon_o(ngon.vertices.length);
+                
+                dstMesh.push(newPoly);
+
+                ngon.vertices.forEach((vert, idx)=>
+                {
+                    newPoly.verts[idx].x = (vert.x + pos.x);
+                    newPoly.verts[idx].y = (vert.y + pos.y);
+                    newPoly.verts[idx].z = (vert.z + pos.z);
+                });
+
+                newPoly.color = Rsed.palette_n.palette_idx_to_rgba(0);
+                newPoly.texture = null;
+
+                if (ngon.fill.type === "texture")
+                {
+                    newPoly.texture = Rsed.main_n.project().props.texture(ngon.fill.idx);
+                }
+                else
+                {
+                    newPoly.color = Rsed.palette_n.palette_idx_to_rgba(ngon.fill.idx);
+                }
+
+                newPoly.hasWireframe = args.wireframe;
+                newPoly.isEthereal = Rsed.ui_view_n.hideProps;
+                newPoly.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
+                                                                              {
+                                                                                  propIdx: propId,
+                                                                                  propTrackId: idxOnTrack
+                                                                              });
+            });
+
+            return dstMesh;
+        }
+    };
+
+    return publicInterface;
+
+    // The game by default has four different 'skins' for spectators, and it decides which skin a
+    // spectator will be given based on the spectator's x,y coordinates on the track. This will
+    // return the correct skin for the given coordinates.
+    function spectator_texture_at(tileX = 0, tileY = 0)
+    {
+        const firstSpectatorTexIdx = 236; // Index of the first PALA representing a (standing) spectator. Assumes consecutive arrangement.
+        const numSkins = 4;
+        const sameRows = ((Rsed.main_n.project().maasto.width === 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
+
+        const yOffs = (Math.floor(tileY / sameRows)) % numSkins;
+        const texOffs = ((tileX + (numSkins - 1)) + (yOffs * (numSkins - 1))) % numSkins;
+
+        const palaId = (firstSpectatorTexIdx + texOffs);
+
+        return palaId;
+    }
+};
 /*
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED for the browser.
@@ -387,8 +1133,8 @@ Rsed.shared_mode_n = (function()
 
         const resources =
         {
-            "maasto": Rsed.maasto_n.set_maasto_height_at,
-            "varimaa": Rsed.maasto_n.set_varimaa_tile_at,
+            "maasto": Rsed.main_n.project().maasto.set_tile_value_at,
+            "varimaa": Rsed.main_n.project().varimaa.set_tile_value_at,
         };
 
         for (const [resourceName, dataCallback] of Object.entries(resources))
@@ -405,8 +1151,8 @@ Rsed.shared_mode_n = (function()
         // Converts a 1d array index into a 2d x,y coordinate pair.
         function idx_to_xy(idx)
         {
-            return [(idx % Rsed.maasto_n.track_side_length()),
-                    Math.floor(idx / Rsed.maasto_n.track_side_length())];
+            return [(idx % Rsed.main_n.project().maasto.width),
+                    Math.floor(idx / Rsed.main_n.project().maasto.width)];
         }
     }
 
@@ -784,20 +1530,20 @@ Rsed.palette_n = (function()
 
         publicInterface.set_palette_for_track = function(trackId = 0)
         {
-            Rsed.assert && ((trackId >= 1) &&
-                            (trackId <= 8))
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId <= 7))
                         || Rsed.throw("Trying to set palette for a track index out of bounds.");
 
             switch (trackId)
             {
+                case 0:
                 case 1:
                 case 2:
                 case 3:
-                case 4:
-                case 6:
-                case 7: currentPalette = 0; break;
-                case 5: currentPalette = 1; break;
-                case 8: currentPalette = 3; break;
+                case 5:
+                case 6: currentPalette = 0; break;
+                case 4: currentPalette = 1; break;
+                case 7: currentPalette = 3; break;
                 default: Rsed.throw("Unknown track id for setting a palette."); break;
             }
         }
@@ -824,10 +1570,13 @@ Rsed.palette_n = (function()
                 case "gold": return new Rsed.color_n.rgba_o(179, 112, 25, 255);
                 
                 // Rally-Sport's palettes.
-                default: return palettes[currentPalette][idx||0];
+                default: return (palettes[currentPalette][idx] || palettes[currentPalette][0]);
             }
         }
     }
+
+    publicInterface.reset_palettes();
+
     return publicInterface;
 })();
 /*
@@ -1344,8 +2093,8 @@ Rsed.camera_n = (function()
             {
                 if (position.x < 0) position.x = 0;
                 if (position.z < 1) position.z = 1;
-                if (position.x > (Rsed.maasto_n.track_side_length() - this.view_width())) position.x = (Rsed.maasto_n.track_side_length() - this.view_width());
-                if (position.z > (Rsed.maasto_n.track_side_length() - this.view_height()+1)) position.z = (Rsed.maasto_n.track_side_length() - this.view_height()+1);
+                if (position.x > (Rsed.main_n.project().maasto.width - this.view_width())) position.x = (Rsed.main_n.project().maasto.width - this.view_width());
+                if (position.z > (Rsed.main_n.project().maasto.width - this.view_height()+1)) position.z = (Rsed.main_n.project().maasto.width - this.view_height()+1);
             }
         }
 
@@ -1676,988 +2425,557 @@ Rsed.render_surface_n = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/track/maasto.js
+ * Most recent known filename: js/track/varimaa.js
  *
- * Tarpeeksi Hyvae Soft 2018 /
+ * 2019 Tarpeeksi Hyvae Soft /
  * RallySportED-js
  *
  */
 
 "use strict";
 
-Rsed.maasto_n = (function()
+Rsed.track = Rsed.track || {};
+
+Rsed.track.varimaa = function(varimaaWidth = 0, varimaaHeight = 0, data = Uint8Array)
 {
-    // The number of tiles per side on this MAASTO.
-    let maastoSideLength = 0
+    Rsed.assert && (varimaaWidth === varimaaHeight)
+                || Rsed.throw("Expected VARIMAA width and height to be equal.");
+
+    Rsed.assert && ((varimaaWidth > 0) &&
+                    (varimaaHeight > 0))
+                || Rsed.throw("Expected VARIMAA width and height to be positive and non-zero.");
+
+    const publicInterface = 
+    {
+        width: varimaaWidth,
+        height: varimaaHeight,
+
+        // Returns the PALA index of the tile at the given track tile coordinates.
+        tile_at: (x = 0, y = 0)=>
+        {
+            x = Math.floor(x);
+            y = Math.floor(y);
+
+            const idx = (x + y * varimaaWidth);
+
+            if ((idx < 0) || (idx >= data.byteLength))
+            {
+                return 0;
+            }
+
+            return data[idx];
+        },
+
+        // Alter the PALA index at the given tile.
+        set_tile_value_at: (x = 0, y = 0, newPalaIdx = 0)=>
+        {
+            x = Math.floor(x);
+            y = Math.floor(y);
+
+            const idx = (x + y * varimaaWidth);
+
+            if ((idx < 0) || (idx >= data.byteLength))
+            {
+                return;
+            }
+
+            data[idx] = newPalaIdx;
+        },
+    };
+    
+    return publicInterface;
+};
+/*
+ * Most recent known filename: js/track/maasto.js
+ *
+ * 2019 Tarpeeksi Hyvae Soft /
+ * RallySportED-js
+ *
+ */
+
+"use strict";
+
+Rsed.track = Rsed.track || {};
+
+Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Array)
+{
+    Rsed.assert && (maastoWidth === maastoHeight)
+                || Rsed.throw("Expected MAASTO width and height to be equal.");
+
+    Rsed.assert && ((maastoWidth > 0) &&
+                    (maastoHeight > 0))
+                || Rsed.throw("Expected MAASTO width and height to be positive and non-zero.");
 
     const maxHeightmapValue = 255;
     const minHeightmapValue = -510;
 
-    // The checkpoint is a point on the track next to which the player's car must pass for the
-    // lap to be counted as valid.
-    const trackCheckpoint = new Rsed.geometry_n.vector2_o();
-
-    // The side length, in world units, of a single ground tile.
-    const tileSize = 128;
-
-    // The MAASTO's height points. These will be about in the range -511..255.
-    const heightmap = [];
-
-    // For each tile on the MAASTO, the PALA texture it uses. These will be
-    // index values in the range 0..255.
-    const tilemap = [];
-
-    // The x,y,z coordinates of each prop on this MAASTO.
-    const propLocations = [];
-    const propNames = [];
-
-    // The maximum number of props that can exist on a track.
-    const maxNumProps = 14;
-
-    // The number of tiles on each side of the track that can't have user-placed props on them. This
-    // prevents the user from placing props out of bounds, etc.
-    const propMargin = 2;
-
-    // The byte sizes of the binary MAASTO and VARIMAA data that our current heightmap and tilemap are based on.
-    let originalMaastoBytesize = 0;
-    let originalVarimaaBytesize = 0;
-
-    const publicInterface = {};
+    const publicInterface =
     {
-        publicInterface.tile_size = function()
+        width: maastoWidth,
+        height: maastoHeight,
+
+        // Returns the MAASTO height of the tile at the given track tile coordinates.
+        tile_at: (x = 0, y = 0)=>
         {
-            return tileSize;
+            x = Math.floor(x);
+            y = Math.floor(y);
+
+            // MAASTO data is two bytes per tile.
+            const idx = ((x + y * maastoWidth) * 2);
+
+            if ((idx < 0) || (idx >= data.byteLength))
+            {
+                return 0;
+            }
+
+            return two_byte_height_as_integer(data[idx], data[idx+1]);
+        },
+
+        // Alter the MAASTO heightmap at the given tile.
+        set_tile_value_at: (x = 0, y = 0, newHeight = 0)=>
+        {
+            newHeight = Math.max(minHeightmapValue, Math.min(maxHeightmapValue, newHeight));
+
+            x = Math.floor(x);
+            y = Math.floor(y);
+
+            // Note: MAASTO data is two bytes per tile, so we multiply the idx by two.
+            const idx = ((x + y * maastoWidth) * 2);
+
+            if ((idx < 0) || (idx >= data.byteLength))
+            {
+                return;
+            }
+
+            [data[idx], data[idx+1]] = [...integer_height_as_two_bytes(newHeight)];
+        },
+    };
+    
+    return publicInterface;
+
+    // Converts Rally-Sport's two-byte heightmap value into RallySportED's integer format.
+    // (For more information about Rally-Sport's heightmaps, see the data format documentation
+    // at github.com/leikareipa/rallysported/tree/master/docs.)
+    function two_byte_height_as_integer(byte1, byte2)
+    {
+        // Special case: more than -255 below ground level.
+        if (byte2 == 1)
+        {
+            return (-256 - byte1);
+        }
+        // Above ground when b2 == 255, otherwise below ground.
+        else
+        {
+            return (byte2 - byte1);
+        }
+    }
+
+    // Converts RallySportED's heightmap value into Rally-Sport's two-byte height format.
+    // (For more information about Rally-Sport's heightmaps, see the data format documentation
+    // at github.com/leikareipa/rallysported/tree/master/docs.)
+    function integer_height_as_two_bytes(height)
+    {
+        let byte1 = 0;
+        let byte2 = 0;
+
+        if (height > 0)
+        {
+            byte2 = 255;
+            byte1 = (255 - height);
+        }
+        else if (height <= 0)
+        {
+            if (height < -255)
+            {
+                byte2 = 1;
+                byte1 = (Math.abs(height) - 256);
+            }
+            else
+            {
+                byte2 = 0;
+                byte1 = Math.abs(height);
+            }
         }
 
+        return [byte1, byte2];
+    }
+};
+/*
+ * Most recent known filename: js/track/palat.js
+ *
+ * 2019 Tarpeeksi Hyvae Soft /
+ * RallySportED-js
+ *
+ */
 
-        publicInterface.set_checkpoint_pos = function(x, y)
-        {
-            trackCheckpoint.x = x;
-            trackCheckpoint.y = y;
-        }
+"use strict";
 
-        publicInterface.num_props = function()
-        {
-            Rsed.assert && (propLocations.length === propNames.length)
-                        || Rsed.throw("Detected mismatched prop data.");
+Rsed.track = Rsed.track || {};
 
-            return propLocations.length;
-        }
+Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
+{
+    Rsed.assert && (palaWidth === palaHeight)
+                || Rsed.throw("Expected PALA width and height to be equal.");
 
-        publicInterface.remove_prop = function(propIdx)
-        {
-            // For now, shared mode doesn't support removing props.
-            /// TODO. We expect this function to be called as a result of the user interacting
-            /// with the UI to remove the given prop. But it's possible that someone might also
-            /// come to call this function for some other purpose; which might have nothing to
-            /// do with shared mode. So, ideally, this function should better convey to the coder
-            /// that it's only meant to be used in connection with events trigged by the user.
-            if (Rsed.shared_mode_n.enabled()) return;
+    Rsed.assert && ((palaWidth > 0) &&
+                    (palaHeight > 0))
+                || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
 
-            Rsed.assert && (propIdx >= 0 && propIdx < propLocations.length)
-                        || Rsed.throw("Trying to delete a prop whose index is out of bounds.");
+    const pixels = [].map.call(data, (colorIdx)=>Rsed.palette_n.palette_idx_to_rgba(colorIdx));
 
-            // Don't allow removing the finish line, since a track needs to have one at all times. But if you
-            // really want to remove it, and you know what you're doing, you need to call some other function,
-            // whichever that may be.
-            if (propIdx === 0) return;
+    const palaSize = (palaWidth * palaHeight);
 
-            propLocations.splice(propIdx, 1);
-            propNames.splice(propIdx, 1);
-        }
-
-        // Returns a copy of the value such that it's clamped to within allowable track boundaries, considering both
-        // the side length of the track and its prop margin. Note that the value is expected to be in tile units
-        // multiplied by the tile size (e.g. 53 * 128 for tile 53).
-        publicInterface.clamped_to_track_prop_boundaries = function(value)
-        {
-            const min = (this.prop_margin() * this.tile_size());
-            const max = ((this.track_side_length() - this.prop_margin()) * this.tile_size());
-
-            return k_clamp(value, min, max);
-        }
-
-        publicInterface.set_prop_position = function(propIdx, x, z)
-        {
-            Rsed.assert && (propIdx >= 0 && propIdx < propLocations.length)
-                        || Rsed.throw("Trying to move a prop whose index is out of bounds.");
-
-            /// TODO: For now, this doesn't clamp the values to track boundaries, as some tracks made with
-            /// old versions of RallySportED may try to put props outside of those boundaries (and expect
-            /// it to succeed).
-            propLocations[propIdx].x = x;
-            propLocations[propIdx].z = z;
-        }
+    const publicInterface =
+    {
+        width: palaWidth,
+        height: palaHeight,
         
-        publicInterface.move_prop = function(propIdx, deltaX, deltaZ)
+        // Returns a copy of the individual PALA texture at the given index.
+        texture:(palaId = 0, args = {/*alpha:true|false,*/})=>
+        {
+            Rsed.assert && Number.isInteger(palaId)
+                        || Rsed.throw("Expected integer parameters.");
+
+            const dataIdx = (palaId * palaSize);
+
+            // If the request is out of bounds, return a dummy texture.
+            if ((dataIdx < 0) || ((dataIdx + palaSize) >= data.byteLength))
+            {
+                return Rsed.texture(
+                {
+                    width: 1,
+                    height: 1,
+                    alpha: args.alpha,
+                    pixels: [Rsed.palette_n.palette_idx_to_rgba(0)],
+                    indices: [0],
+                });
+            }
+
+            return Rsed.texture(
+            {
+                width: palaWidth,
+                height: palaHeight,
+                alpha: args.alpha,
+                flipped: "vertical",
+                pixels: pixels.slice(dataIdx, (dataIdx + palaSize)),
+                indices: data.slice(dataIdx, (dataIdx + palaSize)),
+            });
+        }
+    };
+
+    Rsed.ui_draw_n.prebake_palat_pane();
+    
+    return publicInterface;
+};
+/*
+ * Most recent known filename: js/track/props.js
+ *
+ * 2019 Tarpeeksi Hyvae Soft /
+ * RallySportED-js
+ *
+ */
+
+"use strict";
+
+Rsed.track = Rsed.track || {};
+
+Rsed.track.props = async function(textureAtlas = Uint8Array)
+{
+    const data = await fetch_prop_metadata_from_server();
+
+    Rsed.assert && ((typeof data.propMeshes !== "undefined") &&
+                    (typeof data.propLocations !== "undefined") &&
+                    (typeof data.propNames !== "undefined"))
+                || Rsed.throw("Missing properties in prop metadata.");
+
+    // Filter out comments and other auxiliary info from the JSON data; and sort by the relevant
+    // index, so we can access the desired element with [x].
+    const names = data.propNames.filter(m=>(typeof m.propId !== "undefined"))
+                                 .sort((a, b)=>((a.propId === b.propId)? 0 : ((a.propId > b.propId)? 1 : -1)));
+
+    const meshes = data.propMeshes.filter(m=>(typeof m.propId !== "undefined"))
+                                  .sort((a, b)=>((a.propId === b.propId)? 0 : ((a.propId > b.propId)? 1 : -1)));
+
+    const locations = data.propLocations.filter(m=>(typeof m.trackId !== "undefined"))
+                                        .sort((a, b)=>((a.trackId === b.trackId)? 0 : ((a.trackId > b.trackId)? 1 : -1)));
+
+    const textureRects = data.propTextureRects.filter(m=>(typeof m.textureId !== "undefined"))
+                                              .sort((a, b)=>((a.textureId === b.textureId)? 0 : ((a.textureId > b.textureId)? 1 : -1)));
+
+    // Manifesto files can manipulate the number of props on a given track; we'll offer
+    // that functionality by only returning the first x prop locations on that track.
+    locations.maxCount = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
+    locations.count = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
+
+    const publicInterface =
+    {
+        // Returns an object containing the given prop's 3d mesh (with properties copied by
+        // value). The mesh object will be of the following form:
+        //
+        //     {
+        //         ngons:
+        //         [
+        //             {
+        //                 fill:
+        //                 {
+        //                     type: "color" | "texture",
+        //                     idx: ...
+        //                 }
+        //                 vertices:
+        //                 [
+        //                     {x: ..., y: ..., z: ...},
+        //                     {x: ..., y: ..., z: ...},
+        //                     {x: ..., y: ..., z: ...},
+        //                     ...
+        //                 ]
+        //             },
+        //             {
+        //                 fill: {type: ..., idx: ...}
+        //                 vertices: [{...}]
+        //             },
+        //             ...
+        //         ]
+        //     }
+        //
+        // That is, each mesh consists of one or more n-gons, which themselves consist of
+        // a fill property, which describes whether the n-gon should be filled with a solid
+        // color or a texture (the fill.idx property defines either the color's palette index
+        // or the texture's index, depending on the fill type); and a list of the n vertices
+        // that define the n-gon.
+        //
+        mesh: (propId = 0)=>
+        {
+            Rsed.assert && ((propId >= 0) &&
+                            (propId < meshes.length))
+                        || Rsed.throw("Querying a prop mesh out of bounds (" + propId + ").");
+
+            return {
+                ngons:meshes[propId].ngons.map(ngon=>
+                {
+                    const meshNgon =
+                    {
+                        fill:Object.freeze(
+                        {
+                            type: ngon.fill.type.slice(),
+                            idx: ngon.fill.idx
+                        }),
+                        vertices:ngon.vertices.map(vert=>(Object.freeze(
+                        {
+                            x: vert.x,
+                            y: -vert.y,
+                            z: -vert.z
+                        }))),
+                    };
+
+                    Object.freeze(meshNgon.vertices);
+
+                    return meshNgon;
+                }),
+            }
+        },
+
+        // Returns a by-value copy of the given prop texture.
+        texture: (textureId = 0, args = {})=>
+        {
+            args =
+            {
+                ...
+                {
+                    alpha: true,
+                    flipped: "vertical",
+                },
+                ...args
+            };
+            
+            Rsed.assert && ((textureId >= 0) &&
+                            (textureId < textureRects.length))
+                        || Rsed.throw("Querying a prop texture out of bounds.");
+
+            const width = textureRects[textureId].rect.width;
+            const height = textureRects[textureId].rect.height;
+            const pixels = [];
+            const indices = [];
+
+            // Copy the texture's pixel region from the texture atlas.
+            for (let y = 0; y < height; y++)
+            {
+                for (let x = 0; x < width; x++)
+                {
+                    const idx = ((textureRects[textureId].rect.topLeft.x + x) + (textureRects[textureId].rect.topLeft.y + y) * 128);
+
+                    indices.push(textureAtlas[idx]);
+                    pixels.push(Rsed.palette_n.palette_idx_to_rgba(textureAtlas[idx]));
+                }
+            }
+
+            return Rsed.texture(
+            {
+                width,
+                height,
+                pixels: pixels,
+                indices: indices,
+                ...args,
+            });
+        },
+
+        name: (propId = 0)=>
+        {
+            Rsed.assert && ((propId >= 0) &&
+                            (propId < meshes.length))
+                        || Rsed.throw("Querying a prop mesh out of bounds (" + propId + ").");
+
+            return names[propId].name;
+        },
+
+        names: ()=>
+        {
+            return names.map(nameObj=>nameObj.name);
+        },
+
+        // Returns the id of a prop with the supplied name. Throws if no such prop was found.
+        id_for_name: (propName = "")=>
+        {
+            const idx = names.map(nameObj=>nameObj.name).indexOf(propName);
+
+            Rsed.assert && (idx !== -1)
+                        || Rsed.throw("Failed to find a prop called " + propName + ".");
+
+            return names[idx].propId;
+        },
+
+        // Moves the propIdx'th prop on the given track by the given delta.
+        move: (trackId = 0, propIdx = 0, delta = {x:0,y:0,z:0})=>
         {
             // For now, shared mode doesn't support moving props.
             if (Rsed.shared_mode_n.enabled()) return;
 
-            Rsed.assert && (propIdx >= 0 && propIdx < propLocations.length)
-                        || Rsed.throw("Trying to move a prop whose index is out of bounds.");
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId <= 7))
+                        || Rsed.throw("Querying a track out of bounds.");
 
-            propLocations[propIdx].x = this.clamped_to_track_prop_boundaries(propLocations[propIdx].x + deltaX);
-            propLocations[propIdx].z = this.clamped_to_track_prop_boundaries(propLocations[propIdx].z + deltaZ);
-        }
+            Rsed.assert && ((propIdx >= 0) &&
+                            (propIdx < locations[trackId].locations.length))
+                        || Rsed.throw("Querying a prop location out of bounds.");
 
-        publicInterface.level_terrain = function()
-        {
-            // For now, shared mode doesn't support level the terrain (would be too easy to grief).
-            if (Rsed.shared_mode_n.enabled()) return;
+            const currentLocation = locations[trackId].locations[propIdx];
 
-            const heightString = window.prompt("Level the terrain to a height of...");
-            if (heightString == null) return;
-
-            const heightValue = Number(heightString);
-
-            if (!Number.isInteger(heightValue) ||
-                heightValue < minHeightmapValue ||
-                heightValue > maxHeightmapValue)
+            delta =
             {
-                window.alert("The given height value is out of range (" + minHeightmapValue + ".." + maxHeightmapValue + ").");
-                return;
+                ...{x:0,y:0,z:0},
+                ...delta,
+            };
+
+            currentLocation.x = clamped_to_track_prop_boundaries(currentLocation.x + delta.x);
+            currentLocation.y = (currentLocation.y + delta.y);
+            currentLocation.z = clamped_to_track_prop_boundaries(currentLocation.z + delta.z);
+
+            function clamped_to_track_prop_boundaries(value)
+            {
+                const min = (Rsed.constants.propTileMargin * Rsed.constants.groundTileSize);
+                const max = ((Rsed.main_n.project().maasto.width - Rsed.constants.propTileMargin) * Rsed.constants.groundTileSize);
+
+                return Rsed.clamp(value, min, max);
             }
+        },
 
-            heightmap.fill(heightValue);
-        }
-
-        // Returns a byte array that can be saved into a RallySportED project file.
-        publicInterface.get_saveable_maasto = function()
+        // Assigns a new location to the propIdx'th prop on the given track.
+        set_prop_location: (trackId = 0, propIdx = 0, location = {x:0,y:0,z:0})=>
         {
-            let bytes = new Uint8Array(heightmap.length * 2);
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId < 8))
+                        || Rsed.throw("Querying a track out of bounds.");
 
-            // Convert our single-value heightmap into Rally-Sport's two-byte format.
-            for (let i = 0; i < heightmap.length; i++)
+            Rsed.assert && ((propIdx >= 0) &&
+                            (propIdx < locations[trackId].locations.length))
+                        || Rsed.throw("Querying a prop location out of bounds.");
+
+            location =
             {
-                const height = heightmap[i];
-                let b1 = 0;
-                let b2 = 0;
-
-                if (height > 0)
+                ...
                 {
-                    b2 = 255;
-                    b1 = (255 - height);
-                }
-                else if (height <= 0)
-                {
-                    if (height < -255)
-                    {
-                        b2 = 1;
-                        b1 = (Math.abs(height) - 256);
-                    }
-                    else
-                    {
-                        b2 = 0;
-                        b1 = Math.abs(height);
-                    }
-                }
-
-                bytes[i*2] = b1;
-                bytes[i*2+1] = b2;
+                    x: locations[trackId].locations[propIdx].x,
+                    y: locations[trackId].locations[propIdx].y,
+                    z: locations[trackId].locations[propIdx].z,
+                },
+                ...location,
             }
 
-            Rsed.assert && (bytes.length === originalMaastoBytesize)
-                        || Rsed.throw("Returning too many/few bytes in the saveable MAASTO buffer.");
+            locations[trackId].locations[propIdx].x = location.x;
+            locations[trackId].locations[propIdx].y = location.y;
+            locations[trackId].locations[propIdx].z = location.z;
+        },
 
-            return bytes;
-        }
-
-        // Returns a byte array that can be saved into a RallySportED project file.
-        publicInterface.get_saveable_varimaa = function()
+        set_prop_count: (trackId = 0, newPropCount = 0)=>
         {
-            let bytes = new Uint8Array(tilemap.length);
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId < 8))
+                        || Rsed.throw("Querying a track out of bounds.");
 
-            for (let i = 0; i < tilemap.length; i++)
+            Rsed.assert && ((newPropCount >= 0) &&
+                            (newPropCount < locations.maxCount[trackId]))
+                    || Rsed.throw("Trying to set a new prop count out of bounds.");
+
+            locations.count[trackId] = newPropCount;
+        },
+
+        change_prop_type: (trackId = 0, propIdx = 0, newPropId = 0)=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId < 8))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            Rsed.assert && ((propIdx >= 0) &&
+                            (propIdx < locations[trackId].locations.length))
+                        || Rsed.throw("Querying a prop location out of bounds.");
+
+            locations[trackId].locations[propIdx].propId = newPropId;
+
+            console.log(trackId, propIdx, newPropId, locations[trackId].locations[propIdx].propId)
+        },
+
+        // Returns by value the locations of all the props on the given track.
+        locations_of_props_on_track: (trackId = 0)=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId < 8))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            return Object.freeze(locations[trackId].locations.slice(0, locations.count[trackId]).map(loc=>(
             {
-                bytes[i] = tilemap[i];
-            }
+                propId: loc.propId,
+                x: loc.x,
+                y: loc.y,
+                z: loc.z
+            })));
+        },
+    };
 
-            Rsed.assert && (bytes.length === originalVarimaaBytesize)
-                        || Rsed.throw("Returning too many/few bytes in the saveable MAASTO buffer.");
-
-            return bytes;
-        }
-
-        // Returns the x,y,z track coordinates of the given prop.
-        publicInterface.position_of_prop = function(propId)
-        {
-            Rsed.assert && (propId >= 0 && propId < propLocations.length)
-                        || Rsed.throw("Querying prop position out of bounds.");
-
-            return propLocations[propId];
-        }
-
-        // Returns the name of the given prop.
-        publicInterface.name_of_prop = function(propId)
-        {
-            Rsed.assert && (propId >= 0 && propId < propNames.length)
-                        || Rsed.throw("Querying prop position out of bounds.");
-
-            return propNames[propId].slice(0);
-        }
-
-        publicInterface.change_prop_type = function(propIdx, newPropIdx)
-        {
-            // For now, shared mode doesn't support changing props' type.
-            if (Rsed.shared_mode_n.enabled()) return;
-
-            Rsed.assert && (propIdx >= 0 && propIdx < propNames.length)
-                        || Rsed.throw("Attempting to change prop type out of bounds.");
-
-            propNames[propIdx] = Rsed.props_n.prop_name_for_idx(newPropIdx);
-        }
-
-        publicInterface.set_prop_count = function(numProps = 0)
-        {
-            // Each track needs at least one prop, i.e. the starting line.
-            Rsed.assert && ((numProps >= 1) && (numProps <= propLocations.length))
-                        || Rsed.throw("Attempting to set prop count out of bounds (" + numProps + ").");
-
-            propLocations.length = numProps;
-            propNames.length = numProps;
-        }
-
-        // Removes any MAASTO data we've added, wiping the slate clean as it were.
-        publicInterface.clear_maasto_data = function(propsToo = false)
-        {
-            maastoSideLength = 0;
-            heightmap.length = 0;
-            tilemap.length = 0;
-
-            if (propsToo)
-            {
-                propLocations.length = 0;
-                propNames.length = 0;
-            }
-        }
-
-        publicInterface.add_prop_location = function(trackId = 0, propName = "", x = 0, y = 0, z = 0)
-        {
-            Rsed.assert && (trackId >= 0 && trackId <= 8)
-                        || Rsed.throw("Track id is out of bounds.");
-
-            Rsed.assert && (propName.length > 0)
-                        || Rsed.throw("Expected a non-empty prop name.");
-
-            /// Temp hack.
-            if (trackId !== Rsed.main_n.underlying_track_id()) return;
-
-            if (propLocations.length >= maxNumProps)
-            {
-                k_popup("A track can have " + maxNumProps +" props, at most. This one has that many, already. Remove some to make room for more.");
-                return;
-            }
-            
-            const pos = new Rsed.geometry_n.vector3_o(x, y, z);
-            propLocations.push(pos);
-            propNames.push(propName);
-        }
-
-        // Call this with a n array of height points (sideLength * sideLength) long.
-        publicInterface.set_maasto = function(sideLength = 0, heights = [])
-        {
-            Rsed.assert && (heights[0] != null)
-                        || Rsed.throw("Can't set the MAASTO with potentially bad data.");
-
-            Rsed.assert && (heights.length === (sideLength * sideLength))
-                        || Rsed.throw("Incorrect number of height points for MAASTO.");
-
-            maastoSideLength = sideLength;
-            heightmap.push(...heights);
-        }
-
-        publicInterface.set_maasto_height_at = function(x = 0, y = 0, newHeight = 0)
-        {
-            Rsed.assert && ((x >= 0 && x < maastoSideLength) &&
-                            (y >= 0 && y < maastoSideLength))
-                        || Rsed.throw("Attempting to set MAASTO height out of bounds (" + x + "," + y + ").");
-
-            if (newHeight > maxHeightmapValue) newHeight = maxHeightmapValue;
-            else if (newHeight < minHeightmapValue) newHeight = minHeightmapValue;
-
-            heightmap[x + y * maastoSideLength] = newHeight;
-        }
-
-        publicInterface.set_varimaa_tile_at = function(x = 0, y = 0, palaIdx = 0)
-        {
-            Rsed.assert &&((x >= 0 && x < maastoSideLength) &&
-                           (y >= 0 && y < maastoSideLength))
-                        || Rsed.throw("Attempting to set a VARIMAA tile out of bounds (" + x + "," + y + ").");
-
-            tilemap[x + y * maastoSideLength] = palaIdx;
-        }
-
-        publicInterface.set_varimaa = function(sideLength = 0, tiles = [])
-        {
-            Rsed.assert && (sideLength === maastoSideLength)
-                        || Rsed.throw("Expected the MAASTO side length to be set and identical to that of the VARIMAA.");
-
-            tilemap.push(...tiles);
-        }
-
-        publicInterface.maasto_height_at = function(x = 0, y = 0)
-        {
-            x = Math.floor(x);
-            y = Math.floor(y);
-
-            if (x < 0 || x >= maastoSideLength ||
-                y < 0 || y >= maastoSideLength)
-            {
-                return 0;
-            }
-
-            return heightmap[x + y * maastoSideLength];
-        }
-
-        publicInterface.varimaa_tile_at = function(x = 0, y = 0)
-        {
-            x = Math.floor(x);
-            y = Math.floor(y);
-
-            if (x < 0 || x >= maastoSideLength ||
-                y < 0 || y >= maastoSideLength)
-            {
-                return 0;
-            }
-
-            return tilemap[x + y * maastoSideLength];
-        }
-
-        // The game by default has four different 'skins' for spectators, and it decides which skin a
-        // spectator will be given based on the spectator's x,y coordinates on the track. This will
-        // return the correct skin for the given coordinates.
-        publicInterface.spectator_texture_at = function(tileX = 0, tileY = 0)
-        {
-            const firstSpectatorTexIdx = 236;      // Index of the first PALA representing a (standing) spectator. Assumes consecutive arrangement.
-            const numSkins = 4;
-            const sameRows = ((this.track_side_length() == 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
-
-            const yOffs = (Math.floor(tileY / sameRows)) % numSkins;
-            const texOffs = ((tileX + (numSkins - 1)) + (yOffs * (numSkins - 1))) % numSkins;
-
-            const textureIdx = (firstSpectatorTexIdx + texOffs);
-
-            return textureIdx;
-        }
-
-        // Returns a polygon mesh of the track at the given viewing position, given in track tile units.
-        publicInterface.maasto_mesh = function(viewOffsetX = 0, viewOffsetZ = 0)
-        {
-            // The list of polygons that make up the track mesh.
-            const polys = [];
-
-            const topdown = (Rsed.ui_view_n.current_view() === "3d-topdown");
-
-            // We'll center the track on the screen with these.
-            const trackOffsetX = topdown? -1152 : -1088;
-            const trackOffsetY = topdown? -1800 : -680;
-            const trackOffsetZ = topdown? 700 : 2612;
-
-            const wireframeOnRequest = Rsed.ui_view_n.show3dWireframe;
-
-            // Add the ground tiles.
-            for (let z = 0; z < Rsed.camera_n.view_height(); z++)
-            {
-                for (let x = 0; x < Rsed.camera_n.view_width(); x++)
-                {
-                    const tileX = (x + viewOffsetX);
-                    const tileZ = (z + viewOffsetZ);
-
-                    const vertX = ((x * tileSize) + trackOffsetX);
-                    const vertZ = (trackOffsetZ - (z * tileSize));
-
-                    let tilePala = this.varimaa_tile_at(tileX, (tileZ - 1));
-
-                    // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
-                    if (tileX === Rsed.ui_input_n.mouse_tile_hover_x() &&
-                        (tileZ - 1) === Rsed.ui_input_n.mouse_tile_hover_y())
-                    {
-                        tilePala = Rsed.ui_brush_n.brush_pala_idx();
-                    }
-
-                    // Constuct the ground quad polygon.
-                    const quad = new Rsed.geometry_n.polygon_o(4);
-                    {
-                        // The heights of the ground quad's corner points.
-                        const height1 = trackOffsetY + this.maasto_height_at( tileX,       tileZ);
-                        const height2 = trackOffsetY + this.maasto_height_at((tileX + 1),  tileZ);
-                        const height3 = trackOffsetY + this.maasto_height_at((tileX + 1), (tileZ - 1));
-                        const height4 = trackOffsetY + this.maasto_height_at( tileX,      (tileZ - 1));
-                        
-                        quad.verts[0] = new Rsed.geometry_n.vertex_o( vertX,             height1, vertZ);
-                        quad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height2, vertZ);
-                        quad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), height3, (vertZ + tileSize));
-                        quad.verts[3] = new Rsed.geometry_n.vertex_o( vertX,             height4, (vertZ + tileSize));
-                        
-                        quad.hasWireframe = wireframeOnRequest;
-                        quad.texture = Rsed.palat_n.pala_texture(tilePala);
-                    }
-
-                    // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
-                    // rasterization we'll write into the mouse-picking buffer, so we can later determine which
-                    // quad, if any, the mouse cursor is hovering over.
-                    quad.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
-                                                                          {"tileX":tileX,
-                                                                           "tileZ":(tileZ - 1)});
-
-                    polys.push(quad);
-
-                    // If this tile has a billboard, add that too.
-                    if (tilePala > 239 && tilePala <= 247)
-                    {
-                        const baseHeight = trackOffsetY + this.maasto_height_at(tileX, (tileZ - 1));
-
-                        const bill = new Rsed.geometry_n.polygon_o(4);
-                        bill.verts[0] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight,          vertZ);
-                        bill.verts[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight,          vertZ);
-                        bill.verts[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), baseHeight+tileSize, vertZ);
-                        bill.verts[3] = new Rsed.geometry_n.vertex_o( vertX,             baseHeight+tileSize, vertZ);
-
-                        switch (tilePala)
-                        {
-                            // Spectators.
-                            case 240:
-                            case 241:
-                            case 242: bill.texture = Rsed.palat_n.pala_texture(this.spectator_texture_at(tileX, (tileZ - 1)), true);
-                            break;
-        
-                            // Shrubs.
-                            case 243: bill.texture = Rsed.palat_n.pala_texture(208, true); break;
-                            case 244: bill.texture = Rsed.palat_n.pala_texture(209, true); break;
-                            case 245: bill.texture = Rsed.palat_n.pala_texture(210, true); break;
-        
-                            // Small poles.
-                            case 246:
-                            case 247: bill.texture = Rsed.palat_n.pala_texture(211, true); break;
-                            case 250: bill.texture = Rsed.palat_n.pala_texture(212, true); break;
-        
-                            default: Rsed.throw("Unrecognized billboard texture."); continue;
-                        }
-
-                        polys.push(bill);
-                    }
-                    // If the tile has a bridge, add that.
-                    else if (tilePala === 248 || tilePala === 249)
-                    {
-                        const bridge = new Rsed.geometry_n.polygon_o(4);
-                        bridge.verts[0] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, vertZ);
-                        bridge.verts[1] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, vertZ);
-                        bridge.verts[2] = new Rsed.geometry_n.vertex_o((vertX + tileSize), trackOffsetY, (vertZ+tileSize));
-                        bridge.verts[3] = new Rsed.geometry_n.vertex_o( vertX,             trackOffsetY, (vertZ+tileSize));
-
-                        bridge.texture = Rsed.palat_n.pala_texture(177, true);
-
-                        polys.push(bridge);
-                    }
-                }
-            }
-
-            // Add any track prop meshes that should be visible on the currently-drawn track.
-            for (let i = 0; i < propLocations.length; i++)
-            {
-                const pos = propLocations[i];
-                if ((pos.x >= (Rsed.camera_n.pos_x() * tileSize)) &&
-                    (pos.x <= ((Rsed.camera_n.pos_x() + Rsed.camera_n.view_width()) * tileSize)) &&
-                    (pos.z >= (Rsed.camera_n.pos_z() * tileSize)) &&
-                    (pos.z <= ((Rsed.camera_n.pos_z() + Rsed.camera_n.view_height()) * tileSize)))
-                {
-                    const x = (pos.x + trackOffsetX - (viewOffsetX * tileSize));
-                    const z = (trackOffsetZ - pos.z + (viewOffsetZ * tileSize));
-                    const groundHeight = trackOffsetY + this.maasto_height_at((pos.x / tileSize), (pos.z / tileSize));
-                    const y = (groundHeight + pos.y);
-
-                    const mesh = Rsed.props_n.prop_mesh(propNames[i], i, x, y, z, wireframeOnRequest);
-                    polys.push(...mesh);
-                }
-            }
-            
-            /// Temp hack. We're tilting down all the ground elements to get the viewing angle we want,
-            /// but really it should be the camera's view vector that's pointed down and not the objects
-            /// themselves.
-            return new Rsed.geometry_n.polygon_mesh_o(polys, new Rsed.geometry_n.vector3_o(0, 0, 0),
-                                                        new Rsed.geometry_n.vector3_o(topdown? (-Math.PI / 2) : -0.45, 0, 0));
-        }
-
-        publicInterface.prop_locations = function() { return propLocations.slice(0); }
-        publicInterface.prop_names = function() { return propNames.slice(0); }
-
-        publicInterface.track_checkpoint_x = function() { return trackCheckpoint.x; }
-        publicInterface.track_checkpoint_y = function() { return trackCheckpoint.y; }
-
-        publicInterface.prop_margin = function() { return propMargin; }
-
-        publicInterface.track_side_length = function() { return maastoSideLength; }
-
-        publicInterface.set_maasto_bytesize = function(numBytes) { originalMaastoBytesize = numBytes; }
-        publicInterface.set_varimaa_bytesize = function(numBytes) { originalVarimaaBytesize = numBytes; }
-    }
     return publicInterface;
-})();
-/*
- * Most recent known filename: js/track/palat.js
- *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
- *
- */
 
-"use strict";
-
-Rsed.palat_n = (function()
-{
-    // Resolution of a single PALA.
-    const palaWidth = 16;
-    const palaHeight = 16;
-
-    // The list of PALA textures that we know about.
-    const palat = [];
-
-    // The list of PALA textures that we know about, with alpha-testing enabled.
-    const palatWithAlpha = [];
-
-    let originalPalatBytesize = 0;
-
-    const publicInterface = {};
+    async function fetch_prop_metadata_from_server()
     {
-        publicInterface.set_palat_bytesize = function(numBytes)
-        {
-            originalPalatBytesize = numBytes;
-        }
+        return fetch("server/get-prop-metadata.php")
+               .then(response=>
+               {
+                   if (!response.ok)
+                   {
+                       throw "A GET request to the server failed.";
+                   }
 
-        // Returns a byte array that can be saved into a RallySportED project file.
-        publicInterface.get_saveable_palat = function()
-        {
-            let bytes = new Uint8Array(originalPalatBytesize);
-            
-            let idx = 0;
-            for (let i = 0; i < palat.length; i++)
-            {
-                for (let y = (palaHeight - 1); y >= 0; y--) // Iterate backward to flip the image on y.
-                {
-                    for (let x = 0; x < palaWidth; x++)
-                    {
-                        if (idx >= originalPalatBytesize) return bytes;
+                   return response.json();
+               })
+               .then(ticket=>
+               {
+                   if (!ticket.valid || (typeof ticket.data === "undefined"))
+                   {
+                       throw ("The server sent a GET ticket marked invalid. It said: " + ticket.message);
+                   }
 
-                        bytes[idx++] = palat[i].paletteIndices[x + y * palaWidth];
-                    }
-                }
-            }
-
-            return bytes;
-        }
-
-        // Removes any PALAT data we've added, wiping the slate clean as it were.
-        publicInterface.clear_palat_data = function()
-        {
-            palat.length = 0;
-            palatWithAlpha.length = 0;
-        }
-
-        // Adds the given texture as a known PALA.
-        publicInterface.add_pala = function(palaTexture = Rsed.texture_n.texture_o)
-        {
-            Rsed.assert && (palaTexture instanceof Rsed.texture_n.texture_o)
-                        || Rsed.throw("Expected a texture object.");
-
-            let tex = new Rsed.texture_n.texture_o;
-            tex.pixels = palaTexture.pixels.slice(0);
-            tex.paletteIndices = palaTexture.paletteIndices.slice(0);
-            tex.width = palaTexture.width;
-            tex.height = palaTexture.height;
-            tex.hasAlpha = false;
-            palat.push(tex);
-    
-            tex = new Rsed.texture_n.texture_o;
-            tex.pixels = palaTexture.pixels.slice(0);
-            tex.paletteIndices = palaTexture.paletteIndices.slice(0);
-            tex.width = palaTexture.width;
-            tex.height = palaTexture.height;
-            tex.hasAlpha = true;
-            palatWithAlpha.push(tex);
-        }
-
-        // Returns the PALA with the given index.
-        publicInterface.pala_texture = function(palaIdx = 0, withAlpha = false)
-        {
-            const palaSource = (withAlpha? palatWithAlpha : palat);
-
-            return (palaSource[palaIdx] == null)? null : palaSource[palaIdx];
-        }
-
-        publicInterface.num_palas = function() { return palat.length; }
-        publicInterface.pala_width = function() { return palaWidth; }
-        publicInterface.pala_height = function() { return palaHeight; }
+                   return JSON.parse(ticket.data);
+               })
+               .catch(error=>{ Rsed.throw(error); });
     }
-    return publicInterface;
-})();
-/*
- * Most recent known filename: js/track/props.js
- *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
- *
- */
-
-"use strict";
-
-Rsed.props_n = (function()
-{
-    // The collection of prop meshes we know about, as an array of vertices for each mesh.
-    const propMeshes = [];
-
-    // The name of each prop in the prop meshes array.
-    const propNames = [];
-
-    // A list of the textures we can use on props.
-    const propTextures = [];
-
-    const publicInterface = {};
-    {
-        publicInterface.clear_prop_textures = function()
-        {
-            propTextures.length = 0;
-        }
-
-        publicInterface.clear_prop_data = function()
-        {
-            propMeshes.length = 0;
-            propNames.length = 0;
-            propTextures.length = 0;
-        }
-
-        publicInterface.add_prop_texture = function(texture = Rsed.texture_n.texture_o)
-        {
-            Rsed.assert && (texture instanceof Rsed.texture_n.texture_o)
-                        || Rsed.throw("Expected a texture object.");
-
-            texture.hasAlpha = true;
-            propTextures.push(texture);
-        }
-
-        publicInterface.add_prop_mesh = function(name = "", polygons = [Rsed.geometry_n.polygon_o])
-        {
-            Rsed.assert && (polygons[0] instanceof Rsed.geometry_n.polygon_o)
-                        || Rsed.throw("Expected a polygon mesh.");
-
-            Rsed.assert && (name.length > 0)
-                        || Rsed.throw("Expected a non-empty prop name string.");
-
-            Rsed.assert && (polygons.length > 0)
-                        || Rsed.throw("Expected a non-empty mesh.");
-            
-            propMeshes.push(polygons);
-            propNames.push(name);
-        }
-
-        publicInterface.prop_name_for_idx = function(propIdx)
-        {
-            Rsed.assert && (propIdx >= 0 && propIdx < propNames.length)
-                        || Rsed.throw("Querying a prop name out of bounds.");
-
-            return propNames[propIdx];
-        }
-
-        publicInterface.prop_idx_for_name = function(propName = "")
-        {
-            const propIdx = propNames.indexOf(propName);
-
-            Rsed.assert && (propIdx >= 0 && propIdx < propNames.length)
-                        || Rsed.throw("Can't find the given prop name to return an index.");
-
-            return propIdx;
-        }
-
-        // Returns a copy of the mesh of the prop of the given name, offset by the given x,y,z.
-        publicInterface.prop_mesh = function(name = "", idOnTrack = 0, offsetX = 0, offsetY = 0, offsetZ = 0, wireframeEnabled = false)
-        {
-            Rsed.assert && (name.length > 0)
-                        || Rsed.throw("Expected a non-empty prop mesh name string.");
-
-            const idx = propNames.indexOf(name);
-            const sourceMesh = propMeshes[idx];
-
-            Rsed.assert && (idx >= 0)
-                        || Rsed.throw("Couldn't find a prop with the given name.");
-
-            const copyMesh = [];
-            for (let i = 0; i < sourceMesh.length; i++)
-            {
-                copyMesh.push(new Rsed.geometry_n.polygon_o(sourceMesh[i].verts.length));
-                copyMesh[i].clone_from(sourceMesh[i]);
-
-                copyMesh[i].hasWireframe = wireframeEnabled;
-
-                copyMesh[i].isEthereal = Rsed.ui_view_n.hideProps;
-
-                copyMesh[i].mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
-                                                                             {propIdx:idx, propTrackId:idOnTrack});
-
-                for (let v = 0; v < copyMesh[i].verts.length; v++)
-                {
-                    copyMesh[i].verts[v].x += offsetX;
-                    copyMesh[i].verts[v].y += offsetY;
-                    copyMesh[i].verts[v].z += offsetZ;
-                }
-            }
-
-            return copyMesh;
-        }
-
-        publicInterface.prop_texture = function(idx)
-        {
-            if (idx == null) return null;
-
-            Rsed.assert && (idx >= 0 && idx < propTextures.length)
-                        || Rsed.throw("Tried to access a prop texture out of bounds.");
-
-            return propTextures[idx];
-        }
-
-        publicInterface.prop_names = function() { return propNames.slice(0); }
-    }
-    return publicInterface;
-})();
-/*
- * Most recent known filename: js/track/manifesto.js
- *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
- * 
- * Parses RallySportED's manifesto files.
- *
- */
-
-"use strict";
-
-Rsed.manifesto_n = (function()
-{
-    const manifestoCommands = Object.freeze({"0": apply_0,
-                                             "1": apply_1,
-                                             "2": apply_2,
-                                             "3": apply_3,
-                                             "4": apply_4,
-                                             "5": apply_5,
-                                             "6": apply_6,
-                                             "10": apply_10,
-                                             "99": apply_99})
-
-    // Command: require. Sets up the track with the correct MAASTO, VARIMAA, etc. files.
-    // You'd generally wait until the promise this returns resolves before engaging any
-    // other manifesto commands, since they might otherwise be modifying incomplete data.
-    function apply_0(args = [])
-    {
-        return new Promise((resolve, reject) =>
-        {
-            Rsed.assert && (args.length === 3)
-                        || Rsed.throw("Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
-
-            const trackId = Math.floor(Number(args[0]));
-            const palatId = Math.floor(Number(args[1]));
-            const minRSEDLoaderVersion = Number(args[2]);
-
-            Rsed.main_n.initialize_track_data(trackId).then(()=>{resolve();});
-        });
-    }
-
-    // Command: road. Sets up the game's driving physics for various kinds of road surfaces.
-    function apply_1(args = [])
-    {
-        Rsed.assert && (args.length === 1)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 1. Expected 1 but received " + args.length + ".");
-    }
-
-    // Command: num_objs. Sets the number of props (in addition to the starting line) on the track.
-    function apply_2(args = [])
-    {
-        Rsed.assert && (args.length === 1)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 2. Expected 1 but received " + args.length + ".");
-
-        const numObjs = Math.floor(Number(args[0]));
-
-        Rsed.maasto_n.set_prop_count(numObjs);
-    }
-
-    // Command: add_obj. Adds a new prop to the track.
-    function apply_3(args = [])
-    {
-        Rsed.assert && (args.length === 5)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 3. Expected 5 but received " + args.length + ".");
-
-        const propTypeIdx = Math.floor(Number(args[0]) - 1);
-        const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
-        const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[4]));
-
-        Rsed.maasto_n.add_prop_location(Rsed.main_n.underlying_track_id(), Rsed.props_n.prop_name_for_idx(propTypeIdx), posX, 0, posZ);
-    }
-
-    // Command: change_obj_type. Changes the type of the given prop.
-    function apply_4(args = [])
-    {
-        Rsed.assert && (args.length === 2)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 4. Expected 2 but received " + args.length + ".");
-
-        const targetPropIdx = Math.floor(Number(args[0]) - 1);
-        const newType = Math.floor(Number(args[1]) - 1);
-
-        Rsed.maasto_n.change_prop_type(targetPropIdx, newType);
-    }
-
-    // Command: move_obj. Moves the position of the given prop.
-    function apply_5(args = [])
-    {
-        Rsed.assert && (args.length === 5)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 5. Expected 5 but received " + args.length + ".");
-
-        const targetPropIdx = Math.floor(Number(args[0]) - 1);
-        const posX = Math.floor(((Number(args[1]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[3]));
-        const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.maasto_n.tile_size()) + Number(args[4]));
-
-        Rsed.maasto_n.set_prop_position(targetPropIdx, posX, posZ);
-    }
-
-    // Command: move_starting_pos. Moves the starting line. Note that this doesn't move the
-    // starting line prop, but the starting position of the player's car. So we can ignore
-    // it in the editor.
-    function apply_6(args = [])
-    {
-        Rsed.assert && (args.length === 4)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 6. Expected 4 but received " + args.length + ".");
-    }
-
-    // Command: change_palette_entry. Changes the given palette index to the given r,g,b values.
-    function apply_10(args = [])
-    {
-        Rsed.assert && (args.length === 4)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 10. Expected 4 but received " + args.length + ".");
-
-        const targetPaletteIdx = Math.floor(Number(args[0]));
-        const r = Math.floor(Number(args[1] * 4));
-        const g = Math.floor(Number(args[2] * 4));
-        const b = Math.floor(Number(args[3] * 4));
-        
-        Rsed.palette_n.modify_palette_entry(targetPaletteIdx, r, g, b);
-    }
-
-    // Command: stop. Stops parsing the manifesto file.
-    function apply_99(args = [])
-    {
-        Rsed.assert && (args.length === 0)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 99. Expected no arguments but received " + args.length + ".");
-    }
-
-    const publicInterface = {};
-    {
-        // Enacts the given manifesto string. Returns a promise which is resolved once the manifesto has been
-        // fully applied.
-        publicInterface.apply_manifesto = function(manifestoString)
-        {
-            return new Promise((resolve, reject) =>
-            {
-                const lines = manifestoString.split("\n").filter(Boolean);
-
-                Rsed.assert && (lines.length >= 2)
-                            || Rsed.throw("Invalid number of lines in the manifesto file.");
-
-                // Apply the first manifesto command, 0, which sets up the track by loading in all data, etc.
-                const params = lines[0].split(" ");
-                const commandId = Number(params.shift());
-                const initialize_track = manifestoCommands[0];
-
-                Rsed.assert && (commandId === 0)
-                            || Rsed.throw("Expected the first command in the manifesto to be 0.");
-
-                // Once the first command has finished loading all data, we can continue with the other
-                // manifesto commands, which manipulate those data.
-                initialize_track(params)
-                .then(()=>
-                {
-                    for (let i = 1; i < lines.length; i++)
-                    {
-                        const params = lines[i].split(" ");
-                        const commandId = Number(params.shift());
-                        const command = manifestoCommands[commandId];
-
-                        Rsed.assert && (command != null)
-                                    || Rsed.throw("Unsupported command (" + commandId + ") in the manifesto file.");
-
-                        if ((commandId === 99) && (i !== (lines.length - 1)))
-                        {
-                            Rsed.throw("Expected the command 99 to be the manifesto's last one.");
-                        }
-
-                        command(params);
-                    }
-                })
-                .then(()=>{resolve();});
-            });
-        }
-
-        // Will take the given manifesto string (the full contents of a manifesto file) and process it for
-        // saving. This processing will involve, for instance, updating track prop positions in instances
-        // of command #5.
-        publicInterface.get_saveable_manifesto = function(manifestoString)
-        {
-            const manifLines = manifestoString.split("\n").filter(Boolean);
-
-            let newManifesto = "";
-
-            // Copy verbatim any manifesto commands we won't update.
-            for (let i = 0; i < (manifLines.length - 1); i++)
-            {
-                const params = manifLines[i].split(" ");
-                
-                Rsed.assert && (params.length > 0)
-                            || Rsed.throw("Did not expect an empty parameters list.");
-
-                switch (params[0])
-                {
-                    case 2:
-                    case 4:
-                    case 5: break;
-                    default: newManifesto += (manifLines[i] + "\n");
-                }
-            }
-
-            // Add command 2 to set the number of props.
-            newManifesto += ("2 " + Rsed.maasto_n.num_props() + "\n");
-            
-            // Add command 5 for all props on the track, except for the starting line (first prop in the list), so they
-            // get put in their correct places.
-            {
-                const propLocations = Rsed.maasto_n.prop_locations();
-
-                for (let i = 1; i < propLocations.length; i++)
-                {
-                    const globalX = Math.floor((propLocations[i].x / Rsed.maasto_n.tile_size()) / 2);
-                    const globalZ = Math.floor((propLocations[i].z / Rsed.maasto_n.tile_size()) / 2);
-
-                    const localX = Math.floor((((propLocations[i].x / Rsed.maasto_n.tile_size()) / 2) - globalX) * 256);
-                    const localZ = Math.floor((((propLocations[i].z / Rsed.maasto_n.tile_size()) / 2) - globalZ) * 256);
-
-                    newManifesto += ("5 " + (i + 1) + " " + globalX + " " + globalZ + " " + localX + " " + localZ + "\n");
-                }
-            }
-
-            // Add command 4 for all props, except for the starting line, to make sure they're the right type.
-            {
-                const propNames = Rsed.maasto_n.prop_names();
-                
-                for (let i = 1; i < propNames.length; i++)
-                {
-                    const typeId = Rsed.props_n.prop_idx_for_name(propNames[i]);
-
-                    newManifesto += ("4 " + (i + 1) + " " + (typeId + 1) + "\n");
-                }
-            }
-
-            newManifesto += "99\n";
-
-            return newManifesto;
-        }
-    }
-    return publicInterface;
-})();
+}
 /*
  * Most recent known filename: js/ui/font.js
  *
@@ -3386,12 +3704,12 @@ Rsed.ui_brush_n = (function()
             for (let by = -brushSize; by <= brushSize; by++)
             {
                 const tileZ = (y + by);
-                if (tileZ < 0 || tileZ >= Rsed.maasto_n.track_side_length()) continue;
+                if (tileZ < 0 || tileZ >= Rsed.main_n.project().maasto.width) continue;
 
                 for (let bx = -brushSize; bx <= brushSize; bx++)
                 {
                     const tileX = (x + bx);
-                    if (tileX < 0 || tileX >= Rsed.maasto_n.track_side_length()) continue;
+                    if (tileX < 0 || tileX >= Rsed.main_n.project().maasto.width) continue;
 
                     switch (brushAction)
                     {
@@ -3399,41 +3717,41 @@ Rsed.ui_brush_n = (function()
                         {
                             if (this.brushSmoothens)
                             {
-                                if (tileX < 1 || tileX >=  (Rsed.maasto_n.track_side_length() - 1)) continue;
-                                if (tileZ < 1 || tileZ >= (Rsed.maasto_n.track_side_length() - 1)) continue;
+                                if (tileX < 1 || tileX >=  (Rsed.main_n.project().maasto.width - 1)) continue;
+                                if (tileZ < 1 || tileZ >= (Rsed.main_n.project().maasto.width - 1)) continue;
     
                                 let avgHeight = 0;
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX+1, tileZ);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX-1, tileZ);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX, tileZ+1);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX, tileZ-1);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX+1, tileZ+1);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX+1, tileZ-1);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX-1, tileZ+1);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX-1, tileZ-1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX+1, tileZ);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX-1, tileZ);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX, tileZ+1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX, tileZ-1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX+1, tileZ+1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX+1, tileZ-1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX-1, tileZ+1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX-1, tileZ-1);
                                 avgHeight /= 8;
                                     
-                                Rsed.maasto_n.set_maasto_height_at(tileX, tileZ, Math.floor(((avgHeight + Rsed.maasto_n.maasto_height_at(tileX, tileZ) * 7) / 8)));
+                                Rsed.main_n.project().maasto.set_tile_value_at(tileX, tileZ, Math.floor(((avgHeight + Rsed.main_n.project().maasto.tile_at(tileX, tileZ) * 7) / 8)));
                             }
                             else
                             {
-                                Rsed.maasto_n.set_maasto_height_at(tileX, tileZ, (Rsed.maasto_n.maasto_height_at(tileX, tileZ) + value));
+                                Rsed.main_n.project().maasto.set_tile_value_at(tileX, tileZ, (Rsed.main_n.project().maasto.tile_at(tileX, tileZ) + value));
                             }
 
                             if (Rsed.shared_mode_n.enabled())
                             {
-                                brushCache.maasto[tileX + tileZ * Rsed.maasto_n.track_side_length()] = Rsed.maasto_n.maasto_height_at(tileX, tileZ);
+                                brushCache.maasto[tileX + tileZ * Rsed.main_n.project().maasto.width] = Rsed.main_n.project().maasto.tile_at(tileX, tileZ);
                             }
 
                             break;
                         }
                         case this.brushAction.changePala:
                         {
-                            Rsed.maasto_n.set_varimaa_tile_at(tileX, tileZ, value);
+                            Rsed.main_n.project().varimaa.set_tile_value_at(tileX, tileZ, value);
 
                             if (Rsed.shared_mode_n.enabled())
                             {
-                                brushCache.varimaa[tileX + tileZ * Rsed.maasto_n.track_side_length()] = Rsed.maasto_n.varimaa_tile_at(tileX, tileZ);
+                                brushCache.varimaa[tileX + tileZ * Rsed.main_n.project().maasto.width] = Rsed.main_n.project().varimaa.tile_at(tileX, tileZ);
                             }
 
                             break;
@@ -3510,8 +3828,8 @@ Rsed.ui_draw_n = (function()
     const palatPaneMousePick = [];
     let numPalatPaneCols = 9;
     let numPalatPaneRows = 29;
-    let palatPaneWidth = ((numPalatPaneCols * (Rsed.palat_n.pala_width() / 2)) + 1);
-    let palatPaneHeight = ((numPalatPaneRows * (Rsed.palat_n.pala_height() / 2)) + 1);
+    let palatPaneWidth = ((numPalatPaneCols * (Rsed.constants.palaWidth / 2)) + 1);
+    let palatPaneHeight = ((numPalatPaneRows * (Rsed.constants.palaHeight / 2)) + 1);
     
     function put_pixel(x = 0, y = 0, r = 255, g = 255, b = 255)
     {
@@ -3647,9 +3965,9 @@ Rsed.ui_draw_n = (function()
             {
                 const xStr = String(x).padStart(3, "0");
                 const yStr = String(y).padStart(3, "0");
-                const heightStr = (Rsed.maasto_n.maasto_height_at(x, y) < 0? "-" : "+") +
-                                  String(Math.abs(Rsed.maasto_n.maasto_height_at(x, y))).padStart(3, "0");
-                const palaStr = String(Rsed.maasto_n.varimaa_tile_at(x, y)).padStart(3, "0");
+                const heightStr = (Rsed.main_n.project().maasto.tile_at(x, y) < 0? "-" : "+") +
+                                  String(Math.abs(Rsed.main_n.project().maasto.tile_at(x, y))).padStart(3, "0");
+                const palaStr = String(Rsed.main_n.project().varimaa.tile_at(x, y)).padStart(3, "0");
 
                 str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
 
@@ -3657,7 +3975,7 @@ Rsed.ui_draw_n = (function()
             }
             case Rsed.ui_input_n.mousePickingType.prop:
             {
-                str = "PROP:" + Rsed.props_n.prop_name_for_idx(Rsed.ui_input_n.mouse_hover_args().idx) +
+                str = "PROP:" + Rsed.main_n.project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
                       " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
             }
         }
@@ -3686,8 +4004,8 @@ Rsed.ui_draw_n = (function()
         /// TODO: You can pre-generate the image rather than re-generating it each frame.
         const width = 64;
         const height = 32;
-        const xMul = (Rsed.maasto_n.track_side_length() / width);
-        const yMul = (Rsed.maasto_n.track_side_length() / height);
+        const xMul = (Rsed.main_n.project().maasto.width / width);
+        const yMul = (Rsed.main_n.project().maasto.width / height);
         const image = [];   // An array of palette indices that forms the minimap image.
         const mousePick = [];
         for (let y = 0; y < height; y++)
@@ -3697,8 +4015,8 @@ Rsed.ui_draw_n = (function()
                 const tileX = (x * xMul);
                 const tileZ = (y * yMul);
 
-                const pala = Rsed.palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
-                let color = ((pala == null)? 0 : pala.paletteIndices[1]);
+                const pala = Rsed.main_n.project().palat.texture(Rsed.main_n.project().varimaa.tile_at(tileX, tileZ));
+                let color = ((pala == null)? 0 : pala.indices[1]);
 
                 // Have a black outline.
                 if (y % (height - 1) === 0) color = "black";
@@ -3706,8 +4024,11 @@ Rsed.ui_draw_n = (function()
 
                 image.push(color);
                 mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
-                                                                  {elementId:Rsed.ui_input_n.uiElement.minimap,
-                                                                   uiX:tileX, uiY:tileZ}));
+                                                                       {
+                                                                           elementId: Rsed.ui_input_n.uiElement.minimap,
+                                                                           uiX: tileX,
+                                                                           uiY: tileZ
+                                                                       }));
             }
         }
 
@@ -3741,11 +4062,11 @@ Rsed.ui_draw_n = (function()
     function draw_active_pala()
     {
         const currentPala = Rsed.ui_brush_n.brush_pala_idx();
-        const pala = Rsed.palat_n.pala_texture(currentPala);
+        const pala = Rsed.main_n.project().palat.texture(currentPala);
 
         if (pala != null)
         {
-            draw_image(pala.paletteIndices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false);
+            draw_image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false);
             draw_string((Rsed.ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
         }
     }
@@ -3758,8 +4079,8 @@ Rsed.ui_draw_n = (function()
         const width = Math.floor(Rsed.main_n.render_width() * 0.81);
         const height = Math.floor(Rsed.main_n.render_height() * 0.72);
         {
-            const xMul = (Rsed.maasto_n.track_side_length() / width);
-            const zMul = (Rsed.maasto_n.track_side_length() / height);
+            const xMul = (Rsed.main_n.project().maasto.width / width);
+            const zMul = (Rsed.main_n.project().maasto.width / height);
             const image = [];   // An array of palette indices that forms the minimap image.
             const mousePick = [];
 
@@ -3770,8 +4091,8 @@ Rsed.ui_draw_n = (function()
                     const tileX = Math.floor(x * xMul);
                     const tileZ = Math.floor(z * zMul);
 
-                    const pala = Rsed.palat_n.pala_texture(Rsed.maasto_n.varimaa_tile_at(tileX, tileZ));
-                    let color = ((pala == null)? 0 : pala.paletteIndices[1]);
+                    const pala = Rsed.main_n.project().palat.texture(Rsed.main_n.project().varimaa.tile_at(tileX, tileZ));
+                    let color = ((pala == null)? 0 : pala.indices[1]);
 
                     // Create an outline.
                     if (z % (height - 1) === 0) color = "gray";
@@ -3796,7 +4117,7 @@ Rsed.ui_draw_n = (function()
             draw_image(image, mousePick, width, height, ((pixelSurface.width / 2) - (width / 2)), ((pixelSurface.height / 2) - (height / 2)), false);
         }
 
-        draw_string("TRACK SIZE:" + Rsed.maasto_n.track_side_length() + "," + Rsed.maasto_n.track_side_length(),
+        draw_string("TRACK SIZE:" + Rsed.main_n.project().maasto.width + "," + Rsed.main_n.project().maasto.width,
                     ((pixelSurface.width / 2) - (width / 2)),
                     ((pixelSurface.height / 2) - (height / 2)) - Rsed.ui_font_n.font_height());
     }
@@ -3866,7 +4187,9 @@ Rsed.ui_draw_n = (function()
         publicInterface.prebake_palat_pane = function()
         {
             const maxNumPalas = 253;
-            if (Rsed.palat_n.num_palas() < maxNumPalas) return;
+
+            const palaWidth = Rsed.constants.palaWidth;
+            const palaHeight = Rsed.constants.palaHeight;
 
             palatPaneBuffer.length = 0;
             palatPaneMousePick.length = 0;
@@ -3875,8 +4198,8 @@ Rsed.ui_draw_n = (function()
             /// FIXME: Leaves unnecessary empty rows for some resolutions.
             numPalatPaneRows = (Math.floor(Rsed.main_n.render_height() / 8) - 1);
             numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
-            palatPaneWidth = ((numPalatPaneCols * (Rsed.palat_n.pala_width() / 2)) + 1);
-            palatPaneHeight = ((numPalatPaneRows * (Rsed.palat_n.pala_height() / 2)) + 1);
+            palatPaneWidth = ((numPalatPaneCols * (palaWidth / 2)) + 1);
+            palatPaneHeight = ((numPalatPaneRows * (palaHeight / 2)) + 1);
         
             let palaIdx = 0;
             for (let y = 0; y < numPalatPaneRows; y++)
@@ -3885,36 +4208,36 @@ Rsed.ui_draw_n = (function()
                 {
                     if (palaIdx > maxNumPalas) break;
 
-                    const pala = Rsed.palat_n.pala_texture(palaIdx);
-                    for (let py = 0; py < Rsed.palat_n.pala_height(); py++)
+                    const pala = Rsed.main_n.project().palat.texture(palaIdx);
+                    for (let py = 0; py < palaHeight; py++)
                     {
-                        for (let px = 0; px < Rsed.palat_n.pala_width(); px++)
+                        for (let px = 0; px < palaWidth; px++)
                         {
-                            const palaTexel = Math.floor(px + py * Rsed.palat_n.pala_width());
-                            const bufferTexel = Math.floor((Math.floor(x * Rsed.palat_n.pala_width() + px) / 2) +
-                                                            Math.floor((y * Rsed.palat_n.pala_height() + py) / 2) * palatPaneWidth);
+                            const palaTexel = Math.floor(px + py * palaWidth);
+                            const bufferTexel = Math.floor((Math.floor(x * palaWidth + px) / 2) +
+                                                            Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
 
-                            palatPaneBuffer[bufferTexel] = Rsed.palette_n.palette_idx_to_rgba(pala.paletteIndices[palaTexel]);
+                            palatPaneBuffer[bufferTexel] = Rsed.palette_n.palette_idx_to_rgba(pala.indices[palaTexel]);
                             palatPaneMousePick[bufferTexel] = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
-                                                                                                 {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
+                                                                                                      {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
                         }
                     }
                 }
             }
 
             // Draw a grid over the PALA thumbnails.
-            for (let i = 0; i < numPalatPaneRows * Rsed.palat_n.pala_height()/2; i++)
+            for (let i = 0; i < numPalatPaneRows * palaHeight/2; i++)
             {
                 for (let x = 0; x < numPalatPaneCols; x++)
                 {
-                    palatPaneBuffer[(x * Rsed.palat_n.pala_width()/2) + i * palatPaneWidth] = "black";
+                    palatPaneBuffer[(x * palaWidth/2) + i * palatPaneWidth] = "black";
                 }
             }
-            for (let i = 0; i < numPalatPaneCols * Rsed.palat_n.pala_width()/2; i++)
+            for (let i = 0; i < numPalatPaneCols * palaWidth/2; i++)
             {
                 for (let y = 0; y < numPalatPaneRows; y++)
                 {
-                    palatPaneBuffer[i + (y * Rsed.palat_n.pala_height()/2) * palatPaneWidth] = "black";
+                    palatPaneBuffer[i + (y * palaHeight/2) * palatPaneWidth] = "black";
                 }
             }
         }
@@ -4053,7 +4376,7 @@ Rsed.ui_input_n = (function()
                         const x = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * Rsed.maasto_n.tile_size());
                         const z = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * Rsed.maasto_n.tile_size());
 
-                        Rsed.maasto_n.add_prop_location(Rsed.main_n.underlying_track_id(), "tree", x, 0, z);
+                        Rsed.maasto_n.add_prop_location(Rsed.main_n.project().track_id(), "tree", x, 0, z);
 
                         mouseLock.hibernating = true;
                     }
@@ -4098,7 +4421,12 @@ Rsed.ui_input_n = (function()
                         // For now, don't allow moving the starting line (prop #0).
                         if (mouseLock.propTrackId !== 0)
                         {
-                            Rsed.maasto_n.move_prop(mouseLock.propTrackId, Rsed.ui_input_n.mouse_pos_delta_x()*6, Rsed.ui_input_n.mouse_pos_delta_y()*12)
+                            Rsed.main_n.project().props.move(Rsed.main_n.project().track_id(),
+                                                             mouseLock.propTrackId,
+                                                             {
+                                                                 x: Rsed.ui_input_n.mouse_pos_delta_x()*6,
+                                                                 z: Rsed.ui_input_n.mouse_pos_delta_y()*12,
+                                                             });
                         }
                     }
                 }
@@ -4224,8 +4552,8 @@ Rsed.ui_input_n = (function()
                     // The tile coordinates can be out of bounds when the camera is moved outside of the
                     // track's boundaries. In that case, simply ignore them, since there's no interactible
                     // ground elements outside of the track.
-                    if ((args.tileX < 0) || (args.tileX >= Rsed.maasto_n.track_side_length()) ||
-                        (args.tileZ < 0) || (args.tileZ >= Rsed.maasto_n.track_side_length()))
+                    if ((args.tileX < 0) || (args.tileX >= Rsed.main_n.project().maasto.width) ||
+                        (args.tileZ < 0) || (args.tileZ >= Rsed.main_n.project().maasto.width))
                     {
                         return null;
                     }
@@ -4690,9 +5018,11 @@ Rsed.ngon_fill_n = (function()
                                         {
                                             const texelIdx = (Math.floor(u) + Math.floor(v) * texture.width);
                                             const color = texture.pixels[texelIdx];
-            
-                                            // Alpha testing.
-                                            if (!texture.hasAlpha || texture.paletteIndices[texelIdx] != 0)
+
+                                            if (!color)
+                                            console.log(color, u, v, texelIdx, texture);
+
+                                            if (!texture.alpha || texture.indices[texelIdx] != 0)
                                             {
                                                 pixelMap.data[idx + 0] = color.r;
                                                 pixelMap.data[idx + 1] = color.g;
@@ -4749,712 +5079,6 @@ Rsed.ngon_fill_n = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/file/resource-loader.js
- *
- * Tarpeeksi Hyvae Soft 2018, 2019 /
- * RallySportED-js
- * 
- * Loads data from various resource files related to Rally-Sport and RallySportED.
- *
- */
-
-"use strict";
-
-const resource_loader_n = (function()
-{
-    // The names of the types of resources we recognize. Any resource we're asked to load
-    // must be one of these types.
-    const resourceTypes = Object.freeze(["text",
-                                         "palat",
-                                         "maasto",
-                                         "varimaa",
-                                         "kierros",
-                                         "prop-meshes",
-                                         "track-header",
-                                         "prop-textures",
-                                         "prop-locations",
-                                         "rsed-project-zip",
-                                         "rsed-project-raw"]);
-
-    // Takes in a JSON object describing the locations of each track's props; for instance,
-    //
-    //   "tracks":
-    //   [
-    //      {
-    //         "trackId": 1,
-    //         "props":
-    //         [
-    //            {"name": "finish(normal)", "x": 3328, "y": 0, "z": 2016},
-    //            {"name": "tree", "x": 3500, "y": 0, "z": 3872}
-    //         ]
-    //      }
-    //   ]
-    //
-    // and adds them into RallySportED.
-    //
-    function load_prop_locations(data = Object)
-    {
-        Rsed.assert && (data.tracks != null) || Rsed.throw("Expected a JSON object containing track prop locations.");
-        data.tracks.forEach(track=>
-        {
-            Rsed.assert && (track.props != null) || Rsed.throw("Expected a JSON object containing track prop locations.");
-            track.props.forEach(prop=>
-            {
-                Rsed.maasto_n.add_prop_location(track.trackId, prop.name, prop.x, prop.y, prop.z);
-            });
-        });
-    }
-
-    // Takes in a JSON object describing the 3d mesh data of each track's props; for instance,
-    //
-    //   "props":
-    //   [
-    //      {
-    //         "displayName": "tree",
-    //         "propId": 3492597896,
-    //         "polygons":
-    //         [
-    //            {"textureIdx": null, "paletteIdx": 15, "verts": [-21, -500, 12, 21, -500, -12, 60, -550, -38, -15, -550, -63]},
-    //            {"textureIdx": null, "paletteIdx": 14, "verts": [-15, -550, -63, 60, -550, -38, 0, -425, -138]}
-    //         ]
-    //      }
-    //   ]
-    //
-    // and converts these meshes into RallySportED's mesh format for rendering.
-    //
-    function load_prop_meshes(data = Object)
-    {
-        Rsed.assert && (data.props != null)
-                    || Rsed.throw("Expected a JSON object containing prop meshes.");
-
-        data.props.forEach(prop=>
-        {
-            const convertedPolygons = [];
-
-            Rsed.assert && (prop.polygons != null)
-                        || Rsed.throw("Encountered a track prop with no polygons.");
-
-            prop.polygons.forEach(propPoly=>
-            {
-                const numVertices = (propPoly.verts.length / 3);
-                const convertedPoly = new Rsed.geometry_n.polygon_o(numVertices);
-
-                convertedPoly.texture = Rsed.props_n.prop_texture(propPoly.textureIdx);
-                convertedPoly.color = Rsed.palette_n.palette_idx_to_rgba(propPoly.paletteIdx);
-
-                Rsed.assert && (convertedPoly.verts.length === numVertices)
-                            || Rsed.throw("Incorrect number of vertices in prop polygon.");
-
-                convertedPoly.verts.forEach((vertex, idx)=>
-                {
-                    vertex.x = propPoly.verts[idx*3];
-                    vertex.y = -propPoly.verts[idx*3+1];
-                    vertex.z = -propPoly.verts[idx*3+2];
-                });
-
-                convertedPolygons.push(convertedPoly);
-            });
-
-            Rsed.props_n.add_prop_mesh(prop.displayName, convertedPolygons);
-        });
-    }
-
-    // Takes in a byte array describing the current track's header; and loads it into
-    // RallySportED. For information about Rally-Sport's track headers, refer to the
-    // documentation on Rally-Sport's data formats at github.com/leikareipa/rallysported/tree/master/docs.
-    function load_track_header(data = Uint8Array)
-    {
-        // Track checkpoint.
-        {
-            const byteOffs = ((Rsed.main_n.underlying_track_id() - 1) * 18);
-            const checkpointX = (data[byteOffs + 13] * 2);
-            const checkpointY = (data[byteOffs + 15] * 2);
-            Rsed.maasto_n.set_checkpoint_pos(checkpointX, checkpointY);
-        }
-    }
-
-    // Takes in a byte array providing track prop textures' pixel data; and creates a copy
-    // of the data converted into RallySportED's texture format for use in rendering. For
-    // information about Rally-Sport's prop textures, refer to the documentation on Rally-
-    // Sport's data formats at github.com/leikareipa/rallysported/tree/master/docs.
-    function load_prop_textures(data = Uint8Array)
-    {
-        let idx = 0;
-        const numTextures = data[idx++];
-
-        for (let i = 0; i < numTextures; i++)
-        {
-            const texture = new Rsed.texture_n.texture_o();
-            texture.width = data[idx++];
-            texture.height = data[idx++];
-
-            for (let t = 0; t < (texture.width * texture.height); t++)
-            {
-                let paletteIdx = data[idx++];
-                if (paletteIdx < 0 || paletteIdx > 31) paletteIdx = 0;
-
-                texture.pixels.push(Rsed.palette_n.palette_idx_to_rgba(paletteIdx));
-                texture.paletteIndices.push(paletteIdx);
-            }
-
-            Rsed.props_n.add_prop_texture(texture);
-        }
-    }
-
-    const publicInterface = {};
-    {
-        // Loads a RallySportED project's data from file, and feeds it to the given callback
-        // function.
-        publicInterface.load_project_data = function(args = {}, returnCallback)
-        {
-            Rsed.assert && (returnCallback instanceof Function)
-                        || Rsed.throw("Expected to receive a callback function.");
-
-            const projectData = {};
-
-            switch (args.fileFormat)
-            {
-                case "raw":
-                {
-                    Rsed.assert && (args.locality === "server-shared")
-                                || Rsed.throw("Expected the raw project format only with shared-mode projects.");
-
-                    projectData.name = args.fileReference.slice(args.fileReference.lastIndexOf("/")+1).toLowerCase();
-                    projectData.displayName = ("Shared/" + projectData.name);
-
-                    (async()=>
-                    {
-                        const baseFilename = (args.fileReference + "/" + projectData.name);
-
-                        if (args.locality === "server-shared")
-                        {
-                            await Rsed.shared_mode_n.register_as_participant_in_project(projectData.name);
-                        }
-
-                        await resource_loader_n.load_resources_from_file("plain", "text", (baseFilename + ".$ft"), (data)=>{projectData.manifestoData = data});
-                        await resource_loader_n.load_resources_from_file("binary", "rsed-project-raw", (baseFilename + ".dta"), (data)=>{projectData.dtaData = data.buffer});
-
-                        returnCallback(projectData);
-                    })();
-
-                    break;
-                }
-
-                case "zip":
-                {
-                    const zipContents = new JSZip();
-
-                    zipContents.loadAsync(args.fileReference)
-                    .then(()=>
-                    {
-                        // Parse the zip file's contents. We'll require that it contains exactly one directory, which stores
-                        // the project's $FT and DTA files.
-                        const files = [];
-                        {
-                            const dirs = [];
-                            zipContents.forEach((path, entry)=>
-                            {
-                                if (entry.dir)
-                                {
-                                    dirs.push(entry);
-                                }
-                                else files.push(entry);
-                            });
-
-                            if (dirs.length != 1)
-                            {
-                                alert("The RallySportED project zip file must contain at least one directory under which the project's .DTA and .$FT files are found.");
-                                return;
-                            }
-
-                            projectData.name = dirs[0].name.slice(0, -1).toLowerCase();
-
-                            switch (projectData.name)
-                            {
-                                // For the original Rally-Sport tracks, have display names that reflect the in-game names
-                                // rather than the project names (like "demoa", "demob", ...).
-                                case "demoa": projectData.displayName = "Nurtsi-cruising"; break;
-                                case "demob": projectData.displayName = "Vesistövedätys"; break;
-                                case "democ": projectData.displayName = "Ralli-cross"; break;
-                                case "demod": projectData.displayName = "Yleisö-ek"; break;
-                                case "demoe": projectData.displayName = "Very slippery.."; break;
-                                case "demof": projectData.displayName = "You asked it.."; break;
-                                case "demog": projectData.displayName = "Bumps and jumps"; break;
-                                case "demoh": projectData.displayName = "Short and easy"; break;
-
-                                // Otherwise, use the project name as the display name.
-                                default: projectData.displayName = (projectData.name.charAt(0).toUpperCase() + projectData.name.slice(1));
-                            }
-
-                            // Find the project's $FT and DTA files inside the zip file.
-                            let manifestoFile = null, dtaFile = null;
-                            {
-                                files.forEach(file=>
-                                {
-                                    if (manifestoFile && dtaFile) return;
-
-                                    const suffix = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
-                                    const basePath = file.name.slice(0, file.name.lastIndexOf(".")).toLowerCase();
-                                    const baseName = basePath.slice(basePath.lastIndexOf("/") + 1);
-
-                                    // Each resource file is expected to hold the same name as the project itself.
-                                    if (baseName !== projectData.name) return;
-
-                                    switch (suffix)
-                                    {
-                                        case "$ft": manifestoFile = file; break;
-                                        case "dta": dtaFile = file; break;
-                                        default: break;
-                                    }
-                                });
-
-                                if (!manifestoFile || !dtaFile)
-                                {
-                                    alert("The given RallySportED project zip file didn't contain all of the required .DTA and .$FT files.");
-                                    return;
-                                }
-                            }
-
-                            // Extract the project's $FT and DTA files from the zip file.
-                            (async()=>
-                            {
-                                projectData.manifestoData = await manifestoFile.async("string");
-                                projectData.dtaData = await dtaFile.async("arraybuffer");
-
-                                returnCallback(projectData);
-                            })();
-                        }
-                    })
-                    .catch((error)=>{Rsed.throw("Failed to extract project data (JSZip error: '" + error + "').");});
-
-                    break;
-                }
-
-                default: Rsed.throw("Unknown file format for loading project data."); break;
-            }
-        }
-
-        // Takes in a byte array containing a Rally-Sport's track textures' pixel data; and
-        // loads it into RallySportED. For information about Rally-Sport's track textures,
-        // refer to the documentation on Rally-Sport's data formats at github.com/leikareipa/rallysported/tree/master/docs.
-        publicInterface.load_palat_data = function(bytes)
-        {
-            // The dimensions of a single texture.
-            const palaWidth = 16;
-            const palaHeight = 16;
-
-            // How many textures we expect to receive.
-            const numPalas = 256;
-
-            Rsed.assert && (bytes.byteLength === (numPalas * palaWidth * palaHeight))
-                        || Rsed.throw("Incorrect number of bytes for PALA data.");
-
-            // Add each PALA as an individual texture.
-            for (let i = 0; i < numPalas; i++)
-            {
-                const texture = new Rsed.texture_n.texture_o();
-
-                texture.width = palaWidth;
-                texture.height = palaHeight;
-
-                for (let y = (palaHeight - 1); y >= 0; y--) // Iterate backwards to flip the texture on y.
-                {
-                    for (let x = 0; x < palaWidth; x++)
-                    {
-                        let paletteIdx = bytes[(x + y * palaWidth) + (i * (palaWidth * palaHeight))];
-                        if ((paletteIdx < 0) || (paletteIdx > 31)) paletteIdx = 0;
-
-                        texture.pixels.push(Rsed.palette_n.palette_idx_to_rgba(paletteIdx));
-                        texture.paletteIndices.push(paletteIdx);
-                    }
-                }
-
-                Rsed.palat_n.add_pala(texture);
-            }
-
-            // Create an image containing thumbnails of all the textures we loaded.
-            Rsed.ui_draw_n.prebake_palat_pane();
-        }
-
-        // Takes in a byte array containing a track's tilemap; and loads it into RallySportED.
-        // For information about Rally-Sport's track tilemaps, refer to the documentation on
-        // Rally-Sport's data formats at github.com/leikareipa/rallysported/tree/master/docs.
-        publicInterface.load_varimaa_data = function(bytes)
-        {
-            const tilesPerSide = Math.sqrt(bytes.byteLength);
-
-            Rsed.assert && ((tilesPerSide === 64) || (tilesPerSide === 128))
-                        || Rsed.throw("Unsupported VARIMAA size.");
-
-            // Verify the data.
-            for (let i = 0; i < bytes.byteLength; i++)
-            {
-                Rsed.assert && (Number.isInteger(bytes[i]))
-                            || Rsed.throw("Detected invalid VARIMAA data.");
-
-                Rsed.assert && (bytes[i] >= 0 && bytes[i] <= 255)
-                            || Rsed.throw("Detected invalid VARIMAA data.");
-            }
-
-            Rsed.maasto_n.set_varimaa(tilesPerSide, bytes);
-        }
-
-        // Takes in a byte array containing a track's heightmap; and loads it into RallySportED.
-        // For information about Rally-Sport's track heightmaps, refer to the documentation on
-        // Rally-Sport's data formats at github.com/leikareipa/rallysported/tree/master/docs.
-        publicInterface.load_maasto_data = function(bytes)
-        {
-            const tilesPerSide = Math.sqrt(bytes.byteLength / 2);
-            Rsed.assert && ((tilesPerSide === 64) ||
-                            (tilesPerSide === 128))
-                        || Rsed.throw("Unsupported MAASTO size.");
-
-            // Convert Rally-Sport's two-byte height format into RallySportED's single values.
-            const convertedHeightmap = [];
-            for (let i = 0; i < (bytes.byteLength / 2); i++)
-            {
-                const b1 = bytes[i*2];
-                const b2 = bytes[i*2+1];
-
-                const height = (b2 === 1)? (-256 - b1)  // More than -255 below ground level.
-                                         : (b2 - b1);   // Above ground when b2 == 255, otherwise below ground.
-
-                convertedHeightmap.push(height);
-            }
-
-            Rsed.assert && (convertedHeightmap.length === (tilesPerSide * tilesPerSide))
-                        || Rsed.throw("Detected an invalid MAASTO height conversion.");
-
-            Rsed.maasto_n.set_maasto(tilesPerSide, convertedHeightmap);
-        }
-
-        // Loads from a file resources of the given type; returning a promise resolved once the
-        // data has been loaded and processed. The receptacle is an object that can receive from this
-        // function the raw data loaded from file (without subsequent processing by this function), and
-        // is required for some of the resource types.
-        publicInterface.load_resources_from_file = function(resourceEncoding = "", resourceType = "", filename = "", receptacle)
-        {
-            Rsed.assert && (filename.length > 0)
-                        || Rsed.throw("Expected a non-empty string.");
-
-            Rsed.assert && (resourceType.includes(resourceType))
-                        || Rsed.throw("Expected a valid resource type.");
-
-            /// TODO. Fetch's caching should be disabled for shared-mode editing, but can be on for other modes.
-            /// For now, we just disable the cache in all cases, until we implement a way to differentiate the
-            /// different modes in this function.
-            return fetch(filename, {cache: "no-store"})
-                   .then(async(response)=>
-                   {
-                       if (!response.ok)
-                       {
-                           throw "Could not fetch the resource file " + filename + ".";
-                       }
-
-                       switch (resourceEncoding)
-                       {
-                           case "binary": return new Uint8Array(await response.arrayBuffer());
-                           case "json": return response.json();
-                           case "plain": return response.text();
-                           default: Rsed.throw("Unknown resource encoding."); break;
-                       }
-                   })
-                   .then((data)=>
-                   {
-                       switch (resourceType)
-                       {
-                           case "text": receptacle(data); break;
-                           case "rsed-project-zip":
-                           case "rsed-project-raw": receptacle(data); break;
-                           case "track-header": load_track_header(data); break;
-                           case "prop-textures": load_prop_textures(data); break;
-                           case "palat": publicInterface.load_palat_data(data); break;
-                           case "maasto": publicInterface.load_maasto_data(data); break;
-                           case "varimaa": publicInterface.load_varimaa_data(data); break;
-                           case "prop-meshes": load_prop_meshes(data); break;
-                           case "prop-locations": load_prop_locations(data); break;
-                           default: throw "Unknown resource type.";
-                       }
-                   })
-                   .catch((error)=>{Rsed.throw("Failed to load resource file " + filename + ". Error: " + error)});
-        }
-    }
-    return publicInterface;
-})();
-/*
- * Most recent known filename: js/misc/project.js
- *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
- *
- */
-
-"use strict";
-
-Rsed.project_n = (function()
-{
-    // Maximum number of characters allowed in the project file name.
-    const maxProjectNameLen = 8;
-
-    // The range of characters allowed in the project name; successively from the first character to
-    // the last one.
-    const projectNameCharset = Object.freeze(["a", "z"]);
-
-    // Returns true if the given project name is valid; false is returned otherwise.
-    function is_valid_project_name(name = "")
-    {
-        if (name.length <= 1)
-        {
-            alert("The RallySportED project name is too short");
-            return false;
-        }
-        else if (name.length > maxProjectNameLen)
-        {
-            alert("The RallySportED project name '" + name + "' is too long. The maximum number of characters allowed is " + maxProjectNameLen + ".");
-            return false;
-        }
-
-        for (let i = 0; i < name.length; i++)
-        {
-            if ((name[i] < projectNameCharset[0]) ||
-                (name[i] > projectNameCharset[1]))
-            {
-                alert("The RallySportED project name '" + name + "' containts invalid characters. Only the characters " +
-                      projectNameCharset[0] + "-" + projectNameCharset[1] + " are allowed.");
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    // Inserts the project's custom assets over any previous ones.
-    function override_track_assets(dtaData)
-    {
-        Rsed.assert && (dtaData instanceof ArrayBuffer)
-                    || Rsed.throw("Expected the project assets to come in as an array buffer.");
-    
-        Rsed.maasto_n.clear_maasto_data();
-        Rsed.palat_n.clear_palat_data();
-        Rsed.camera_n.reset_camera_position();
-
-        // Extract the data from the project file.
-        {
-            let i = 0;
-            const endianness = true;
-
-            // MAASTO data.
-            {
-                const maastoBytesize = (new DataView(dtaData, i, 4).getUint32(0, endianness));
-                i+=4;
-                Rsed.assert && ((i + maastoBytesize) <= dtaData.byteLength)
-                            || Rsed.throw("Was about to read project data out of bounds.");
-                const maastoBytes = new Uint8Array(dtaData.slice(i, i + maastoBytesize));
-                i+=maastoBytesize;
-
-                Rsed.maasto_n.set_maasto_bytesize(maastoBytesize);
-                resource_loader_n.load_maasto_data(maastoBytes, Rsed.maasto_n.set_maasto);
-            }
-
-            // VARIMAA data.
-            {
-                const varimaaBytesize = (new DataView(dtaData, i, 4).getUint32(0, endianness));
-                i+=4;
-                Rsed.assert && ((i + varimaaBytesize) <= dtaData.byteLength)
-                            || Rsed.throw("Was about to read project data out of bounds.");
-                const varimaaBytes = new Uint8Array(dtaData.slice(i, i+varimaaBytesize));
-                i+=varimaaBytesize;
-
-                Rsed.maasto_n.set_varimaa_bytesize(varimaaBytesize);
-                resource_loader_n.load_varimaa_data(varimaaBytes, Rsed.maasto_n.set_varimaa);
-            }
-
-            // PALAT data.
-            {
-                const palatBytesize = (new DataView(dtaData, i, 4).getUint32(0, endianness));
-                i+=4;
-                Rsed.assert && ((i + palatBytesize) <= dtaData.byteLength)
-                            || Rsed.throw("Was about to read project data out of bounds.");
-                let palatBytes = new Uint8Array(dtaData.slice(i, i+palatBytesize));
-                i+=palatBytesize;
-
-                // Some versions of the project file have a PALAT block that's is missing the last 12 bytes.
-                // If that's the case here, pad it out to the full 64k.
-                if (palatBytesize === 65524)
-                {
-                    const pad = new Uint8Array(12);
-                    const padded = new Uint8Array(12 + palatBytesize);
-                    padded.set(palatBytes, 0);
-                    padded.set(pad, palatBytesize);
-                    palatBytes = padded;
-                }
-                else if (palatBytesize !== 65536)
-                {
-                    Rsed.throw("Unexpected number of PALA bytes in the project file.");
-                }
-
-                Rsed.palat_n.set_palat_bytesize(palatBytesize);
-                resource_loader_n.load_palat_data(palatBytes, Rsed.palat_n.add_pala);
-            }
-        }
-    }
-
-    const publicInterface = {};
-    {
-        // Will return true if the given project is valid. Otherwise, will throw an error.
-        publicInterface.verify_project_validity = function(projectToVerify)
-        {
-            Rsed.assert && (projectToVerify instanceof Rsed.project_n.project_o)
-                        || Rsed.throw("Was asked to test the validity of a non-RallySportED project.");
-
-            Rsed.assert && ((projectToVerify != null) && (projectToVerify.isValidProject))
-                        || Rsed.throw("Failed to load the given RallySportED project file.");
-            
-            Rsed.assert && (projectToVerify.name != null && projectToVerify.displayName != null)
-                        || Rsed.throw("Failed to load the given RallySportED project file.");
-
-            console.log("'" + projectToVerify.displayName + "' is a valid RallySportED project.");
-
-            return true;
-        }
-
-        // Creates a project memory object from a zip file containing the files of a RallySportED project.
-        // NOTE: There can be only one active project at a time in RallySportED, so calling this will
-        //       cause any existing project data to be overwritten by the new data.
-        publicInterface.make_project_from_data = function(locality = "local", dataType = "", fileReference, broadcastFn)
-        {
-            switch (dataType)
-            {
-                case "zip":
-                {
-                    switch (locality)
-                    {
-                        case "local":
-                        {
-                            resource_loader_n.load_project_data({fileFormat:"zip", fileReference}, (projectData)=>
-                            {
-                                /// Temp hack. Project loading will be redesigned in the future.
-                                const project = new publicInterface.project_o(projectData);
-                                Rsed.manifesto_n.apply_manifesto(project.manifestoFileContents)
-                                .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
-                                return;
-                            });
-        
-                            break;
-                        }
-                        case "server":
-                        {
-                            resource_loader_n.load_resources_from_file("binary", "rsed-project-zip", fileReference, (zipData)=>
-                            {
-                                resource_loader_n.load_project_data({fileFormat:"zip", fileReference:zipData}, (projectData)=>
-                                {
-                                    /// Temp hack. Project loading will be redesigned in the future.
-                                    const project = new publicInterface.project_o(projectData);
-                                    Rsed.manifesto_n.apply_manifesto(project.manifestoFileContents)
-                                    .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
-                                    return;
-                                });
-                            });
-        
-                            break;
-                        }
-                        default: Rsed.throw("Unknown RallySportED project zip file locality."); return null;
-                    }
-                    
-                    break;
-                }
-
-                case "raw":
-                {
-                    Rsed.assert && (locality === "server-shared")
-                                || Rsed.throw("Expected raw project data to be associated only with shared-mode projects.");
-
-                    resource_loader_n.load_project_data({fileFormat:"raw", fileReference, locality}, (projectData)=>
-                    {
-                        /// Temp hack. Project loading will be redesigned in the future.
-                        const project = new publicInterface.project_o(projectData);
-                        Rsed.manifesto_n.apply_manifesto(project.manifestoFileContents)
-                        .then(()=>{override_track_assets(projectData.dtaData); broadcastFn(project);});
-                        return;
-                    });
-
-                    break;
-                }
-
-                default: Rsed.throw("Unknown data type."); break;
-            }
-        }
-
-        publicInterface.generate_download_of_project = function(project = Rsed.project_n.project_o)
-        {
-            Rsed.assert && (project instanceof Rsed.project_n.project_o)
-                        || Rsed.throw("Expected a RallySportED project object.");
-
-            const saveName = project.name.toUpperCase();
-
-            k_message("Saving project '" + project.displayName + "'.");
-
-            if (project.projectFileContents == null)
-            {
-                k_message("The given project has empty contents. Skipping saving it.");
-                return;
-            }
-
-            // Replace the existing project bytes with the current data.
-            {
-                const maastoBytes = Rsed.maasto_n.get_saveable_maasto();
-                const varimaaBytes = Rsed.maasto_n.get_saveable_varimaa();
-                const palatBytes = Rsed.palat_n.get_saveable_palat();
-
-                project.projectFileContents.set(maastoBytes, 4);
-                project.projectFileContents.set(varimaaBytes, (maastoBytes.byteLength + 4*2));
-                project.projectFileContents.set(palatBytes, (maastoBytes.byteLength + varimaaBytes.byteLength + 4*3));
-            }
-
-            // Zip up the project file, and have the browser initiate a download of it.
-            const zip = new JSZip();
-
-           //zip.file(saveName + ".TXT", lut_readme_txt.replace(/%TRACK/g, project.name.toUpperCase()));
-            zip.file(saveName + "/" + saveName + ".DTA", project.projectFileContents);
-            zip.file(saveName + "/" + saveName + ".$FT", Rsed.manifesto_n.get_saveable_manifesto(project.manifestoFileContents));
-            zip.file(saveName + "/" + "HITABLE.TXT", lut_hitable_txt);
-
-            zip.generateAsync({type:"blob", compression:"DEFLATE", compressionOptions:{level: 1}})
-            .then(function(blob)
-            {
-                saveAs(blob, saveName + ".ZIP");
-            })
-            .catch((error)=>{Rsed.throw(error);});
-        }
-
-        // Returns a project object of the given project data. Note that this will overwrite
-        // any existing project data.
-        publicInterface.project_o = function(projectData = {})
-        {
-            // The name of this project. Will be shown to the user on the page, and also in Rally-Sport
-            // when the track is loaded in. Will also be used as the track's base filename. Its length must be
-            // between 1 and 8 characters (A-Z only; case insensitive in that the first character will be
-            // uppercased and the rest lowercased regardless of user-supplied casing).
-            this.name = projectData.name;
-
-            // The project name that will be displayed to the user in the web version of RallySportED. It can
-            // be longer than 8 characters and contain characters other than A-Z. But note that in the DOS
-            // version of RallySportED, as well as other versions possibly, this display name will not be
-            // available, and they're likely to display the regular 8-character A-Z name, instead.
-            this.displayName = projectData.displayName;
-
-            // Stores a u8 byte array holding all of the bytes loaded from this project's DTA file.
-            this.projectFileContents = new Uint8Array(projectData.dtaData);
-
-            // The contents of this project's manifesto ($FT) file.
-            this.manifestoFileContents = projectData.manifestoData;
-
-            this.isValidProject = true;
-        }
-    }
-    return publicInterface;
-})();
-/*
  * Most recent known filename: js/main.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
@@ -5468,10 +5092,7 @@ Rsed.main_n = (function()
 {
     // The project we've currently got loaded. When the user makes edits or requests a save,
     // this is the target project.
-    let project = null;
-
-    // Which of Rally-Sport's eight tracks the current project is based on.
-    let underlyingTrackId = 1;
+    let project = Rsed.project.placeholder;
 
     // Strings with which to build URLs to track assets.
     const tracksDirectory = "track-list/files/";
@@ -5490,6 +5111,7 @@ Rsed.main_n = (function()
     function check_browser_compatibility()
     {
         // We expect to export projects with JSZip using blobs.
+        /// TODO: Doesn't need to be checked in shared mode, since it doesn't use JSZip for saving.
         if (!JSZip.support.blob)
         {
             alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
@@ -5508,7 +5130,9 @@ Rsed.main_n = (function()
 
                 if (Rsed.ui_view_n.current_view() !== "2d-topdown")
                 {
-                    renderer.register_mesh(Rsed.maasto_n.maasto_mesh(Math.floor(Rsed.camera_n.pos_x()), Math.floor(Rsed.camera_n.pos_z())));
+                    renderer.register_mesh(Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
+                                                                           y: 0,
+                                                                           z: Math.floor(Rsed.camera_n.pos_z())}))
                 }
             }
 
@@ -5543,7 +5167,9 @@ Rsed.main_n = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop:function(name = "")
                 {
-                    Rsed.maasto_n.change_prop_type(Rsed.ui_input_n.mouse_hover_args().trackId, Rsed.props_n.prop_idx_for_name(name));
+                    Rsed.main_n.project().props.change_prop_type(Rsed.main_n.project().track_id(),
+                                                                 Rsed.ui_input_n.mouse_hover_args().trackId,
+                                                                 Rsed.main_n.project().props.id_for_name(name));
                     window.close_dropdowns();
 
                     return;
@@ -5551,10 +5177,10 @@ Rsed.main_n = (function()
                 
                 refresh:function()
                 {
-                    this.trackName = project.displayName;
-                    this.propList = Rsed.props_n.prop_names()
-                                                .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
-                                                .map(propName=>({propName}));
+                    this.trackName = Rsed.main_n.project().name;
+                    this.propList = Rsed.main_n.project().props.names()
+                                               .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
+                                               .map(propName=>({propName}));
 
                     return;
                 }
@@ -5582,6 +5208,8 @@ Rsed.main_n = (function()
 
     const publicInterface = {};
     {
+        publicInterface.project = function() { return project; };
+
         // Set to false if you want to incapacitate the program, e.g. as a result of an error throwing.
         // If not operational, the program won't respond to user input and won't display anything to
         // the user.
@@ -5591,42 +5219,58 @@ Rsed.main_n = (function()
 
         publicInterface.scaling_multiplier = function() { return renderScalingMultiplier; }
     
-        publicInterface.load_project = function(args = {})
+        publicInterface.load_project = async function(args = {})
         {
-            Rsed.assert && ((typeof args.locality !== "undefined") &&
-                            (typeof args.fileFormat !== "undefined"))
-                        || Rsed.throw("Missing arguments for loading a project.");
+            Rsed.assert && ((typeof args.editMode !== "undefined") &&
+                            (typeof args.projectName !== "undefined"))
+                        || Rsed.throw("Missing required arguments for loading a project.");
              
-            htmlUI.set_visible(false);
+            if (args.editMode === "shared")
+            {
+                await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.projectName);
+            }
+            else
+            {
+                Rsed.shared_mode_n.unregister_current_registration();
+            }
 
-            project = Rsed.project_n.make_project_from_data(args.locality, args.fileFormat, args.fileReference,
-                                     (newProject)=>
-                                     {
-                                         project = newProject;
-                                         Rsed.project_n.verify_project_validity(project);
+            project = await Rsed.project(args.projectName);
 
-                                         /// TODO. This needs to be implemented in a better way and/or somewhere
-                                         /// else - ideally so you don't have to manually start the poll loop;
-                                         /// so you don't risk starting it twice or whatever.
-                                         if (Rsed.shared_mode_n.enabled())
-                                         {
-                                             Rsed.shared_mode_n.start_polling_server();
-                                         }
-                                         
-                                         htmlUI.refresh();
-                                         htmlUI.set_visible(true);
-                                     });
+            Rsed.apply_manifesto(project);
+            Rsed.camera_n.reset_camera_position();
+            Rsed.palette_n.reset_palettes();
+            Rsed.palette_n.set_palette_for_track(project.track_id());
+
+            /// TODO. This needs to be implemented in a better way and/or somewhere
+            /// else - ideally so you don't have to manually start the poll loop;
+            /// so you don't risk starting it twice or whatever.
+            if (Rsed.shared_mode_n.enabled())
+            {
+                Rsed.shared_mode_n.start_polling_server();
+            }
         }
 
         // Starts the program. The renderer will keep requesting a new animation frame, and will call the
         // callback functions we've set at that rate.
-        publicInterface.launch_rallysported = function(args = {})
+        publicInterface.launch_rallysported = function(startupArgs = {})
         {
+            Rsed.assert && ((typeof startupArgs.projectLocality !== "undefined") &&
+                            (typeof startupArgs.projectName !== "undefined"))
+                        || Rsed.throw("Missing startup parameters for launching RallySportED.");
+
+            htmlUI.set_visible(false);
+
             check_browser_compatibility();
 
-            renderer.run_renderer();
+            (async()=>
+            {
+                await publicInterface.load_project(startupArgs);
 
-            this.load_project(args);
+                renderer.run_renderer();
+
+                htmlUI.refresh();
+                htmlUI.set_visible(true);
+            })();
         }
 
         // Exports the project's data into a zip file the user can download.
@@ -5639,42 +5283,6 @@ Rsed.main_n = (function()
             }
 
             Rsed.project_n.generate_download_of_project(project);
-        }
-
-        // Loads all relevant base assets for the given track, clearing away any such previously-loaded
-        // assets. You might call this, for instance, at the start of parsing a manifesto file, so there's
-        // a clean slate to work on. Note that, with the exception of prop textures, this won't load any
-        // data that's available in RallySportED project files (like MAASTO, VARIMAA, and PALAT), but
-        // will clear away any existing entries of then from memory.
-        publicInterface.initialize_track_data = function(trackId)
-        {
-            Rsed.assert && ((trackId >= 1) &&
-                            (trackId <= 8))
-                        || Rsed.throw("The given track id is out of bounds.");
-
-            underlyingTrackId = trackId;
-
-            return new Promise((resolve, reject) =>
-            {
-                const exeAssetDir = "distributable/assets/rallye-exe/";
-
-                Rsed.props_n.clear_prop_data();
-                Rsed.palat_n.clear_palat_data();
-                Rsed.palette_n.reset_palettes();
-                Rsed.camera_n.reset_camera_position();
-                Rsed.maasto_n.clear_maasto_data(true);
-                Rsed.palette_n.set_palette_for_track(underlyingTrackId);
-
-                (async()=>
-                {
-                    await resource_loader_n.load_resources_from_file("binary", "prop-textures", (exeAssetDir + "prop-textures.bin"));
-                    await resource_loader_n.load_resources_from_file("json", "prop-meshes", (exeAssetDir + "prop-meshes.json"));
-                    await resource_loader_n.load_resources_from_file("json", "prop-locations", (exeAssetDir + "prop-locations.json"));
-                    await resource_loader_n.load_resources_from_file("binary", "track-header", (exeAssetDir + "track-header.bin"));
-
-                    resolve();
-                })();
-            });
         }
 
         // Gets called when something is dropped onto RallySportED's render canvas. We expect
@@ -5721,8 +5329,6 @@ Rsed.main_n = (function()
 
         publicInterface.mouse_pick_buffer_value_at = function(x, y) { return renderer.mouse_pick_buffer_value_at(x, y); }
 
-        publicInterface.underlying_track_id = function() { return underlyingTrackId; }
-
         publicInterface.tracks_directory = function() { return tracksDirectory; }
         publicInterface.shared_tracks_directory = function() { return sharedTracksDirectory; }
 
@@ -5756,9 +5362,17 @@ const RSED_MOUSE_POS = {x:0, y:0};
 // Parses any address bar parameters, then launches RallySportED.
 window.onload = function(event)
 {
+    // The default start-up parameters to provide to RallySportED when we launch it. These may
+    // be modified by the user via address parameters, which we parse for in the code below.
+    const rsedStartupArgs =
+    {
+        editMode: "local",
+        projectLocality: "server",
+        projectName: "demod",
+    };
+    
     // Parse any parameters the user supplied on the address line. Generally speaking, these
     // will direct which track's assets RallySportED should load up when it starts.
-    const args = {};
     {
         const params = new URLSearchParams(window.location.search);
 
@@ -5771,9 +5385,9 @@ window.onload = function(event)
                 return;
             }
 
-            args.fileFormat = "raw";
-            args.locality = "server-shared";
-            args.fileReference = params.get("shared");
+            rsedStartupArgs.editMode = "shared";
+            rsedStartupArgs.projectLocality = "server";
+            rsedStartupArgs.projectName = params.get("shared");
 
             // Sanitize input.
             /// TODO.
@@ -5788,9 +5402,9 @@ window.onload = function(event)
                 return;
             }
 
-            args.fileFormat = "zip";
-            args.locality = "server";
-            args.fileReference = (params.get("track") + ".zip");
+            rsedStartupArgs.editMode = "local";
+            rsedStartupArgs.projectLocality = "server";
+            rsedStartupArgs.projectName = params.get("track");
         }
         // Server side original tracks from Rally-Sport's demo. These take a value in the range 1..8,
         // corresponding to the eight tracks in the demo.
@@ -5808,22 +5422,13 @@ window.onload = function(event)
                             (trackId <= 8))
                         || Rsed.throw("The given track id is out of bounds.");
 
-            args.fileFormat = "zip";
-            args.locality = "server";
-            args.fileReference = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1) + ".zip");
-        }
-        else // Default.
-        {
-            args.fileFormat = "zip";
-            args.locality = "server";
-            args.fileReference = "demod.zip";
+            rsedStartupArgs.editMode = "local";
+            rsedStartupArgs.projectLocality = "server";
+            rsedStartupArgs.projectName = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
         }
     }
 
-    if (args.locality === "server") args.fileReference = (Rsed.main_n.tracks_directory() + args.fileReference);
-    else if (args.locality === "server-shared") args.fileReference = (Rsed.main_n.shared_tracks_directory() + args.fileReference);
-
-    Rsed.main_n.launch_rallysported(args);
+    Rsed.main_n.launch_rallysported(rsedStartupArgs);
 }
 
 window.close_dropdowns = function()
@@ -5852,7 +5457,7 @@ window.oncontextmenu = function(event)
     // Display a right-click menu for changing the type of the prop under the cursor.
     if (!Rsed.shared_mode_n.enabled() &&
         (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
-        !Rsed.props_n.prop_name_for_idx(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+        !Rsed.main_n.project().props.name(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const propDropdown = document.getElementById("prop-dropdown");
         propDropdown.style.transform = "translate(" + (RSED_MOUSE_POS.x - 40) + "px, " + (RSED_MOUSE_POS.y - 0) + "px)";

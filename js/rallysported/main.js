@@ -12,10 +12,7 @@ Rsed.main_n = (function()
 {
     // The project we've currently got loaded. When the user makes edits or requests a save,
     // this is the target project.
-    let project = null;
-
-    // Which of Rally-Sport's eight tracks the current project is based on.
-    let underlyingTrackId = 1;
+    let project = Rsed.project.placeholder;
 
     // Strings with which to build URLs to track assets.
     const tracksDirectory = "track-list/files/";
@@ -34,6 +31,7 @@ Rsed.main_n = (function()
     function check_browser_compatibility()
     {
         // We expect to export projects with JSZip using blobs.
+        /// TODO: Doesn't need to be checked in shared mode, since it doesn't use JSZip for saving.
         if (!JSZip.support.blob)
         {
             alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
@@ -52,7 +50,9 @@ Rsed.main_n = (function()
 
                 if (Rsed.ui_view_n.current_view() !== "2d-topdown")
                 {
-                    renderer.register_mesh(Rsed.maasto_n.maasto_mesh(Math.floor(Rsed.camera_n.pos_x()), Math.floor(Rsed.camera_n.pos_z())));
+                    renderer.register_mesh(Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
+                                                                           y: 0,
+                                                                           z: Math.floor(Rsed.camera_n.pos_z())}))
                 }
             }
 
@@ -87,7 +87,9 @@ Rsed.main_n = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop:function(name = "")
                 {
-                    Rsed.maasto_n.change_prop_type(Rsed.ui_input_n.mouse_hover_args().trackId, Rsed.props_n.prop_idx_for_name(name));
+                    Rsed.main_n.project().props.change_prop_type(Rsed.main_n.project().track_id(),
+                                                                 Rsed.ui_input_n.mouse_hover_args().trackId,
+                                                                 Rsed.main_n.project().props.id_for_name(name));
                     window.close_dropdowns();
 
                     return;
@@ -95,10 +97,10 @@ Rsed.main_n = (function()
                 
                 refresh:function()
                 {
-                    this.trackName = project.displayName;
-                    this.propList = Rsed.props_n.prop_names()
-                                                .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
-                                                .map(propName=>({propName}));
+                    this.trackName = Rsed.main_n.project().name;
+                    this.propList = Rsed.main_n.project().props.names()
+                                               .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
+                                               .map(propName=>({propName}));
 
                     return;
                 }
@@ -126,6 +128,8 @@ Rsed.main_n = (function()
 
     const publicInterface = {};
     {
+        publicInterface.project = function() { return project; };
+
         // Set to false if you want to incapacitate the program, e.g. as a result of an error throwing.
         // If not operational, the program won't respond to user input and won't display anything to
         // the user.
@@ -135,42 +139,58 @@ Rsed.main_n = (function()
 
         publicInterface.scaling_multiplier = function() { return renderScalingMultiplier; }
     
-        publicInterface.load_project = function(args = {})
+        publicInterface.load_project = async function(args = {})
         {
-            Rsed.assert && ((typeof args.locality !== "undefined") &&
-                            (typeof args.fileFormat !== "undefined"))
-                        || Rsed.throw("Missing arguments for loading a project.");
+            Rsed.assert && ((typeof args.editMode !== "undefined") &&
+                            (typeof args.projectName !== "undefined"))
+                        || Rsed.throw("Missing required arguments for loading a project.");
              
-            htmlUI.set_visible(false);
+            if (args.editMode === "shared")
+            {
+                await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.projectName);
+            }
+            else
+            {
+                Rsed.shared_mode_n.unregister_current_registration();
+            }
 
-            project = Rsed.project_n.make_project_from_data(args.locality, args.fileFormat, args.fileReference,
-                                     (newProject)=>
-                                     {
-                                         project = newProject;
-                                         Rsed.project_n.verify_project_validity(project);
+            project = await Rsed.project(args.projectName);
 
-                                         /// TODO. This needs to be implemented in a better way and/or somewhere
-                                         /// else - ideally so you don't have to manually start the poll loop;
-                                         /// so you don't risk starting it twice or whatever.
-                                         if (Rsed.shared_mode_n.enabled())
-                                         {
-                                             Rsed.shared_mode_n.start_polling_server();
-                                         }
-                                         
-                                         htmlUI.refresh();
-                                         htmlUI.set_visible(true);
-                                     });
+            Rsed.apply_manifesto(project);
+            Rsed.camera_n.reset_camera_position();
+            Rsed.palette_n.reset_palettes();
+            Rsed.palette_n.set_palette_for_track(project.track_id());
+
+            /// TODO. This needs to be implemented in a better way and/or somewhere
+            /// else - ideally so you don't have to manually start the poll loop;
+            /// so you don't risk starting it twice or whatever.
+            if (Rsed.shared_mode_n.enabled())
+            {
+                Rsed.shared_mode_n.start_polling_server();
+            }
         }
 
         // Starts the program. The renderer will keep requesting a new animation frame, and will call the
         // callback functions we've set at that rate.
-        publicInterface.launch_rallysported = function(args = {})
+        publicInterface.launch_rallysported = function(startupArgs = {})
         {
+            Rsed.assert && ((typeof startupArgs.projectLocality !== "undefined") &&
+                            (typeof startupArgs.projectName !== "undefined"))
+                        || Rsed.throw("Missing startup parameters for launching RallySportED.");
+
+            htmlUI.set_visible(false);
+
             check_browser_compatibility();
 
-            renderer.run_renderer();
+            (async()=>
+            {
+                await publicInterface.load_project(startupArgs);
 
-            this.load_project(args);
+                renderer.run_renderer();
+
+                htmlUI.refresh();
+                htmlUI.set_visible(true);
+            })();
         }
 
         // Exports the project's data into a zip file the user can download.
@@ -183,42 +203,6 @@ Rsed.main_n = (function()
             }
 
             Rsed.project_n.generate_download_of_project(project);
-        }
-
-        // Loads all relevant base assets for the given track, clearing away any such previously-loaded
-        // assets. You might call this, for instance, at the start of parsing a manifesto file, so there's
-        // a clean slate to work on. Note that, with the exception of prop textures, this won't load any
-        // data that's available in RallySportED project files (like MAASTO, VARIMAA, and PALAT), but
-        // will clear away any existing entries of then from memory.
-        publicInterface.initialize_track_data = function(trackId)
-        {
-            Rsed.assert && ((trackId >= 1) &&
-                            (trackId <= 8))
-                        || Rsed.throw("The given track id is out of bounds.");
-
-            underlyingTrackId = trackId;
-
-            return new Promise((resolve, reject) =>
-            {
-                const exeAssetDir = "distributable/assets/rallye-exe/";
-
-                Rsed.props_n.clear_prop_data();
-                Rsed.palat_n.clear_palat_data();
-                Rsed.palette_n.reset_palettes();
-                Rsed.camera_n.reset_camera_position();
-                Rsed.maasto_n.clear_maasto_data(true);
-                Rsed.palette_n.set_palette_for_track(underlyingTrackId);
-
-                (async()=>
-                {
-                    await resource_loader_n.load_resources_from_file("binary", "prop-textures", (exeAssetDir + "prop-textures.bin"));
-                    await resource_loader_n.load_resources_from_file("json", "prop-meshes", (exeAssetDir + "prop-meshes.json"));
-                    await resource_loader_n.load_resources_from_file("json", "prop-locations", (exeAssetDir + "prop-locations.json"));
-                    await resource_loader_n.load_resources_from_file("binary", "track-header", (exeAssetDir + "track-header.bin"));
-
-                    resolve();
-                })();
-            });
         }
 
         // Gets called when something is dropped onto RallySportED's render canvas. We expect
@@ -264,8 +248,6 @@ Rsed.main_n = (function()
         publicInterface.render_latency = function() { return renderer.previousFrameLatencyMs; }
 
         publicInterface.mouse_pick_buffer_value_at = function(x, y) { return renderer.mouse_pick_buffer_value_at(x, y); }
-
-        publicInterface.underlying_track_id = function() { return underlyingTrackId; }
 
         publicInterface.tracks_directory = function() { return tracksDirectory; }
         publicInterface.shared_tracks_directory = function() { return sharedTracksDirectory; }

@@ -87,8 +87,8 @@ Rsed.shared_mode_n = (function()
 
         const resources =
         {
-            "maasto": Rsed.maasto_n.set_maasto_height_at,
-            "varimaa": Rsed.maasto_n.set_varimaa_tile_at,
+            "maasto": Rsed.main_n.project().maasto.set_tile_value_at,
+            "varimaa": Rsed.main_n.project().varimaa.set_tile_value_at,
         };
 
         for (const [resourceName, dataCallback] of Object.entries(resources))
@@ -105,8 +105,8 @@ Rsed.shared_mode_n = (function()
         // Converts a 1d array index into a 2d x,y coordinate pair.
         function idx_to_xy(idx)
         {
-            return [(idx % Rsed.maasto_n.track_side_length()),
-                    Math.floor(idx / Rsed.maasto_n.track_side_length())];
+            return [(idx % Rsed.main_n.project().maasto.width),
+                    Math.floor(idx / Rsed.main_n.project().maasto.width)];
         }
     }
 

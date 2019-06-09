@@ -28,4 +28,9 @@ const Rsed = {};
         alert("RallySportED error: " + errMessage);
         throw Error("RallySportED error: " + errMessage);
     }
+
+    // Linear interpolation.
+    Rsed.lerp = (x = 0, y = 0, interval = 0)=>(x + (interval * (y - x)));
+
+    Rsed.clamp = (value = 0, min = 0, max = 1)=>Math.min(Math.max(value, min), max);
 }

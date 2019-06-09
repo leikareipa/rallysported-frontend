@@ -38,12 +38,12 @@ Rsed.ui_brush_n = (function()
             for (let by = -brushSize; by <= brushSize; by++)
             {
                 const tileZ = (y + by);
-                if (tileZ < 0 || tileZ >= Rsed.maasto_n.track_side_length()) continue;
+                if (tileZ < 0 || tileZ >= Rsed.main_n.project().maasto.width) continue;
 
                 for (let bx = -brushSize; bx <= brushSize; bx++)
                 {
                     const tileX = (x + bx);
-                    if (tileX < 0 || tileX >= Rsed.maasto_n.track_side_length()) continue;
+                    if (tileX < 0 || tileX >= Rsed.main_n.project().maasto.width) continue;
 
                     switch (brushAction)
                     {
@@ -51,41 +51,41 @@ Rsed.ui_brush_n = (function()
                         {
                             if (this.brushSmoothens)
                             {
-                                if (tileX < 1 || tileX >=  (Rsed.maasto_n.track_side_length() - 1)) continue;
-                                if (tileZ < 1 || tileZ >= (Rsed.maasto_n.track_side_length() - 1)) continue;
+                                if (tileX < 1 || tileX >=  (Rsed.main_n.project().maasto.width - 1)) continue;
+                                if (tileZ < 1 || tileZ >= (Rsed.main_n.project().maasto.width - 1)) continue;
     
                                 let avgHeight = 0;
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX+1, tileZ);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX-1, tileZ);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX, tileZ+1);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX, tileZ-1);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX+1, tileZ+1);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX+1, tileZ-1);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX-1, tileZ+1);
-                                avgHeight += Rsed.maasto_n.maasto_height_at(tileX-1, tileZ-1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX+1, tileZ);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX-1, tileZ);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX, tileZ+1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX, tileZ-1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX+1, tileZ+1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX+1, tileZ-1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX-1, tileZ+1);
+                                avgHeight += Rsed.main_n.project().maasto.tile_at(tileX-1, tileZ-1);
                                 avgHeight /= 8;
                                     
-                                Rsed.maasto_n.set_maasto_height_at(tileX, tileZ, Math.floor(((avgHeight + Rsed.maasto_n.maasto_height_at(tileX, tileZ) * 7) / 8)));
+                                Rsed.main_n.project().maasto.set_tile_value_at(tileX, tileZ, Math.floor(((avgHeight + Rsed.main_n.project().maasto.tile_at(tileX, tileZ) * 7) / 8)));
                             }
                             else
                             {
-                                Rsed.maasto_n.set_maasto_height_at(tileX, tileZ, (Rsed.maasto_n.maasto_height_at(tileX, tileZ) + value));
+                                Rsed.main_n.project().maasto.set_tile_value_at(tileX, tileZ, (Rsed.main_n.project().maasto.tile_at(tileX, tileZ) + value));
                             }
 
                             if (Rsed.shared_mode_n.enabled())
                             {
-                                brushCache.maasto[tileX + tileZ * Rsed.maasto_n.track_side_length()] = Rsed.maasto_n.maasto_height_at(tileX, tileZ);
+                                brushCache.maasto[tileX + tileZ * Rsed.main_n.project().maasto.width] = Rsed.main_n.project().maasto.tile_at(tileX, tileZ);
                             }
 
                             break;
                         }
                         case this.brushAction.changePala:
                         {
-                            Rsed.maasto_n.set_varimaa_tile_at(tileX, tileZ, value);
+                            Rsed.main_n.project().varimaa.set_tile_value_at(tileX, tileZ, value);
 
                             if (Rsed.shared_mode_n.enabled())
                             {
-                                brushCache.varimaa[tileX + tileZ * Rsed.maasto_n.track_side_length()] = Rsed.maasto_n.varimaa_tile_at(tileX, tileZ);
+                                brushCache.varimaa[tileX + tileZ * Rsed.main_n.project().maasto.width] = Rsed.main_n.project().varimaa.tile_at(tileX, tileZ);
                             }
 
                             break;

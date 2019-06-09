@@ -1,97 +1,67 @@
 /*
  * Most recent known filename: js/track/palat.js
  *
- * Tarpeeksi Hyvae Soft 2018 /
+ * 2019 Tarpeeksi Hyvae Soft /
  * RallySportED-js
  *
  */
 
 "use strict";
 
-Rsed.palat_n = (function()
+Rsed.track = Rsed.track || {};
+
+Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
 {
-    // Resolution of a single PALA.
-    const palaWidth = 16;
-    const palaHeight = 16;
+    Rsed.assert && (palaWidth === palaHeight)
+                || Rsed.throw("Expected PALA width and height to be equal.");
 
-    // The list of PALA textures that we know about.
-    const palat = [];
+    Rsed.assert && ((palaWidth > 0) &&
+                    (palaHeight > 0))
+                || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
 
-    // The list of PALA textures that we know about, with alpha-testing enabled.
-    const palatWithAlpha = [];
+    const pixels = [].map.call(data, (colorIdx)=>Rsed.palette_n.palette_idx_to_rgba(colorIdx));
 
-    let originalPalatBytesize = 0;
+    const palaSize = (palaWidth * palaHeight);
 
-    const publicInterface = {};
+    const publicInterface =
     {
-        publicInterface.set_palat_bytesize = function(numBytes)
+        width: palaWidth,
+        height: palaHeight,
+        
+        // Returns a copy of the individual PALA texture at the given index.
+        texture:(palaId = 0, args = {/*alpha:true|false,*/})=>
         {
-            originalPalatBytesize = numBytes;
-        }
+            Rsed.assert && Number.isInteger(palaId)
+                        || Rsed.throw("Expected integer parameters.");
 
-        // Returns a byte array that can be saved into a RallySportED project file.
-        publicInterface.get_saveable_palat = function()
-        {
-            let bytes = new Uint8Array(originalPalatBytesize);
-            
-            let idx = 0;
-            for (let i = 0; i < palat.length; i++)
+            const dataIdx = (palaId * palaSize);
+
+            // If the request is out of bounds, return a dummy texture.
+            if ((dataIdx < 0) || ((dataIdx + palaSize) >= data.byteLength))
             {
-                for (let y = (palaHeight - 1); y >= 0; y--) // Iterate backward to flip the image on y.
+                return Rsed.texture(
                 {
-                    for (let x = 0; x < palaWidth; x++)
-                    {
-                        if (idx >= originalPalatBytesize) return bytes;
-
-                        bytes[idx++] = palat[i].paletteIndices[x + y * palaWidth];
-                    }
-                }
+                    width: 1,
+                    height: 1,
+                    alpha: args.alpha,
+                    pixels: [Rsed.palette_n.palette_idx_to_rgba(0)],
+                    indices: [0],
+                });
             }
 
-            return bytes;
+            return Rsed.texture(
+            {
+                width: palaWidth,
+                height: palaHeight,
+                alpha: args.alpha,
+                flipped: "vertical",
+                pixels: pixels.slice(dataIdx, (dataIdx + palaSize)),
+                indices: data.slice(dataIdx, (dataIdx + palaSize)),
+            });
         }
+    };
 
-        // Removes any PALAT data we've added, wiping the slate clean as it were.
-        publicInterface.clear_palat_data = function()
-        {
-            palat.length = 0;
-            palatWithAlpha.length = 0;
-        }
-
-        // Adds the given texture as a known PALA.
-        publicInterface.add_pala = function(palaTexture = Rsed.texture_n.texture_o)
-        {
-            Rsed.assert && (palaTexture instanceof Rsed.texture_n.texture_o)
-                        || Rsed.throw("Expected a texture object.");
-
-            let tex = new Rsed.texture_n.texture_o;
-            tex.pixels = palaTexture.pixels.slice(0);
-            tex.paletteIndices = palaTexture.paletteIndices.slice(0);
-            tex.width = palaTexture.width;
-            tex.height = palaTexture.height;
-            tex.hasAlpha = false;
-            palat.push(tex);
+    Rsed.ui_draw_n.prebake_palat_pane();
     
-            tex = new Rsed.texture_n.texture_o;
-            tex.pixels = palaTexture.pixels.slice(0);
-            tex.paletteIndices = palaTexture.paletteIndices.slice(0);
-            tex.width = palaTexture.width;
-            tex.height = palaTexture.height;
-            tex.hasAlpha = true;
-            palatWithAlpha.push(tex);
-        }
-
-        // Returns the PALA with the given index.
-        publicInterface.pala_texture = function(palaIdx = 0, withAlpha = false)
-        {
-            const palaSource = (withAlpha? palatWithAlpha : palat);
-
-            return (palaSource[palaIdx] == null)? null : palaSource[palaIdx];
-        }
-
-        publicInterface.num_palas = function() { return palat.length; }
-        publicInterface.pala_width = function() { return palaWidth; }
-        publicInterface.pala_height = function() { return palaHeight; }
-    }
     return publicInterface;
-})();
+};

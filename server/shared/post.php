@@ -3,7 +3,7 @@
 /*
  * Most recent known filename: server/shared/post.php
  *
- * Tarpeeksi Hyvae Soft 2018 /
+ * Tarpeeksi Hyvae Soft 2019 /
  * RallySportED-js
  * 
  * Serves POST requests made by the client in shared-editing mode.

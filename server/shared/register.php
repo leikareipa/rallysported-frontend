@@ -3,7 +3,7 @@
 /*
  * Most recent known filename: server/shared/register.php
  *
- * Tarpeeksi Hyvae Soft 2018 /
+ * Tarpeeksi Hyvae Soft 2019 /
  * RallySportED-js
  * 
  * Registers a new participant in shared-editing mode of the project identified by the

@@ -156,9 +156,11 @@ Rsed.ngon_fill_n = (function()
                                         {
                                             const texelIdx = (Math.floor(u) + Math.floor(v) * texture.width);
                                             const color = texture.pixels[texelIdx];
-            
-                                            // Alpha testing.
-                                            if (!texture.hasAlpha || texture.paletteIndices[texelIdx] != 0)
+
+                                            if (!color)
+                                            console.log(color, u, v, texelIdx, texture);
+
+                                            if (!texture.alpha || texture.indices[texelIdx] != 0)
                                             {
                                                 pixelMap.data[idx + 0] = color.r;
                                                 pixelMap.data[idx + 1] = color.g;
