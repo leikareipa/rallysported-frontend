@@ -12,12 +12,14 @@ Rsed.texture = function(args = {})
 {
     args =
     {
-        ...{pixels:[],
-            indices:[],
-            width:0,
-            height:0,
-            alpha:false,
-            flipped:"no", // | "vertical"
+        ...
+        {
+            pixels: [],
+            indices: [],
+            width: 0,
+            height: 0,
+            alpha: false,
+            flipped: "no", // | "vertical"
         },
         ...args
     };
@@ -63,7 +65,7 @@ Rsed.project = async function(projectName = "")
                 || Rsed.throw("Invalid project name.");
 
     // Which of Rally-Sport's eight tracks (in the demo version) this project is for.
-    let trackId = 0;
+    let trackId = null;
 
     const projectData = await fetch_project_data_from_server(projectName);
 
@@ -143,7 +145,13 @@ Rsed.project = async function(projectName = "")
         props,
         manifesto,
 
-        track_id: ()=>trackId,
+        track_id: ()=>
+        {
+            Rsed.assert && (trackId !== null)
+                        || Rsed.throw("Attempting to access a project's track id before it has been set.");
+
+            return trackId;
+        },
 
         set_track_id: (id)=>
         {

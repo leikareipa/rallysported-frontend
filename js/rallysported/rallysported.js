@@ -29,6 +29,11 @@ const Rsed = {};
         throw Error("RallySportED error: " + errMessage);
     }
 
+    Rsed.alert = (message = "")=>
+    {
+        window.alert("RallySportED: " + message);
+    }
+
     // Linear interpolation.
     Rsed.lerp = (x = 0, y = 0, interval = 0)=>(x + (interval * (y - x)));
 

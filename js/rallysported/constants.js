@@ -21,4 +21,7 @@ Rsed.constants = Object.freeze(
     // not allowed to move props (so that they don't accidentally get moved out of reach,
     // etc.).
     propTileMargin: 2,
+
+    // The maximum number of props on a track.
+    maxPropCount: 14,
 });

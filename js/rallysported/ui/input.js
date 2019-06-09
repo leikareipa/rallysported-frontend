@@ -127,10 +127,12 @@ Rsed.ui_input_n = (function()
                     if (mouseLeftPressed &&
                         !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
                     {
-                        const x = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * Rsed.maasto_n.tile_size());
-                        const z = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * Rsed.maasto_n.tile_size());
-
-                        Rsed.maasto_n.add_prop_location(Rsed.main_n.project().track_id(), "tree", x, 0, z);
+                        Rsed.main_n.project().props.add_location(Rsed.main_n.project().track_id(),
+                                                                 Rsed.main_n.project().props.id_for_name("tree"),
+                                                                 {
+                                                                     x: (hoverArgs.tileX * Rsed.constants.groundTileSize),
+                                                                     z: (hoverArgs.tileZ * Rsed.constants.groundTileSize),
+                                                                 });
 
                         mouseLock.hibernating = true;
                     }

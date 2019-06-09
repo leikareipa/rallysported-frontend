@@ -196,17 +196,9 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 ...delta,
             };
 
-            currentLocation.x = clamped_to_track_prop_boundaries(currentLocation.x + delta.x);
+            currentLocation.x = clamped_to_prop_margins(currentLocation.x + delta.x);
             currentLocation.y = (currentLocation.y + delta.y);
-            currentLocation.z = clamped_to_track_prop_boundaries(currentLocation.z + delta.z);
-
-            function clamped_to_track_prop_boundaries(value)
-            {
-                const min = (Rsed.constants.propTileMargin * Rsed.constants.groundTileSize);
-                const max = ((Rsed.main_n.project().maasto.width - Rsed.constants.propTileMargin) * Rsed.constants.groundTileSize);
-
-                return Rsed.clamp(value, min, max);
-            }
+            currentLocation.z = clamped_to_prop_margins(currentLocation.z + delta.z);
         },
 
         // Assigns a new location to the propIdx'th prop on the given track.
@@ -236,7 +228,13 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             locations[trackId].locations[propIdx].z = location.z;
         },
 
-        set_prop_count: (trackId = 0, newPropCount = 0)=>
+        // Set the number of props on the given track. Note that this doesn't erase any props
+        // but only limits the number of props that will be returned by calls to functions like
+        // locations_of_props_on_track(). Note also that the count can't be higher than the
+        // actual number of props on the track - which also means that this function doesn't
+        // create any new props if the count is set higher than the number of props (will throw,
+        // instead).
+        set_count: (trackId = 0, newPropCount = 0)=>
         {
             Rsed.assert && ((trackId >= 0) &&
                             (trackId < 8))
@@ -260,8 +258,51 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a prop location out of bounds.");
 
             locations[trackId].locations[propIdx].propId = newPropId;
+        },
 
-            console.log(trackId, propIdx, newPropId, locations[trackId].locations[propIdx].propId)
+        add_location: (trackId = 0, newPropId = 0, location = {x:0,y:0,z:0})=>
+        {
+            if (locations[trackId].locations.length >= Rsed.constants.maxPropCount)
+            {
+                Rsed.alert("Can't add more props. This track already has " + locations[trackId].locations.length +
+                           " of them, which is the maximum. You can remove some to make room for new ones.");
+                return;
+            }
+
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId < 8))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            Rsed.assert && ((newPropId >= 0) &&
+                            (newPropId < names.length))
+                        || Rsed.throw("Querying a prop id out of bounds.");
+
+            location =
+            {
+                ...
+                {
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                },
+                ...location,
+            }
+
+            locations[trackId].locations.push(
+            {
+                propId: newPropId,
+                x: clamped_to_prop_margins(location.x),
+                y: location.y,
+                z: clamped_to_prop_margins(location.z),
+            });
+
+            // If the user hasn't requested a count limit.
+            if (locations.count[trackId] === locations.maxCount[trackId])
+            {
+                locations.count[trackId]++;
+            }
+
+            locations.maxCount[trackId]++;
         },
 
         // Returns by value the locations of all the props on the given track.
@@ -282,6 +323,17 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     };
 
     return publicInterface;
+
+    // Clamp the given value (expected to be track tile units) so that it doesn't exceed the
+    // track prop margins. (E.g. if the track is 128 tiles wide and the margin is 2 tiles, a
+    // value of 132 would be clamped to 126; and a value of -5 to 2.)
+    function clamped_to_prop_margins(value)
+    {
+        const min = (Rsed.constants.propTileMargin * Rsed.constants.groundTileSize);
+        const max = ((Rsed.main_n.project().maasto.width - Rsed.constants.propTileMargin) * Rsed.constants.groundTileSize);
+
+        return Rsed.clamp(value, min, max);
+    }
 
     async function fetch_prop_metadata_from_server()
     {

@@ -83,6 +83,11 @@ const Rsed = {};
         throw Error("RallySportED error: " + errMessage);
     }
 
+    Rsed.alert = (message = "")=>
+    {
+        window.alert("RallySportED: " + message);
+    }
+
     // Linear interpolation.
     Rsed.lerp = (x = 0, y = 0, interval = 0)=>(x + (interval * (y - x)));
 
@@ -127,106 +132,111 @@ Rsed.apply_manifesto = function(project = Rsed.project)
         const command = Number(params.shift());
 
         eval("apply_" + command)(params);
-    }
 
-    // Command: REQUIRE. Specifies which of Rally-Sport's eight tracks (in the demo version) the project
-    // is based on.
-    function apply_0(args = [])
-    {
-        Rsed.assert && (args.length === 3)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
+        // Command: REQUIRE. Specifies which of Rally-Sport's eight tracks (in the demo version) the project
+        // is based on.
+        function apply_0(args = [])
+        {
+            Rsed.assert && (args.length === 3)
+                        || Rsed.throw("Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
 
-        const trackId = Math.floor(Number(args[0])); // Note: The track id starts from 1.
-        const palatId = Math.floor(Number(args[1]));
-        const minRSEDLoaderVersion = Number(args[2]);
+            const trackId = Math.floor(Number(args[0])); // Note: The track id starts from 1.
+            const palatId = Math.floor(Number(args[1]));
+            const minRSEDLoaderVersion = Number(args[2]);
 
-        project.set_track_id(trackId - 1);
-    }
+            project.set_track_id(trackId - 1);
+        }
 
-    // Command: ROAD. Sets up the game's driving physics for various kinds of road surfaces.
-    function apply_1(args = [])
-    {
-        Rsed.assert && (args.length === 1)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 1. Expected 1 but received " + args.length + ".");
-    }
+        // Command: ROAD. Sets up the game's driving physics for various kinds of road surfaces.
+        function apply_1(args = [])
+        {
+            Rsed.assert && (args.length === 1)
+                        || Rsed.throw("Invalid number of arguments to manifesto command 1. Expected 1 but received " + args.length + ".");
+        }
 
-    // Command: NUM_OBJS. Sets the number of props (in addition to the starting line) on the track.
-    function apply_2(args = [])
-    {
-        Rsed.assert && (args.length === 1)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 2. Expected 1 but received " + args.length + ".");
+        // Command: NUM_OBJS. Sets the number of props (in addition to the starting line) on the track.
+        function apply_2(args = [])
+        {
+            Rsed.assert && (args.length === 1)
+                        || Rsed.throw("Invalid number of arguments to manifesto command 2. Expected 1 but received " + args.length + ".");
 
-        const numObjs = Math.floor(Number(args[0]));
+            const numObjs = Math.floor(Number(args[0]));
 
-        project.props.set_prop_count(numObjs);
-    }
+            project.props.set_count(project.track_id(), numObjs);
+        }
 
-    // Command: ADD_OBJ. Adds a new prop to the track.
-    function apply_3(args = [])
-    {
-        Rsed.assert && (args.length === 5)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 3. Expected 5 but received " + args.length + ".");
+        // Command: ADD_OBJ. Adds a new prop to the track.
+        function apply_3(args = [])
+        {
+            Rsed.assert && (args.length === 5)
+                        || Rsed.throw("Invalid number of arguments to manifesto command 3. Expected 5 but received " + args.length + ".");
 
-        const propTypeIdx = Math.floor(Number(args[0]) - 1);
-        const posX = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
-        const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
+            const propId = Math.floor(Number(args[0]) - 1);
+            const posX = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
+            const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
 
-        Rsed.maasto_n.add_prop_location(Rsed.main_n.project().track_id(), Rsed.main_n.project().props.name(propTypeIdx), posX, 0, posZ);
-    }
+            Rsed.main_n.project().props.add_location(Rsed.main_n.project().track_id(),
+                                                     propId,
+                                                     {
+                                                         x: posX,
+                                                         z: posZ,
+                                                     });
+        }
 
-    // Command: CHANGE_OBJ_TYPE. Changes the type of the given prop.
-    function apply_4(args = [])
-    {
-        Rsed.assert && (args.length === 2)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 4. Expected 2 but received " + args.length + ".");
+        // Command: CHANGE_OBJ_TYPE. Changes the type of the given prop.
+        function apply_4(args = [])
+        {
+            Rsed.assert && (args.length === 2)
+                        || Rsed.throw("Invalid number of arguments to manifesto command 4. Expected 2 but received " + args.length + ".");
 
-        const targetPropIdx = Math.floor(Number(args[0]) - 1);
-        const newPropId = Math.floor(Number(args[1]) - 1);
+            const targetPropIdx = Math.floor(Number(args[0]) - 1);
+            const newPropId = Math.floor(Number(args[1]) - 1);
 
-        project.props.change_prop_type(project.trackId, targetPropIdx, newPropId);
-    }
+            project.props.change_prop_type(project.trackId, targetPropIdx, newPropId);
+        }
 
-    // Command: MOVE_OBJ. Moves the position of the given prop.
-    function apply_5(args = [])
-    {
-        Rsed.assert && (args.length === 5)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 5. Expected 5 but received " + args.length + ".");
+        // Command: MOVE_OBJ. Moves the position of the given prop.
+        function apply_5(args = [])
+        {
+            Rsed.assert && (args.length === 5)
+                        || Rsed.throw("Invalid number of arguments to manifesto command 5. Expected 5 but received " + args.length + ".");
 
-        const targetPropIdx = Math.floor(Number(args[0]) - 1);
-        const x = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
-        const z = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
+            const targetPropIdx = Math.floor(Number(args[0]) - 1);
+            const x = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
+            const z = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
 
-        project.props.set_prop_location(project.trackId, targetPropIdx, {x, z});
-    }
+            project.props.set_prop_location(project.trackId, targetPropIdx, {x, z});
+        }
 
-    // Command: MOVE_STARTING_POS. Moves the starting line. Note that this doesn't move the
-    // starting line prop, but the starting position of the player's car. So we can ignore
-    // it in the editor.
-    function apply_6(args = [])
-    {
-        Rsed.assert && (args.length === 4)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 6. Expected 4 but received " + args.length + ".");
-    }
+        // Command: MOVE_STARTING_POS. Moves the starting line. Note that this doesn't move the
+        // starting line prop, but the starting position of the player's car. So we can ignore
+        // it in the editor.
+        function apply_6(args = [])
+        {
+            Rsed.assert && (args.length === 4)
+                        || Rsed.throw("Invalid number of arguments to manifesto command 6. Expected 4 but received " + args.length + ".");
+        }
 
-    // Command: CHANGE_PALETTE_ENTRY. Changes the given palette index to the given r,g,b values.
-    function apply_10(args = [])
-    {
-        Rsed.assert && (args.length === 4)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 10. Expected 4 but received " + args.length + ".");
+        // Command: CHANGE_PALETTE_ENTRY. Changes the given palette index to the given r,g,b values.
+        function apply_10(args = [])
+        {
+            Rsed.assert && (args.length === 4)
+                        || Rsed.throw("Invalid number of arguments to manifesto command 10. Expected 4 but received " + args.length + ".");
 
-        const targetPaletteIdx = Math.floor(Number(args[0]));
-        const r = Math.floor(Number(args[1] * 4));
-        const g = Math.floor(Number(args[2] * 4));
-        const b = Math.floor(Number(args[3] * 4));
-        
-        Rsed.palette_n.modify_palette_entry(targetPaletteIdx, r, g, b);
-    }
+            const targetPaletteIdx = Math.floor(Number(args[0]));
+            const r = Math.floor(Number(args[1] * 4));
+            const g = Math.floor(Number(args[2] * 4));
+            const b = Math.floor(Number(args[3] * 4));
+            
+            Rsed.palette_n.modify_palette_entry(targetPaletteIdx, r, g, b);
+        }
 
-    // Command: STOP. Stops parsing the manifesto file.
-    function apply_99(args = [])
-    {
-        Rsed.assert && (args.length === 0)
-                    || Rsed.throw("Invalid number of arguments to manifesto command 99. Expected no arguments but received " + args.length + ".");
+        // Command: STOP. Stops parsing the manifesto file.
+        function apply_99(args = [])
+        {
+            Rsed.assert && (args.length === 0)
+                        || Rsed.throw("Invalid number of arguments to manifesto command 99. Expected no arguments but received " + args.length + ".");
+        }
     }
 };
 /*
@@ -243,12 +253,14 @@ Rsed.texture = function(args = {})
 {
     args =
     {
-        ...{pixels:[],
-            indices:[],
-            width:0,
-            height:0,
-            alpha:false,
-            flipped:"no", // | "vertical"
+        ...
+        {
+            pixels: [],
+            indices: [],
+            width: 0,
+            height: 0,
+            alpha: false,
+            flipped: "no", // | "vertical"
         },
         ...args
     };
@@ -294,7 +306,7 @@ Rsed.project = async function(projectName = "")
                 || Rsed.throw("Invalid project name.");
 
     // Which of Rally-Sport's eight tracks (in the demo version) this project is for.
-    let trackId = 0;
+    let trackId = null;
 
     const projectData = await fetch_project_data_from_server(projectName);
 
@@ -374,7 +386,13 @@ Rsed.project = async function(projectName = "")
         props,
         manifesto,
 
-        track_id: ()=>trackId,
+        track_id: ()=>
+        {
+            Rsed.assert && (trackId !== null)
+                        || Rsed.throw("Attempting to access a project's track id before it has been set.");
+
+            return trackId;
+        },
 
         set_track_id: (id)=>
         {
@@ -596,6 +614,9 @@ Rsed.constants = Object.freeze(
     // not allowed to move props (so that they don't accidentally get moved out of reach,
     // etc.).
     propTileMargin: 2,
+
+    // The maximum number of props on a track.
+    maxPropCount: 14,
 });
 /*
  * Most recent known filename: js/world-builder.js
@@ -2704,7 +2725,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
 
     // Manifesto files can manipulate the number of props on a given track; we'll offer
     // that functionality by only returning the first x prop locations on that track.
-    locations.maxCount = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
+    locations.countLimit = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
     locations.count = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
 
     const publicInterface =
@@ -2865,17 +2886,9 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 ...delta,
             };
 
-            currentLocation.x = clamped_to_track_prop_boundaries(currentLocation.x + delta.x);
+            currentLocation.x = clamped_to_prop_margins(currentLocation.x + delta.x);
             currentLocation.y = (currentLocation.y + delta.y);
-            currentLocation.z = clamped_to_track_prop_boundaries(currentLocation.z + delta.z);
-
-            function clamped_to_track_prop_boundaries(value)
-            {
-                const min = (Rsed.constants.propTileMargin * Rsed.constants.groundTileSize);
-                const max = ((Rsed.main_n.project().maasto.width - Rsed.constants.propTileMargin) * Rsed.constants.groundTileSize);
-
-                return Rsed.clamp(value, min, max);
-            }
+            currentLocation.z = clamped_to_prop_margins(currentLocation.z + delta.z);
         },
 
         // Assigns a new location to the propIdx'th prop on the given track.
@@ -2905,14 +2918,20 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             locations[trackId].locations[propIdx].z = location.z;
         },
 
-        set_prop_count: (trackId = 0, newPropCount = 0)=>
+        // Set the number of props on the given track. Note that this doesn't erase any props
+        // but only limits the number of props that will be returned by calls to functions like
+        // locations_of_props_on_track(). Note also that the count can't be higher than the
+        // actual number of props on the track - which also means that this function doesn't
+        // create any new props if the count is set higher than the number of props (will throw,
+        // instead).
+        set_count: (trackId = 0, newPropCount = 0)=>
         {
             Rsed.assert && ((trackId >= 0) &&
                             (trackId < 8))
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((newPropCount >= 0) &&
-                            (newPropCount < locations.maxCount[trackId]))
+                            (newPropCount < locations.countLimit[trackId]))
                     || Rsed.throw("Trying to set a new prop count out of bounds.");
 
             locations.count[trackId] = newPropCount;
@@ -2929,8 +2948,50 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a prop location out of bounds.");
 
             locations[trackId].locations[propIdx].propId = newPropId;
+        },
 
-            console.log(trackId, propIdx, newPropId, locations[trackId].locations[propIdx].propId)
+        add_location: (trackId = 0, newPropId = 0, location = {x:0,y:0,z:0})=>
+        {
+            if (locations[trackId].locations.length >= Rsed.constants.maxPropCount)
+            {
+                Rsed.alert("Can't add more props. This track already has " + locations[trackId].locations.length +
+                           " of them, which is the maximum. You can remove some to make room for new ones.");
+                return;
+            }
+
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId < 8))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            Rsed.assert && ((newPropId >= 0) &&
+                            (newPropId < names.length))
+                        || Rsed.throw("Querying a prop id out of bounds.");
+
+            location =
+            {
+                ...
+                {
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                },
+                ...location,
+            }
+
+            locations[trackId].locations.push(
+            {
+                propId: newPropId,
+                x: clamped_to_prop_margins(location.x),
+                y: location.y,
+                z: clamped_to_prop_margins(location.z),
+            });
+
+            if (locations.count[trackId] === locations.countLimit[trackId])
+            {
+                locations.count[trackId]++;
+            }
+
+            locations.countLimit[trackId]++;
         },
 
         // Returns by value the locations of all the props on the given track.
@@ -2951,6 +3012,17 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     };
 
     return publicInterface;
+
+    // Clamp the given value (expected to be track tile units) so that it doesn't exceed the
+    // track prop margins. (E.g. if the track is 128 tiles wide and the margin is 2 tiles, a
+    // value of 132 would be clamped to 126; and a value of -5 to 2.)
+    function clamped_to_prop_margins(value)
+    {
+        const min = (Rsed.constants.propTileMargin * Rsed.constants.groundTileSize);
+        const max = ((Rsed.main_n.project().maasto.width - Rsed.constants.propTileMargin) * Rsed.constants.groundTileSize);
+
+        return Rsed.clamp(value, min, max);
+    }
 
     async function fetch_prop_metadata_from_server()
     {
@@ -4373,10 +4445,12 @@ Rsed.ui_input_n = (function()
                     if (mouseLeftPressed &&
                         !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
                     {
-                        const x = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileX * Rsed.maasto_n.tile_size());
-                        const z = Rsed.maasto_n.clamped_to_track_prop_boundaries(hoverArgs.tileZ * Rsed.maasto_n.tile_size());
-
-                        Rsed.maasto_n.add_prop_location(Rsed.main_n.project().track_id(), "tree", x, 0, z);
+                        Rsed.main_n.project().props.add_location(Rsed.main_n.project().track_id(),
+                                                                 Rsed.main_n.project().props.id_for_name("tree"),
+                                                                 {
+                                                                     x: (hoverArgs.tileX * Rsed.constants.groundTileSize),
+                                                                     z: (hoverArgs.tileZ * Rsed.constants.groundTileSize),
+                                                                 });
 
                         mouseLock.hibernating = true;
                     }
