@@ -14,7 +14,7 @@ if (!isset($_GET["projectName"]))
 }
 
 // Sanitize the project name.
-if (!preg_match('/^[a-z]+$/', $_GET["projectName"]) ||
+if (!preg_match('/^[0-9a-z]+$/', $_GET["projectName"]) ||
     (strlen($_GET["projectName"]) > 8))
 {
     exit(failure("Malformed project name."));

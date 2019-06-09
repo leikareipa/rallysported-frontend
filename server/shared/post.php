@@ -47,7 +47,7 @@ if (!$postData ||
 }
 
 // Sanitize the project name, since it'll be used to form a file path.
-if (!preg_match('/^[a-z]+$/', $_GET["projectName"]))
+if (!preg_match('/^[a-z0-9]+$/', $_GET["projectName"]))
 {
     exit(failure("Malformed project name."));
 }
