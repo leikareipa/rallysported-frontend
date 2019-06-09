@@ -18,9 +18,14 @@ Rsed.project = async function(projectName = "")
 
     const projectData = await fetch_project_data_from_server(projectName);
 
-    Rsed.assert && ((projectData.trackWidth > 0) &&
-                    (projectData.trackHeight > 0) &&
-                    (projectData.trackWidth === projectData.trackHeight))
+    Rsed.assert && ((typeof projectData.container !== "undefined") &&
+                    (typeof projectData.manifesto !== "undefined") &&
+                    (typeof projectData.meta !== "undefined"))
+                || Rsed.throw("Missing required project data.");
+
+    Rsed.assert && ((projectData.meta.width > 0) &&
+                    (projectData.meta.height > 0) &&
+                    (projectData.meta.width === projectData.meta.height))
                 || Rsed.throw("Invalid track dimensions for a project.");
 
     const projectDataContainer = Object.freeze(
@@ -64,12 +69,12 @@ Rsed.project = async function(projectName = "")
         },
     });
 
-    const maasto = Rsed.track.maasto(projectData.trackWidth, projectData.trackHeight,
+    const maasto = Rsed.track.maasto(projectData.meta.width, projectData.meta.height,
                                      new Uint8Array(projectDataContainer.dataBuffer,
                                                     projectDataContainer.byteOffset().maasto,
                                                     projectDataContainer.byteSize().maasto));
 
-    const varimaa = Rsed.track.varimaa(projectData.trackWidth, projectData.trackHeight,
+    const varimaa = Rsed.track.varimaa(projectData.meta.width, projectData.meta.height,
                                        new Uint8Array(projectDataContainer.dataBuffer,
                                                       projectDataContainer.byteOffset().varimaa,
                                                       projectDataContainer.byteSize().varimaa));
@@ -87,7 +92,7 @@ Rsed.project = async function(projectName = "")
 
     const publicInterface = Object.freeze(
     {
-        name: projectName,
+        name: projectData.meta.displayName,
         maasto,
         varimaa,
         palat,

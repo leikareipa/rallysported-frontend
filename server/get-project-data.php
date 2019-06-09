@@ -29,24 +29,10 @@ if (!chdir("../track-list/server/" . $_GET["projectName"] . "/"))
 // Read the project's data into an array, which is then converted into a JSON object.
 {
     if (!($projectData["container"] = file_get_contents($_GET["projectName"] . ".dta")) ||
-        !($projectData["manifesto"] = file_get_contents($_GET["projectName"] . '.$ft')))
+        !($projectData["manifesto"] = file_get_contents($_GET["projectName"] . '.$ft')) ||
+        !($projectData["meta"] = json_decode(file_get_contents($_GET["projectName"] . ".meta.json"), true)))
     {
         exit(failure("Server-side IO failure."));
-    }
-
-    // The first four bytes give as an unsigned int the number of bytes in the MAASTO data.
-    // We can use this to find out how many tiles the project's track has per side.
-    $maastoDataLen = unpack("C4", $projectData["container"]);
-
-    $projectData["trackWidth"] = $projectData["trackHeight"] = sqrt((($maastoDataLen[4] << 24) |
-                                                                     ($maastoDataLen[3] << 16) |
-                                                                     ($maastoDataLen[2] <<  8) |
-                                                                     ($maastoDataLen[1])) / 2);
-
-    // Sanity check. All tracks are expected to have either 64 or 128 tiles per side.
-    if (!in_array($projectData["trackWidth"], [128, 64]))
-    {
-        exit(failure("Server-side data error: Invalid track dimensions."));
     }
 
     $projectData["container"] = base64_encode($projectData["container"]);
