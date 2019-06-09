@@ -175,7 +175,7 @@ Rsed.apply_manifesto = function(project = Rsed.project)
             const posX = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
             const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
 
-            Rsed.main_n.project().props.add_location(Rsed.main_n.project().track_id(),
+            Rsed.main_n.project().props.add_location(project.track_id(),
                                                      propId,
                                                      {
                                                          x: posX,
@@ -2570,6 +2570,18 @@ Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Arra
 
             [data[idx], data[idx+1]] = [...integer_height_as_two_bytes(newHeight)];
         },
+
+        // Reset all values in the heightmap to the specified height.
+        bulldoze: function(height)
+        {
+            for (let y = 0; y < maastoHeight; y++)
+            {
+                for (let x = 0; x < maastoWidth; x++)
+                {
+                    this.set_tile_value_at(x, y, height);
+                }
+            }
+        }
     };
     
     return publicInterface;
@@ -2725,7 +2737,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
 
     // Manifesto files can manipulate the number of props on a given track; we'll offer
     // that functionality by only returning the first x prop locations on that track.
-    locations.countLimit = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
+    locations.maxCount = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
     locations.count = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
 
     const publicInterface =
@@ -2931,7 +2943,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((newPropCount >= 0) &&
-                            (newPropCount < locations.countLimit[trackId]))
+                            (newPropCount < locations.maxCount[trackId]))
                     || Rsed.throw("Trying to set a new prop count out of bounds.");
 
             locations.count[trackId] = newPropCount;
@@ -2986,12 +2998,13 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 z: clamped_to_prop_margins(location.z),
             });
 
-            if (locations.count[trackId] === locations.countLimit[trackId])
+            // If the user hasn't requested a count limit.
+            if (locations.count[trackId] === locations.maxCount[trackId])
             {
                 locations.count[trackId]++;
             }
 
-            locations.countLimit[trackId]++;
+            locations.maxCount[trackId]++;
         },
 
         // Returns by value the locations of all the props on the given track.
@@ -5615,7 +5628,7 @@ window.onkeydown = function(event)
             case "w": case 87: Rsed.ui_view_n.show3dWireframe = !Rsed.ui_view_n.show3dWireframe; break;
             case "a": case 65: Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane; break;
             case "r": case 82: Rsed.ui_view_n.toggle_view("3d", "3d-topdown"); break;
-            case "l": case 76: Rsed.maasto_n.level_terrain(); break;
+            case "l": case 76: Rsed.main_n.project().maasto.bulldoze(window.prompt("Level the terrain to a height of...")); break;
             case "b": case 66: Rsed.ui_view_n.hideProps = !Rsed.ui_view_n.hideProps; break;
             case "spacebar": case 32: Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens; event.preventDefault(); break;
             case "1": case 49: Rsed.ui_brush_n.set_brush_size(0); break;

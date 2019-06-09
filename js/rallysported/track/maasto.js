@@ -62,6 +62,18 @@ Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Arra
 
             [data[idx], data[idx+1]] = [...integer_height_as_two_bytes(newHeight)];
         },
+
+        // Reset all height values in the heightmap to the specified height.
+        bulldoze: function(height)
+        {
+            for (let y = 0; y < maastoHeight; y++)
+            {
+                for (let x = 0; x < maastoWidth; x++)
+                {
+                    this.set_tile_value_at(x, y, height);
+                }
+            }
+        }
     };
     
     return publicInterface;
