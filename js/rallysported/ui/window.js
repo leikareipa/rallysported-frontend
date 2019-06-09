@@ -71,7 +71,7 @@ window.onload = function(event)
         else if (params.has("original"))
         {
             // Give the input a sanity check.
-            if (!(/^[a-z1-8]+$/.test(params.get("original"))))
+            if (!(/^[1-8]+$/.test(params.get("original"))))
             {
                 Rsed.throw("Invalid track identifier detected. Can't continue.");
                 return;

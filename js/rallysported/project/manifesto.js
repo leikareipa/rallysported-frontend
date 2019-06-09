@@ -15,13 +15,15 @@ Rsed.apply_manifesto = function(project)
 
     const commands = project.manifesto.split("\n").filter(Boolean);
 
+    console.log(commands[commands.length-1])
+
     Rsed.assert && (commands.length >= 2)
                 || Rsed.throw("Invalid number of lines in the manifesto.");
 
     Rsed.assert && (commands[0].startsWith("0 "))
                 || Rsed.throw("Expected the manifesto to begin with the command 0, but it doesn't.");
 
-    Rsed.assert && (commands[commands.length-1] === "99")
+    Rsed.assert && (commands[commands.length-1].startsWith("99"))
                 || Rsed.throw("Expected the manifesto to end with the command 99, but it doesn't.");
 
     commands.forEach(command=>
