@@ -243,27 +243,7 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
     {
         // Creating a texture.
         {
-            const w = 1;
-            const h = 2;
-            const pixels = [new Rsed.color_n.rgba_o(1, 2, 3), new Rsed.color_n.rgba_o(4, 5, 6)];
-            const texture = new Rsed.texture_n.texture_o(w, h, pixels);
-
-            // Resolution.
-            expect_true([()=>(texture.width === w),
-                         ()=>(texture.height === h),
-                         ()=>(texture.pixels.length === (w * h)) ]);
-
-            // Pixel data.
-            expect_true([()=>(texture.pixels[0].r === pixels[0].r),
-                         ()=>(texture.pixels[0].g === pixels[0].g),
-                         ()=>(texture.pixels[0].b === pixels[0].b),
-                         ()=>(texture.pixels[1].r === pixels[1].r),
-                         ()=>(texture.pixels[1].g === pixels[1].g),
-                         ()=>(texture.pixels[1].b === pixels[1].b)]);
-
-            // See that pixel data is copied by value, not by reference.
-            pixels[0].r = Number(!pixels[0].r);
-            expect_true([()=>(texture.pixels[0].r !== pixels[0].r)]);
+            /// TODO.
         }
     });
 });

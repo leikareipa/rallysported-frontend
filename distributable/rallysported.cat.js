@@ -103,7 +103,7 @@ const Rsed = {};
 
 "use strict";
 
-Rsed.apply_manifesto = function(project = Rsed.project)
+Rsed.apply_manifesto = function(project)
 {
     Rsed.assert && (!project.isPlaceholder)
                 || Rsed.throw("Can't apply manifestos to placeholder projects.");
@@ -175,7 +175,7 @@ Rsed.apply_manifesto = function(project = Rsed.project)
             const posX = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
             const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
 
-            Rsed.main_n.project().props.add_location(project.track_id(),
+            project.props.add_location(project.track_id(),
                                                      propId,
                                                      {
                                                          x: posX,
@@ -248,57 +248,6 @@ Rsed.apply_manifesto = function(project = Rsed.project)
  */
 
 "use strict";
-
-Rsed.texture = function(args = {})
-{
-    args =
-    {
-        ...
-        {
-            pixels: [],
-            indices: [],
-            width: 0,
-            height: 0,
-            alpha: false,
-            flipped: "no", // | "vertical"
-        },
-        ...args
-    };
-
-    Rsed.assert && ((args.width > 0) &&
-                    (args.height > 0))
-                || Rsed.throw("Expected texture width and height to be positive and non-zero.");
-
-    switch (args.flipped)
-    {
-        case "no": break;
-        case "vertical":
-        {
-            for (let y = 0; y < args.height/2; y++)
-            {
-                // Swap horizontal rows vertically.
-                for (let x = 0; x < args.width; x++)
-                {
-                    const idxTop = (x + y * args.width);
-                    const idxBottom = (x + (args.height - y - 1) * args.width);
-
-                    [args.pixels[idxTop], args.pixels[idxBottom]] = [args.pixels[idxBottom], args.pixels[idxTop]];
-                    [args.indices[idxTop], args.indices[idxBottom]] = [args.indices[idxBottom], args.indices[idxTop]];
-                }
-            }
-
-            break;
-        }
-        default: Rsed.throw("Unknown texture-flipping mode."); break;
-    }
-
-    const publicInterface =
-    {
-        ...args
-    };
-
-    return publicInterface;
-}
 
 Rsed.project = async function(projectName = "")
 {
@@ -1235,34 +1184,56 @@ Rsed.color_n = (function()
 
 "use strict";
 
-Rsed.texture_n = (function()
+Rsed.texture = function(args = {})
 {
-    const publicInterface = {};
+    args =
     {
-        publicInterface.texture_o = function(width = 0, height = 0, pixels = [Rsed.color_n.rgba_o])
+        ...
         {
-            this.width = width;
-            this.height = height;
+            pixels: [],
+            indices: [],
+            width: 0,
+            height: 0,
+            alpha: false,
+            flipped: "no", // | "vertical"
+        },
+        ...args
+    };
 
-            // If set to true, any pixel in the texture whose palette index is 0 is considered
-            // see-through and won't be drawn when rendering.
-            this.hasAlpha = false;
+    Rsed.assert && ((args.width > 0) &&
+                    (args.height > 0))
+                || Rsed.throw("Expected texture width and height to be positive and non-zero.");
 
-            // For each pixel, a matching index in Rally-Sport's palette.
-            this.paletteIndices = [];
-
-            this.pixels = [];
-            for (let i = 0; i < (width * height); i++)
+    switch (args.flipped)
+    {
+        case "no": break;
+        case "vertical":
+        {
+            for (let y = 0; y < args.height/2; y++)
             {
-                Rsed.assert && (pixels[i] instanceof Rsed.color_n.rgba_o)
-                            || Rsed.throw("Expected a color object.");
-                            
-                this.pixels.push(new Rsed.color_n.rgba_o(pixels[i].r, pixels[i].g, pixels[i].b, pixels[i].a));
+                // Swap horizontal rows vertically.
+                for (let x = 0; x < args.width; x++)
+                {
+                    const idxTop = (x + y * args.width);
+                    const idxBottom = (x + (args.height - y - 1) * args.width);
+
+                    [args.pixels[idxTop], args.pixels[idxBottom]] = [args.pixels[idxBottom], args.pixels[idxTop]];
+                    [args.indices[idxTop], args.indices[idxBottom]] = [args.indices[idxBottom], args.indices[idxTop]];
+                }
             }
+
+            break;
         }
+        default: Rsed.throw("Unknown texture-flipping mode."); break;
     }
+
+    const publicInterface =
+    {
+        ...args
+    };
+
     return publicInterface;
-})();
+}
 /*
  * Most recent known filename: js/palette.js
  *

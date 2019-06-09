@@ -8,7 +8,7 @@
 
 "use strict";
 
-Rsed.apply_manifesto = function(project = Rsed.project)
+Rsed.apply_manifesto = function(project)
 {
     Rsed.assert && (!project.isPlaceholder)
                 || Rsed.throw("Can't apply manifestos to placeholder projects.");
@@ -80,7 +80,7 @@ Rsed.apply_manifesto = function(project = Rsed.project)
             const posX = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
             const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
 
-            Rsed.main_n.project().props.add_location(project.track_id(),
+            project.props.add_location(project.track_id(),
                                                      propId,
                                                      {
                                                          x: posX,
