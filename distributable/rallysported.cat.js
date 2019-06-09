@@ -8,8 +8,8 @@
 //	../js/rallysported/rallysported.js
 //	../js/rallysported/project/manifesto.js
 //	../js/rallysported/project/project.js
-//	../js/rallysported/constants.js
-//	../js/rallysported/world-builder.js
+//	../js/rallysported/misc/constants.js
+//	../js/rallysported/misc/world-builder.js
 //	../distributable/assets/hitable.txt.js
 //	../js/rallysported/misc/shared-mode.js
 //	../js/rallysported/misc/common.js
@@ -34,7 +34,7 @@
 //	../js/rallysported/render/line-draw.js
 //	../js/rallysported/render/ngon-fill.js
 //	../js/rallysported/core.js
-//	../js/rallysported/misc/window.js
+//	../js/rallysported/ui/window.js
 /////////////////////////////////////////////////
 
 /*!
@@ -5176,46 +5176,12 @@ Rsed.core = (function()
             isRunning = false;
         },
 
-        // Exports the project's data into a zip file the user can download.
-        save_project_to_disk: function()
-        {
-            if (project == null)
-            {
-                k_message("Was asked to save the project while it was null. Ignoring this.");
-                return;
-            }
-
-            Rsed.project_n.generate_download_of_project(project);
-        },
-
         // Gets called when something is dropped onto RallySportED's render canvas. We expect
         // the drop to be a zip file containing the files of a RallySportED project for us to
         // load up. If it's not, we'll ignore the drop.
         drop_handler: function(event)
         {
-            // Don't let the browser handle the drop.
-            event.preventDefault();
-
-            // See if we received a zip file that we could load.
-            const zipFile = [].map.call(event.dataTransfer.items, (item)=>{return item.getAsFile()})
-                                  .filter(file=>(file != null))
-                                  .filter(file=>(file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase() === "zip"))
-                                  [0] || null;
- 
-            if (!zipFile)
-            {
-                k_message("The drop contained no RallySportED zip files. Ignoring it.");
-                return;
-            }
-
-            // We now presumably have a zipped RallySportED project that we can load, so let's do that.
-            Rsed.core.load_project({fileFormat:"zip",locality:"local",fileReference:zipFile});
-            /// TODO: .then(()=>{//cleanup.});
-
-            // Clear the address bar's parameters to reflect the fact that the user has loaded a local
-            // track resource instead of specifying a server-side resource via the address bar.
-            const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
-            window.history.replaceState({}, document.title, basePath);
+            /// TODO.
         },
 
         project: ()=>project,
