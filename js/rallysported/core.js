@@ -10,6 +10,9 @@
 
 Rsed.core = (function()
 {
+    // Set to true while the core is running (e.g. as a result of calling run()).
+    let isRunning = false;
+
     // The project we've currently got loaded. When the user makes edits or requests a save,
     // this is the target project.
     let project = Rsed.project.placeholder;
@@ -22,17 +25,6 @@ Rsed.core = (function()
         const params = new URLSearchParams(window.location.search);
         return (params.has("showFramerate") && (Number(params.get("showFramerate")) === 1));
     })();
-
-    // Test various browser compatibility factors, and give the user messages of warning where appropriate.
-    function check_browser_compatibility()
-    {
-        // We expect to export projects with JSZip using blobs.
-        /// TODO: Doesn't need to be checked in shared mode, since it doesn't use JSZip for saving.
-        if (!JSZip.support.blob)
-        {
-            alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
-        }
-    }
 
     // Initialize the renderer.
     const renderer = new Rsed.renderer_o("render_container", renderScalingMultiplier);
@@ -124,81 +116,33 @@ Rsed.core = (function()
 
     const publicInterface =
     {
-        project: function() { return project; },
-
-        // Set to false if you want to incapacitate the program, e.g. as a result of an error throwing.
-        // If not operational, the program won't respond to user input and won't display anything to
-        // the user.
-        isOperational: true,
-
-        fps_counter_enabled: function() { return fpsCounterEnabled; },
-
-        scaling_multiplier: function() { return renderScalingMultiplier; },
-    
-        load_project: async function(args = {})
-        {
-            Rsed.assert && ((typeof args.editMode !== "undefined") &&
-                            (typeof args.projectName !== "undefined"))
-                        || Rsed.throw("Missing required arguments for loading a project.");
-             
-            if (args.editMode === "shared")
-            {
-                await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.projectName);
-            }
-            else
-            {
-                Rsed.shared_mode_n.unregister_current_registration();
-            }
-
-            project = await Rsed.project(args.projectName);
-
-            Rsed.apply_manifesto(project);
-            Rsed.camera_n.reset_camera_position();
-            Rsed.palette_n.reset_palettes();
-            Rsed.palette_n.set_palette_for_track(project.track_id());
-
-            /// TODO. This needs to be implemented in a better way and/or somewhere
-            /// else - ideally so you don't have to manually start the poll loop;
-            /// so you don't risk starting it twice or whatever.
-            if (Rsed.shared_mode_n.enabled())
-            {
-                Rsed.shared_mode_n.start_polling_server();
-            }
-        },
-
         // Starts the program. The renderer will keep requesting a new animation frame, and will call the
         // callback functions we've set at that rate.
-        launch_rallysported: function(startupArgs = {})
+        run: async function(startupArgs = {})
         {
             Rsed.assert && ((typeof startupArgs.projectLocality !== "undefined") &&
                             (typeof startupArgs.projectName !== "undefined"))
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
 
+            verify_browser_compatibility();
+
+            // Hide the UI while we load up the project's data etc.
             htmlUI.set_visible(false);
 
-            check_browser_compatibility();
+            await load_project(startupArgs);
 
-            (async()=>
-            {
-                await publicInterface.load_project(startupArgs);
+            htmlUI.refresh();
+            htmlUI.set_visible(true);
 
-                renderer.run_renderer();
-
-                htmlUI.refresh();
-                htmlUI.set_visible(true);
-            })();
+            isRunning = true;
         },
 
-        // Exports the project's data into a zip file the user can download.
-        save_project_to_disk: function()
+        // Terminate RallySporED with an error message.
+        panic: (errorMessage)=>
         {
-            if (project == null)
-            {
-                k_message("Was asked to save the project while it was null. Ignoring this.");
-                return;
-            }
-
-            Rsed.project_n.generate_download_of_project(project);
+            renderer.indicate_error(errorMessage);
+            htmlUI.set_visible(false);
+            isRunning = false;
         },
 
         // Gets called when something is dropped onto RallySportED's render canvas. We expect
@@ -206,44 +150,64 @@ Rsed.core = (function()
         // load up. If it's not, we'll ignore the drop.
         drop_handler: function(event)
         {
-            // Don't let the browser handle the drop.
-            event.preventDefault();
-
-            // See if we received a zip file that we could load.
-            const zipFile = [].map.call(event.dataTransfer.items, (item)=>{return item.getAsFile()})
-                                  .filter(file=>(file != null))
-                                  .filter(file=>(file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase() === "zip"))
-                                  [0] || null;
- 
-            if (!zipFile)
-            {
-                k_message("The drop contained no RallySportED zip files. Ignoring it.");
-                return;
-            }
-
-            // We now presumably have a zipped RallySportED project that we can load, so let's do that.
-            Rsed.core.load_project({fileFormat:"zip",locality:"local",fileReference:zipFile});
-            /// TODO: .then(()=>{//cleanup.});
-
-            // Clear the address bar's parameters to reflect the fact that the user has loaded a local
-            // track resource instead of specifying a server-side resource via the address bar.
-            const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
-            window.history.replaceState({}, document.title, basePath);
+            /// TODO.
         },
 
-        incapacitate_rallysported: function(message)
-        {
-            renderer.indicate_error(message);
-            htmlUI.set_visible(false);
-            publicInterface.isOperational = false;
-        },
-
+        project: ()=>project,
+        is_running: ()=>isRunning,
         render_width: ()=>renderer.render_width(),
         render_height: ()=>renderer.render_height(),
         render_latency: ()=>renderer.previousFrameLatencyMs,
         render_surface_id: ()=>renderer.renderSurfaceId,
+        fps_counter_enabled: ()=>fpsCounterEnabled,
+        scaling_multiplier: ()=>renderScalingMultiplier,
         mouse_pick_buffer_value_at: (x, y)=>renderer.mouse_pick_buffer_value_at(x, y),
     }
 
     return publicInterface;
+
+    // Test various browser compatibility factors, and give the user messages of warning where appropriate.
+    function verify_browser_compatibility()
+    {
+        // We expect to export projects with JSZip using blobs.
+        /// TODO: Doesn't need to be checked in shared mode, since it doesn't use JSZip for saving.
+        if (!JSZip.support.blob)
+        {
+            alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
+        }
+    }
+
+    async function load_project(args = {})
+    {
+        Rsed.assert && ((typeof args.editMode !== "undefined") &&
+                        (typeof args.projectName !== "undefined"))
+                    || Rsed.throw("Missing required arguments for loading a project.");
+            
+        if (args.editMode === "shared")
+        {
+            await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.projectName);
+        }
+        else
+        {
+            Rsed.shared_mode_n.unregister_current_registration();
+        }
+
+        project = await Rsed.project(args.projectName);
+
+        Rsed.apply_manifesto(project);
+        Rsed.camera_n.reset_camera_position();
+        Rsed.palette_n.reset_palettes();
+        Rsed.palette_n.set_palette_for_track(project.track_id());
+
+        /// TODO. Prebake certain project data (like textures) to improve performance.
+        // project.prebake_data();
+
+        /// TODO. This needs to be implemented in a better way and/or somewhere
+        /// else - ideally so you don't have to manually start the poll loop;
+        /// so you don't risk starting it twice or whatever.
+        if (Rsed.shared_mode_n.enabled())
+        {
+            Rsed.shared_mode_n.start_polling_server();
+        }
+    }
 })();

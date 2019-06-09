@@ -79,71 +79,72 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
         Rsed.ui_draw_n.draw_crash_message(this.renderSurface, message);
     }
 
-    // The render loop. This will run continuously once called.
-    this.run_renderer = function(timestamp = 0)
+    // The render loop; will run indefinitely.
+    this.render_loop = function(timestamp = 0)
     {
-        if (!Rsed.core.isOperational) return;
-        
-        this.previousFrameLatencyMs = (timestamp - this.previousRenderTimestamp);
-        this.previousRenderTimestamp = timestamp; 
-
-        // Render the next frame.
+        if (Rsed.core && Rsed.core.is_running())
         {
-            this.preRefreshCallbackFn();
+            this.previousFrameLatencyMs = (timestamp - this.previousRenderTimestamp);
+            this.previousRenderTimestamp = timestamp; 
 
-            if (this.renderSurface.update_size(this.scalingFactor))
+            // Render the next frame.
             {
-                this.resizeCallbackFn();
-            }
+                this.preRefreshCallbackFn();
 
-            this.renderSurface.wipe_clean();
-
-            // Transform and render any meshes that have been registered with this renderer.
-            if (this.meshes.length > 0)
-            {
-                const viewMatrix = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(this.cameraPosition.x,
-                                                                                                        this.cameraPosition.y,
-                                                                                                        this.cameraPosition.z),
-                                                                     Rsed.matrix44_n.rotation_matrix(this.cameraDirection.x,
-                                                                                                     this.cameraDirection.y,
-                                                                                                     this.cameraDirection.z));
-
-                let polyList = [];
-                const surface = this.renderSurface;
-                for (let i = 0; i < this.meshes.length; i++)
+                if (this.renderSurface.update_size(this.scalingFactor))
                 {
-                    const mesh = this.meshes[i];
-
-                    mesh.tick_function_f();
-
-                    const transformedPolys = Rsed.polygon_transform_n.transform_polygons(mesh.polygons, mesh.object_space_matrix(),
-                                                                                    viewMatrix, surface.width, surface.height);
-
-                    polyList.push(...transformedPolys);
+                    this.resizeCallbackFn();
                 }
 
-                // Sort polygons by depth, since we don't do depth testing.
-                polyList.sort(function(a, b)
-                {
-                    let d1 = 0;
-                    let d2 = 0;
-                        
-                    for (let i = 0; i < a.verts.length; i++) d1 += a.verts[i].z;
-                    for (let i = 0; i < b.verts.length; i++) d2 += b.verts[i].z;
-                    
-                    d1 /= a.verts.length;
-                    d2 /= b.verts.length;
-                        
-                    return ((d1 === d2)? 0 : ((d1 < d2)? 1 : -1));
-                });
-                            
-                surface.draw_polygons(polyList);
-            }
+                this.renderSurface.wipe_clean();
 
-            Rsed.ui_draw_n.draw_ui(this.renderSurface);
+                // Transform and render any meshes that have been registered with this renderer.
+                if (this.meshes.length > 0)
+                {
+                    const viewMatrix = Rsed.matrix44_n.multiply_matrices(Rsed.matrix44_n.translation_matrix(this.cameraPosition.x,
+                                                                                                            this.cameraPosition.y,
+                                                                                                            this.cameraPosition.z),
+                                                                        Rsed.matrix44_n.rotation_matrix(this.cameraDirection.x,
+                                                                                                        this.cameraDirection.y,
+                                                                                                        this.cameraDirection.z));
+
+                    let polyList = [];
+                    const surface = this.renderSurface;
+                    for (let i = 0; i < this.meshes.length; i++)
+                    {
+                        const mesh = this.meshes[i];
+
+                        mesh.tick_function_f();
+
+                        const transformedPolys = Rsed.polygon_transform_n.transform_polygons(mesh.polygons, mesh.object_space_matrix(),
+                                                                                        viewMatrix, surface.width, surface.height);
+
+                        polyList.push(...transformedPolys);
+                    }
+
+                    // Sort polygons by depth, since we don't do depth testing.
+                    polyList.sort(function(a, b)
+                    {
+                        let d1 = 0;
+                        let d2 = 0;
+                            
+                        for (let i = 0; i < a.verts.length; i++) d1 += a.verts[i].z;
+                        for (let i = 0; i < b.verts.length; i++) d2 += b.verts[i].z;
+                        
+                        d1 /= a.verts.length;
+                        d2 /= b.verts.length;
+                            
+                        return ((d1 === d2)? 0 : ((d1 < d2)? 1 : -1));
+                    });
+                                
+                    surface.draw_polygons(polyList);
+                }
+
+                Rsed.ui_draw_n.draw_ui(this.renderSurface);
+            }
         }
 
-        window.requestAnimationFrame(this.run_renderer.bind(this));
+        window.requestAnimationFrame(this.render_loop.bind(this));
     }
 
     // Adds a mesh to be rendered. Meshes don't need to be added for each frame - add it
@@ -173,4 +174,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 
         return this.renderSurface.mousePickBuffer[x + y * this.renderSurface.width];
     }
+
+    // Start the rendering.
+    this.render_loop();
 }

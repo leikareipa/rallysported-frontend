@@ -88,7 +88,7 @@ window.onload = function(event)
         }
     }
 
-    Rsed.core.launch_rallysported(rsedStartupArgs);
+    Rsed.core.run(rsedStartupArgs);
 }
 
 window.close_dropdowns = function()
