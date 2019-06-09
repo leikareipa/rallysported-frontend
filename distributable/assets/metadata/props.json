@@ -282,7 +282,8 @@
 		{
 			"comments":["The locations of props on Rally-Sport's eight demo tracks. These data are derived from hard-coded values found in RALLYE.EXE.",
 						"The original data are likely (c) 1996 Jukka Jäkälä. This JSON conversion was done by Tarpeeksi Hyvae Soft in 2018 for the",
-						"RallySportED asset editor. Note that the x,y,z values are given in RallySportED's world units."]
+						"RallySportED asset editor. Note that the x,y,z values are given in RallySportED's world units.",
+						"NOTE: The finish line is expected to be the first prop in the array for each track."]
 		},
 
 		{

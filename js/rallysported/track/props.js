@@ -33,11 +33,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     const textureRects = data.propTextureRects.filter(m=>(typeof m.textureId !== "undefined"))
                                               .sort((a, b)=>((a.textureId === b.textureId)? 0 : ((a.textureId > b.textureId)? 1 : -1)));
 
-    // Manifesto files can manipulate the number of props on a given track; we'll offer
-    // that functionality by only returning the first x prop locations on that track.
-    locations.maxCount = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
-    locations.count = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
-
     const publicInterface =
     {
         // Returns an object containing the given prop's 3d mesh (with properties copied by
@@ -201,11 +196,32 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             currentLocation.z = clamped_to_prop_margins(currentLocation.z + delta.z);
         },
 
+        remove: (trackId = 0, propIdx = 0)=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId <= 7))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            Rsed.assert && ((propIdx >= 0) &&
+                            (propIdx < locations[trackId].locations.length))
+                        || Rsed.throw("Querying a prop location out of bounds.");
+
+            /// TODO: Finish lines should not be user-removable; so we do a little string comparison
+            /// kludge to ensure that doesn't happen. A more elegant implementation would ideally
+            /// be substituted.
+            if (names[locations[trackId].locations[propIdx].propId].name.startsWith("finish"))
+            {
+                return;
+            }
+
+            locations[trackId].locations.splice(propIdx, 1);
+        },
+
         // Assigns a new location to the propIdx'th prop on the given track.
         set_prop_location: (trackId = 0, propIdx = 0, location = {x:0,y:0,z:0})=>
         {
             Rsed.assert && ((trackId >= 0) &&
-                            (trackId < 8))
+                            (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((propIdx >= 0) &&
@@ -228,29 +244,25 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             locations[trackId].locations[propIdx].z = location.z;
         },
 
-        // Set the number of props on the given track. Note that this doesn't erase any props
-        // but only limits the number of props that will be returned by calls to functions like
-        // locations_of_props_on_track(). Note also that the count can't be higher than the
-        // actual number of props on the track - which also means that this function doesn't
-        // create any new props if the count is set higher than the number of props (will throw,
-        // instead).
+        // Set the number of props on the given track. Props whose index value is higher than this
+        // count will be deleted.
         set_count: (trackId = 0, newPropCount = 0)=>
         {
             Rsed.assert && ((trackId >= 0) &&
-                            (trackId < 8))
+                            (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
-            Rsed.assert && ((newPropCount >= 0) &&
-                            (newPropCount < locations.maxCount[trackId]))
+            Rsed.assert && ((newPropCount > 1) &&
+                            (newPropCount <= locations[trackId].locations.length))
                     || Rsed.throw("Trying to set a new prop count out of bounds.");
 
-            locations.count[trackId] = newPropCount;
+            locations[trackId].locations.splice(newPropCount);
         },
 
         change_prop_type: (trackId = 0, propIdx = 0, newPropId = 0)=>
         {
             Rsed.assert && ((trackId >= 0) &&
-                            (trackId < 8))
+                            (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((propIdx >= 0) &&
@@ -270,7 +282,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             }
 
             Rsed.assert && ((trackId >= 0) &&
-                            (trackId < 8))
+                            (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((newPropId >= 0) &&
@@ -295,24 +307,16 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 y: location.y,
                 z: clamped_to_prop_margins(location.z),
             });
-
-            // If the user hasn't requested a count limit.
-            if (locations.count[trackId] === locations.maxCount[trackId])
-            {
-                locations.count[trackId]++;
-            }
-
-            locations.maxCount[trackId]++;
         },
 
         // Returns by value the locations of all the props on the given track.
         locations_of_props_on_track: (trackId = 0)=>
         {
             Rsed.assert && ((trackId >= 0) &&
-                            (trackId < 8))
+                            (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
-            return Object.freeze(locations[trackId].locations.slice(0, locations.count[trackId]).map(loc=>(
+            return Object.freeze(locations[trackId].locations.map(loc=>(
             {
                 propId: loc.propId,
                 x: loc.x,

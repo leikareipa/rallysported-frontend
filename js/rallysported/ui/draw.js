@@ -296,11 +296,12 @@ Rsed.ui_draw_n = (function()
                     if (x % (width - 1) === 0) color = "gray";
 
                     // Indicate the location of the track's checkpoint.
-                    if ((tileX === Rsed.maasto_n.track_checkpoint_x()) &&
+                    /// FIXME: Disabled for now. Will be reimplemented for the new resource-handling code.
+                    /*if ((tileX === Rsed.maasto_n.track_checkpoint_x()) &&
                         (tileZ === Rsed.maasto_n.track_checkpoint_y()))
                     {
                         color = "white";
-                    }
+                    }*/
 
                     image.push(color);
                     mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,

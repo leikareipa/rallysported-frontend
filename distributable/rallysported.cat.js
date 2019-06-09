@@ -475,122 +475,6 @@ Rsed.project.placeholder =
         texture: ()=>{},
     },
 };
-
-Rsed.project.manifesto = (function()
-{
-    const publicInterface =
-    {
-        apply_manifesto_to_project(project)
-        {
-
-
-            return;
-        }
-    };
-
-    return publicInterface;
-});
-
-Rsed.project_n = (function()
-{
-    // Maximum number of characters allowed in the project file name.
-    const maxProjectNameLen = 8;
-
-    // The range of characters allowed in the project name; successively from the first character to
-    // the last one.
-    const projectNameCharset = Object.freeze(["a", "z"]);
-
-    // Returns true if the given project name is valid; false is returned otherwise.
-    function is_valid_project_name(name = "")
-    {
-        if (name.length <= 1)
-        {
-            alert("The RallySportED project name is too short");
-            return false;
-        }
-        else if (name.length > maxProjectNameLen)
-        {
-            alert("The RallySportED project name '" + name + "' is too long. The maximum number of characters allowed is " + maxProjectNameLen + ".");
-            return false;
-        }
-
-        for (let i = 0; i < name.length; i++)
-        {
-            if ((name[i] < projectNameCharset[0]) ||
-                (name[i] > projectNameCharset[1]))
-            {
-                alert("The RallySportED project name '" + name + "' containts invalid characters. Only the characters " +
-                      projectNameCharset[0] + "-" + projectNameCharset[1] + " are allowed.");
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    const publicInterface = {};
-    {
-        // Will return true if the given project is valid. Otherwise, will throw an error.
-        publicInterface.verify_project_validity = function(projectToVerify)
-        {
-            Rsed.assert && (projectToVerify instanceof Rsed.project_n.project_o)
-                        || Rsed.throw("Was asked to test the validity of a non-RallySportED project.");
-
-            Rsed.assert && ((projectToVerify != null) && (projectToVerify.isValidProject))
-                        || Rsed.throw("Failed to load the given RallySportED project file.");
-            
-            Rsed.assert && (projectToVerify.name != null && projectToVerify.displayName != null)
-                        || Rsed.throw("Failed to load the given RallySportED project file.");
-
-            console.log("'" + projectToVerify.displayName + "' is a valid RallySportED project.");
-
-            return true;
-        }
-
-        publicInterface.generate_download_of_project = function(project = Rsed.project_n.project_o)
-        {
-            Rsed.assert && (project instanceof Rsed.project_n.project_o)
-                        || Rsed.throw("Expected a RallySportED project object.");
-
-            const saveName = project.name.toUpperCase();
-
-            k_message("Saving project '" + project.displayName + "'.");
-
-            if (project.projectFileContents == null)
-            {
-                k_message("The given project has empty contents. Skipping saving it.");
-                return;
-            }
-
-            // Replace the existing project bytes with the current data.
-            {
-                const maastoBytes = Rsed.maasto_n.get_saveable_maasto();
-                const varimaaBytes = Rsed.maasto_n.get_saveable_varimaa();
-                const palatBytes = Rsed.palat_n.get_saveable_palat();
-
-                project.projectFileContents.set(maastoBytes, 4);
-                project.projectFileContents.set(varimaaBytes, (maastoBytes.byteLength + 4*2));
-                project.projectFileContents.set(palatBytes, (maastoBytes.byteLength + varimaaBytes.byteLength + 4*3));
-            }
-
-            // Zip up the project file, and have the browser initiate a download of it.
-            const zip = new JSZip();
-
-           //zip.file(saveName + ".TXT", lut_readme_txt.replace(/%TRACK/g, project.name.toUpperCase()));
-            zip.file(saveName + "/" + saveName + ".DTA", project.projectFileContents);
-            zip.file(saveName + "/" + saveName + ".$FT", Rsed.manifesto_n.get_saveable_manifesto(project.manifestoFileContents));
-            zip.file(saveName + "/" + "HITABLE.TXT", lut_hitable_txt);
-
-            zip.generateAsync({type:"blob", compression:"DEFLATE", compressionOptions:{level: 1}})
-            .then(function(blob)
-            {
-                saveAs(blob, saveName + ".ZIP");
-            })
-            .catch((error)=>{Rsed.throw(error);});
-        }
-    }
-    return publicInterface;
-})();
 /*
  * Most recent known filename: js/constants.js
  *
@@ -2735,11 +2619,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     const textureRects = data.propTextureRects.filter(m=>(typeof m.textureId !== "undefined"))
                                               .sort((a, b)=>((a.textureId === b.textureId)? 0 : ((a.textureId > b.textureId)? 1 : -1)));
 
-    // Manifesto files can manipulate the number of props on a given track; we'll offer
-    // that functionality by only returning the first x prop locations on that track.
-    locations.maxCount = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
-    locations.count = (new Array(locations.length)).fill().map((e, idx)=>locations[idx].locations.length);
-
     const publicInterface =
     {
         // Returns an object containing the given prop's 3d mesh (with properties copied by
@@ -2903,11 +2782,32 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             currentLocation.z = clamped_to_prop_margins(currentLocation.z + delta.z);
         },
 
+        remove: (trackId = 0, propIdx = 0)=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId <= 7))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            Rsed.assert && ((propIdx >= 0) &&
+                            (propIdx < locations[trackId].locations.length))
+                        || Rsed.throw("Querying a prop location out of bounds.");
+
+            /// TODO: Finish lines should not be user-removable; so we do a little string comparison
+            /// kludge to ensure that doesn't happen. A more elegant implementation would ideally
+            /// be substituted.
+            if (names[locations[trackId].locations[propIdx].propId].name.startsWith("finish"))
+            {
+                return;
+            }
+
+            locations[trackId].locations.splice(propIdx, 1);
+        },
+
         // Assigns a new location to the propIdx'th prop on the given track.
         set_prop_location: (trackId = 0, propIdx = 0, location = {x:0,y:0,z:0})=>
         {
             Rsed.assert && ((trackId >= 0) &&
-                            (trackId < 8))
+                            (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((propIdx >= 0) &&
@@ -2930,29 +2830,25 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             locations[trackId].locations[propIdx].z = location.z;
         },
 
-        // Set the number of props on the given track. Note that this doesn't erase any props
-        // but only limits the number of props that will be returned by calls to functions like
-        // locations_of_props_on_track(). Note also that the count can't be higher than the
-        // actual number of props on the track - which also means that this function doesn't
-        // create any new props if the count is set higher than the number of props (will throw,
-        // instead).
+        // Set the number of props on the given track. Props whose index value is higher than this
+        // count will be deleted.
         set_count: (trackId = 0, newPropCount = 0)=>
         {
             Rsed.assert && ((trackId >= 0) &&
-                            (trackId < 8))
+                            (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
-            Rsed.assert && ((newPropCount >= 0) &&
-                            (newPropCount < locations.maxCount[trackId]))
+            Rsed.assert && ((newPropCount > 1) &&
+                            (newPropCount <= locations[trackId].locations.length))
                     || Rsed.throw("Trying to set a new prop count out of bounds.");
 
-            locations.count[trackId] = newPropCount;
+            locations[trackId].locations.splice(newPropCount);
         },
 
         change_prop_type: (trackId = 0, propIdx = 0, newPropId = 0)=>
         {
             Rsed.assert && ((trackId >= 0) &&
-                            (trackId < 8))
+                            (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((propIdx >= 0) &&
@@ -2972,7 +2868,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             }
 
             Rsed.assert && ((trackId >= 0) &&
-                            (trackId < 8))
+                            (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((newPropId >= 0) &&
@@ -2997,24 +2893,16 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 y: location.y,
                 z: clamped_to_prop_margins(location.z),
             });
-
-            // If the user hasn't requested a count limit.
-            if (locations.count[trackId] === locations.maxCount[trackId])
-            {
-                locations.count[trackId]++;
-            }
-
-            locations.maxCount[trackId]++;
         },
 
         // Returns by value the locations of all the props on the given track.
         locations_of_props_on_track: (trackId = 0)=>
         {
             Rsed.assert && ((trackId >= 0) &&
-                            (trackId < 8))
+                            (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
-            return Object.freeze(locations[trackId].locations.slice(0, locations.count[trackId]).map(loc=>(
+            return Object.freeze(locations[trackId].locations.map(loc=>(
             {
                 propId: loc.propId,
                 x: loc.x,
@@ -4184,11 +4072,12 @@ Rsed.ui_draw_n = (function()
                     if (x % (width - 1) === 0) color = "gray";
 
                     // Indicate the location of the track's checkpoint.
-                    if ((tileX === Rsed.maasto_n.track_checkpoint_x()) &&
+                    /// FIXME: Disabled for now. Will be reimplemented for the new resource-handling code.
+                    /*if ((tileX === Rsed.maasto_n.track_checkpoint_x()) &&
                         (tileZ === Rsed.maasto_n.track_checkpoint_y()))
                     {
                         color = "white";
-                    }
+                    }*/
 
                     image.push(color);
                     mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
@@ -4499,7 +4388,7 @@ Rsed.ui_input_n = (function()
                     // Remove the selected prop.
                     if (shiftPressed)
                     {
-                        Rsed.maasto_n.remove_prop(mouseLock.propTrackId);
+                        Rsed.main_n.project().props.remove(Rsed.main_n.project().track_id(), mouseLock.propTrackId);
                         mouseLock.hibernating = true;
                     }
                     // Drag the prop.

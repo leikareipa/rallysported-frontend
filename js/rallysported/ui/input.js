@@ -168,7 +168,7 @@ Rsed.ui_input_n = (function()
                     // Remove the selected prop.
                     if (shiftPressed)
                     {
-                        Rsed.maasto_n.remove_prop(mouseLock.propTrackId);
+                        Rsed.main_n.project().props.remove(Rsed.main_n.project().track_id(), mouseLock.propTrackId);
                         mouseLock.hibernating = true;
                     }
                     // Drag the prop.
