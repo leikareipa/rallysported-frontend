@@ -39,7 +39,7 @@
         </div>
 
         <div id="render_container" class="canvas_container"
-             ondrop="Rsed.core.drop_handler(event);" ondragover="event.preventDefault();">
+             ondrop="window.drop_handler(event);" ondragover="event.preventDefault();">
              <!-- The rendering goes here.-->
         </div>
 

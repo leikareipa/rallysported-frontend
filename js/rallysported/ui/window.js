@@ -232,3 +232,40 @@ window.onkeyup = function(event)
 {
     Rsed.ui_input_n.update_key_status(event, false);
 }
+
+// Gets called when something is dropped onto RallySportED's render canvas. We expect
+// the drop to be a zip file containing the files of a RallySportED project for us to
+// load up. If it's not, we'll ignore the drop.
+window.drop_handler = function(event)
+{
+    // Don't let the browser handle the drop.
+    event.preventDefault();
+
+    // See if the drop delivers a zip file.
+    const zipFile = [].map.call(event.dataTransfer.items, (item)=>{return item.getAsFile()})
+                          .filter(file=>(file != null))
+                          .filter(file=>(file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase() === "zip"))
+                          [0] || null;
+
+    if (!zipFile)
+    {
+        Rsed.log("The drop contained no RallySportED zip files. Ignoring it.");
+        return;
+    }
+
+    // Launch RallySportED with project data from the given zip file.
+    Rsed.core.run(
+    {
+        editMode: "local",
+        project:
+        {
+            dataLocality: "client",
+            dataIdentifier: zipFile,
+        }
+    });
+
+    // Clear the address bar's parameters to reflect the fact that the user has loaded a local
+    // track resource instead of specifying a server-side resource via the address bar.
+    const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
+    window.history.replaceState({}, document.title, basePath);
+}
