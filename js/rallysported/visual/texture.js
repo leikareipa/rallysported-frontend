@@ -51,10 +51,15 @@ Rsed.texture = function(args = {})
         default: Rsed.throw("Unknown texture-flipping mode."); break;
     }
 
-    const publicInterface =
+    const publicInterface = Object.freeze(
     {
-        ...args
-    };
+        width: args.width,
+        height: args.height,
+        alpha: args.alpha,
+        flipped: args.flipped,
+        pixels: Object.freeze([].map.call(args.pixels, e=>e)), // Convert into Array, then freeze.
+        indices: Object.freeze([].map.call(args.indices, e=>e)),
+    });
 
     return publicInterface;
 }

@@ -1195,10 +1195,15 @@ Rsed.texture = function(args = {})
         default: Rsed.throw("Unknown texture-flipping mode."); break;
     }
 
-    const publicInterface =
+    const publicInterface = Object.freeze(
     {
-        ...args
-    };
+        width: args.width,
+        height: args.height,
+        alpha: args.alpha,
+        flipped: args.flipped,
+        pixels: Object.freeze([].map.call(args.pixels, e=>e)), // Convert into Array, then freeze.
+        indices: Object.freeze([].map.call(args.indices, e=>e)),
+    });
 
     return publicInterface;
 }
@@ -2498,6 +2503,35 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
 
     const palaSize = (palaWidth * palaHeight);
 
+    // Pre-compute the individual PALA textures.
+    const palaTextures = new Array(256).fill().map((pala, idx)=>
+    {
+        const dataIdx = (idx * palaSize);
+
+        // For PALA textures that are missing in the source data, return a dummy texture.
+        if ((dataIdx + palaSize) >= data.byteLength)
+        {
+            return Rsed.texture(
+            {
+                width: 1,
+                height: 1,
+                alpha: false,
+                pixels: [Rsed.palette.color("gray")],
+                indices: [0],
+            });
+        }
+
+        return Rsed.texture(
+        {
+            width: palaWidth,
+            height: palaHeight,
+            alpha: false,
+            flipped: "vertical",
+            pixels: pixels.slice(dataIdx, (dataIdx + palaSize)),
+            indices: data.slice(dataIdx, (dataIdx + palaSize)),
+        });
+    });
+
     const publicInterface =
     {
         width: palaWidth,
@@ -2506,33 +2540,11 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
         // Returns a copy of the individual PALA texture at the given index.
         texture:(palaId = 0, args = {/*alpha:true|false,*/})=>
         {
-            Rsed.assert && Number.isInteger(palaId)
-                        || Rsed.throw("Expected integer parameters.");
+            Rsed.assert && ((palaId >= 0) &&
+                            (palaId < palaTextures.length))
+                        || Rsed.throw("Attempting to access PALA textures out of bounds.");
 
-            const dataIdx = (palaId * palaSize);
-
-            // If the request is out of bounds, return a dummy texture.
-            if ((dataIdx < 0) || ((dataIdx + palaSize) >= data.byteLength))
-            {
-                return Rsed.texture(
-                {
-                    width: 1,
-                    height: 1,
-                    alpha: args.alpha,
-                    pixels: [Rsed.palette.color("black")],
-                    indices: [0],
-                });
-            }
-
-            return Rsed.texture(
-            {
-                width: palaWidth,
-                height: palaHeight,
-                alpha: args.alpha,
-                flipped: "vertical",
-                pixels: pixels.slice(dataIdx, (dataIdx + palaSize)),
-                indices: data.slice(dataIdx, (dataIdx + palaSize)),
-            });
+            return Object.freeze({...palaTextures[palaId], alpha:args.alpha});
         }
     };
 
@@ -2574,6 +2586,37 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
 
     const textureRects = data.propTextureRects.filter(m=>(typeof m.textureId !== "undefined"))
                                               .sort((a, b)=>((a.textureId === b.textureId)? 0 : ((a.textureId > b.textureId)? 1 : -1)));
+
+    // Pre-compute the individual prop textures.
+    const propTextures = new Array(textureRects.length).fill().map((tex, idx)=>
+    {
+        const width = textureRects[idx].rect.width;
+        const height = textureRects[idx].rect.height;
+        const pixels = [];
+        const indices = [];
+
+        // Copy the texture's pixel region from the texture atlas.
+        for (let y = 0; y < height; y++)
+        {
+            for (let x = 0; x < width; x++)
+            {
+                const textureAtlasWidth = 128;
+                const dataIdx = ((textureRects[idx].rect.topLeft.x + x) + (textureRects[idx].rect.topLeft.y + y) * textureAtlasWidth);
+
+                indices.push(textureAtlas[dataIdx]);
+                pixels.push(Rsed.palette.color(textureAtlas[dataIdx]));
+            }
+        }
+
+        return Rsed.texture(
+        {
+            width,
+            height,
+            pixels: pixels,
+            indices: indices,
+            flipped: "vertical",
+        });
+    });
 
     const publicInterface =
     {
@@ -2642,48 +2685,13 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             }
         },
 
-        // Returns a by-value copy of the given prop texture.
-        texture: (textureId = 0, args = {})=>
+        texture: (textureId = 0, args = {/*alpha: true | false*/})=>
         {
-            args =
-            {
-                ...
-                {
-                    alpha: true,
-                    flipped: "vertical",
-                },
-                ...args
-            };
-            
             Rsed.assert && ((textureId >= 0) &&
-                            (textureId < textureRects.length))
-                        || Rsed.throw("Querying a prop texture out of bounds.");
+                            (textureId < propTextures.length))
+                        || Rsed.throw("Attempting to access prop textures out of bounds.");
 
-            const width = textureRects[textureId].rect.width;
-            const height = textureRects[textureId].rect.height;
-            const pixels = [];
-            const indices = [];
-
-            // Copy the texture's pixel region from the texture atlas.
-            for (let y = 0; y < height; y++)
-            {
-                for (let x = 0; x < width; x++)
-                {
-                    const idx = ((textureRects[textureId].rect.topLeft.x + x) + (textureRects[textureId].rect.topLeft.y + y) * 128);
-
-                    indices.push(textureAtlas[idx]);
-                    pixels.push(Rsed.palette.color(textureAtlas[idx]));
-                }
-            }
-
-            return Rsed.texture(
-            {
-                width,
-                height,
-                pixels: pixels,
-                indices: indices,
-                ...args,
-            });
+            return Object.freeze({...propTextures[textureId], alpha:args.alpha});
         },
 
         name: (propId = 0)=>
@@ -4085,7 +4093,6 @@ Rsed.ui_draw_n = (function()
                     case "3d":
                     case "3d-topdown":
                     {
-                        if (Rsed.core.fps_counter_enabled()) draw_fps();
                         draw_watermark();
                         draw_minimap();
                         draw_active_pala();
@@ -4105,6 +4112,8 @@ Rsed.ui_draw_n = (function()
                     default: break;
                 }
 
+                if (Rsed.core.fps_counter_enabled()) draw_fps();
+                
                 draw_mouse_cursor();
             }
             renderSurface.exposed().putImageData(pixelSurface, 0, 0);
@@ -4938,7 +4947,7 @@ Rsed.ngon_fill_n = (function()
                                         const idx = ((px + py * width) * 4);
                                         
                                         // Solid fill.
-                                        if (texture == null)
+                                        if ((texture == null) || (!texture.pixels))
                                         {
                                             pixelMap.data[idx + 0] = poly.color.r;
                                             pixelMap.data[idx + 1] = poly.color.g;
@@ -5209,9 +5218,6 @@ Rsed.core = (function()
 
         Rsed.palette.set_palette(project.track_id() === 4? 1 :
                                  project.track_id() === 7? 3 : 0);
-
-        /// TODO. Prebake certain project data (like textures) to improve performance.
-        // project.prebake_data();
 
         /// TODO. This needs to be implemented in a better way and/or somewhere
         /// else - ideally so you don't have to manually start the poll loop;

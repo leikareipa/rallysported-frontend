@@ -353,7 +353,6 @@ Rsed.ui_draw_n = (function()
                     case "3d":
                     case "3d-topdown":
                     {
-                        if (Rsed.core.fps_counter_enabled()) draw_fps();
                         draw_watermark();
                         draw_minimap();
                         draw_active_pala();
@@ -373,6 +372,8 @@ Rsed.ui_draw_n = (function()
                     default: break;
                 }
 
+                if (Rsed.core.fps_counter_enabled()) draw_fps();
+                
                 draw_mouse_cursor();
             }
             renderSurface.exposed().putImageData(pixelSurface, 0, 0);

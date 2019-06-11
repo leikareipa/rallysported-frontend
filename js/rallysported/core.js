@@ -201,9 +201,6 @@ Rsed.core = (function()
         Rsed.palette.set_palette(project.track_id() === 4? 1 :
                                  project.track_id() === 7? 3 : 0);
 
-        /// TODO. Prebake certain project data (like textures) to improve performance.
-        // project.prebake_data();
-
         /// TODO. This needs to be implemented in a better way and/or somewhere
         /// else - ideally so you don't have to manually start the poll loop;
         /// so you don't risk starting it twice or whatever.

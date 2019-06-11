@@ -33,6 +33,37 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     const textureRects = data.propTextureRects.filter(m=>(typeof m.textureId !== "undefined"))
                                               .sort((a, b)=>((a.textureId === b.textureId)? 0 : ((a.textureId > b.textureId)? 1 : -1)));
 
+    // Pre-compute the individual prop textures.
+    const propTextures = new Array(textureRects.length).fill().map((tex, idx)=>
+    {
+        const width = textureRects[idx].rect.width;
+        const height = textureRects[idx].rect.height;
+        const pixels = [];
+        const indices = [];
+
+        // Copy the texture's pixel region from the texture atlas.
+        for (let y = 0; y < height; y++)
+        {
+            for (let x = 0; x < width; x++)
+            {
+                const textureAtlasWidth = 128;
+                const dataIdx = ((textureRects[idx].rect.topLeft.x + x) + (textureRects[idx].rect.topLeft.y + y) * textureAtlasWidth);
+
+                indices.push(textureAtlas[dataIdx]);
+                pixels.push(Rsed.palette.color(textureAtlas[dataIdx]));
+            }
+        }
+
+        return Rsed.texture(
+        {
+            width,
+            height,
+            pixels: pixels,
+            indices: indices,
+            flipped: "vertical",
+        });
+    });
+
     const publicInterface =
     {
         // Returns an object containing the given prop's 3d mesh (with properties copied by
@@ -100,48 +131,13 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             }
         },
 
-        // Returns a by-value copy of the given prop texture.
-        texture: (textureId = 0, args = {})=>
+        texture: (textureId = 0, args = {/*alpha: true | false*/})=>
         {
-            args =
-            {
-                ...
-                {
-                    alpha: true,
-                    flipped: "vertical",
-                },
-                ...args
-            };
-            
             Rsed.assert && ((textureId >= 0) &&
-                            (textureId < textureRects.length))
-                        || Rsed.throw("Querying a prop texture out of bounds.");
+                            (textureId < propTextures.length))
+                        || Rsed.throw("Attempting to access prop textures out of bounds.");
 
-            const width = textureRects[textureId].rect.width;
-            const height = textureRects[textureId].rect.height;
-            const pixels = [];
-            const indices = [];
-
-            // Copy the texture's pixel region from the texture atlas.
-            for (let y = 0; y < height; y++)
-            {
-                for (let x = 0; x < width; x++)
-                {
-                    const idx = ((textureRects[textureId].rect.topLeft.x + x) + (textureRects[textureId].rect.topLeft.y + y) * 128);
-
-                    indices.push(textureAtlas[idx]);
-                    pixels.push(Rsed.palette.color(textureAtlas[idx]));
-                }
-            }
-
-            return Rsed.texture(
-            {
-                width,
-                height,
-                pixels: pixels,
-                indices: indices,
-                ...args,
-            });
+            return Object.freeze({...propTextures[textureId], alpha:args.alpha});
         },
 
         name: (propId = 0)=>

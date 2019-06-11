@@ -23,6 +23,35 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
 
     const palaSize = (palaWidth * palaHeight);
 
+    // Pre-compute the individual PALA textures.
+    const palaTextures = new Array(256).fill().map((pala, idx)=>
+    {
+        const dataIdx = (idx * palaSize);
+
+        // For PALA textures that are missing in the source data, return a dummy texture.
+        if ((dataIdx + palaSize) >= data.byteLength)
+        {
+            return Rsed.texture(
+            {
+                width: 1,
+                height: 1,
+                alpha: false,
+                pixels: [Rsed.palette.color("gray")],
+                indices: [0],
+            });
+        }
+
+        return Rsed.texture(
+        {
+            width: palaWidth,
+            height: palaHeight,
+            alpha: false,
+            flipped: "vertical",
+            pixels: pixels.slice(dataIdx, (dataIdx + palaSize)),
+            indices: data.slice(dataIdx, (dataIdx + palaSize)),
+        });
+    });
+
     const publicInterface =
     {
         width: palaWidth,
@@ -31,33 +60,11 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
         // Returns a copy of the individual PALA texture at the given index.
         texture:(palaId = 0, args = {/*alpha:true|false,*/})=>
         {
-            Rsed.assert && Number.isInteger(palaId)
-                        || Rsed.throw("Expected integer parameters.");
+            Rsed.assert && ((palaId >= 0) &&
+                            (palaId < palaTextures.length))
+                        || Rsed.throw("Attempting to access PALA textures out of bounds.");
 
-            const dataIdx = (palaId * palaSize);
-
-            // If the request is out of bounds, return a dummy texture.
-            if ((dataIdx < 0) || ((dataIdx + palaSize) >= data.byteLength))
-            {
-                return Rsed.texture(
-                {
-                    width: 1,
-                    height: 1,
-                    alpha: args.alpha,
-                    pixels: [Rsed.palette.color("black")],
-                    indices: [0],
-                });
-            }
-
-            return Rsed.texture(
-            {
-                width: palaWidth,
-                height: palaHeight,
-                alpha: args.alpha,
-                flipped: "vertical",
-                pixels: pixels.slice(dataIdx, (dataIdx + palaSize)),
-                indices: data.slice(dataIdx, (dataIdx + palaSize)),
-            });
+            return Object.freeze({...palaTextures[palaId], alpha:args.alpha});
         }
     };
 

@@ -144,7 +144,7 @@ Rsed.ngon_fill_n = (function()
                                         const idx = ((px + py * width) * 4);
                                         
                                         // Solid fill.
-                                        if (texture == null)
+                                        if ((texture == null) || (!texture.pixels))
                                         {
                                             pixelMap.data[idx + 0] = poly.color.r;
                                             pixelMap.data[idx + 1] = poly.color.g;
