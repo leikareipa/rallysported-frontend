@@ -2563,14 +2563,14 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
 
     // Filter out comments and other auxiliary info from the JSON data; and sort by the relevant
     // index, so we can access the desired element with [x].
-    const names = data.propNames.filter(m=>(typeof m.propId !== "undefined"))
-                                 .sort((a, b)=>((a.propId === b.propId)? 0 : ((a.propId > b.propId)? 1 : -1)));
+    const propNames = data.propNames.filter(m=>(typeof m.propId !== "undefined"))
+                                    .sort((a, b)=>((a.propId === b.propId)? 0 : ((a.propId > b.propId)? 1 : -1)));
 
-    const meshes = data.propMeshes.filter(m=>(typeof m.propId !== "undefined"))
-                                  .sort((a, b)=>((a.propId === b.propId)? 0 : ((a.propId > b.propId)? 1 : -1)));
+    const propMeshes = data.propMeshes.filter(m=>(typeof m.propId !== "undefined"))
+                                      .sort((a, b)=>((a.propId === b.propId)? 0 : ((a.propId > b.propId)? 1 : -1)));
 
-    const locations = data.propLocations.filter(m=>(typeof m.trackId !== "undefined"))
-                                        .sort((a, b)=>((a.trackId === b.trackId)? 0 : ((a.trackId > b.trackId)? 1 : -1)));
+    const trackPropLocations = data.propLocations.filter(m=>(typeof m.trackId !== "undefined"))
+                                                 .sort((a, b)=>((a.trackId === b.trackId)? 0 : ((a.trackId > b.trackId)? 1 : -1)));
 
     const textureRects = data.propTextureRects.filter(m=>(typeof m.textureId !== "undefined"))
                                               .sort((a, b)=>((a.textureId === b.textureId)? 0 : ((a.textureId > b.textureId)? 1 : -1)));
@@ -2614,20 +2614,20 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         mesh: (propId = 0)=>
         {
             Rsed.assert && ((propId >= 0) &&
-                            (propId < meshes.length))
+                            (propId < propMeshes.length))
                         || Rsed.throw("Querying a prop mesh out of bounds (" + propId + ").");
 
             return {
-                ngons:meshes[propId].ngons.map(ngon=>
+                ngons: propMeshes[propId].ngons.map(ngon=>
                 {
                     const meshNgon =
                     {
-                        fill:Object.freeze(
+                        fill: Object.freeze(
                         {
                             type: ngon.fill.type.slice(),
                             idx: ngon.fill.idx
                         }),
-                        vertices:ngon.vertices.map(vert=>(Object.freeze(
+                        vertices: ngon.vertices.map(vert=>(Object.freeze(
                         {
                             x: vert.x,
                             y: -vert.y,
@@ -2689,26 +2689,26 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         name: (propId = 0)=>
         {
             Rsed.assert && ((propId >= 0) &&
-                            (propId < meshes.length))
+                            (propId < propMeshes.length))
                         || Rsed.throw("Querying a prop mesh out of bounds (" + propId + ").");
 
-            return names[propId].name;
+            return propNames[propId].name;
         },
 
         names: ()=>
         {
-            return names.map(nameObj=>nameObj.name);
+            return propNames.map(nameObj=>nameObj.name);
         },
 
         // Returns the id of a prop with the supplied name. Throws if no such prop was found.
         id_for_name: (propName = "")=>
         {
-            const idx = names.map(nameObj=>nameObj.name).indexOf(propName);
+            const idx = propNames.map(nameObj=>nameObj.name).indexOf(propName);
 
             Rsed.assert && (idx !== -1)
                         || Rsed.throw("Failed to find a prop called " + propName + ".");
 
-            return names[idx].propId;
+            return propNames[idx].propId;
         },
 
         // Moves the propIdx'th prop on the given track by the given delta.
@@ -2722,10 +2722,10 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((propIdx >= 0) &&
-                            (propIdx < locations[trackId].locations.length))
+                            (propIdx < trackPropLocations[trackId].locations.length))
                         || Rsed.throw("Querying a prop location out of bounds.");
 
-            const currentLocation = locations[trackId].locations[propIdx];
+            const currentLocation = trackPropLocations[trackId].locations[propIdx];
 
             delta =
             {
@@ -2745,18 +2745,18 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((propIdx >= 0) &&
-                            (propIdx < locations[trackId].locations.length))
+                            (propIdx < trackPropLocations[trackId].locations.length))
                         || Rsed.throw("Querying a prop location out of bounds.");
 
             /// TODO: Finish lines should not be user-removable; so we do a little string comparison
             /// kludge to ensure that doesn't happen. A more elegant implementation would ideally
             /// be substituted.
-            if (names[locations[trackId].locations[propIdx].propId].name.startsWith("finish"))
+            if (propNames[trackPropLocations[trackId].locations[propIdx].propId].name.startsWith("finish"))
             {
                 return;
             }
 
-            locations[trackId].locations.splice(propIdx, 1);
+            trackPropLocations[trackId].locations.splice(propIdx, 1);
         },
 
         // Assigns a new location to the propIdx'th prop on the given track.
@@ -2767,7 +2767,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((propIdx >= 0) &&
-                            (propIdx < locations[trackId].locations.length))
+                            (propIdx < trackPropLocations[trackId].locations.length))
                         || Rsed.throw("Querying a prop location out of bounds.");
 
             location =
@@ -2795,7 +2795,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((newPropCount > 1) &&
-                            (newPropCount <= locations[trackId].locations.length))
+                            (newPropCount <= trackPropLocations[trackId].locations.length))
                     || Rsed.throw("Trying to set a new prop count out of bounds.");
 
             locations[trackId].locations.splice(newPropCount);
@@ -2816,9 +2816,9 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
 
         add_location: (trackId = 0, newPropId = 0, location = {x:0,y:0,z:0})=>
         {
-            if (locations[trackId].locations.length >= Rsed.constants.maxPropCount)
+            if (trackPropLocations[trackId].locations.length >= Rsed.constants.maxPropCount)
             {
-                Rsed.alert("Can't add more props. This track already has " + locations[trackId].locations.length +
+                Rsed.alert("Can't add more props. This track already has " + trackPropLocations[trackId].locations.length +
                            " of them, which is the maximum. You can remove some to make room for new ones.");
                 return;
             }
@@ -2828,7 +2828,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((newPropId >= 0) &&
-                            (newPropId < names.length))
+                            (newPropId < propNames.length))
                         || Rsed.throw("Querying a prop id out of bounds.");
 
             location =
@@ -2842,7 +2842,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 ...location,
             }
 
-            locations[trackId].locations.push(
+            trackPropLocations[trackId].locations.push(
             {
                 propId: newPropId,
                 x: clamped_to_prop_margins(location.x),
@@ -2858,7 +2858,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
-            return Object.freeze(locations[trackId].locations.map(loc=>(
+            return Object.freeze(trackPropLocations[trackId].locations.map(loc=>(
             {
                 propId: loc.propId,
                 x: loc.x,
