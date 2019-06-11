@@ -97,7 +97,7 @@ Rsed.apply_manifesto = function(project)
             const targetPropIdx = Math.floor(Number(args[0]) - 1);
             const newPropId = Math.floor(Number(args[1]) - 1);
 
-            project.props.change_prop_type(project.trackId, targetPropIdx, newPropId);
+            project.props.change_prop_type(project.track_id(), targetPropIdx, newPropId);
         }
 
         // Command: MOVE_OBJ. Moves the position of the given prop.
@@ -110,7 +110,7 @@ Rsed.apply_manifesto = function(project)
             const x = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
             const z = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
 
-            project.props.set_prop_location(project.trackId, targetPropIdx, {x, z});
+            project.props.set_prop_location(project.track_id(), targetPropIdx, {x, z});
         }
 
         // Command: MOVE_STARTING_POS. Moves the starting line. Note that this doesn't move the

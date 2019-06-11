@@ -26,9 +26,22 @@ window.onload = function(event)
     // be modified by the user via address parameters, which we parse for in the code below.
     const rsedStartupArgs =
     {
-        editMode: "local",
-        projectLocality: "server",
-        projectName: "demod",
+        // Whether edits to the project happen locally on the client or are broadcast onto the
+        // server for other participants to see. Server-side editing is only available for
+        // projects that have been created on the server specifically for shared editing.
+        editMode: "local", // | "shared"
+
+        project:
+        {
+            // Whether the project's initial data files will be found on the server or on
+            // the client. If on the client, an additional property, .dataAsJSON, is expected
+            // to provide these data as a JSON string.
+            dataLocality: "server", // | "client"
+
+            // A property uniquely identifying this project's data. For server-side projects,
+            // this will be a string, and for client-side data a file reference.
+            dataIdentifier: "demod",
+        }
     };
     
     // Parse any parameters the user supplied on the address line. Generally speaking, these
@@ -46,8 +59,8 @@ window.onload = function(event)
             }
 
             rsedStartupArgs.editMode = "shared";
-            rsedStartupArgs.projectLocality = "server";
-            rsedStartupArgs.projectName = params.get("shared");
+            rsedStartupArgs.project.dataLocality = "server";
+            rsedStartupArgs.project.dataIdentifier = params.get("shared");
 
             // Sanitize input.
             /// TODO.
@@ -63,8 +76,8 @@ window.onload = function(event)
             }
 
             rsedStartupArgs.editMode = "local";
-            rsedStartupArgs.projectLocality = "server";
-            rsedStartupArgs.projectName = params.get("track");
+            rsedStartupArgs.project.dataLocality = "server";
+            rsedStartupArgs.project.dataIdentifier = params.get("track");
         }
         // Server side original tracks from Rally-Sport's demo. These take a value in the range 1..8,
         // corresponding to the eight tracks in the demo.
@@ -83,8 +96,8 @@ window.onload = function(event)
                         || Rsed.throw("The given track id is out of bounds.");
 
             rsedStartupArgs.editMode = "local";
-            rsedStartupArgs.projectLocality = "server";
-            rsedStartupArgs.projectName = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
+            rsedStartupArgs.project.dataLocality = "server";
+            rsedStartupArgs.project.dataIdentifier = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
         }
     }
 

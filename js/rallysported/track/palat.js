@@ -90,7 +90,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                 ...args,
                 width: 1,
                 height: 1,
-                pixels: [Rsed.palette.color("gray")],
+                pixels: [Rsed.palette.color("black")],
                 indices: [0],
             });
         }

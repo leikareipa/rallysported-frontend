@@ -237,16 +237,16 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             {
                 ...
                 {
-                    x: locations[trackId].locations[propIdx].x,
-                    y: locations[trackId].locations[propIdx].y,
-                    z: locations[trackId].locations[propIdx].z,
+                    x: trackPropLocations[trackId].locations[propIdx].x,
+                    y: trackPropLocations[trackId].locations[propIdx].y,
+                    z: trackPropLocations[trackId].locations[propIdx].z,
                 },
                 ...location,
             }
 
-            locations[trackId].locations[propIdx].x = location.x;
-            locations[trackId].locations[propIdx].y = location.y;
-            locations[trackId].locations[propIdx].z = location.z;
+            trackPropLocations[trackId].locations[propIdx].x = location.x;
+            trackPropLocations[trackId].locations[propIdx].y = location.y;
+            trackPropLocations[trackId].locations[propIdx].z = location.z;
         },
 
         // Set the number of props on the given track. Props whose index value is higher than this
@@ -261,7 +261,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (newPropCount <= trackPropLocations[trackId].locations.length))
                     || Rsed.throw("Trying to set a new prop count out of bounds.");
 
-            locations[trackId].locations.splice(newPropCount);
+            trackPropLocations[trackId].locations.splice(newPropCount);
         },
 
         change_prop_type: (trackId = 0, propIdx = 0, newPropId = 0)=>
@@ -271,10 +271,10 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((propIdx >= 0) &&
-                            (propIdx < locations[trackId].locations.length))
+                            (propIdx < trackPropLocations[trackId].locations.length))
                         || Rsed.throw("Querying a prop location out of bounds.");
 
-            locations[trackId].locations[propIdx].propId = newPropId;
+            trackPropLocations[trackId].locations[propIdx].propId = newPropId;
         },
 
         add_location: (trackId = 0, newPropId = 0, location = {x:0,y:0,z:0})=>

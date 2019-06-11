@@ -191,7 +191,7 @@ Rsed.apply_manifesto = function(project)
             const targetPropIdx = Math.floor(Number(args[0]) - 1);
             const newPropId = Math.floor(Number(args[1]) - 1);
 
-            project.props.change_prop_type(project.trackId, targetPropIdx, newPropId);
+            project.props.change_prop_type(project.track_id(), targetPropIdx, newPropId);
         }
 
         // Command: MOVE_OBJ. Moves the position of the given prop.
@@ -204,7 +204,7 @@ Rsed.apply_manifesto = function(project)
             const x = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
             const z = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
 
-            project.props.set_prop_location(project.trackId, targetPropIdx, {x, z});
+            project.props.set_prop_location(project.track_id(), targetPropIdx, {x, z});
         }
 
         // Command: MOVE_STARTING_POS. Moves the starting line. Note that this doesn't move the
@@ -248,20 +248,22 @@ Rsed.apply_manifesto = function(project)
 
 "use strict";
 
-Rsed.project = async function(projectName = "")
+Rsed.project = async function(projectArgs = {})
 {
-    Rsed.assert && is_valid_project_name(projectName)
-                || Rsed.throw("Invalid project name.");
-
     // Which of Rally-Sport's eight tracks (in the demo version) this project is for.
     let trackId = null;
 
-    const projectData = await fetch_project_data_from_server(projectName);
+    const projectData = await fetch_project_data();
 
     Rsed.assert && ((typeof projectData.container !== "undefined") &&
                     (typeof projectData.manifesto !== "undefined") &&
-                    (typeof projectData.meta !== "undefined"))
+                    (typeof projectData.meta !== "undefined") &&
+                    (typeof projectData.meta.baseName !== "undefined") &&
+                    (typeof projectData.meta.displayName !== "undefined"))
                 || Rsed.throw("Missing required project data.");
+
+    Rsed.assert && is_valid_project_base_name()
+                || Rsed.throw("Invalid project base name \"" + projectData.meta.baseName + "\".");
 
     Rsed.assert && ((projectData.meta.width > 0) &&
                     (projectData.meta.height > 0) &&
@@ -286,6 +288,18 @@ Rsed.project = async function(projectName = "")
 
         byteSize: function()
         {
+            // The variable names here reflect the names of Rally-Sport's data files. For more
+            // information, see RallySportED's documentation on Rally-Sport's data formats at
+            // https://github.com/leikareipa/rallysported/tree/master/docs.
+            //
+            // In short,
+            //
+            //     maasto: track heightmap
+            //     varimaa: track tilemap
+            //     palat: track tile textures
+            //     anims: animation frame textures
+            //     text: track prop textures
+            //
             const maasto = (new DataView(this.dataBuffer, 0, 4)).getUint32(0, true);
             const varimaa = (new DataView(this.dataBuffer, (maasto + 4), 4)).getUint32(0, true);
             const palat = (new DataView(this.dataBuffer, (maasto + varimaa + 8), 4)).getUint32(0, true);
@@ -299,6 +313,7 @@ Rsed.project = async function(projectName = "")
         {
             const byteSize = this.byteSize();
 
+            // The variable names here reflect the names of Rally-Sport's data files.
             const maasto = 4;
             const varimaa = (byteSize.maasto + 8);
             const palat = (byteSize.maasto + byteSize.varimaa + 12);
@@ -309,6 +324,9 @@ Rsed.project = async function(projectName = "")
         },
     });
 
+    // The variable names here reflect the names of Rally-Sport's data files. For more
+    // information, see RallySportED's documentation on Rally-Sport's data formats at
+    // https://github.com/leikareipa/rallysported/tree/master/docs.
     const maasto = Rsed.track.maasto(projectData.meta.width, projectData.meta.height,
                                      new Uint8Array(projectDataContainer.dataBuffer,
                                                     projectDataContainer.byteOffset().maasto,
@@ -356,13 +374,27 @@ Rsed.project = async function(projectName = "")
             trackId = id;
         },
     });
+
+    k_message("\"" + projectData.meta.displayName + "\" is a valid RallySportED project. " +
+              "Its base name is \"" + projectData.meta.baseName + "\".");
     
     return publicInterface;
 
-    function is_valid_project_name()
+    // Returns true if the project's base name is valid; false otherwise. The base name is the name
+    // with which the project's files will be saved to disk; e.g. if the base name is "test", the
+    // project's files will be "test.dta" and "test.$ft". Note that the base name is separate from
+    // the project's display name, which is the name shown to the user in RallySportED's UI. The
+    // display name may be different from the base name, and has no restrictions on its composition
+    // like the base name does.
+    function is_valid_project_base_name()
     {
-        /// TODO.
-        return true;
+        // The base filename must be between 1 and 8 characters long, and the string must consist
+        // of ASCII A-Z characters only.
+        return ((typeof projectData.meta !== "undefined") &&
+                (typeof projectData.meta.baseName !== "undefined") &&
+                (projectData.meta.baseName.length >= 1) &&
+                (projectData.meta.baseName.length <= 8) &&
+                /^[a-z]+$/.test(projectData.meta.baseName));
     }
 
     function save_to_disk()
@@ -371,28 +403,157 @@ Rsed.project = async function(projectName = "")
         return false;
     }
 
-    async function fetch_project_data_from_server(projectName = "")
+    // Returns the data (container file, manifesto file, and certain metadata) of the
+    // given project as an object formatted like so:
+    //
+    //    {
+    //        container: "the contents of the project's binary container file as a Base64-encoded string",
+    //        manifesto: "the contents of the prjoect's textual manifesto file as a string",
+    //        meta: 
+    //        {
+    //            // Metadata about the project; like its name, and the dimensions of its track.
+    //        }
+    //    }
+    //
+    async function fetch_project_data()
     {
-        return fetch("server/get-project-data.php?projectName=" + projectName)
-               .then(response=>
-               {
-                   if (!response.ok)
-                   {
-                       throw "A GET request to the server failed.";
-                   }
+        Rsed.assert && ((typeof projectArgs.dataLocality !== "undefined") &&
+                        (typeof projectArgs.dataIdentifier !== "undefined"))
+                    || Rsed.throw("Missing required parameters for loading a project.");
 
-                   return response.json();
-               })
-               .then(ticket=>
-               {
-                   if (!ticket.valid || (typeof ticket.data === "undefined"))
-                   {
-                       throw ("The server sent a GET ticket marked invalid. It said: " + ticket.message);
-                   }
+        const projectData = (projectArgs.dataLocality === "server")? await fetch_project_data_from_server() :
+                            (projectArgs.dataLocality === "client")? await fetch_project_data_from_local_zip_file() :
+                            Rsed.throw("Unknown locality for project data.");
 
-                   return JSON.parse(ticket.data);
-               })
-               .catch(error=>{ Rsed.throw(error); });
+        return projectData;
+
+        async function fetch_project_data_from_local_zip_file()
+        {
+            Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
+                        || Rsed.throw("Missing required parameters for loading a project from a zip file.");
+
+            const zip = await (new JSZip()).loadAsync(projectArgs.dataIdentifier);
+
+            // The zip file is expected to contain a project's .DTA and .$FT (manifesto) files.
+            let manifestoFile = null;
+            let dtaFile = null;
+
+            let projectDirName = "undefined";
+
+            // Parse the zip file's contents to extract the project's data. The data are expected as
+            // .DTA and .$FT files inside a folder named according to the name of the project (the
+            // folder name must be ASCII A-Z only and with a maximum of eight characters, to maintain
+            // compatibility with the DOS version of RallySportED).
+            {
+                const files = [];
+                const dirs = [];
+
+                // Compile a list of files and directories in side the zip file.
+                zip.forEach((path, entry)=>
+                {
+                    if (entry.dir)
+                    {
+                        dirs.push(entry);
+                    }
+                    else files.push(entry);
+                });
+
+                Rsed.assert && (dirs.length === 1)
+                            || Rsed.throw("A project zip file must contain exactly one directory, under which the project's " +
+                                            ".DTA and .$FT files are found.");
+
+                projectDirName = dirs[0].name.slice(0, -1).toLowerCase();
+
+                // Find the project's $FT and DTA files inside the zip file.
+                {
+                    files.forEach(file=>
+                    {
+                        if (manifestoFile && dtaFile)
+                        {
+                            return;
+                        }
+
+                        const fileSuffix = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
+                        const fileBasePath = file.name.slice(0, file.name.lastIndexOf(".")).toLowerCase();
+                        const fileBaseName = fileBasePath.slice(fileBasePath.lastIndexOf("/") + 1);
+
+                        // Each resource file is expected to hold the same name as the project itself.
+                        if (fileBaseName !== projectDirName)
+                        {
+                            return;
+                        }
+
+                        switch (fileSuffix)
+                        {
+                            case "$ft": manifestoFile = file; break;
+                            case "dta": dtaFile = file; break;
+                            default: break;
+                        }
+                    });
+
+                    Rsed.assert && (manifestoFile && dtaFile)
+                                || Rsed.throw("The given project zip file was missing the required .DTA and/or .$FT files.")
+                }
+            }
+            
+            // Create an object containing the project's data.
+            const projectData = {};
+            {
+                projectData.manifesto = await manifestoFile.async("string");
+                projectData.container = await dtaFile.async("arraybuffer");
+
+                // Derive the track's dimensions from the size of the heightmap. (All tracks are assumed
+                // square).
+                const trackSideLen = Math.sqrt(new Uint32Array(projectData.container, 0, 1)[0] / 2);
+
+                // All tracks in the demo version of Rally-Sport are expected to have either 64 or 128
+                // tiles per side.
+                Rsed.assert && ([64, 128].includes(trackSideLen))
+                            || Rsed.throw("Invalid track dimensions in project file.");
+
+                projectData.meta =
+                {
+                    displayName: projectDirName,
+                    baseName: projectDirName,
+                    width: trackSideLen,
+                    height: trackSideLen,
+                };
+
+                // Encode the .DTA data as Base64.
+                const view = new Uint8Array(projectData.container);
+                const string = view.reduce((data, byte)=>(data + String.fromCharCode(byte)), "");
+                projectData.container = btoa(string);
+            }
+
+            return projectData;
+        }
+
+        async function fetch_project_data_from_server()
+        {
+            Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
+                        || Rsed.throw("Missing required parameters for loading a project.");
+
+            return fetch("server/get-project-data.php?projectId=" + projectArgs.dataIdentifier)
+                   .then(response=>
+                   {
+                       if (!response.ok)
+                       {
+                           throw "A GET request to the server failed.";
+                       }
+    
+                       return response.json();
+                   })
+                   .then(ticket=>
+                   {
+                       if (!ticket.valid || (typeof ticket.data === "undefined"))
+                       {
+                           throw ("The server sent a GET ticket marked invalid. It said: " + ticket.message);
+                       }
+    
+                       return JSON.parse(ticket.data);
+                   })
+                   .catch(error=>{ Rsed.throw(error); });
+        }
     }
 }
 
@@ -2571,7 +2732,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                 ...args,
                 width: 1,
                 height: 1,
-                pixels: [Rsed.palette.color("gray")],
+                pixels: [Rsed.palette.color("black")],
                 indices: [0],
             });
         }
@@ -2827,16 +2988,16 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             {
                 ...
                 {
-                    x: locations[trackId].locations[propIdx].x,
-                    y: locations[trackId].locations[propIdx].y,
-                    z: locations[trackId].locations[propIdx].z,
+                    x: trackPropLocations[trackId].locations[propIdx].x,
+                    y: trackPropLocations[trackId].locations[propIdx].y,
+                    z: trackPropLocations[trackId].locations[propIdx].z,
                 },
                 ...location,
             }
 
-            locations[trackId].locations[propIdx].x = location.x;
-            locations[trackId].locations[propIdx].y = location.y;
-            locations[trackId].locations[propIdx].z = location.z;
+            trackPropLocations[trackId].locations[propIdx].x = location.x;
+            trackPropLocations[trackId].locations[propIdx].y = location.y;
+            trackPropLocations[trackId].locations[propIdx].z = location.z;
         },
 
         // Set the number of props on the given track. Props whose index value is higher than this
@@ -2851,7 +3012,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (newPropCount <= trackPropLocations[trackId].locations.length))
                     || Rsed.throw("Trying to set a new prop count out of bounds.");
 
-            locations[trackId].locations.splice(newPropCount);
+            trackPropLocations[trackId].locations.splice(newPropCount);
         },
 
         change_prop_type: (trackId = 0, propIdx = 0, newPropId = 0)=>
@@ -2861,10 +3022,10 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((propIdx >= 0) &&
-                            (propIdx < locations[trackId].locations.length))
+                            (propIdx < trackPropLocations[trackId].locations.length))
                         || Rsed.throw("Querying a prop location out of bounds.");
 
-            locations[trackId].locations[propIdx].propId = newPropId;
+            trackPropLocations[trackId].locations[propIdx].propId = newPropId;
         },
 
         add_location: (trackId = 0, newPropId = 0, location = {x:0,y:0,z:0})=>
@@ -4116,7 +4277,7 @@ Rsed.ui_draw_n = (function()
 
             pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
 
-            draw_string("> RALLYSPORTED STOPPED WORKING. SORRY ABOUT THAT!", 2, Rsed.ui_font_n.font_height());
+            draw_string("> RALLYSPORTED HAS STOPPED RUNNING. SORRY ABOUT THAT!", 2, Rsed.ui_font_n.font_height());
 
             renderSurface.exposed().putImageData(pixelSurface, 0, 0);
             pixelSurface = null;
@@ -5179,18 +5340,19 @@ Rsed.core = (function()
 
     const publicInterface =
     {
-        // Starts the program. The renderer will keep requesting a new animation frame, and will call the
-        // callback functions we've set at that rate.
+        // Starts up RallySportED with the given project to edit.
         run: async function(startupArgs = {})
         {
-            Rsed.assert && ((typeof startupArgs.projectLocality !== "undefined") &&
-                            (typeof startupArgs.projectName !== "undefined"))
+            Rsed.assert && ((typeof startupArgs.project.dataLocality !== "undefined") &&
+                            (typeof startupArgs.editMode !== "undefined"))
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
 
-            verify_browser_compatibility();
+            isRunning = false;
 
             // Hide the UI while we load up the project's data etc.
             htmlUI.set_visible(false);
+
+            verify_browser_compatibility();
 
             await load_project(startupArgs);
 
@@ -5213,7 +5375,36 @@ Rsed.core = (function()
         // load up. If it's not, we'll ignore the drop.
         drop_handler: function(event)
         {
-            /// TODO.
+            // Don't let the browser handle the drop.
+            event.preventDefault();
+
+            // See if the drop delivers a zip file.
+            const zipFile = [].map.call(event.dataTransfer.items, (item)=>{return item.getAsFile()})
+                                  .filter(file=>(file != null))
+                                  .filter(file=>(file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase() === "zip"))
+                                  [0] || null;
+ 
+            if (!zipFile)
+            {
+                k_message("The drop contained no RallySportED zip files. Ignoring it.");
+                return;
+            }
+
+            // Launch RallySportED with project data from the given zip file.
+            this.run(
+            {
+                editMode: "local",
+                project:
+                {
+                    dataLocality: "client",
+                    dataIdentifier: zipFile,
+                }
+            });
+
+            // Clear the address bar's parameters to reflect the fact that the user has loaded a local
+            // track resource instead of specifying a server-side resource via the address bar.
+            const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
+            window.history.replaceState({}, document.title, basePath);
         },
 
         current_project: ()=>project,
@@ -5243,19 +5434,19 @@ Rsed.core = (function()
     async function load_project(args = {})
     {
         Rsed.assert && ((typeof args.editMode !== "undefined") &&
-                        (typeof args.projectName !== "undefined"))
+                        (typeof args.project.dataIdentifier !== "undefined"))
                     || Rsed.throw("Missing required arguments for loading a project.");
             
         if (args.editMode === "shared")
         {
-            await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.projectName);
+            await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.project.dataIdentifier);
         }
         else
         {
             Rsed.shared_mode_n.unregister_current_registration();
         }
 
-        project = await Rsed.project(args.projectName);
+        project = await Rsed.project(args.project);
 
         Rsed.apply_manifesto(project);
         
@@ -5301,9 +5492,22 @@ window.onload = function(event)
     // be modified by the user via address parameters, which we parse for in the code below.
     const rsedStartupArgs =
     {
-        editMode: "local",
-        projectLocality: "server",
-        projectName: "demod",
+        // Whether edits to the project happen locally on the client or are broadcast onto the
+        // server for other participants to see. Server-side editing is only available for
+        // projects that have been created on the server specifically for shared editing.
+        editMode: "local", // | "shared"
+
+        project:
+        {
+            // Whether the project's initial data files will be found on the server or on
+            // the client. If on the client, an additional property, .dataAsJSON, is expected
+            // to provide these data as a JSON string.
+            dataLocality: "server", // | "client"
+
+            // A property uniquely identifying this project's data. For server-side projects,
+            // this will be a string, and for client-side data a file reference.
+            dataIdentifier: "demod",
+        }
     };
     
     // Parse any parameters the user supplied on the address line. Generally speaking, these
@@ -5321,8 +5525,8 @@ window.onload = function(event)
             }
 
             rsedStartupArgs.editMode = "shared";
-            rsedStartupArgs.projectLocality = "server";
-            rsedStartupArgs.projectName = params.get("shared");
+            rsedStartupArgs.project.dataLocality = "server";
+            rsedStartupArgs.project.dataIdentifier = params.get("shared");
 
             // Sanitize input.
             /// TODO.
@@ -5338,8 +5542,8 @@ window.onload = function(event)
             }
 
             rsedStartupArgs.editMode = "local";
-            rsedStartupArgs.projectLocality = "server";
-            rsedStartupArgs.projectName = params.get("track");
+            rsedStartupArgs.project.dataLocality = "server";
+            rsedStartupArgs.project.dataIdentifier = params.get("track");
         }
         // Server side original tracks from Rally-Sport's demo. These take a value in the range 1..8,
         // corresponding to the eight tracks in the demo.
@@ -5358,8 +5562,8 @@ window.onload = function(event)
                         || Rsed.throw("The given track id is out of bounds.");
 
             rsedStartupArgs.editMode = "local";
-            rsedStartupArgs.projectLocality = "server";
-            rsedStartupArgs.projectName = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
+            rsedStartupArgs.project.dataLocality = "server";
+            rsedStartupArgs.project.dataIdentifier = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
         }
     }
 

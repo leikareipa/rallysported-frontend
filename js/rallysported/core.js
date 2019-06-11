@@ -116,18 +116,19 @@ Rsed.core = (function()
 
     const publicInterface =
     {
-        // Starts the program. The renderer will keep requesting a new animation frame, and will call the
-        // callback functions we've set at that rate.
+        // Starts up RallySportED with the given project to edit.
         run: async function(startupArgs = {})
         {
-            Rsed.assert && ((typeof startupArgs.projectLocality !== "undefined") &&
-                            (typeof startupArgs.projectName !== "undefined"))
+            Rsed.assert && ((typeof startupArgs.project.dataLocality !== "undefined") &&
+                            (typeof startupArgs.editMode !== "undefined"))
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
 
-            verify_browser_compatibility();
+            isRunning = false;
 
             // Hide the UI while we load up the project's data etc.
             htmlUI.set_visible(false);
+
+            verify_browser_compatibility();
 
             await load_project(startupArgs);
 
@@ -150,7 +151,36 @@ Rsed.core = (function()
         // load up. If it's not, we'll ignore the drop.
         drop_handler: function(event)
         {
-            /// TODO.
+            // Don't let the browser handle the drop.
+            event.preventDefault();
+
+            // See if the drop delivers a zip file.
+            const zipFile = [].map.call(event.dataTransfer.items, (item)=>{return item.getAsFile()})
+                                  .filter(file=>(file != null))
+                                  .filter(file=>(file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase() === "zip"))
+                                  [0] || null;
+ 
+            if (!zipFile)
+            {
+                k_message("The drop contained no RallySportED zip files. Ignoring it.");
+                return;
+            }
+
+            // Launch RallySportED with project data from the given zip file.
+            this.run(
+            {
+                editMode: "local",
+                project:
+                {
+                    dataLocality: "client",
+                    dataIdentifier: zipFile,
+                }
+            });
+
+            // Clear the address bar's parameters to reflect the fact that the user has loaded a local
+            // track resource instead of specifying a server-side resource via the address bar.
+            const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
+            window.history.replaceState({}, document.title, basePath);
         },
 
         current_project: ()=>project,
@@ -180,19 +210,19 @@ Rsed.core = (function()
     async function load_project(args = {})
     {
         Rsed.assert && ((typeof args.editMode !== "undefined") &&
-                        (typeof args.projectName !== "undefined"))
+                        (typeof args.project.dataIdentifier !== "undefined"))
                     || Rsed.throw("Missing required arguments for loading a project.");
             
         if (args.editMode === "shared")
         {
-            await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.projectName);
+            await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.project.dataIdentifier);
         }
         else
         {
             Rsed.shared_mode_n.unregister_current_registration();
         }
 
-        project = await Rsed.project(args.projectName);
+        project = await Rsed.project(args.project);
 
         Rsed.apply_manifesto(project);
         
