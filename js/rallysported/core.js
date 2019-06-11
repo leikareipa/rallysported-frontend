@@ -58,32 +58,32 @@ Rsed.core = (function()
     {
         const uiContainer = new Vue(
         {
-            el:"#html-ui",
+            el: "#html-ui",
             data:
             {
                 // The display name of the track that's currently open in the editor.
-                trackName:"",
+                trackName: "",
 
-                propList:[],
+                propList: [],
 
                 // Whether the UI should be displayed or kept invisible at this time.
-                uiVisible:false,
+                uiVisible: false,
             },
             methods:
             {
                 // Called when the user selects a prop from the prop dropdown menu.
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
-                activate_prop:function(name = "")
+                activate_prop: function(name = "")
                 {
                     Rsed.core.project().props.change_prop_type(Rsed.core.project().track_id(),
-                                                                 Rsed.ui_input_n.mouse_hover_args().trackId,
-                                                                 Rsed.core.project().props.id_for_name(name));
+                                                               Rsed.ui_input_n.mouse_hover_args().trackId,
+                                                               Rsed.core.project().props.id_for_name(name));
                     window.close_dropdowns();
 
                     return;
                 },
                 
-                refresh:function()
+                refresh: function()
                 {
                     this.trackName = Rsed.core.project().name;
                     this.propList = Rsed.core.project().props.names()

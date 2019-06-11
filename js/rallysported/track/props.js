@@ -137,6 +137,15 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (textureId < propTextures.length))
                         || Rsed.throw("Attempting to access prop textures out of bounds.");
 
+            args =
+            {
+                ...
+                {
+                    alpha: true,
+                },
+                ...args,
+            };
+
             return Object.freeze({...propTextures[textureId], alpha:args.alpha});
         },
 
