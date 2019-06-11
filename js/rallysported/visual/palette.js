@@ -10,7 +10,8 @@
 
 Rsed.palette = (function()
 {
-    // The four hard-coded palettes in Rally-Sport's demo.
+    // The four hard-coded palettes in Rally-Sport's demo. These should not be changed
+    // during run-time.
     const rallySportPalettes = [
                     // Palette #1.
                    [{r:0, g:0, b:0},

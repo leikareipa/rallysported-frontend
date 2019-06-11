@@ -532,7 +532,7 @@ Rsed.worldBuilder = function()
                         groundQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, height4, (vertZ + Rsed.constants.groundTileSize));
                         
                         groundQuad.hasWireframe = Rsed.ui_view_n.show3dWireframe;
-                        groundQuad.texture = Rsed.core.project().palat.texture(tilePalaIdx);
+                        groundQuad.texture = Rsed.core.project().palat.texture[tilePalaIdx];
 
                         // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
                         // rasterization we'll write into the mouse-picking buffer, so we can later determine which
@@ -559,18 +559,18 @@ Rsed.worldBuilder = function()
                             // Spectators.
                             case 240:
                             case 241:
-                            case 242: billboardQuad.texture = Rsed.core.project().palat.texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
+                            case 242: billboardQuad.texture = Rsed.core.project().palat.generate_texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
                             break;
         
                             // Shrubs.
-                            case 243: billboardQuad.texture = Rsed.core.project().palat.texture(208, {alpha:true}); break;
-                            case 244: billboardQuad.texture = Rsed.core.project().palat.texture(209, {alpha:true}); break;
-                            case 245: billboardQuad.texture = Rsed.core.project().palat.texture(210, {alpha:true}); break;
+                            case 243: billboardQuad.texture = Rsed.core.project().palat.generate_texture(208, {alpha:true}); break;
+                            case 244: billboardQuad.texture = Rsed.core.project().palat.generate_texture(209, {alpha:true}); break;
+                            case 245: billboardQuad.texture = Rsed.core.project().palat.generate_texture(210, {alpha:true}); break;
         
                             // Small poles.
                             case 246:
-                            case 247: billboardQuad.texture = Rsed.core.project().palat.texture(211, {alpha:true}); break;
-                            case 250: bbillboardQuadll.texture = Rsed.core.project().palat.texture(212, {alpha:true}); break;
+                            case 247: billboardQuad.texture = Rsed.core.project().palat.generate_texture(211, {alpha:true}); break;
+                            case 250: bbillboardQuadll.texture = Rsed.core.project().palat.generate_texture(212, {alpha:true}); break;
         
                             default: Rsed.throw("Unrecognized billboard texture."); continue;
                         }
@@ -586,7 +586,7 @@ Rsed.worldBuilder = function()
                         bridgeQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize));
                         bridgeQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize));
 
-                        bridgeQuad.texture = Rsed.core.project().palat.texture(177, true);
+                        bridgeQuad.texture = Rsed.core.project().palat.generate_texture(177, {alpha:true});
 
                         trackPolygons.push(bridgeQuad);
                     }
@@ -1219,7 +1219,8 @@ Rsed.texture = function(args = {})
 
 Rsed.palette = (function()
 {
-    // The four hard-coded palettes in Rally-Sport's demo.
+    // The four hard-coded palettes in Rally-Sport's demo. These should not be changed
+    // during run-time.
     const rallySportPalettes = [
                     // Palette #1.
                    [{r:0, g:0, b:0},
@@ -2504,18 +2505,71 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
     const palaSize = (palaWidth * palaHeight);
 
     // Pre-compute the individual PALA textures.
-    const palaTextures = new Array(256).fill().map((pala, idx)=>
+    const prebakedPalaTextures = new Array(256).fill().map((pala, idx)=>
     {
-        const dataIdx = (idx * palaSize);
+        return generate_texture(idx,
+                                {
+                                    alpha: false,
+                                    flipped: "vertical",
+                                });
+    });
 
-        // For PALA textures that are missing in the source data, return a dummy texture.
-        if ((dataIdx + palaSize) >= data.byteLength)
+    const publicInterface = Object.freeze(
+    {
+        width: palaWidth,
+        height: palaHeight,
+        texture: Object.freeze(prebakedPalaTextures),
+
+        // Generates a texture of the given PALA using the given arguments. You'd call this
+        // function if the pre-baked version of the texture wasn't generated with suitable
+        // arguments for you purposes - for instance, if it's generated with vertical flip,
+        // but you want it without the flip.
+        generate_texture: (palaId = 0, args = {})=>
+        {
+            // If the arguments provided don't actually necessitate a re-generating of the
+            // texture (some arguments are just hints about how the texture should be rendered
+            // and don't affect the texture data, per se), we can return the pre-generated
+            // texture along with the new arguments.
+            if ((typeof args.flipped === "undefined") ||
+                (args.flipped === "vertical")) // Assume the pre-baked textures are generated with vertical flip.
+            {
+                return {...prebakedPalaTextures[palaId], ...args};
+            }
+
+            // Otherwise, re-generate the whole texture.
+            return generate_texture(palaId, args);
+        },
+    });
+
+    Rsed.ui_draw_n.prebake_palat_pane();
+
+    function generate_texture(palaId = 0, args = {})
+    {
+        args =
+        {
+            // NOTE: If you change these default values, you may need to reflect the changes in
+            // publicInterface.generate_texture(), as well; which, for instance, expects that
+            // textures are generated with vertical flip, by default.
+            ...
+            {
+                alpha: true,
+                flipped: "vertical",
+            },
+            ...args,
+        }
+        
+        const dataIdx = (palaId * palaSize);
+
+        // For attempts to access the PALA data out of bounds, return a dummy texture.
+        if ((dataIdx < 0) ||
+            ((dataIdx + palaSize) >= pixels.length) ||
+            ((dataIdx + palaSize) >= data.byteLength))
         {
             return Rsed.texture(
             {
+                ...args,
                 width: 1,
                 height: 1,
-                alpha: false,
                 pixels: [Rsed.palette.color("gray")],
                 indices: [0],
             });
@@ -2523,32 +2577,13 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
 
         return Rsed.texture(
         {
+            ...args,
             width: palaWidth,
             height: palaHeight,
-            alpha: false,
-            flipped: "vertical",
             pixels: pixels.slice(dataIdx, (dataIdx + palaSize)),
             indices: data.slice(dataIdx, (dataIdx + palaSize)),
         });
-    });
-
-    const publicInterface =
-    {
-        width: palaWidth,
-        height: palaHeight,
-        
-        // Returns a copy of the individual PALA texture at the given index.
-        texture:(palaId = 0, args = {/*alpha:true|false,*/})=>
-        {
-            Rsed.assert && ((palaId >= 0) &&
-                            (palaId < palaTextures.length))
-                        || Rsed.throw("Attempting to access PALA textures out of bounds.");
-
-            return Object.freeze({...palaTextures[palaId], alpha:args.alpha});
-        }
-    };
-
-    Rsed.ui_draw_n.prebake_palat_pane();
+    }
     
     return publicInterface;
 };
@@ -3961,7 +3996,7 @@ Rsed.ui_draw_n = (function()
                 const tileX = (x * xMul);
                 const tileZ = (y * yMul);
 
-                const pala = Rsed.core.project().palat.texture(Rsed.core.project().varimaa.tile_at(tileX, tileZ));
+                const pala = Rsed.core.project().palat.texture[Rsed.core.project().varimaa.tile_at(tileX, tileZ)];
                 let color = ((pala == null)? 0 : pala.indices[1]);
 
                 // Have a black outline.
@@ -4008,7 +4043,7 @@ Rsed.ui_draw_n = (function()
     function draw_active_pala()
     {
         const currentPala = Rsed.ui_brush_n.brush_pala_idx();
-        const pala = Rsed.core.project().palat.texture(currentPala);
+        const pala = Rsed.core.project().palat.texture[currentPala];
 
         if (pala != null)
         {
@@ -4037,7 +4072,7 @@ Rsed.ui_draw_n = (function()
                     const tileX = Math.floor(x * xMul);
                     const tileZ = Math.floor(z * zMul);
 
-                    const pala = Rsed.core.project().palat.texture(Rsed.core.project().varimaa.tile_at(tileX, tileZ));
+                    const pala = Rsed.core.project().palat.texture[Rsed.core.project().varimaa.tile_at(tileX, tileZ)];
                     let color = ((pala == null)? 0 : pala.indices[1]);
 
                     // Create an outline.
@@ -4156,7 +4191,7 @@ Rsed.ui_draw_n = (function()
                 {
                     if (palaIdx > maxNumPalas) break;
 
-                    const pala = Rsed.core.project().palat.texture(palaIdx);
+                    const pala = Rsed.core.project().palat.texture[palaIdx];
                     for (let py = 0; py < palaHeight; py++)
                     {
                         for (let px = 0; px < palaWidth; px++)

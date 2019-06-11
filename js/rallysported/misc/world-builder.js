@@ -69,7 +69,7 @@ Rsed.worldBuilder = function()
                         groundQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, height4, (vertZ + Rsed.constants.groundTileSize));
                         
                         groundQuad.hasWireframe = Rsed.ui_view_n.show3dWireframe;
-                        groundQuad.texture = Rsed.core.project().palat.texture(tilePalaIdx);
+                        groundQuad.texture = Rsed.core.project().palat.texture[tilePalaIdx];
 
                         // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
                         // rasterization we'll write into the mouse-picking buffer, so we can later determine which
@@ -96,18 +96,18 @@ Rsed.worldBuilder = function()
                             // Spectators.
                             case 240:
                             case 241:
-                            case 242: billboardQuad.texture = Rsed.core.project().palat.texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
+                            case 242: billboardQuad.texture = Rsed.core.project().palat.generate_texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
                             break;
         
                             // Shrubs.
-                            case 243: billboardQuad.texture = Rsed.core.project().palat.texture(208, {alpha:true}); break;
-                            case 244: billboardQuad.texture = Rsed.core.project().palat.texture(209, {alpha:true}); break;
-                            case 245: billboardQuad.texture = Rsed.core.project().palat.texture(210, {alpha:true}); break;
+                            case 243: billboardQuad.texture = Rsed.core.project().palat.generate_texture(208, {alpha:true}); break;
+                            case 244: billboardQuad.texture = Rsed.core.project().palat.generate_texture(209, {alpha:true}); break;
+                            case 245: billboardQuad.texture = Rsed.core.project().palat.generate_texture(210, {alpha:true}); break;
         
                             // Small poles.
                             case 246:
-                            case 247: billboardQuad.texture = Rsed.core.project().palat.texture(211, {alpha:true}); break;
-                            case 250: bbillboardQuadll.texture = Rsed.core.project().palat.texture(212, {alpha:true}); break;
+                            case 247: billboardQuad.texture = Rsed.core.project().palat.generate_texture(211, {alpha:true}); break;
+                            case 250: bbillboardQuadll.texture = Rsed.core.project().palat.generate_texture(212, {alpha:true}); break;
         
                             default: Rsed.throw("Unrecognized billboard texture."); continue;
                         }
@@ -123,7 +123,7 @@ Rsed.worldBuilder = function()
                         bridgeQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize));
                         bridgeQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize));
 
-                        bridgeQuad.texture = Rsed.core.project().palat.texture(177, true);
+                        bridgeQuad.texture = Rsed.core.project().palat.generate_texture(177, {alpha:true});
 
                         trackPolygons.push(bridgeQuad);
                     }

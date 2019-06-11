@@ -212,7 +212,7 @@ Rsed.ui_draw_n = (function()
                 const tileX = (x * xMul);
                 const tileZ = (y * yMul);
 
-                const pala = Rsed.core.project().palat.texture(Rsed.core.project().varimaa.tile_at(tileX, tileZ));
+                const pala = Rsed.core.project().palat.texture[Rsed.core.project().varimaa.tile_at(tileX, tileZ)];
                 let color = ((pala == null)? 0 : pala.indices[1]);
 
                 // Have a black outline.
@@ -259,7 +259,7 @@ Rsed.ui_draw_n = (function()
     function draw_active_pala()
     {
         const currentPala = Rsed.ui_brush_n.brush_pala_idx();
-        const pala = Rsed.core.project().palat.texture(currentPala);
+        const pala = Rsed.core.project().palat.texture[currentPala];
 
         if (pala != null)
         {
@@ -288,7 +288,7 @@ Rsed.ui_draw_n = (function()
                     const tileX = Math.floor(x * xMul);
                     const tileZ = Math.floor(z * zMul);
 
-                    const pala = Rsed.core.project().palat.texture(Rsed.core.project().varimaa.tile_at(tileX, tileZ));
+                    const pala = Rsed.core.project().palat.texture[Rsed.core.project().varimaa.tile_at(tileX, tileZ)];
                     let color = ((pala == null)? 0 : pala.indices[1]);
 
                     // Create an outline.
@@ -407,7 +407,7 @@ Rsed.ui_draw_n = (function()
                 {
                     if (palaIdx > maxNumPalas) break;
 
-                    const pala = Rsed.core.project().palat.texture(palaIdx);
+                    const pala = Rsed.core.project().palat.texture[palaIdx];
                     for (let py = 0; py < palaHeight; py++)
                     {
                         for (let px = 0; px < palaWidth; px++)
