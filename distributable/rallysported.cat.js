@@ -13,7 +13,6 @@
 //	../js/rallysported/misc/world-builder.js
 //	../distributable/assets/hitable.txt.js
 //	../js/rallysported/misc/shared-mode.js
-//	../js/rallysported/misc/common.js
 //	../js/rallysported/visual/texture.js
 //	../js/rallysported/visual/palette.js
 //	../js/rallysported/transform/geometry.js
@@ -102,7 +101,12 @@ const Rsed = {};
 
     Rsed.alert = (message = "")=>
     {
-        window.alert("RallySportED: " + message);
+        alert("RallySportED: " + message);
+    }
+
+    Rsed.log = (message = "")=>
+    {
+        console.log("RallySportED: " + message);
     }
 
     // Linear interpolation.
@@ -397,7 +401,7 @@ Rsed.project = async function(projectArgs = {})
         {
             const filename = projectData.meta.baseName.toUpperCase();
 
-            k_message("Saving project \"" + projectData.meta.displayName + "\" into " +
+            Rsed.log("Saving project \"" + projectData.meta.displayName + "\" into " +
                       filename + ".ZIP.");
 
             const zip = new JSZip();
@@ -412,7 +416,7 @@ Rsed.project = async function(projectArgs = {})
         }
     });
 
-    k_message("\"" + projectData.meta.displayName + "\" is a valid RallySportED project. " +
+    Rsed.log("\"" + projectData.meta.displayName + "\" is a valid RallySportED project. " +
               "Its base name is \"" + projectData.meta.baseName + "\".");
     
     return publicInterface;
@@ -1572,43 +1576,6 @@ Rsed.shared_mode_n = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/misc/common.js
- *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
- *
- * Various functions that may (or might not) be used across the program.
- *
- */
-
-"use strict";
-
-// Send out a user-facing message.
-function k_message(message = "")
-{
-    console.log(message);
-}
-
-// Displays a popup notification to the user. Doesn't take user input. Not guaranteed to be modal.
-function k_popup(message = "")
-{
-    /// Temp hack. A modifier's status will stick if the key is releasd while a modal popup is open,
-    /// so just clear them all in advance.
-    Rsed.ui_input_n.reset_modifier_key_statuses();
-
-    window.alert(message);
-}
-
-// Linear interpolation.
-function k_lerp(x = 0, y = 0, interval = 0)
-{
-    return (x + (interval * (y - x)));
-}
-
-function k_clamp(value, min, max)
-{
-    return Math.min(Math.max(value, min), max);
-}/*
  * Most recent known filename: js/texture.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
@@ -5383,7 +5350,7 @@ Rsed.ngon_fill_n = (function()
                     // and same for the right side.
                     for (let p = 1; p < (poly.verts.length-1); p++)
                     {
-                        const lr = k_lerp(topVert.x, bottomVert.x, ((poly.verts[p].y - topVert.y) / (bottomVert.y - topVert.y)));
+                        const lr = Rsed.lerp(topVert.x, bottomVert.x, ((poly.verts[p].y - topVert.y) / (bottomVert.y - topVert.y)));
                         
                         if (poly.verts[p].x >= lr)
                         {
@@ -5691,7 +5658,7 @@ Rsed.core = (function()
  
             if (!zipFile)
             {
-                k_message("The drop contained no RallySportED zip files. Ignoring it.");
+                Rsed.log("The drop contained no RallySportED zip files. Ignoring it.");
                 return;
             }
 

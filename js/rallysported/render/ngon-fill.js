@@ -69,7 +69,7 @@ Rsed.ngon_fill_n = (function()
                     // and same for the right side.
                     for (let p = 1; p < (poly.verts.length-1); p++)
                     {
-                        const lr = k_lerp(topVert.x, bottomVert.x, ((poly.verts[p].y - topVert.y) / (bottomVert.y - topVert.y)));
+                        const lr = Rsed.lerp(topVert.x, bottomVert.x, ((poly.verts[p].y - topVert.y) / (bottomVert.y - topVert.y)));
                         
                         if (poly.verts[p].x >= lr)
                         {

@@ -139,7 +139,7 @@ Rsed.project = async function(projectArgs = {})
         {
             const filename = projectData.meta.baseName.toUpperCase();
 
-            k_message("Saving project \"" + projectData.meta.displayName + "\" into " +
+            Rsed.log("Saving project \"" + projectData.meta.displayName + "\" into " +
                       filename + ".ZIP.");
 
             const zip = new JSZip();
@@ -154,7 +154,7 @@ Rsed.project = async function(projectArgs = {})
         }
     });
 
-    k_message("\"" + projectData.meta.displayName + "\" is a valid RallySportED project. " +
+    Rsed.log("\"" + projectData.meta.displayName + "\" is a valid RallySportED project. " +
               "Its base name is \"" + projectData.meta.baseName + "\".");
     
     return publicInterface;

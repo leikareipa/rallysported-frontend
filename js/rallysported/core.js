@@ -162,7 +162,7 @@ Rsed.core = (function()
  
             if (!zipFile)
             {
-                k_message("The drop contained no RallySportED zip files. Ignoring it.");
+                Rsed.log("The drop contained no RallySportED zip files. Ignoring it.");
                 return;
             }
 

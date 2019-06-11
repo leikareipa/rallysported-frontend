@@ -31,7 +31,12 @@ const Rsed = {};
 
     Rsed.alert = (message = "")=>
     {
-        window.alert("RallySportED: " + message);
+        alert("RallySportED: " + message);
+    }
+
+    Rsed.log = (message = "")=>
+    {
+        console.log("RallySportED: " + message);
     }
 
     // Linear interpolation.
