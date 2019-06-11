@@ -184,7 +184,7 @@ Rsed.worldBuilder = function()
                     newPoly.verts[idx].z = (vert.z + pos.z);
                 });
 
-                newPoly.color = Rsed.palette_n.palette_idx_to_rgba(0);
+                newPoly.color = Rsed.palette.color(0);
                 newPoly.texture = null;
 
                 if (ngon.fill.type === "texture")
@@ -193,7 +193,7 @@ Rsed.worldBuilder = function()
                 }
                 else
                 {
-                    newPoly.color = Rsed.palette_n.palette_idx_to_rgba(ngon.fill.idx);
+                    newPoly.color = Rsed.palette.color(ngon.fill.idx);
                 }
 
                 newPoly.hasWireframe = args.wireframe;

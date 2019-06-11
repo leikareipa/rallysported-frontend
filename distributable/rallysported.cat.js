@@ -13,7 +13,6 @@
 //	../distributable/assets/hitable.txt.js
 //	../js/rallysported/misc/shared-mode.js
 //	../js/rallysported/misc/common.js
-//	../js/rallysported/visual/color.js
 //	../js/rallysported/visual/texture.js
 //	../js/rallysported/visual/palette.js
 //	../js/rallysported/transform/geometry.js
@@ -108,9 +107,7 @@ Rsed.apply_manifesto = function(project)
     Rsed.assert && (!project.isPlaceholder)
                 || Rsed.throw("Can't apply manifestos to placeholder projects.");
 
-    const commands = project.manifesto.split("\n").filter(Boolean);
-
-    console.log(commands[commands.length-1])
+    const commands = project.manifesto.split("\n").filter(line=>line.trim().length);
 
     Rsed.assert && (commands.length >= 2)
                 || Rsed.throw("Invalid number of lines in the manifesto.");
@@ -230,7 +227,7 @@ Rsed.apply_manifesto = function(project)
             const g = Math.floor(Number(args[2] * 4));
             const b = Math.floor(Number(args[3] * 4));
             
-            Rsed.palette_n.modify_palette_entry(targetPaletteIdx, r, g, b);
+            Rsed.palette.set_color(targetPaletteIdx, {r, g, b});
         }
 
         // Command: STOP. Stops parsing the manifesto file.
@@ -457,6 +454,12 @@ Rsed.constants = Object.freeze(
 
     // The maximum number of props on a track.
     maxPropCount: 14,
+
+    // How many hard-coded palettes there are in Rally-Sport's demo version.
+    numPalettes: 4,
+
+    // How many colors there are in one of Rally-Sport's hard-coded palettes.
+    paletteSize: 32,
 });
 /*
  * Most recent known filename: js/world-builder.js
@@ -644,7 +647,7 @@ Rsed.worldBuilder = function()
                     newPoly.verts[idx].z = (vert.z + pos.z);
                 });
 
-                newPoly.color = Rsed.palette_n.palette_idx_to_rgba(0);
+                newPoly.color = Rsed.palette.color(0);
                 newPoly.texture = null;
 
                 if (ngon.fill.type === "texture")
@@ -653,7 +656,7 @@ Rsed.worldBuilder = function()
                 }
                 else
                 {
-                    newPoly.color = Rsed.palette_n.palette_idx_to_rgba(ngon.fill.idx);
+                    newPoly.color = Rsed.palette.color(ngon.fill.idx);
                 }
 
                 newPoly.hasWireframe = args.wireframe;
@@ -1140,48 +1143,6 @@ function k_clamp(value, min, max)
 {
     return Math.min(Math.max(value, min), max);
 }/*
- * Most recent known filename: js/color.js
- *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
- *
- */
-
-"use strict";
-
-Rsed.color_n = (function()
-{
-    const publicInterface = {};
-    {
-        // Red, green, blue, alpha.
-        publicInterface.rgba_o = function(r = 55, g = 55, b = 55, a = 255)
-        {
-            Rsed.assert && (((r >= 0) && (r <= 255)) &&
-                            ((g >= 0) && (g <= 255)) &&
-                            ((b >= 0) && (b <= 255)) &&
-                            ((a >= 0) && (a <= 255)))
-                        || Rsed.throw("The given color values are out of range.");
-
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.a = a;
-            
-            // Returns the color as a "#rrggbb" string. Ignores alpha.
-            this.to_hex = function()
-            {
-                const hex_value = function(value)
-                {
-                    return (((value < 10)? "0" : "") + value.toString(16));
-                };
-
-                return ("#" + hex_value(this.r) + hex_value(this.g) + hex_value(this.b));
-            }
-        }
-    }
-    return publicInterface;
-})();
-/*
  * Most recent known filename: js/texture.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
@@ -1242,223 +1203,236 @@ Rsed.texture = function(args = {})
     return publicInterface;
 }
 /*
- * Most recent known filename: js/palette.js
+ * Most recent known filename: js/visual/palette.js
  *
- * Tarpeeksi Hyvae Soft 2018 /
+ * 2019 Tarpeeksi Hyvae Soft /
  * RallySportED-js
- * 
- * Rally-Sport's four VGA mode 13h palettes.
  *
  */
 
 "use strict";
 
-Rsed.palette_n = (function()
+Rsed.palette = (function()
 {
-    // There are four palettes in the game. This decides which of them is currently active.
-    let currentPalette = 0;
+    // The four hard-coded palettes in Rally-Sport's demo.
+    const rallySportPalettes = [
+                    // Palette #1.
+                   [{r:0, g:0, b:0},
+                    {r:8, g:64, b:16},
+                    {r:16, g:96, b:36},
+                    {r:24, g:128, b:48},
+                    {r:252, g:0, b:0},
+                    {r:252, g:252, b:252},
+                    {r:192, g:192, b:192},
+                    {r:128, g:128, b:128},
+                    {r:64, g:64, b:64},
+                    {r:0, g:0, b:252},
+                    {r:72, g:128, b:252},
+                    {r:208, g:100, b:252},
+                    {r:208, g:72, b:44},
+                    {r:252, g:112, b:76},
+                    {r:16, g:96, b:32},
+                    {r:32, g:192, b:64},
+                    {r:228, g:56, b:244},
+                    {r:132, g:36, b:172},
+                    {r:68, g:92, b:252},
+                    {r:252, g:252, b:48},
+                    {r:32, g:32, b:32},
+                    {r:152, g:48, b:24},
+                    {r:80, g:24, b:12},
+                    {r:124, g:124, b:24},
+                    {r:128, g:0, b:0},
+                    {r:12, g:20, b:132},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:136, g:28, b:128},
+                    {r:16, g:252, b:8}],
 
-    const palettes = [];
+                    // Palette #2.
+                   [{r:0, g:0, b:0},
+                    {r:80, g:88, b:104},
+                    {r:96, g:104, b:120},
+                    {r:112, g:128, b:144},
+                    {r:252, g:0, b:0},
+                    {r:252, g:252, b:252},
+                    {r:192, g:192, b:192},
+                    {r:128, g:128, b:128},
+                    {r:64, g:64, b:64},
+                    {r:0, g:0, b:252},
+                    {r:72, g:128, b:252},
+                    {r:208, g:100, b:252},
+                    {r:208, g:72, b:44},
+                    {r:252, g:112, b:76},
+                    {r:8, g:136, b:16},
+                    {r:32, g:192, b:64},
+                    {r:228, g:56, b:244},
+                    {r:132, g:36, b:172},
+                    {r:68, g:92, b:252},
+                    {r:252, g:252, b:48},
+                    {r:32, g:32, b:32},
+                    {r:152, g:48, b:24},
+                    {r:80, g:24, b:12},
+                    {r:124, g:124, b:24},
+                    {r:128, g:0, b:0},
+                    {r:12, g:20, b:132},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:136, g:28, b:128},
+                    {r:16, g:252, b:8}],
 
-    const publicInterface = {};
+                    // Palette #3.
+                   [{r:0, g:0, b:0},
+                    {r:72, g:20, b:12},
+                    {r:144, g:44, b:20},
+                    {r:168, g:56, b:28},
+                    {r:252, g:0, b:0},
+                    {r:252, g:252, b:252},
+                    {r:192, g:192, b:192},
+                    {r:128, g:128, b:128},
+                    {r:64, g:64, b:64},
+                    {r:0, g:0, b:252},
+                    {r:72, g:128, b:252},
+                    {r:208, g:100, b:252},
+                    {r:208, g:72, b:44},
+                    {r:252, g:112, b:76},
+                    {r:16, g:96, b:32},
+                    {r:32, g:192, b:64},
+                    {r:228, g:56, b:244},
+                    {r:132, g:36, b:172},
+                    {r:68, g:92, b:252},
+                    {r:252, g:252, b:48},
+                    {r:32, g:32, b:32},
+                    {r:152, g:48, b:24},
+                    {r:80, g:24, b:12},
+                    {r:124, g:124, b:24},
+                    {r:128, g:0, b:0},
+                    {r:12, g:20, b:132},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:136, g:28, b:128},
+                    {r:16, g:252, b:8}],
+
+                    // Palette #4.
+                   [{r:0, g:0, b:0},
+                    {r:28, g:52, b:8},
+                    {r:64, g:64, b:16},
+                    {r:80, g:84, b:28},
+                    {r:252, g:0, b:0},
+                    {r:252, g:252, b:252},
+                    {r:192, g:192, b:192},
+                    {r:128, g:128, b:128},
+                    {r:64, g:64, b:64},
+                    {r:0, g:0, b:252},
+                    {r:72, g:128, b:252},
+                    {r:208, g:100, b:252},
+                    {r:208, g:72, b:44},
+                    {r:252, g:112, b:76},
+                    {r:32, g:64, b:32},
+                    {r:64, g:128, b:64},
+                    {r:228, g:56, b:244},
+                    {r:132, g:36, b:172},
+                    {r:68, g:92, b:252},
+                    {r:252, g:252, b:48},
+                    {r:32, g:32, b:32},
+                    {r:152, g:48, b:24},
+                    {r:80, g:24, b:12},
+                    {r:124, g:124, b:24},
+                    {r:128, g:0, b:0},
+                    {r:12, g:20, b:132},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:252, g:252, b:252},
+                    {r:136, g:28, b:128},
+                    {r:16, g:252, b:8}]
+    ];
+
+    // The palette we'll operate on; which is to say, when the user requests us to return a
+    // color for a particular palette index, or to change the color at a particular index,
+    // this is the palette we'll use. Generally, this palette will contain a modifiable
+    // copy of one of Rally-Sport's hard-coded palettes.
+    const activePalette = (new Array(256)).fill().map(e=>({r:127,g:127,b:127}));
+
+    const publicInterface =
     {
-        // Re-initializes the palettes to their original values.
-        publicInterface.reset_palettes = function()
+        // Return the color at the given index in the palette. Optionally, the index may be
+        // a string identifying one of the pre-set UI colors (which are otherwise the same as
+        // regular colors, but guaranteed to remain constant even when the palette is otherwise
+        // altered during operation). The color is returned as an object containing the color's
+        // r, g, and b (for red, green, blue) properties. Aside from the UI colors, the object
+        // will be returned by reference to an index in the palette, so any changes to the
+        // palette afterwards will be reflected in colors returned previously.
+        color: (colorIdx = 0)=>
         {
-            palettes.length = 0;
+            // Named UI colors.
+            switch (colorIdx)
+            {
+                case "background":  return {r:16,  g:16,  b:16};
+                case "black":       return {r:0,   g:0,   b:0};
+                case "gray":
+                case "grey":        return {r:127, g:127, b:127};
+                case "lightgray":
+                case "lightgrey":   return {r:192, g:192, b:192};
+                case "dimgray":
+                case "dimgrey":     return {r:64,  g:64,  b:64};
+                case "white":       return {r:255, g:255, b:255};
+                case "blue":        return {r:0,   g:0,   b:255};
+                case "darkorchid":  return {r:153, g:50,  b:204};
+                case "paleorchid":  return {r:158, g:123, b:176};
+                case "yellow":      return {r:255, g:255, b:0};
+                case "red":         return {r:255, g:0,   b:0};
+                case "green":       return {r:0,   g:255, b:0};
+                case "gold":        return {r:179, g:112, b:25};
+                default: break;
+            }
 
-            palettes.push([ new Rsed.color_n.rgba_o(0, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(8, 64, 16, 255),
-                            new Rsed.color_n.rgba_o(16, 96, 36, 255),
-                            new Rsed.color_n.rgba_o(24, 128, 48, 255),
-                            new Rsed.color_n.rgba_o(252, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(192, 192, 192, 255),
-                            new Rsed.color_n.rgba_o(128, 128, 128, 255),
-                            new Rsed.color_n.rgba_o(64, 64, 64, 255),
-                            new Rsed.color_n.rgba_o(0, 0, 252, 255),
-                            new Rsed.color_n.rgba_o(72, 128, 252, 255),
-                            new Rsed.color_n.rgba_o(208, 100, 252, 255),
-                            new Rsed.color_n.rgba_o(208, 72, 44, 255),
-                            new Rsed.color_n.rgba_o(252, 112, 76, 255),
-                            new Rsed.color_n.rgba_o(16, 96, 32, 255),
-                            new Rsed.color_n.rgba_o(32, 192, 64, 255),
-                            new Rsed.color_n.rgba_o(228, 56, 244, 255),
-                            new Rsed.color_n.rgba_o(132, 36, 172, 255),
-                            new Rsed.color_n.rgba_o(68, 92, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 48, 255),
-                            new Rsed.color_n.rgba_o(32, 32, 32, 255),
-                            new Rsed.color_n.rgba_o(152, 48, 24, 255),
-                            new Rsed.color_n.rgba_o(80, 24, 12, 255),
-                            new Rsed.color_n.rgba_o(124, 124, 24, 255),
-                            new Rsed.color_n.rgba_o(128, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(12, 20, 132, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(136, 28, 128, 255),
-                            new Rsed.color_n.rgba_o(16, 252, 8, 255)]);
+            return activePalette[colorIdx];
+        },
 
-            palettes.push([ new Rsed.color_n.rgba_o(0, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(80, 88, 104, 255),
-                            new Rsed.color_n.rgba_o(96, 104, 120, 255),
-                            new Rsed.color_n.rgba_o(112, 128, 144, 255),
-                            new Rsed.color_n.rgba_o(252, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(192, 192, 192, 255),
-                            new Rsed.color_n.rgba_o(128, 128, 128, 255),
-                            new Rsed.color_n.rgba_o(64, 64, 64, 255),
-                            new Rsed.color_n.rgba_o(0, 0, 252, 255),
-                            new Rsed.color_n.rgba_o(72, 128, 252, 255),
-                            new Rsed.color_n.rgba_o(208, 100, 252, 255),
-                            new Rsed.color_n.rgba_o(208, 72, 44, 255),
-                            new Rsed.color_n.rgba_o(252, 112, 76, 255),
-                            new Rsed.color_n.rgba_o(8, 136, 16, 255),
-                            new Rsed.color_n.rgba_o(32, 192, 64, 255),
-                            new Rsed.color_n.rgba_o(228, 56, 244, 255),
-                            new Rsed.color_n.rgba_o(132, 36, 172, 255),
-                            new Rsed.color_n.rgba_o(68, 92, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 48, 255),
-                            new Rsed.color_n.rgba_o(32, 32, 32, 255),
-                            new Rsed.color_n.rgba_o(152, 48, 24, 255),
-                            new Rsed.color_n.rgba_o(80, 24, 12, 255),
-                            new Rsed.color_n.rgba_o(124, 124, 24, 255),
-                            new Rsed.color_n.rgba_o(128, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(12, 20, 132, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(136, 28, 128, 255),
-                            new Rsed.color_n.rgba_o(16, 252, 8, 255)]);
-
-            palettes.push([ new Rsed.color_n.rgba_o(0, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(72, 20, 12, 255),
-                            new Rsed.color_n.rgba_o(144, 44, 20, 255),
-                            new Rsed.color_n.rgba_o(168, 56, 28, 255),
-                            new Rsed.color_n.rgba_o(252, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(192, 192, 192, 255),
-                            new Rsed.color_n.rgba_o(128, 128, 128, 255),
-                            new Rsed.color_n.rgba_o(64, 64, 64, 255),
-                            new Rsed.color_n.rgba_o(0, 0, 252, 255),
-                            new Rsed.color_n.rgba_o(72, 128, 252, 255),
-                            new Rsed.color_n.rgba_o(208, 100, 252, 255),
-                            new Rsed.color_n.rgba_o(208, 72, 44, 255),
-                            new Rsed.color_n.rgba_o(252, 112, 76, 255),
-                            new Rsed.color_n.rgba_o(16, 96, 32, 255),
-                            new Rsed.color_n.rgba_o(32, 192, 64, 255),
-                            new Rsed.color_n.rgba_o(228, 56, 244, 255),
-                            new Rsed.color_n.rgba_o(132, 36, 172, 255),
-                            new Rsed.color_n.rgba_o(68, 92, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 48, 255),
-                            new Rsed.color_n.rgba_o(32, 32, 32, 255),
-                            new Rsed.color_n.rgba_o(152, 48, 24, 255),
-                            new Rsed.color_n.rgba_o(80, 24, 12, 255),
-                            new Rsed.color_n.rgba_o(124, 124, 24, 255),
-                            new Rsed.color_n.rgba_o(128, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(12, 20, 132, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(136, 28, 128, 255),
-                            new Rsed.color_n.rgba_o(16, 252, 8, 255)]);
-
-            palettes.push([ new Rsed.color_n.rgba_o(0, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(28, 52, 8, 255),
-                            new Rsed.color_n.rgba_o(64, 64, 16, 255),
-                            new Rsed.color_n.rgba_o(80, 84, 28, 255),
-                            new Rsed.color_n.rgba_o(252, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(192, 192, 192, 255),
-                            new Rsed.color_n.rgba_o(128, 128, 128, 255),
-                            new Rsed.color_n.rgba_o(64, 64, 64, 255),
-                            new Rsed.color_n.rgba_o(0, 0, 252, 255),
-                            new Rsed.color_n.rgba_o(72, 128, 252, 255),
-                            new Rsed.color_n.rgba_o(208, 100, 252, 255),
-                            new Rsed.color_n.rgba_o(208, 72, 44, 255),
-                            new Rsed.color_n.rgba_o(252, 112, 76, 255),
-                            new Rsed.color_n.rgba_o(32, 64, 32, 255),
-                            new Rsed.color_n.rgba_o(64, 128, 64, 255),
-                            new Rsed.color_n.rgba_o(228, 56, 244, 255),
-                            new Rsed.color_n.rgba_o(132, 36, 172, 255),
-                            new Rsed.color_n.rgba_o(68, 92, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 48, 255),
-                            new Rsed.color_n.rgba_o(32, 32, 32, 255),
-                            new Rsed.color_n.rgba_o(152, 48, 24, 255),
-                            new Rsed.color_n.rgba_o(80, 24, 12, 255),
-                            new Rsed.color_n.rgba_o(124, 124, 24, 255),
-                            new Rsed.color_n.rgba_o(128, 0, 0, 255),
-                            new Rsed.color_n.rgba_o(12, 20, 132, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(252, 252, 252, 255),
-                            new Rsed.color_n.rgba_o(136, 28, 128, 255),
-                            new Rsed.color_n.rgba_o(16, 252, 8, 255)]);
-        }
-        // Set new r,g,b values for the given palette entry in the currently-active palette.
-        publicInterface.modify_palette_entry = function(paletteIdx, r, g, b)
+        // Assign one of the four Rally-Sport palettes as the current active one.
+        set_palette: (paletteIdx)=>
         {
             Rsed.assert && ((paletteIdx >= 0) &&
-                            (paletteIdx < palettes[currentPalette].length))
-                        || Rsed.throw("Invalid palette index.");
+                            (paletteIdx < rallySportPalettes.length))
+                        || Rsed.throw("Trying to access a palette index out of bounds.");
 
-            palettes[currentPalette][paletteIdx].r = r;
-            palettes[currentPalette][paletteIdx].g = g;
-            palettes[currentPalette][paletteIdx].b = b;
-        }
-
-        publicInterface.set_palette_for_track = function(trackId = 0)
-        {
-            Rsed.assert && ((trackId >= 0) &&
-                            (trackId <= 7))
-                        || Rsed.throw("Trying to set palette for a track index out of bounds.");
-
-            switch (trackId)
+            rallySportPalettes[paletteIdx].forEach((color, idx)=>
             {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 5:
-                case 6: currentPalette = 0; break;
-                case 4: currentPalette = 1; break;
-                case 7: currentPalette = 3; break;
-                default: Rsed.throw("Unknown track id for setting a palette."); break;
-            }
-        }
+                activePalette[idx].r = color.r;
+                activePalette[idx].g = color.g;
+                activePalette[idx].b = color.b;
+            });
+        },
 
-        publicInterface.palette_idx_to_rgba = function(idx = 0)
+        // Change the color at the given palette index in the current active palette.
+        set_color: (paletteIdx = 0, newColor = {r:0,g:0,b:0})=>
         {
-            if (palettes.length === 0) return new Rsed.color_n.rgba_o(0, 0, 0, 0);
+            Rsed.assert && ((paletteIdx >= 0) &&
+                            (paletteIdx < rallySportPalettes.length))
+                        || Rsed.throw("Trying to access a palette index out of bounds.");
 
-            switch (idx)
+            newcolor =
             {
-                // UI colors.
-                case "background": return new Rsed.color_n.rgba_o(16, 16, 16, 255);
-                case "black": return new Rsed.color_n.rgba_o(0, 0, 0, 255);
-                case "gray": case "grey": return new Rsed.color_n.rgba_o(127, 127, 127, 255);
-                case "lightgray": case "lightgrey": return new Rsed.color_n.rgba_o(192, 192, 192, 255);
-                case "dimgray": case "dimgrey": return new Rsed.color_n.rgba_o(64, 64, 64, 255);
-                case "white": return new Rsed.color_n.rgba_o(255, 255, 255, 255);
-                case "blue": return new Rsed.color_n.rgba_o(0, 0, 255, 255);
-                case "darkorchid": return new Rsed.color_n.rgba_o(153, 50, 204, 255);
-                case "paleorchid": return new Rsed.color_n.rgba_o(158, 123, 176, 255);
-                case "yellow": return new Rsed.color_n.rgba_o(255, 255, 0, 255);
-                case "red": return new Rsed.color_n.rgba_o(255, 0, 0, 255);
-                case "green": return new Rsed.color_n.rgba_o(0, 255, 0, 255);
-                case "gold": return new Rsed.color_n.rgba_o(179, 112, 25, 255);
-                
-                // Rally-Sport's palettes.
-                default: return (palettes[currentPalette][idx] || palettes[currentPalette][0]);
+                ...
+                {
+                    r: activePalette[paletteIdx].r,
+                    g: activePalette[paletteIdx].g,
+                    b: activePalette[paletteIdx].b,
+                },
+                ...newColor,
             }
-        }
-    }
 
-    publicInterface.reset_palettes();
+            activePalette[paletteIdx].r = newColor.r;
+            activePalette[paletteIdx].g = newColor.g;
+            activePalette[paletteIdx].b = newColor.b;
+        },
+    };
 
     return publicInterface;
 })();
@@ -1551,7 +1525,7 @@ Rsed.geometry_n = {};
                     || Rsed.throw("Bad vertex count.");
 
         this.verts = new Array(numVertices).fill().map(()=>new Rsed.geometry_n.vertex_o());
-        this.color = new Rsed.color_n.rgba_o();
+        this.color = Rsed.palette.color("gray");
         this.texture = 0;
 
         // Whether to draw a wireframe around this polygon when rendering it.
@@ -2520,7 +2494,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                     (palaHeight > 0))
                 || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
 
-    const pixels = [].map.call(data, (colorIdx)=>Rsed.palette_n.palette_idx_to_rgba(colorIdx));
+    const pixels = [].map.call(data, (colorIdx)=>Rsed.palette.color(colorIdx));
 
     const palaSize = (palaWidth * palaHeight);
 
@@ -2545,7 +2519,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                     width: 1,
                     height: 1,
                     alpha: args.alpha,
-                    pixels: [Rsed.palette_n.palette_idx_to_rgba(0)],
+                    pixels: [Rsed.palette.color("black")],
                     indices: [0],
                 });
             }
@@ -2698,7 +2672,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                     const idx = ((textureRects[textureId].rect.topLeft.x + x) + (textureRects[textureId].rect.topLeft.y + y) * 128);
 
                     indices.push(textureAtlas[idx]);
-                    pixels.push(Rsed.palette_n.palette_idx_to_rgba(textureAtlas[idx]));
+                    pixels.push(Rsed.palette.color(textureAtlas[idx]));
                 }
             }
 
@@ -3846,7 +3820,7 @@ Rsed.ui_draw_n = (function()
                 const pixel = pixels[cx + cy * width];
                 if (alpha && (pixel === 0)) continue;
 
-                const color = ((pixel instanceof Rsed.color_n.rgba_o)? pixel : Rsed.palette_n.palette_idx_to_rgba(pixel));
+                const color = ((typeof pixel === "object")? pixel : Rsed.palette.color(pixel));
                 put_pixel((x + cx), (y + cy), color.r, color.g, color.b);
 
                 if (mousePick != null)
@@ -4173,7 +4147,7 @@ Rsed.ui_draw_n = (function()
                             const bufferTexel = Math.floor((Math.floor(x * palaWidth + px) / 2) +
                                                             Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
 
-                            palatPaneBuffer[bufferTexel] = Rsed.palette_n.palette_idx_to_rgba(pala.indices[palaTexel]);
+                            palatPaneBuffer[bufferTexel] = Rsed.palette.color(pala.indices[palaTexel]);
                             palatPaneMousePick[bufferTexel] = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
                                                                                                       {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
                         }
@@ -4969,7 +4943,7 @@ Rsed.ngon_fill_n = (function()
                                             pixelMap.data[idx + 0] = poly.color.r;
                                             pixelMap.data[idx + 1] = poly.color.g;
                                             pixelMap.data[idx + 2] = poly.color.b;
-                                            pixelMap.data[idx + 3] = poly.color.a;
+                                            pixelMap.data[idx + 3] = 255;
                                         }
                                         // Textured fill.
                                         else
@@ -4977,15 +4951,12 @@ Rsed.ngon_fill_n = (function()
                                             const texelIdx = (Math.floor(u) + Math.floor(v) * texture.width);
                                             const color = texture.pixels[texelIdx];
 
-                                            if (!color)
-                                            console.log(color, u, v, texelIdx, texture);
-
                                             if (!texture.alpha || texture.indices[texelIdx] != 0)
                                             {
                                                 pixelMap.data[idx + 0] = color.r;
                                                 pixelMap.data[idx + 1] = color.g;
                                                 pixelMap.data[idx + 2] = color.b;
-                                                pixelMap.data[idx + 3] = color.a;
+                                                pixelMap.data[idx + 3] = 255;
                                             }
                                         }
 
@@ -5233,9 +5204,11 @@ Rsed.core = (function()
         project = await Rsed.project(args.projectName);
 
         Rsed.apply_manifesto(project);
+        
         Rsed.camera_n.reset_camera_position();
-        Rsed.palette_n.reset_palettes();
-        Rsed.palette_n.set_palette_for_track(project.track_id());
+
+        Rsed.palette.set_palette(project.track_id() === 4? 1 :
+                                 project.track_id() === 7? 3 : 0);
 
         /// TODO. Prebake certain project data (like textures) to improve performance.
         // project.prebake_data();

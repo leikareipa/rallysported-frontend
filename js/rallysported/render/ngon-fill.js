@@ -149,7 +149,7 @@ Rsed.ngon_fill_n = (function()
                                             pixelMap.data[idx + 0] = poly.color.r;
                                             pixelMap.data[idx + 1] = poly.color.g;
                                             pixelMap.data[idx + 2] = poly.color.b;
-                                            pixelMap.data[idx + 3] = poly.color.a;
+                                            pixelMap.data[idx + 3] = 255;
                                         }
                                         // Textured fill.
                                         else
@@ -157,15 +157,12 @@ Rsed.ngon_fill_n = (function()
                                             const texelIdx = (Math.floor(u) + Math.floor(v) * texture.width);
                                             const color = texture.pixels[texelIdx];
 
-                                            if (!color)
-                                            console.log(color, u, v, texelIdx, texture);
-
                                             if (!texture.alpha || texture.indices[texelIdx] != 0)
                                             {
                                                 pixelMap.data[idx + 0] = color.r;
                                                 pixelMap.data[idx + 1] = color.g;
                                                 pixelMap.data[idx + 2] = color.b;
-                                                pixelMap.data[idx + 3] = color.a;
+                                                pixelMap.data[idx + 3] = 255;
                                             }
                                         }
 

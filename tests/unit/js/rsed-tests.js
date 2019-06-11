@@ -223,22 +223,6 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
         }
     });
 
-    unit("Color", ()=>
-    {
-        {
-            const c = new Rsed.color_n.rgba_o(1, 2, 3);
-            expect_true([()=>(c.a == 255)]); // Alpha channel should default to 255.
-        }
-
-        // Color conversion from RGB to hex.
-        expect_true([()=>((new Rsed.color_n.rgba_o(132, 7, 99)).to_hex() === "#840763")]);
-
-        expect_fail([()=>{new Rsed.color_n.rgba_o(-132, 7, 99);}, // Invalid arguments: blue underflow.
-                     ()=>{new Rsed.color_n.rgba_o(132, 256, 0);}, // Invalid arguments: green overflow.
-                     ()=>{new Rsed.color_n.rgba_o(132, 989965312314, 0);}, // Invalid arguments: gren overflow.
-                     ()=>{new Rsed.color_n.rgba_o(0, 0, 0, 256);}]); // Invalid arguments: alpha overflow.
-    });
-
     unit("Texture", ()=>
     {
         // Creating a texture.

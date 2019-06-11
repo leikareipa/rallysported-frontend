@@ -87,7 +87,7 @@ Rsed.geometry_n = {};
                     || Rsed.throw("Bad vertex count.");
 
         this.verts = new Array(numVertices).fill().map(()=>new Rsed.geometry_n.vertex_o());
-        this.color = new Rsed.color_n.rgba_o();
+        this.color = Rsed.palette.color("gray");
         this.texture = 0;
 
         // Whether to draw a wireframe around this polygon when rendering it.

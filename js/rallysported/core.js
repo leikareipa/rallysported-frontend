@@ -195,9 +195,11 @@ Rsed.core = (function()
         project = await Rsed.project(args.projectName);
 
         Rsed.apply_manifesto(project);
+        
         Rsed.camera_n.reset_camera_position();
-        Rsed.palette_n.reset_palettes();
-        Rsed.palette_n.set_palette_for_track(project.track_id());
+
+        Rsed.palette.set_palette(project.track_id() === 4? 1 :
+                                 project.track_id() === 7? 3 : 0);
 
         /// TODO. Prebake certain project data (like textures) to improve performance.
         // project.prebake_data();

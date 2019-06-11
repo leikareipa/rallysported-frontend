@@ -24,4 +24,10 @@ Rsed.constants = Object.freeze(
 
     // The maximum number of props on a track.
     maxPropCount: 14,
+
+    // How many hard-coded palettes there are in Rally-Sport's demo version.
+    numPalettes: 4,
+
+    // How many colors there are in one of Rally-Sport's hard-coded palettes.
+    paletteSize: 32,
 });

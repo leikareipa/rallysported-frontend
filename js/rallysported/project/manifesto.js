@@ -13,9 +13,7 @@ Rsed.apply_manifesto = function(project)
     Rsed.assert && (!project.isPlaceholder)
                 || Rsed.throw("Can't apply manifestos to placeholder projects.");
 
-    const commands = project.manifesto.split("\n").filter(Boolean);
-
-    console.log(commands[commands.length-1])
+    const commands = project.manifesto.split("\n").filter(line=>line.trim().length);
 
     Rsed.assert && (commands.length >= 2)
                 || Rsed.throw("Invalid number of lines in the manifesto.");
@@ -135,7 +133,7 @@ Rsed.apply_manifesto = function(project)
             const g = Math.floor(Number(args[2] * 4));
             const b = Math.floor(Number(args[3] * 4));
             
-            Rsed.palette_n.modify_palette_entry(targetPaletteIdx, r, g, b);
+            Rsed.palette.set_color(targetPaletteIdx, {r, g, b});
         }
 
         // Command: STOP. Stops parsing the manifesto file.

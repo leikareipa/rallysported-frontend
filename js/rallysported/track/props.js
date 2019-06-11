@@ -130,7 +130,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                     const idx = ((textureRects[textureId].rect.topLeft.x + x) + (textureRects[textureId].rect.topLeft.y + y) * 128);
 
                     indices.push(textureAtlas[idx]);
-                    pixels.push(Rsed.palette_n.palette_idx_to_rgba(textureAtlas[idx]));
+                    pixels.push(Rsed.palette.color(textureAtlas[idx]));
                 }
             }
 
