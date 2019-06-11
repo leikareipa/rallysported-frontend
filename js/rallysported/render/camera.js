@@ -37,8 +37,8 @@ Rsed.camera_n = (function()
             {
                 if (position.x < 0) position.x = 0;
                 if (position.z < 1) position.z = 1;
-                if (position.x > (Rsed.core.project().maasto.width - this.view_width())) position.x = (Rsed.core.project().maasto.width - this.view_width());
-                if (position.z > (Rsed.core.project().maasto.width - this.view_height()+1)) position.z = (Rsed.core.project().maasto.width - this.view_height()+1);
+                if (position.x > (Rsed.core.current_project().maasto.width - this.view_width())) position.x = (Rsed.core.current_project().maasto.width - this.view_width());
+                if (position.z > (Rsed.core.current_project().maasto.width - this.view_height()+1)) position.z = (Rsed.core.current_project().maasto.width - this.view_height()+1);
             }
         }
 

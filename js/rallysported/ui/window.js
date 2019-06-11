@@ -117,7 +117,7 @@ window.oncontextmenu = function(event)
     // Display a right-click menu for changing the type of the prop under the cursor.
     if (!Rsed.shared_mode_n.enabled() &&
         (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
-        !Rsed.core.project().props.name(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+        !Rsed.core.current_project().props.name(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const propDropdown = document.getElementById("prop-dropdown");
         propDropdown.style.transform = "translate(" + (RSED_MOUSE_POS.x - 40) + "px, " + (RSED_MOUSE_POS.y - 0) + "px)";
@@ -201,7 +201,7 @@ window.onkeydown = function(event)
             case "w": case 87: Rsed.ui_view_n.show3dWireframe = !Rsed.ui_view_n.show3dWireframe; break;
             case "a": case 65: Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane; break;
             case "r": case 82: Rsed.ui_view_n.toggle_view("3d", "3d-topdown"); break;
-            case "l": case 76: Rsed.core.project().maasto.bulldoze(window.prompt("Level the terrain to a height of...")); break;
+            case "l": case 76: Rsed.core.current_project().maasto.bulldoze(window.prompt("Level the terrain to a height of...")); break;
             case "b": case 66: Rsed.ui_view_n.hideProps = !Rsed.ui_view_n.hideProps; break;
             case "spacebar": case 32: Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens; event.preventDefault(); break;
             case "1": case 49: Rsed.ui_brush_n.set_brush_size(0); break;

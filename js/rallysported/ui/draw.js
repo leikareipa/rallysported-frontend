@@ -162,9 +162,9 @@ Rsed.ui_draw_n = (function()
             {
                 const xStr = String(x).padStart(3, "0");
                 const yStr = String(y).padStart(3, "0");
-                const heightStr = (Rsed.core.project().maasto.tile_at(x, y) < 0? "-" : "+") +
-                                  String(Math.abs(Rsed.core.project().maasto.tile_at(x, y))).padStart(3, "0");
-                const palaStr = String(Rsed.core.project().varimaa.tile_at(x, y)).padStart(3, "0");
+                const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
+                                  String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
+                const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
 
                 str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
 
@@ -172,7 +172,7 @@ Rsed.ui_draw_n = (function()
             }
             case Rsed.ui_input_n.mousePickingType.prop:
             {
-                str = "PROP:" + Rsed.core.project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
+                str = "PROP:" + Rsed.core.current_project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
                       " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
             }
         }
@@ -201,8 +201,8 @@ Rsed.ui_draw_n = (function()
         /// TODO: You can pre-generate the image rather than re-generating it each frame.
         const width = 64;
         const height = 32;
-        const xMul = (Rsed.core.project().maasto.width / width);
-        const yMul = (Rsed.core.project().maasto.width / height);
+        const xMul = (Rsed.core.current_project().maasto.width / width);
+        const yMul = (Rsed.core.current_project().maasto.width / height);
         const image = [];   // An array of palette indices that forms the minimap image.
         const mousePick = [];
         for (let y = 0; y < height; y++)
@@ -212,7 +212,7 @@ Rsed.ui_draw_n = (function()
                 const tileX = (x * xMul);
                 const tileZ = (y * yMul);
 
-                const pala = Rsed.core.project().palat.texture[Rsed.core.project().varimaa.tile_at(tileX, tileZ)];
+                const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
                 let color = ((pala == null)? 0 : pala.indices[1]);
 
                 // Have a black outline.
@@ -259,7 +259,7 @@ Rsed.ui_draw_n = (function()
     function draw_active_pala()
     {
         const currentPala = Rsed.ui_brush_n.brush_pala_idx();
-        const pala = Rsed.core.project().palat.texture[currentPala];
+        const pala = Rsed.core.current_project().palat.texture[currentPala];
 
         if (pala != null)
         {
@@ -276,8 +276,8 @@ Rsed.ui_draw_n = (function()
         const width = Math.floor(Rsed.core.render_width() * 0.81);
         const height = Math.floor(Rsed.core.render_height() * 0.72);
         {
-            const xMul = (Rsed.core.project().maasto.width / width);
-            const zMul = (Rsed.core.project().maasto.width / height);
+            const xMul = (Rsed.core.current_project().maasto.width / width);
+            const zMul = (Rsed.core.current_project().maasto.width / height);
             const image = [];   // An array of palette indices that forms the minimap image.
             const mousePick = [];
 
@@ -288,7 +288,7 @@ Rsed.ui_draw_n = (function()
                     const tileX = Math.floor(x * xMul);
                     const tileZ = Math.floor(z * zMul);
 
-                    const pala = Rsed.core.project().palat.texture[Rsed.core.project().varimaa.tile_at(tileX, tileZ)];
+                    const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
                     let color = ((pala == null)? 0 : pala.indices[1]);
 
                     // Create an outline.
@@ -315,7 +315,7 @@ Rsed.ui_draw_n = (function()
             draw_image(image, mousePick, width, height, ((pixelSurface.width / 2) - (width / 2)), ((pixelSurface.height / 2) - (height / 2)), false);
         }
 
-        draw_string("TRACK SIZE:" + Rsed.core.project().maasto.width + "," + Rsed.core.project().maasto.width,
+        draw_string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
                     ((pixelSurface.width / 2) - (width / 2)),
                     ((pixelSurface.height / 2) - (height / 2)) - Rsed.ui_font_n.font_height());
     }
@@ -407,7 +407,7 @@ Rsed.ui_draw_n = (function()
                 {
                     if (palaIdx > maxNumPalas) break;
 
-                    const pala = Rsed.core.project().palat.texture[palaIdx];
+                    const pala = Rsed.core.current_project().palat.texture[palaIdx];
                     for (let py = 0; py < palaHeight; py++)
                     {
                         for (let px = 0; px < palaWidth; px++)

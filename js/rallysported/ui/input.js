@@ -127,12 +127,12 @@ Rsed.ui_input_n = (function()
                     if (mouseLeftPressed &&
                         !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
                     {
-                        Rsed.core.project().props.add_location(Rsed.core.project().track_id(),
-                                                                 Rsed.core.project().props.id_for_name("tree"),
-                                                                 {
-                                                                     x: (hoverArgs.tileX * Rsed.constants.groundTileSize),
-                                                                     z: (hoverArgs.tileZ * Rsed.constants.groundTileSize),
-                                                                 });
+                        Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
+                                                                       Rsed.core.current_project().props.id_for_name("tree"),
+                                                                       {
+                                                                           x: (hoverArgs.tileX * Rsed.constants.groundTileSize),
+                                                                           z: (hoverArgs.tileZ * Rsed.constants.groundTileSize),
+                                                                       });
 
                         mouseLock.hibernating = true;
                     }
@@ -168,7 +168,7 @@ Rsed.ui_input_n = (function()
                     // Remove the selected prop.
                     if (shiftPressed)
                     {
-                        Rsed.core.project().props.remove(Rsed.core.project().track_id(), mouseLock.propTrackId);
+                        Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), mouseLock.propTrackId);
                         mouseLock.hibernating = true;
                     }
                     // Drag the prop.
@@ -177,12 +177,12 @@ Rsed.ui_input_n = (function()
                         // For now, don't allow moving the starting line (prop #0).
                         if (mouseLock.propTrackId !== 0)
                         {
-                            Rsed.core.project().props.move(Rsed.core.project().track_id(),
-                                                             mouseLock.propTrackId,
-                                                             {
-                                                                 x: Rsed.ui_input_n.mouse_pos_delta_x()*6,
-                                                                 z: Rsed.ui_input_n.mouse_pos_delta_y()*12,
-                                                             });
+                            Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
+                                                                   mouseLock.propTrackId,
+                                                                   {
+                                                                       x: Rsed.ui_input_n.mouse_pos_delta_x()*6,
+                                                                       z: Rsed.ui_input_n.mouse_pos_delta_y()*12,
+                                                                   });
                         }
                     }
                 }
@@ -308,8 +308,8 @@ Rsed.ui_input_n = (function()
                     // The tile coordinates can be out of bounds when the camera is moved outside of the
                     // track's boundaries. In that case, simply ignore them, since there's no interactible
                     // ground elements outside of the track.
-                    if ((args.tileX < 0) || (args.tileX >= Rsed.core.project().maasto.width) ||
-                        (args.tileZ < 0) || (args.tileZ >= Rsed.core.project().maasto.width))
+                    if ((args.tileX < 0) || (args.tileX >= Rsed.core.current_project().maasto.width) ||
+                        (args.tileZ < 0) || (args.tileZ >= Rsed.core.current_project().maasto.width))
                     {
                         return null;
                     }

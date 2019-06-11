@@ -42,7 +42,7 @@ Rsed.worldBuilder = function()
 
                     const tilePalaIdx = (()=>
                     {
-                        let idx = Rsed.core.project().varimaa.tile_at(tileX, (tileZ - 1));
+                        let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
                         if ((tileX === Rsed.ui_input_n.mouse_tile_hover_x()) &&
@@ -57,10 +57,10 @@ Rsed.worldBuilder = function()
                     // Construct the ground quad polygon.
                     {
                         // The heights of the ground quad's corner points.
-                        const height1 = centerView.y + Rsed.core.project().maasto.tile_at( tileX,       tileZ);
-                        const height2 = centerView.y + Rsed.core.project().maasto.tile_at((tileX + 1),  tileZ);
-                        const height3 = centerView.y + Rsed.core.project().maasto.tile_at((tileX + 1), (tileZ - 1));
-                        const height4 = centerView.y + Rsed.core.project().maasto.tile_at( tileX,      (tileZ - 1));
+                        const height1 = centerView.y + Rsed.core.current_project().maasto.tile_at( tileX,       tileZ);
+                        const height2 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1),  tileZ);
+                        const height3 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1), (tileZ - 1));
+                        const height4 = centerView.y + Rsed.core.current_project().maasto.tile_at( tileX,      (tileZ - 1));
                         
                         const groundQuad = new Rsed.geometry_n.polygon_o(4);
                         groundQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX, height1, vertZ);
@@ -69,7 +69,7 @@ Rsed.worldBuilder = function()
                         groundQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, height4, (vertZ + Rsed.constants.groundTileSize));
                         
                         groundQuad.hasWireframe = Rsed.ui_view_n.show3dWireframe;
-                        groundQuad.texture = Rsed.core.project().palat.texture[tilePalaIdx];
+                        groundQuad.texture = Rsed.core.current_project().palat.texture[tilePalaIdx];
 
                         // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
                         // rasterization we'll write into the mouse-picking buffer, so we can later determine which
@@ -83,7 +83,7 @@ Rsed.worldBuilder = function()
                     // If this tile has a billboard, add that too.
                     if (tilePalaIdx > 239 && tilePalaIdx < 248)
                     {
-                        const baseHeight = centerView.y + Rsed.core.project().maasto.tile_at(tileX, (tileZ - 1));
+                        const baseHeight = centerView.y + Rsed.core.current_project().maasto.tile_at(tileX, (tileZ - 1));
 
                         const billboardQuad = new Rsed.geometry_n.polygon_o(4);
                         billboardQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX, baseHeight, vertZ);
@@ -96,18 +96,18 @@ Rsed.worldBuilder = function()
                             // Spectators.
                             case 240:
                             case 241:
-                            case 242: billboardQuad.texture = Rsed.core.project().palat.generate_texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
+                            case 242: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
                             break;
         
                             // Shrubs.
-                            case 243: billboardQuad.texture = Rsed.core.project().palat.generate_texture(208, {alpha:true}); break;
-                            case 244: billboardQuad.texture = Rsed.core.project().palat.generate_texture(209, {alpha:true}); break;
-                            case 245: billboardQuad.texture = Rsed.core.project().palat.generate_texture(210, {alpha:true}); break;
+                            case 243: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(208, {alpha:true}); break;
+                            case 244: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(209, {alpha:true}); break;
+                            case 245: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(210, {alpha:true}); break;
         
                             // Small poles.
                             case 246:
-                            case 247: billboardQuad.texture = Rsed.core.project().palat.generate_texture(211, {alpha:true}); break;
-                            case 250: bbillboardQuadll.texture = Rsed.core.project().palat.generate_texture(212, {alpha:true}); break;
+                            case 247: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(211, {alpha:true}); break;
+                            case 250: bbillboardQuadll.texture = Rsed.core.current_project().palat.generate_texture(212, {alpha:true}); break;
         
                             default: Rsed.throw("Unrecognized billboard texture."); continue;
                         }
@@ -123,7 +123,7 @@ Rsed.worldBuilder = function()
                         bridgeQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize));
                         bridgeQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize));
 
-                        bridgeQuad.texture = Rsed.core.project().palat.generate_texture(177, {alpha:true});
+                        bridgeQuad.texture = Rsed.core.current_project().palat.generate_texture(177, {alpha:true});
 
                         trackPolygons.push(bridgeQuad);
                     }
@@ -131,7 +131,7 @@ Rsed.worldBuilder = function()
             }
 
             // Add any track prop meshes that should be visible on the currently-drawn track.
-            const propLocations = Rsed.core.project().props.locations_of_props_on_track(Rsed.core.project().track_id());
+            const propLocations = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().track_id());
             propLocations.forEach((pos, idx)=>
             {
                 if ((pos.x >= (Rsed.camera_n.pos_x() * Rsed.constants.groundTileSize)) &&
@@ -141,7 +141,7 @@ Rsed.worldBuilder = function()
                 {
                     const x = (pos.x + centerView.x - (viewPos.x * Rsed.constants.groundTileSize));
                     const z = (centerView.z - pos.z + (viewPos.z * Rsed.constants.groundTileSize));
-                    const groundHeight = centerView.y + Rsed.core.project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
+                    const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
                     const y = (groundHeight + pos.y);
 
                     trackPolygons.push(...this.prop_mesh(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
@@ -168,7 +168,7 @@ Rsed.worldBuilder = function()
                 ...args
             };
 
-            const srcMesh = Rsed.core.project().props.mesh(propId);
+            const srcMesh = Rsed.core.current_project().props.mesh(propId);
             const dstMesh = [];
 
             srcMesh.ngons.forEach(ngon=>
@@ -189,7 +189,7 @@ Rsed.worldBuilder = function()
 
                 if (ngon.fill.type === "texture")
                 {
-                    newPoly.texture = Rsed.core.project().props.texture(ngon.fill.idx);
+                    newPoly.texture = Rsed.core.current_project().props.texture(ngon.fill.idx);
                 }
                 else
                 {
@@ -218,7 +218,7 @@ Rsed.worldBuilder = function()
     {
         const firstSpectatorTexIdx = 236; // Index of the first PALA representing a (standing) spectator. Assumes consecutive arrangement.
         const numSkins = 4;
-        const sameRows = ((Rsed.core.project().maasto.width === 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
+        const sameRows = ((Rsed.core.current_project().maasto.width === 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
 
         const yOffs = (Math.floor(tileY / sameRows)) % numSkins;
         const texOffs = ((tileX + (numSkins - 1)) + (yOffs * (numSkins - 1))) % numSkins;

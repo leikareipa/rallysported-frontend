@@ -75,9 +75,9 @@ Rsed.core = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop: function(name = "")
                 {
-                    Rsed.core.project().props.change_prop_type(Rsed.core.project().track_id(),
-                                                               Rsed.ui_input_n.mouse_hover_args().trackId,
-                                                               Rsed.core.project().props.id_for_name(name));
+                    Rsed.core.current_project().props.change_prop_type(Rsed.core.current_project().track_id(),
+                                                                       Rsed.ui_input_n.mouse_hover_args().trackId,
+                                                                       Rsed.core.current_project().props.id_for_name(name));
                     window.close_dropdowns();
 
                     return;
@@ -85,10 +85,10 @@ Rsed.core = (function()
                 
                 refresh: function()
                 {
-                    this.trackName = Rsed.core.project().name;
-                    this.propList = Rsed.core.project().props.names()
-                                               .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
-                                               .map(propName=>({propName}));
+                    this.trackName = Rsed.core.current_project().name;
+                    this.propList = Rsed.core.current_project().props.names()
+                                                    .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
+                                                    .map(propName=>({propName}));
 
                     return;
                 }
@@ -153,7 +153,7 @@ Rsed.core = (function()
             /// TODO.
         },
 
-        project: ()=>project,
+        current_project: ()=>project,
         is_running: ()=>isRunning,
         render_width: ()=>renderer.render_width(),
         render_height: ()=>renderer.render_height(),
