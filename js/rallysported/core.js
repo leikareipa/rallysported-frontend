@@ -183,7 +183,14 @@ Rsed.core = (function()
             window.history.replaceState({}, document.title, basePath);
         },
 
-        current_project: ()=>project,
+        current_project: ()=>
+        {
+            Rsed.assert && (project !== null)
+                        || Rsed.throw("Attempting to access an uninitialized project.");
+
+            return project;
+        },
+        
         is_running: ()=>isRunning,
         render_width: ()=>renderer.render_width(),
         render_height: ()=>renderer.render_height(),

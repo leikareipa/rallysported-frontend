@@ -11,7 +11,7 @@
         <div id="html-ui" v-if="uiVisible" v-cloak>
             <span id="track-name-display">{{trackName.length? (trackName + ".") : ""}}</span>
 
-            <span class="button" onclick="Rsed.core.save_project_to_disk();"
+            <span class="button" onclick="Rsed.core.current_project().save_to_disk();"
                   style="color: rgb(0, 0, 0);
                          background-color: rgb(179, 112, 25);">
                 save to disk
