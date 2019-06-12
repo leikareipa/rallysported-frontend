@@ -29,26 +29,8 @@ Rsed.core = (function()
     // Initialize the renderer.
     const renderer = new Rsed.renderer_o("render_container", renderScalingMultiplier);
     {
-        // This function will run before each frame is painted.
-        renderer.set_prerefresh_callback(function()
-        {
-            // Create the scene mesh to be rendered.
-            {
-                renderer.meshes = [];
-
-                if (Rsed.ui_view_n.current_view() !== "2d-topdown")
-                {
-                    renderer.register_mesh(Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
-                                                                           y: 0,
-                                                                           z: Math.floor(Rsed.camera_n.pos_z())}))
-                }
-            }
-
-            Rsed.ui_input_n.enact_inputs();
-        });
-
         // This function will be called whenever the size of the render surface changes.
-        renderer.set_resize_callback(function()
+        renderer.set_resize_callback(()=>
         {
             Rsed.ui_draw_n.prebake_palat_pane();
         });
@@ -136,14 +118,17 @@ Rsed.core = (function()
             htmlUI.set_visible(true);
 
             isRunning = true;
+            tick();
         },
 
         // Terminate RallySporED with an error message.
-        panic: (errorMessage)=>
+        panic: function(errorMessage)
         {
             renderer.indicate_error(errorMessage);
+            renderer.remove_callbacks();
             htmlUI.set_visible(false);
             isRunning = false;
+            this.run = ()=>{};
         },
 
         current_project: ()=>
@@ -165,6 +150,31 @@ Rsed.core = (function()
     }
 
     return publicInterface;
+
+    // Called once per frame to orchestrate program flow.
+    function tick(timestamp = 0)
+    {
+        if (!isRunning) return;
+
+        // Create the 3d scene to be rendered.
+        {
+            renderer.clear_meshes();
+
+            if (Rsed.ui_view_n.current_view() !== "2d-topdown")
+            {
+                renderer.register_mesh(Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
+                                                                       y: 0,
+                                                                       z: Math.floor(Rsed.camera_n.pos_z())}))
+            }
+        }
+
+        // Poll and process user input.
+        Rsed.ui_input_n.enact_inputs();
+
+        renderer.render_next_frame(timestamp);
+
+        window.requestAnimationFrame((time)=>tick(time));
+    }
 
     // Test various browser compatibility factors, and give the user messages of warning where appropriate.
     function verify_browser_compatibility()

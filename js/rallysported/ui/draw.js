@@ -331,7 +331,8 @@ Rsed.ui_draw_n = (function()
 
             pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
 
-            draw_string("> RALLYSPORTED HAS STOPPED RUNNING. SORRY ABOUT THAT!", 2, Rsed.ui_font_n.font_height());
+            draw_string("RALLYSPORTED HAS STOPPED RUNNING. SORRY ABOUT THAT!", 2, Rsed.ui_font_n.font_height()*1);
+            draw_string("C:>_", 2, Rsed.ui_font_n.font_height()*3);
 
             renderSurface.exposed().putImageData(pixelSurface, 0, 0);
             pixelSurface = null;

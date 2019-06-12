@@ -20,13 +20,13 @@ const Rsed = {};
     // and keep this set to 'true'. The comparison against Rsed.assert may still
     // be done, though (I guess depending on the JS engine's ability to optimize).
     Object.defineProperty(Rsed, "assert", {value:true, writable:false});
-
+    
     Rsed.throw = (errMessage = "")=>
     {
         Rsed.core.panic(errMessage);
 
         alert("RallySportED error: " + errMessage);
-        throw Error("RallySportED error: " + errMessage);
+        throw new Error("RallySportED error: " + errMessage);
     }
 
     Rsed.alert = (message = "")=>

@@ -90,13 +90,13 @@ const Rsed = {};
     // and keep this set to 'true'. The comparison against Rsed.assert may still
     // be done, though (I guess depending on the JS engine's ability to optimize).
     Object.defineProperty(Rsed, "assert", {value:true, writable:false});
-
+    
     Rsed.throw = (errMessage = "")=>
     {
         Rsed.core.panic(errMessage);
 
         alert("RallySportED error: " + errMessage);
-        throw Error("RallySportED error: " + errMessage);
+        throw new Error("RallySportED error: " + errMessage);
     }
 
     Rsed.alert = (message = "")=>
@@ -2235,10 +2235,6 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
     this.cameraDirection = new Rsed.geometry_n.vector3_o(0, 0, 0);
     this.cameraPosition = new Rsed.geometry_n.vector3_o(0, 0, 260);
 
-    // The function to call before rendering a frame. This might, for instance,
-    // be a function that processes user input.
-    this.preRefreshCallbackFn = null;
-
     // The function to call when the size of the render surface changes.
     this.resizeCallbackFn = null;
 
@@ -2247,20 +2243,17 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
     this.previousFrameLatencyMs = 0;
     this.previousRenderTimestamp = 0;
 
-    this.set_prerefresh_callback = function(preRefreshFn)
-    {
-        Rsed.assert && (preRefreshFn instanceof Function)
-                    || Rsed.throw("Expected a function for the refresh callback.");
-
-        this.preRefreshCallbackFn = preRefreshFn;
-    }
-
     this.set_resize_callback = function(resizeFn)
     {
         Rsed.assert && (resizeFn instanceof Function)
                     || Rsed.throw("Expected a function. for the resize callback.");
 
         this.resizeCallbackFn = resizeFn;
+    }
+
+    this.remove_callbacks = function()
+    {
+        this.resizeCallbackFn = ()=>{};
     }
 
     this.render_width = function() { return this.renderSurface.width; }
@@ -2274,8 +2267,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
         Rsed.ui_draw_n.draw_crash_message(this.renderSurface, message);
     }
 
-    // The render loop; will run indefinitely.
-    this.render_loop = function(timestamp = 0)
+    this.render_next_frame = function(timestamp = 0)
     {
         if (Rsed.core && Rsed.core.is_running())
         {
@@ -2284,8 +2276,6 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 
             // Render the next frame.
             {
-                this.preRefreshCallbackFn();
-
                 if (this.renderSurface.update_size(this.scalingFactor))
                 {
                     this.resizeCallbackFn();
@@ -2338,8 +2328,6 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
                 Rsed.ui_draw_n.draw_ui(this.renderSurface);
             }
         }
-
-        window.requestAnimationFrame(this.render_loop.bind(this));
     }
 
     // Adds a mesh to be rendered. Meshes don't need to be added for each frame - add it
@@ -2350,6 +2338,11 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
                     || Rsed.throw("Expected a polygon mesh.");
 
         this.meshes.push(mesh);
+    }
+
+    this.clear_meshes = function()
+    {
+        this.meshes.length = 0;
     }
 
     this.move_camera = function(deltaX = 0, deltaY = 0, deltaZ = 0)
@@ -2369,9 +2362,6 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 
         return this.renderSurface.mousePickBuffer[x + y * this.renderSurface.width];
     }
-
-    // Start the rendering.
-    this.render_loop();
 }
 /*
  * Most recent known filename: js/render_surface.js
@@ -4332,7 +4322,8 @@ Rsed.ui_draw_n = (function()
 
             pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
 
-            draw_string("> RALLYSPORTED HAS STOPPED RUNNING. SORRY ABOUT THAT!", 2, Rsed.ui_font_n.font_height());
+            draw_string("RALLYSPORTED HAS STOPPED RUNNING. SORRY ABOUT THAT!", 2, Rsed.ui_font_n.font_height()*1);
+            draw_string("C:>_", 2, Rsed.ui_font_n.font_height()*3);
 
             renderSurface.exposed().putImageData(pixelSurface, 0, 0);
             pixelSurface = null;
@@ -5308,26 +5299,8 @@ Rsed.core = (function()
     // Initialize the renderer.
     const renderer = new Rsed.renderer_o("render_container", renderScalingMultiplier);
     {
-        // This function will run before each frame is painted.
-        renderer.set_prerefresh_callback(function()
-        {
-            // Create the scene mesh to be rendered.
-            {
-                renderer.meshes = [];
-
-                if (Rsed.ui_view_n.current_view() !== "2d-topdown")
-                {
-                    renderer.register_mesh(Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
-                                                                           y: 0,
-                                                                           z: Math.floor(Rsed.camera_n.pos_z())}))
-                }
-            }
-
-            Rsed.ui_input_n.enact_inputs();
-        });
-
         // This function will be called whenever the size of the render surface changes.
-        renderer.set_resize_callback(function()
+        renderer.set_resize_callback(()=>
         {
             Rsed.ui_draw_n.prebake_palat_pane();
         });
@@ -5415,14 +5388,17 @@ Rsed.core = (function()
             htmlUI.set_visible(true);
 
             isRunning = true;
+            tick();
         },
 
         // Terminate RallySporED with an error message.
-        panic: (errorMessage)=>
+        panic: function(errorMessage)
         {
             renderer.indicate_error(errorMessage);
+            renderer.remove_callbacks();
             htmlUI.set_visible(false);
             isRunning = false;
+            this.run = ()=>{};
         },
 
         current_project: ()=>
@@ -5444,6 +5420,31 @@ Rsed.core = (function()
     }
 
     return publicInterface;
+
+    // Called once per frame to orchestrate program flow.
+    function tick(timestamp = 0)
+    {
+        if (!isRunning) return;
+
+        // Create the 3d scene to be rendered.
+        {
+            renderer.clear_meshes();
+
+            if (Rsed.ui_view_n.current_view() !== "2d-topdown")
+            {
+                renderer.register_mesh(Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
+                                                                       y: 0,
+                                                                       z: Math.floor(Rsed.camera_n.pos_z())}))
+            }
+        }
+
+        // Poll and process user input.
+        Rsed.ui_input_n.enact_inputs();
+
+        renderer.render_next_frame(timestamp);
+
+        window.requestAnimationFrame((time)=>tick(time));
+    }
 
     // Test various browser compatibility factors, and give the user messages of warning where appropriate.
     function verify_browser_compatibility()

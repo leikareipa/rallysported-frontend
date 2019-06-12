@@ -40,10 +40,6 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
     this.cameraDirection = new Rsed.geometry_n.vector3_o(0, 0, 0);
     this.cameraPosition = new Rsed.geometry_n.vector3_o(0, 0, 260);
 
-    // The function to call before rendering a frame. This might, for instance,
-    // be a function that processes user input.
-    this.preRefreshCallbackFn = null;
-
     // The function to call when the size of the render surface changes.
     this.resizeCallbackFn = null;
 
@@ -52,20 +48,17 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
     this.previousFrameLatencyMs = 0;
     this.previousRenderTimestamp = 0;
 
-    this.set_prerefresh_callback = function(preRefreshFn)
-    {
-        Rsed.assert && (preRefreshFn instanceof Function)
-                    || Rsed.throw("Expected a function for the refresh callback.");
-
-        this.preRefreshCallbackFn = preRefreshFn;
-    }
-
     this.set_resize_callback = function(resizeFn)
     {
         Rsed.assert && (resizeFn instanceof Function)
                     || Rsed.throw("Expected a function. for the resize callback.");
 
         this.resizeCallbackFn = resizeFn;
+    }
+
+    this.remove_callbacks = function()
+    {
+        this.resizeCallbackFn = ()=>{};
     }
 
     this.render_width = function() { return this.renderSurface.width; }
@@ -79,8 +72,7 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
         Rsed.ui_draw_n.draw_crash_message(this.renderSurface, message);
     }
 
-    // The render loop; will run indefinitely.
-    this.render_loop = function(timestamp = 0)
+    this.render_next_frame = function(timestamp = 0)
     {
         if (Rsed.core && Rsed.core.is_running())
         {
@@ -89,8 +81,6 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 
             // Render the next frame.
             {
-                this.preRefreshCallbackFn();
-
                 if (this.renderSurface.update_size(this.scalingFactor))
                 {
                     this.resizeCallbackFn();
@@ -143,8 +133,6 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
                 Rsed.ui_draw_n.draw_ui(this.renderSurface);
             }
         }
-
-        window.requestAnimationFrame(this.render_loop.bind(this));
     }
 
     // Adds a mesh to be rendered. Meshes don't need to be added for each frame - add it
@@ -155,6 +143,11 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
                     || Rsed.throw("Expected a polygon mesh.");
 
         this.meshes.push(mesh);
+    }
+
+    this.clear_meshes = function()
+    {
+        this.meshes.length = 0;
     }
 
     this.move_camera = function(deltaX = 0, deltaY = 0, deltaZ = 0)
@@ -174,7 +167,4 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
 
         return this.renderSurface.mousePickBuffer[x + y * this.renderSurface.width];
     }
-
-    // Start the rendering.
-    this.render_loop();
 }
