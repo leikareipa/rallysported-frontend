@@ -16,8 +16,18 @@ A live page of RallySportED-js is available [here](http://tarpeeksihyvaesoft.com
 - Written in vanilla JavaScript (with a bit of Vue sprinkled in for the UI)
 
 ![](images/screenshots/beta.3/yleisoek.png)
-![](images/screenshots/beta.3/lumitaso.png)
 ![](images/screenshots/beta.3/hakkuu-yla.png)
+
+# Technical matters
+*(Coming.)*
+
+### Rally-Sport
+
+### RallySportED
+
+#### Project
+
+### The codebase
 
 # How to use
 ### User's guide
