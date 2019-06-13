@@ -8,7 +8,7 @@
  * 
  */
 
-$metaData = file_get_contents("../distributable/assets/metadata/props.json");
+$metaData = file_get_contents("../server/assets/metadata/props.json");
 
 if (!$metaData)
 {
