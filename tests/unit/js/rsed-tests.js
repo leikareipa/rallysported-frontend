@@ -6,9 +6,16 @@
  *
  */
 
- "use strict";
+"use strict";
 
-const unitTestResults = unit_tests("RallySportED (JS)", ()=>
+// The unit tester expects assertion failures to throw and only throw
+// (not also pop up window.alert()s or the like).
+Rsed.throw = (explanation = "(no reason given)")=>
+{
+    throw new Error(explanation);
+}
+
+const unitTestResults = unit_tests("RallySportED-js", ()=>
 {
     unit("Camera", ()=>
     {
@@ -225,9 +232,64 @@ const unitTestResults = unit_tests("RallySportED (JS)", ()=>
 
     unit("Texture", ()=>
     {
-        // Creating a texture.
+        const pixels = [{r:255, g:0, b:123}, {r:0, g:111, b:222}];
+        const indices = [0, 4];
+        const texture = Rsed.texture(
         {
-            /// TODO.
+            width: 2,
+            height: 1,
+            pixels,
+            indices,
+        });
+
+        expect_true([()=>(texture.pixels.length === 2),
+                     ()=>(texture.indices.length === 2),
+                     ()=>(texture.width === 2),
+                     ()=>(texture.height === 1)]);
+
+        // Default values.
+        expect_true([()=>(!texture.alpha),
+                     ()=>(texture.flipped === "no")]);
+
+        // Invalid/missing values.
+        expect_fail([()=>{Rsed.texture(
+                          {
+                              width: 3, // Should be 2.
+                              height: 1,
+                              pixels,
+                              indices,
+                          })},
+                     ()=>{Rsed.texture(
+                          {
+                              width: 2,
+                              height: 1,
+                              indices,
+                              // No pixel array provided.
+                          })},
+                     ()=>{Rsed.texture(
+                          {
+                              width: 2,
+                              // No width provided.
+                              pixels,
+                              indices,
+                          })}]);
+
+        // Immutability.
+        {
+            expect_fail([()=>{texture.pixels = 0},
+                         ()=>{texture.pixels[0] = 0},
+                         ()=>{texture.indices = 0},
+                         ()=>{texture.indices[0] = 0},
+                         ()=>{texture.width = 0},
+                         ()=>{texture.height = 0},
+                         ()=>{texture.alpha = 0},
+                         ()=>{texture.flipped = 0}]);
+
+            // Pixel color values should be copied by reference, but indices by value.
+            pixels[0].r = 777;
+            indices[0] = 777;
+            expect_true([()=>(texture.pixels[0].r === 777),
+                         ()=>(texture.indices[0] !== 777)]);
         }
     });
 });

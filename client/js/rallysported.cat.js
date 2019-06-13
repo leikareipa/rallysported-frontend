@@ -1391,11 +1391,21 @@ Rsed.texture = function(args = {})
     {
         ...
         {
+            // Pixel RGB values, each element being {r,g,b} (value range 0-255).
             pixels: [],
-            indices: [],
+
+            // Each pixel's corresponding palette index.
+            indices: [], 
+
+            // The texture's dimensions.
             width: 0,
             height: 0,
+
+            // Whether pixels with palette index 0 should be see-through. This is a hint to
+            // the renderer, which may or may not comply.
             alpha: false,
+
+            // Whether to flip (mirror) the texture's pixels.
             flipped: "no", // | "vertical"
         },
         ...args
