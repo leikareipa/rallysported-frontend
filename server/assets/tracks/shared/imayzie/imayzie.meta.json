@@ -1,0 +1,13 @@
+{
+    "comments":["Metadata for a shared RallySportED project."], 
+
+    "projectName":"test",
+    "trackWidth":128,
+    "trackHeight":128,
+
+    "binaryOffsets":
+    {
+        "maasto":4,
+        "varimaa":32776
+    }
+}

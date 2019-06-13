@@ -39,12 +39,11 @@ The guide will walk you through the basics of getting started with RallySportED-
 To set up RallySportED-js on a server, simply copy over the following items:
 - [index.php](index.php)
 - [index.css](index.css)
-- The [track-list/](track-list/) directory
 - The [server/](server/) directory
 - The [client/](client/) directory
     - From [client/js/](client/js/), only [client/js/rallysported.cat.js](client/js/rallysported.cat.js) is required
 
-You can use the address parameter `track` to have RallySportED-js load a particular track on page load. For instance, `?track=abc` will load the sample track `abc.zip` from [track-list/files/](track-list/files/).
+You can use the address parameter `track` to instruct RallySportED-js on which track to load up. For instance, `?track=abc` will load the sample track `abc` from [server/assets/tracks/local/abc](server/assets/tracks/local/abc). (Other parameters are also available; these will be documented in the near future.)
 
 # Project status
 RallySportED-js is currently in beta, with development occurring in sporadic increments.

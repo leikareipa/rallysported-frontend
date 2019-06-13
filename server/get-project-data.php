@@ -21,7 +21,7 @@ if (!preg_match('/^[0-9a-z]+$/', $_GET["projectId"]) ||
 }
 
 // Enter the directory containing the project's data
-if (!chdir("../track-list/server/" . $_GET["projectId"] . "/"))
+if (!chdir("./assets/tracks/local/" . $_GET["projectId"] . "/"))
 {
     exit(failure("A project by the given id does not exist on the server."));
 }

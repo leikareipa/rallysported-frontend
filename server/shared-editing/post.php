@@ -58,10 +58,7 @@ if (!preg_match('/^[a-z0-9]+$/', $_GET["participantId"]))
     exit(failure("Malformed participant id."));
 }
 
-// Assumes that the server is located two steps above to where the shared projects
-// are stored on the server.
-/// TODO: This is a bit kludgy, but works for now.
-if (!chdir("../../track-list/shared/" . $_GET["projectName"] . "/"))
+if (!chdir("./assets/tracks/shared/" . $_GET["projectName"] . "/"))
 {
     exit(failure("Invalid project name."));
 }

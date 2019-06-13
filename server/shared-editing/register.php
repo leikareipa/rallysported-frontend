@@ -38,7 +38,7 @@ if (!preg_match('/^[a-z0-9]+$/', $_GET["projectName"]))
     // Derive a random-ish, (hopefully) unique user id.
     $newParticipantId = strtolower(str_shuffle(uniqid() . bin2hex(random_bytes(10))));
 
-    $clientCacheFileName = ("../../track-list/shared/" . $_GET["projectName"] . "/participants/" . $newParticipantId . ".json");
+    $clientCacheFileName = ("./assets/tracks/shared/" . $_GET["projectName"] . "/participants/" . $newParticipantId . ".json");
     if (file_exists($clientCacheFileName))
     {
         exit(failure("A participant of the given name already exists."));
