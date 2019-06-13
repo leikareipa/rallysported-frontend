@@ -1434,8 +1434,8 @@ Rsed.texture = function(args = {})
         height: args.height,
         alpha: args.alpha,
         flipped: args.flipped,
-        pixels: Object.freeze([].map.call(args.pixels, e=>e)), // Convert into Array, then freeze.
-        indices: Object.freeze([].map.call(args.indices, e=>e)),
+        pixels: Object.freeze(Array.from(args.pixels)),
+        indices: Object.freeze(Array.from(args.indices)),
     });
 
     return publicInterface;
@@ -2745,7 +2745,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                     (palaHeight > 0))
                 || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
 
-    const pixels = [].map.call(data, (colorIdx)=>Rsed.palette.color(colorIdx));
+    const pixels = Array.from(data, (colorIdx)=>Rsed.palette.color(colorIdx));
 
     const palaSize = (palaWidth * palaHeight);
 
@@ -5780,10 +5780,10 @@ window.drop_handler = function(event)
     event.preventDefault();
 
     // See if the drop delivers a zip file.
-    const zipFile = [].map.call(event.dataTransfer.items, (item)=>{return item.getAsFile()})
-                          .filter(file=>(file != null))
-                          .filter(file=>(file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase() === "zip"))
-                          [0] || null;
+    const zipFile = Array.from(event.dataTransfer.items, (item)=>item.getAsFile())
+                         .filter(file=>(file != null))
+                         .filter(file=>(file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase() === "zip"))
+                         [0] || null;
 
     if (!zipFile)
     {

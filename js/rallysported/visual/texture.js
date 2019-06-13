@@ -57,8 +57,8 @@ Rsed.texture = function(args = {})
         height: args.height,
         alpha: args.alpha,
         flipped: args.flipped,
-        pixels: Object.freeze([].map.call(args.pixels, e=>e)), // Convert into Array, then freeze.
-        indices: Object.freeze([].map.call(args.indices, e=>e)),
+        pixels: Object.freeze(Array.from(args.pixels)),
+        indices: Object.freeze(Array.from(args.indices)),
     });
 
     return publicInterface;

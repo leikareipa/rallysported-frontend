@@ -242,10 +242,10 @@ window.drop_handler = function(event)
     event.preventDefault();
 
     // See if the drop delivers a zip file.
-    const zipFile = [].map.call(event.dataTransfer.items, (item)=>{return item.getAsFile()})
-                          .filter(file=>(file != null))
-                          .filter(file=>(file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase() === "zip"))
-                          [0] || null;
+    const zipFile = Array.from(event.dataTransfer.items, (item)=>item.getAsFile())
+                         .filter(file=>(file != null))
+                         .filter(file=>(file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase() === "zip"))
+                         [0] || null;
 
     if (!zipFile)
     {

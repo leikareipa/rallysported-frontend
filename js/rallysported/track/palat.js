@@ -29,7 +29,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                     (palaHeight > 0))
                 || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
 
-    const pixels = [].map.call(data, (colorIdx)=>Rsed.palette.color(colorIdx));
+    const pixels = Array.from(data, (colorIdx)=>Rsed.palette.color(colorIdx));
 
     const palaSize = (palaWidth * palaHeight);
 
