@@ -44,6 +44,6 @@
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
-        <script src="./distributable/rallysported.cat.js" defer></script>
+        <script src="./client/js/rallysported.cat.js" defer></script>
     </body>
 </html>
