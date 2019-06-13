@@ -115,7 +115,7 @@ const Rsed = {};
     Rsed.clamp = (value = 0, min = 0, max = 1)=>Math.min(Math.max(value, min), max);
 }
 /*
- * Most recent known filename: js/misc/manifesto.js
+ * Most recent known filename: js/project/manifesto.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
@@ -124,12 +124,15 @@ const Rsed = {};
 
 "use strict";
 
-Rsed.apply_manifesto = function(project)
+// Applies the given project's manifesto to the project's data.
+// The manifesto is a set of commands that control certain parameters in RallySportED projects;
+// like the positioning of certain track-side objects.
+Rsed.apply_manifesto = function(targetProject)
 {
-    Rsed.assert && (!project.isPlaceholder)
+    Rsed.assert && (!targetProject.isPlaceholder)
                 || Rsed.throw("Can't apply manifestos to placeholder projects.");
 
-    const commands = project.manifesto.split("\n").filter(line=>line.trim().length);
+    const commands = targetProject.manifesto.split("\n").filter(line=>line.trim().length);
 
     Rsed.assert && (commands.length >= 2)
                 || Rsed.throw("Invalid number of lines in the manifesto.");
@@ -154,18 +157,18 @@ Rsed.apply_manifesto = function(project)
 
         eval("apply_" + command)(params);
 
-        // Command: REQUIRE. Specifies which of Rally-Sport's eight tracks (in the demo version) the project
-        // is based on.
+        // Command: REQUIRE. Specifies which of the eight tracks in Rally-Sport's demo the project
+        // is forked from.
         function apply_0(args = [])
         {
             Rsed.assert && (args.length === 3)
                         || Rsed.throw("Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
 
-            const trackId = Math.floor(Number(args[0])); // Note: The track id starts from 1.
+            const trackId = Math.floor(Number(args[0]) - 1);
             const palatId = Math.floor(Number(args[1]));
             const minRSEDLoaderVersion = Number(args[2]);
 
-            project.set_track_id(trackId - 1);
+            targetProject.set_track_id(trackId);
         }
 
         // Command: ROAD. Sets up the game's driving physics for various kinds of road surfaces.
@@ -183,7 +186,7 @@ Rsed.apply_manifesto = function(project)
 
             const numObjs = Math.floor(Number(args[0]));
 
-            project.props.set_count(project.track_id(), numObjs);
+            targetProject.props.set_count(targetProject.track_id(), numObjs);
         }
 
         // Command: ADD_OBJ. Adds a new prop to the track.
@@ -196,12 +199,12 @@ Rsed.apply_manifesto = function(project)
             const posX = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
             const posZ = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
 
-            project.props.add_location(project.track_id(),
-                                                     propId,
-                                                     {
-                                                         x: posX,
-                                                         z: posZ,
-                                                     });
+            targetProject.props.add_location(targetProject.track_id(),
+                                             propId,
+                                             {
+                                                 x: posX,
+                                                 z: posZ,
+                                             });
         }
 
         // Command: CHANGE_OBJ_TYPE. Changes the type of the given prop.
@@ -213,7 +216,7 @@ Rsed.apply_manifesto = function(project)
             const targetPropIdx = Math.floor(Number(args[0]) - 1);
             const newPropId = Math.floor(Number(args[1]) - 1);
 
-            project.props.change_prop_type(project.track_id(), targetPropIdx, newPropId);
+            targetProject.props.change_prop_type(targetProject.track_id(), targetPropIdx, newPropId);
         }
 
         // Command: MOVE_OBJ. Moves the position of the given prop.
@@ -226,7 +229,7 @@ Rsed.apply_manifesto = function(project)
             const x = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
             const z = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
 
-            project.props.set_prop_location(project.track_id(), targetPropIdx, {x, z});
+            targetProject.props.set_prop_location(targetProject.track_id(), targetPropIdx, {x, z});
         }
 
         // Command: MOVE_STARTING_POS. Moves the starting line. Note that this doesn't move the
@@ -261,7 +264,7 @@ Rsed.apply_manifesto = function(project)
     }
 };
 /*
- * Most recent known filename: js/misc/project.js
+ * Most recent known filename: js/project/project.js
  *
  * 2018-2019 Tarpeeksi Hyvae Soft /
  * RallySportED-js
@@ -270,11 +273,21 @@ Rsed.apply_manifesto = function(project)
 
 "use strict";
 
+// A RallySportED project is a collection of assets for a particular Rally-Sport track that
+// the user can modify using RallySportED. Namely, the project consists of two files: the
+// .DTA file (also called the "container"), and the .$FT file (also called the "manifesto").
+// The .DTA file is a binary file containing the track's individual assets; like heightmap,
+// tilemap, textures, etc. The .$FT file consists of an ASCII string providing commands
+// to RallySportED on how to modify certain hard-coded track parameters in Rally-Sport for
+// that particular track (e.g. the positioning of certain track-side objects, etc.).
 Rsed.project = async function(projectArgs = {})
 {
-    // Which of Rally-Sport's eight tracks (in the demo version) this project is for.
+    // Which of the eight tracks in Rally-Sport's demo version this project is for.
     let trackId = null;
 
+    // Load the project's data. After this, projectData.container is expected to hold the
+    // contents of the .DTA file as a Base64-encoded string; and projectData.manifesto the
+    // contents of the .$FT file as a plain string.
     const projectData = await fetch_project_data();
 
     Rsed.assert && ((typeof projectData.container !== "undefined") &&
@@ -292,6 +305,20 @@ Rsed.project = async function(projectArgs = {})
                     (projectData.meta.width === projectData.meta.height))
                 || Rsed.throw("Invalid track dimensions for a project.");
 
+    // Provides the (Base64-decoded) data of the container file; and metadata about the file,
+    // like the sizes and byte offsets of the individual asset data segments inside the file.
+    // Note: The variable names here reflect the names of Rally-Sport's data files. For more
+    // information, check out RallySportED's documentation on Rally-Sport's data formats at
+    // https://github.com/leikareipa/rallysported/tree/master/docs.
+    //
+    // In brief,
+    //
+    //     maasto: track heightmap
+    //     varimaa: track tilemap
+    //     palat: track tile textures
+    //     anims: animation frame textures
+    //     text: track prop textures
+    //
     const projectDataContainer = Object.freeze(
     {
         dataBuffer: (()=>
@@ -310,18 +337,6 @@ Rsed.project = async function(projectArgs = {})
 
         byteSize: function()
         {
-            // The variable names here reflect the names of Rally-Sport's data files. For more
-            // information, see RallySportED's documentation on Rally-Sport's data formats at
-            // https://github.com/leikareipa/rallysported/tree/master/docs.
-            //
-            // In short,
-            //
-            //     maasto: track heightmap
-            //     varimaa: track tilemap
-            //     palat: track tile textures
-            //     anims: animation frame textures
-            //     text: track prop textures
-            //
             const maasto = (new DataView(this.dataBuffer, 0, 4)).getUint32(0, true);
             const varimaa = (new DataView(this.dataBuffer, (maasto + 4), 4)).getUint32(0, true);
             const palat = (new DataView(this.dataBuffer, (maasto + varimaa + 8), 4)).getUint32(0, true);
@@ -346,9 +361,9 @@ Rsed.project = async function(projectArgs = {})
         },
     });
 
-    // The variable names here reflect the names of Rally-Sport's data files. For more
-    // information, see RallySportED's documentation on Rally-Sport's data formats at
-    // https://github.com/leikareipa/rallysported/tree/master/docs.
+    // Pass relevant segments of the container's data into objects responsible for managing
+    // the corresponding individual assets. Note that the data are passed by reference, so
+    // modifications made by the objects to the data will be reflected in the container.
     const maasto = Rsed.track.maasto(projectData.meta.width, projectData.meta.height,
                                      new Uint8Array(projectDataContainer.dataBuffer,
                                                     projectDataContainer.byteOffset().maasto,
@@ -412,7 +427,7 @@ Rsed.project = async function(projectArgs = {})
 
             zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:2}})
             .then((blob)=>saveAs(blob, (filename + ".ZIP")))
-            .catch((error)=>Rsed.throw("Erro while saving: " + error + "."));
+            .catch((error)=>Rsed.throw("Error while saving: " + error + "."));
         }
     });
 
@@ -689,7 +704,8 @@ Rsed.project.placeholder =
     },
 };
 
-// The contents of Rally-Sport's default HITABLE.TXT file.
+// The contents of Rally-Sport's default HITABLE.TXT file. We'll dump it into a file together
+// with the rest of the project's data when the project is saved to disk.
 Rsed.project.hitable = [0x41,0x2d,0x4a,0x75,0x6e,0x69,0x6f,0x72,0x69,0x00,0x20,0x20,
                         0x20,0x20,0x20,0x20,0x30,0x30,0x3a,0x33,0x30,0x3a,0x30,0x30,
                         0x0d,0x0a,0x41,0x2d,0x4a,0x75,0x6e,0x69,0x6f,0x72,0x69,0x00,
@@ -932,7 +948,7 @@ Rsed.constants = Object.freeze(
     paletteSize: 32,
 });
 /*
- * Most recent known filename: js/world-builder.js
+ * Most recent known filename: js/misc/world-builder.js
  *
  * 2019 Tarpeeksi Hyvae Soft /
  * RallySportED-js
@@ -941,15 +957,17 @@ Rsed.constants = Object.freeze(
 
 "use strict";
 
+// Provides functions returning renderable 3d meshes of various world items - like the track and
+// its props - accounting for user-specified arguments such as camera position.
 Rsed.worldBuilder = function()
 {
     const publicInterface =
     {
-        // Returns a renderable 3d mesh of the track from the given viewing position (in tile units).
+        // Returns a renderable 3d mesh of the current project's track from the given viewing position
+        // (in tile units). The mesh will be assigned such world coordinates that it'll be located
+        // roughly in the middle of the canvas when rendered.
         track_mesh: function(viewPos = {x:0,y:0,z:0})
         {
-            this.prop_mesh(0, 0);
-
             // The polygons that make up the track mesh.
             const trackPolygons = [];
 
@@ -1081,14 +1099,13 @@ Rsed.worldBuilder = function()
                 }
             });
 
-            /// Temp hack. We're tilting down all the ground elements to get the viewing angle we want,
-            /// but really it should be the camera's view vector that's pointed down and not the objects
-            /// themselves.
+            /// TODO. We're tilting down the mesh to get the viewing angle we want, but really it
+            /// should be the camera's view vector that gets tilted down and not the mesh.
             return new Rsed.geometry_n.polygon_mesh_o(trackPolygons, new Rsed.geometry_n.vector3_o(0, 0, 0),
                                                                      new Rsed.geometry_n.vector3_o(isTopdownView? (-Math.PI / 2) : -0.45, 0, 0));
         },
 
-        // Returns a renderable 3d mesh of the given prop at the given world position.
+        // Returns a renderable 3d mesh of the given prop at the given position (in world units).
         prop_mesh: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
         {
             args =
@@ -1096,7 +1113,7 @@ Rsed.worldBuilder = function()
                 ...
                 {
                     // Whether the renderer should draw a wireframe around this mesh.
-                    wireframe:false, // | true
+                    wireframe: false,
                 },
                 ...args
             };
@@ -2145,7 +2162,7 @@ Rsed.polygon_transform_n = (function()
 
 Rsed.camera_n = (function()
 {
-    // The camera's position, in track tile units.
+    // The camera's position, in tile units.
     const position = new Rsed.geometry_n.vector3_o(15, 0, 13);
     
     const direction = new Rsed.geometry_n.vector3_o(0, 0, 0);
@@ -2509,6 +2526,9 @@ Rsed.render_surface_n = (function()
 
 Rsed.track = Rsed.track || {};
 
+// Provides information about and the means to modify a track's tilemap (which Rally-Sport
+// calls "VARIMAA"). For more information about the track tilemap format used in Rally-Sport,
+// check out https://github.com/leikareipa/rallysported/tree/master/docs.
 Rsed.track.varimaa = function(varimaaWidth = 0, varimaaHeight = 0, data = Uint8Array)
 {
     Rsed.assert && (varimaaWidth === varimaaHeight)
@@ -2517,6 +2537,9 @@ Rsed.track.varimaa = function(varimaaWidth = 0, varimaaHeight = 0, data = Uint8A
     Rsed.assert && ((varimaaWidth > 0) &&
                     (varimaaHeight > 0))
                 || Rsed.throw("Expected VARIMAA width and height to be positive and non-zero.");
+
+    Rsed.assert && (data.byteLength === (varimaaWidth * varimaaHeight))
+                || Rsed.throw("Mismatched VARIMAA data length relative to its dimensions.");
 
     const publicInterface = 
     {
@@ -2570,6 +2593,9 @@ Rsed.track.varimaa = function(varimaaWidth = 0, varimaaHeight = 0, data = Uint8A
 
 Rsed.track = Rsed.track || {};
 
+// Provides information about and the means to modify a track's heightmap (which are called
+// "MAASTO" in Rally-Sport). For more information about the heightmap format used in Rally-
+// Sport, check out https://github.com/leikareipa/rallysported/tree/master/docs.
 Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Array)
 {
     Rsed.assert && (maastoWidth === maastoHeight)
@@ -2578,6 +2604,9 @@ Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Arra
     Rsed.assert && ((maastoWidth > 0) &&
                     (maastoHeight > 0))
                 || Rsed.throw("Expected MAASTO width and height to be positive and non-zero.");
+
+    Rsed.assert && (data.byteLength === (maastoWidth * maastoHeight * 2))
+                || Rsed.throw("Mismatched MAASTO data length relative to its dimensions.");
 
     const maxHeightmapValue = 255;
     const minHeightmapValue = -510;
@@ -2697,6 +2726,16 @@ Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Arra
 
 Rsed.track = Rsed.track || {};
 
+// Provides information about and the means to modify a track's textures (which are called
+// "PALA" in Rally-Sport). For more information about the track texture format used in Rally-
+// Sport, check out https://github.com/leikareipa/rallysported/tree/master/docs.
+//
+// The palaWidth and palaHeight parameters give the dimensions of a single PALA texture; which
+// would typically be 16 x 16. The data array contains the pixels of all of the track's PALA
+// textures (normally, about 256 of them), arranged so that the first (width * height) bytes
+// are the pixels of the first texture, the next (width * height) bytes those of the second
+// texture, etc. Each byte in the array gives the corresponding pixel's RGB color as a palette
+// index.
 Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
 {
     Rsed.assert && (palaWidth === palaHeight)
@@ -2806,6 +2845,13 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
 
 Rsed.track = Rsed.track || {};
 
+// Provides information about and the means to modify a track's props (track-side 3d objects,
+// like trees and the finish line). For more information about track props, check out the
+// documentation at https://github.com/leikareipa/rallysported/tree/master/docs; and the
+// prop metadata JSON file, distributable/assets/metadata/props.json.
+//
+// The textureAtlas parameter provides as an array the pixels of the prop texture atlas, with
+// each byte in it giving the corresponding pixel's RGB color as a palette index.
 Rsed.track.props = async function(textureAtlas = Uint8Array)
 {
     const data = await fetch_prop_metadata_from_server();
@@ -2816,7 +2862,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 || Rsed.throw("Missing properties in prop metadata.");
 
     // Filter out comments and other auxiliary info from the JSON data; and sort by the relevant
-    // index, so we can access the desired element with [x].
+    // index, so we can access the xth element with [x].
     const propNames = data.propNames.filter(m=>(typeof m.propId !== "undefined"))
                                     .sort((a, b)=>((a.propId === b.propId)? 0 : ((a.propId > b.propId)? 1 : -1)));
 

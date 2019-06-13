@@ -10,6 +10,13 @@
 
 Rsed.track = Rsed.track || {};
 
+// Provides information about and the means to modify a track's props (track-side 3d objects,
+// like trees and the finish line). For more information about track props, check out the
+// documentation at https://github.com/leikareipa/rallysported/tree/master/docs; and the
+// prop metadata JSON file, distributable/assets/metadata/props.json.
+//
+// The textureAtlas parameter provides as an array the pixels of the prop texture atlas, with
+// each byte in it giving the corresponding pixel's RGB color as a palette index.
 Rsed.track.props = async function(textureAtlas = Uint8Array)
 {
     const data = await fetch_prop_metadata_from_server();
@@ -20,7 +27,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 || Rsed.throw("Missing properties in prop metadata.");
 
     // Filter out comments and other auxiliary info from the JSON data; and sort by the relevant
-    // index, so we can access the desired element with [x].
+    // index, so we can access the xth element with [x].
     const propNames = data.propNames.filter(m=>(typeof m.propId !== "undefined"))
                                     .sort((a, b)=>((a.propId === b.propId)? 0 : ((a.propId > b.propId)? 1 : -1)));
 

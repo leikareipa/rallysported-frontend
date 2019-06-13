@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/world-builder.js
+ * Most recent known filename: js/misc/world-builder.js
  *
  * 2019 Tarpeeksi Hyvae Soft /
  * RallySportED-js
@@ -8,15 +8,17 @@
 
 "use strict";
 
+// Provides functions returning renderable 3d meshes of various world items - like the track and
+// its props - accounting for user-specified arguments such as camera position.
 Rsed.worldBuilder = function()
 {
     const publicInterface =
     {
-        // Returns a renderable 3d mesh of the track from the given viewing position (in tile units).
+        // Returns a renderable 3d mesh of the current project's track from the given viewing position
+        // (in tile units). The mesh will be assigned such world coordinates that it'll be located
+        // roughly in the middle of the canvas when rendered.
         track_mesh: function(viewPos = {x:0,y:0,z:0})
         {
-            this.prop_mesh(0, 0);
-
             // The polygons that make up the track mesh.
             const trackPolygons = [];
 
@@ -148,14 +150,13 @@ Rsed.worldBuilder = function()
                 }
             });
 
-            /// Temp hack. We're tilting down all the ground elements to get the viewing angle we want,
-            /// but really it should be the camera's view vector that's pointed down and not the objects
-            /// themselves.
+            /// TODO. We're tilting down the mesh to get the viewing angle we want, but really it
+            /// should be the camera's view vector that gets tilted down and not the mesh.
             return new Rsed.geometry_n.polygon_mesh_o(trackPolygons, new Rsed.geometry_n.vector3_o(0, 0, 0),
                                                                      new Rsed.geometry_n.vector3_o(isTopdownView? (-Math.PI / 2) : -0.45, 0, 0));
         },
 
-        // Returns a renderable 3d mesh of the given prop at the given world position.
+        // Returns a renderable 3d mesh of the given prop at the given position (in world units).
         prop_mesh: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
         {
             args =
@@ -163,7 +164,7 @@ Rsed.worldBuilder = function()
                 ...
                 {
                     // Whether the renderer should draw a wireframe around this mesh.
-                    wireframe:false, // | true
+                    wireframe: false,
                 },
                 ...args
             };

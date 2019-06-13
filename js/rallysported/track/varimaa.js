@@ -10,6 +10,9 @@
 
 Rsed.track = Rsed.track || {};
 
+// Provides information about and the means to modify a track's tilemap (which Rally-Sport
+// calls "VARIMAA"). For more information about the track tilemap format used in Rally-Sport,
+// check out https://github.com/leikareipa/rallysported/tree/master/docs.
 Rsed.track.varimaa = function(varimaaWidth = 0, varimaaHeight = 0, data = Uint8Array)
 {
     Rsed.assert && (varimaaWidth === varimaaHeight)
@@ -18,6 +21,9 @@ Rsed.track.varimaa = function(varimaaWidth = 0, varimaaHeight = 0, data = Uint8A
     Rsed.assert && ((varimaaWidth > 0) &&
                     (varimaaHeight > 0))
                 || Rsed.throw("Expected VARIMAA width and height to be positive and non-zero.");
+
+    Rsed.assert && (data.byteLength === (varimaaWidth * varimaaHeight))
+                || Rsed.throw("Mismatched VARIMAA data length relative to its dimensions.");
 
     const publicInterface = 
     {

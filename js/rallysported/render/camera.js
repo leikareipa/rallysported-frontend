@@ -10,7 +10,7 @@
 
 Rsed.camera_n = (function()
 {
-    // The camera's position, in track tile units.
+    // The camera's position, in tile units.
     const position = new Rsed.geometry_n.vector3_o(15, 0, 13);
     
     const direction = new Rsed.geometry_n.vector3_o(0, 0, 0);

@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/misc/project.js
+ * Most recent known filename: js/project/project.js
  *
  * 2018-2019 Tarpeeksi Hyvae Soft /
  * RallySportED-js
@@ -8,11 +8,21 @@
 
 "use strict";
 
+// A RallySportED project is a collection of assets for a particular Rally-Sport track that
+// the user can modify using RallySportED. Namely, the project consists of two files: the
+// .DTA file (also called the "container"), and the .$FT file (also called the "manifesto").
+// The .DTA file is a binary file containing the track's individual assets; like heightmap,
+// tilemap, textures, etc. The .$FT file consists of an ASCII string providing commands
+// to RallySportED on how to modify certain hard-coded track parameters in Rally-Sport for
+// that particular track (e.g. the positioning of certain track-side objects, etc.).
 Rsed.project = async function(projectArgs = {})
 {
-    // Which of Rally-Sport's eight tracks (in the demo version) this project is for.
+    // Which of the eight tracks in Rally-Sport's demo version this project is for.
     let trackId = null;
 
+    // Load the project's data. After this, projectData.container is expected to hold the
+    // contents of the .DTA file as a Base64-encoded string; and projectData.manifesto the
+    // contents of the .$FT file as a plain string.
     const projectData = await fetch_project_data();
 
     Rsed.assert && ((typeof projectData.container !== "undefined") &&
@@ -30,6 +40,20 @@ Rsed.project = async function(projectArgs = {})
                     (projectData.meta.width === projectData.meta.height))
                 || Rsed.throw("Invalid track dimensions for a project.");
 
+    // Provides the (Base64-decoded) data of the container file; and metadata about the file,
+    // like the sizes and byte offsets of the individual asset data segments inside the file.
+    // Note: The variable names here reflect the names of Rally-Sport's data files. For more
+    // information, check out RallySportED's documentation on Rally-Sport's data formats at
+    // https://github.com/leikareipa/rallysported/tree/master/docs.
+    //
+    // In brief,
+    //
+    //     maasto: track heightmap
+    //     varimaa: track tilemap
+    //     palat: track tile textures
+    //     anims: animation frame textures
+    //     text: track prop textures
+    //
     const projectDataContainer = Object.freeze(
     {
         dataBuffer: (()=>
@@ -48,18 +72,6 @@ Rsed.project = async function(projectArgs = {})
 
         byteSize: function()
         {
-            // The variable names here reflect the names of Rally-Sport's data files. For more
-            // information, see RallySportED's documentation on Rally-Sport's data formats at
-            // https://github.com/leikareipa/rallysported/tree/master/docs.
-            //
-            // In short,
-            //
-            //     maasto: track heightmap
-            //     varimaa: track tilemap
-            //     palat: track tile textures
-            //     anims: animation frame textures
-            //     text: track prop textures
-            //
             const maasto = (new DataView(this.dataBuffer, 0, 4)).getUint32(0, true);
             const varimaa = (new DataView(this.dataBuffer, (maasto + 4), 4)).getUint32(0, true);
             const palat = (new DataView(this.dataBuffer, (maasto + varimaa + 8), 4)).getUint32(0, true);
@@ -84,9 +96,9 @@ Rsed.project = async function(projectArgs = {})
         },
     });
 
-    // The variable names here reflect the names of Rally-Sport's data files. For more
-    // information, see RallySportED's documentation on Rally-Sport's data formats at
-    // https://github.com/leikareipa/rallysported/tree/master/docs.
+    // Pass relevant segments of the container's data into objects responsible for managing
+    // the corresponding individual assets. Note that the data are passed by reference, so
+    // modifications made by the objects to the data will be reflected in the container.
     const maasto = Rsed.track.maasto(projectData.meta.width, projectData.meta.height,
                                      new Uint8Array(projectDataContainer.dataBuffer,
                                                     projectDataContainer.byteOffset().maasto,
@@ -150,7 +162,7 @@ Rsed.project = async function(projectArgs = {})
 
             zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:2}})
             .then((blob)=>saveAs(blob, (filename + ".ZIP")))
-            .catch((error)=>Rsed.throw("Erro while saving: " + error + "."));
+            .catch((error)=>Rsed.throw("Error while saving: " + error + "."));
         }
     });
 
@@ -427,7 +439,8 @@ Rsed.project.placeholder =
     },
 };
 
-// The contents of Rally-Sport's default HITABLE.TXT file.
+// The contents of Rally-Sport's default HITABLE.TXT file. We'll dump it into a file together
+// with the rest of the project's data when the project is saved to disk.
 Rsed.project.hitable = [0x41,0x2d,0x4a,0x75,0x6e,0x69,0x6f,0x72,0x69,0x00,0x20,0x20,
                         0x20,0x20,0x20,0x20,0x30,0x30,0x3a,0x33,0x30,0x3a,0x30,0x30,
                         0x0d,0x0a,0x41,0x2d,0x4a,0x75,0x6e,0x69,0x6f,0x72,0x69,0x00,
