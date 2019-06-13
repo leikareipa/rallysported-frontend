@@ -5,35 +5,35 @@
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
 // FILES:
-//	../js/jszip/jszip.min.js
-//	../js/filesaver/FileSaver.min.js
-//	../js/rallysported/rallysported.js
-//	../js/rallysported/project/manifesto.js
-//	../js/rallysported/project/project.js
-//	../js/rallysported/misc/constants.js
-//	../js/rallysported/misc/world-builder.js
-//	../js/rallysported/misc/shared-mode.js
-//	../js/rallysported/visual/texture.js
-//	../js/rallysported/visual/palette.js
-//	../js/rallysported/transform/geometry.js
-//	../js/rallysported/transform/matrix44.js
-//	../js/rallysported/transform/poly-transform.js
-//	../js/rallysported/render/camera.js
-//	../js/rallysported/render/renderer.js
-//	../js/rallysported/render/render-surface.js
-//	../js/rallysported/track/varimaa.js
-//	../js/rallysported/track/maasto.js
-//	../js/rallysported/track/palat.js
-//	../js/rallysported/track/props.js
-//	../js/rallysported/ui/font.js
-//	../js/rallysported/ui/view.js
-//	../js/rallysported/ui/brush.js
-//	../js/rallysported/ui/draw.js
-//	../js/rallysported/ui/input.js
-//	../js/rallysported/render/line-draw.js
-//	../js/rallysported/render/ngon-fill.js
-//	../js/rallysported/core.js
-//	../js/rallysported/ui/window.js
+//	../client/js/jszip/jszip.min.js
+//	../client/js/filesaver/FileSaver.min.js
+//	../client/js/rallysported/rallysported.js
+//	../client/js/rallysported/project/manifesto.js
+//	../client/js/rallysported/project/project.js
+//	../client/js/rallysported/misc/constants.js
+//	../client/js/rallysported/misc/world-builder.js
+//	../client/js/rallysported/misc/shared-mode.js
+//	../client/js/rallysported/visual/texture.js
+//	../client/js/rallysported/visual/palette.js
+//	../client/js/rallysported/transform/geometry.js
+//	../client/js/rallysported/transform/matrix44.js
+//	../client/js/rallysported/transform/poly-transform.js
+//	../client/js/rallysported/render/camera.js
+//	../client/js/rallysported/render/renderer.js
+//	../client/js/rallysported/render/render-surface.js
+//	../client/js/rallysported/track/varimaa.js
+//	../client/js/rallysported/track/maasto.js
+//	../client/js/rallysported/track/palat.js
+//	../client/js/rallysported/track/props.js
+//	../client/js/rallysported/ui/font.js
+//	../client/js/rallysported/ui/view.js
+//	../client/js/rallysported/ui/brush.js
+//	../client/js/rallysported/ui/draw.js
+//	../client/js/rallysported/ui/input.js
+//	../client/js/rallysported/render/line-draw.js
+//	../client/js/rallysported/render/ngon-fill.js
+//	../client/js/rallysported/core.js
+//	../client/js/rallysported/ui/window.js
 /////////////////////////////////////////////////
 
 /*!
