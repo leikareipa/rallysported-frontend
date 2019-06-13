@@ -35,8 +35,15 @@ Rsed.texture = function(args = {})
     };
 
     Rsed.assert && ((args.width > 0) &&
-                    (args.height > 0))
-                || Rsed.throw("Expected texture width and height to be positive and non-zero.");
+                    (args.height > 0) &&
+                    (args.pixels.length) &&
+                    (args.indices.length))
+                || Rsed.throw("Expected non-empty texture data.");
+
+    Rsed.assert && ((args.indices.length === (args.width * args.height)) &&
+                    (args.pixels.length === (args.width * args.height)) &&
+                    (args.indices.length === args.pixels.length))
+                || Rsed.throw("Mismatch between size of texture data and its resolution.");
 
     switch (args.flipped)
     {
@@ -61,6 +68,9 @@ Rsed.texture = function(args = {})
         default: Rsed.throw("Unknown texture-flipping mode."); break;
     }
 
+    // Note: The elements of the 'pixels' array are returned by reference (they're objects of the
+    // form {r,g,b}). This is done to allow textures to be pre-generated and still have their colors
+    // reflect any changes to the global palette without requiring a re-generation.
     const publicInterface = Object.freeze(
     {
         width: args.width,
