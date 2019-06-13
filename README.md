@@ -22,12 +22,62 @@ A live page of RallySportED-js is available [here](http://tarpeeksihyvaesoft.com
 *(Coming.)*
 
 ### Rally-Sport
+Rally-Sport is a racing game released by Jukka Jäkälä in 1996 for DOS-based computers; featuring fun, tongue-in-cheek rallying in fully 3d environments. Its original website is available [via archive.org](https://web.archive.org/web/19970805142345/http://www.cs.tut.fi/~k140734/Rally-Sport/index.html).
+
+Although no official modding tools were released for the game, many of its assets are stored in straightforward binary formats, making them readily moddable. Further technical information about Rally-Sport's assets and their data formats are available under the [docs/](https://github.com/leikareipa/rallysported/tree/master/docs) folder in [RallySportED's umbrella repo](https://github.com/leikareipa/rallysported/).
 
 ### RallySportED
+*(Coming.)*
 
-#### Project
+#### Projects
+Tracks created with RallySportED are called *projects*; each project holding the data of one modded track.
+
+For example, given a project entitled "Suorundi", it would consists of the following two files:
+
+- Suorundi.dta
+- Suorundi.$ft
+
+The `dta` file (also called the project's `container`) holds the various modded Rally-Sport assets that make up the project's track - like the heightmap, tilemap, and textures.
+
+The `$ft` file (also called the project's `manifesto`) is a plain ASCII file giving additional directives to RallySportED on how to modify certain hard-coded parameters in Rally-Sport for the purposes of the project's track - such as to adjust the colors of the palette that Rally-Sport uses to render the track.
+
+**The project's container file.** The container file gets its name from the fact that it consists of a number of discrete asset files. The following individual asset files are contained in a project's .dta file:
+
+| Asset     | Description                                            |
+| --------- | ------------------------------------------------------ |
+| `Maasto`  | The track's heightmap.                                 |
+| `Varimaa` | The track's tilemap.                                   |
+| `Palat`   | The tilemap's texture atlas (~256 16-by-16 textures).  |
+| `Anims`   | Animation frames (of things like fire and tire smoke). |
+| `Text`    | Textures of track-side props (3d objects, like trees). |
+| `Kierros` | The racing line of the track's AI.                     |
+
+The asset names derive directly from the names of the corresponding data files in Rally-Sport. To learn more about the internals of Rally-Sport's asset files, see [RallySportED's documentation on Rally-Sport's data formats](https://github.com/leikareipa/rallysported/blob/master/docs/rs-formats.txt).
+
+The assets are laid out in the container file in a straightforward manner. The first four bytes of the container give as a little-endian 32-bit unsigned integer the byte size *n* of the `Maasto` data. The following *n* bytes are the `Maasto` data. The next four bytes give as a 32-bit unsigned integer the byte size *n* of the `Varimaa` data, and the following *n* bytes are the `Varimaa` data. This pattern repeats in the order given in the table, above; such that `Maasto` is the first contained asset and `Kierros` is the last. There is no data compression or the like - the individual assets are stored 1:1 with Rally-Sport's formats.
+
+**The project's manifesto file.** *(Coming.)*
+
+#### Renderer
+The renderer in RallySportED-js (for which the code is found under [render/](client/js/rallysported/render/)) is a custom software-based 3d engine capable of natively rendering Rally-Sport's *n*-sided polygons into a HTML5 canvas.
+
+| ![space-1.jpg](images/screenshots/misc/rock.png) | 
+| :----------------------------------------------: | 
+| **A rock prop rendered in RallySportED.** The object consists of four- and five-sided polygons that are rasterized without triangulation. |
+
+The renderer reproduces Rally-Sport's style of screen-space texture-mapping, where visible warping of textures occurs dependent on the polygon's orientation in screen space. This enables WYSIWYG editing, as the warping can have a considerable impact on how the track looks in-game.
+
+| ![space-1.jpg](images/screenshots/misc/texture-1.png) ![space-1.jpg](images/screenshots/misc/texture-2.png)  ![space-1.jpg](images/screenshots/misc/texture-3.png)  ![space-1.jpg](images/screenshots/misc/texture-4.png)  | 
+| :----------------------------------------------: | 
+| **Texture-warping.** The texture's coordinates are determined by the coordinates of its polygon's vertices; resulting in view-dependent warping of the texture. |
+
+The [retro n-gon renderer](http://github.com/leikareipa/retro-ngon/) is a standalone fork of RallySportED-js's renderer, which may in time replace the current implementation.
+
+#### Client and server
+*(Coming.)*
 
 ### The codebase
+*(Coming.)*
 
 # How to use
 ### User's guide
