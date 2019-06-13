@@ -1228,8 +1228,8 @@ Rsed.shared_mode_n = (function()
             varimaa: cacheToDataArray(localCaches["varimaa"]),
         };
 
-        return fetch(("server/shared/post.php?projectName=" + Rsed.core.current_project().name +
-                                            "&participantId=" + participantId),
+        return fetch(("server/shared-editing/post.php?projectName=" + Rsed.core.current_project().name +
+                                                    "&participantId=" + participantId),
                 {
                     method: "POST",
                     cache: "no-store",
@@ -1341,7 +1341,7 @@ Rsed.shared_mode_n = (function()
             // If we were already registered as a participant, unregister that previous registration, first.
             if (publicInterface.enabled()) publicInterface.unregister_current_registration();
 
-            return fetch(("server/shared/register.php?projectName=" + projectName), {cache: "no-store"})
+            return fetch(("server/shared-editing/register.php?projectName=" + projectName), {cache: "no-store"})
                     .then(response=>
                     {
                         if (!response.ok)
