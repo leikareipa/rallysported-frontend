@@ -1139,7 +1139,7 @@ Rsed.worldBuilder = function()
 
                 if (ngon.fill.type === "texture")
                 {
-                    newPoly.texture = Rsed.core.current_project().props.texture(ngon.fill.idx);
+                    newPoly.texture = Rsed.core.current_project().props.texture[ngon.fill.idx];
                 }
                 else
                 {
@@ -2896,7 +2896,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                                               .sort((a, b)=>((a.textureId === b.textureId)? 0 : ((a.textureId > b.textureId)? 1 : -1)));
 
     // Pre-compute the individual prop textures.
-    const propTextures = new Array(textureRects.length).fill().map((tex, idx)=>
+    const prebakedPropTextures = new Array(textureRects.length).fill().map((tex, idx)=>
     {
         const width = textureRects[idx].rect.width;
         const height = textureRects[idx].rect.height;
@@ -2993,23 +2993,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             }
         },
 
-        texture: (textureId = 0, args = {/*alpha: true | false*/})=>
-        {
-            Rsed.assert && ((textureId >= 0) &&
-                            (textureId < propTextures.length))
-                        || Rsed.throw("Attempting to access prop textures out of bounds.");
-
-            args =
-            {
-                ...
-                {
-                    alpha: true,
-                },
-                ...args,
-            };
-
-            return Object.freeze({...propTextures[textureId], alpha:args.alpha});
-        },
+        texture: Object.freeze(prebakedPropTextures),
 
         name: (propId = 0)=>
         {

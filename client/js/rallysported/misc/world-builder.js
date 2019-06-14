@@ -190,7 +190,7 @@ Rsed.worldBuilder = function()
 
                 if (ngon.fill.type === "texture")
                 {
-                    newPoly.texture = Rsed.core.current_project().props.texture(ngon.fill.idx);
+                    newPoly.texture = Rsed.core.current_project().props.texture[ngon.fill.idx];
                 }
                 else
                 {
