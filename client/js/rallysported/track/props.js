@@ -41,7 +41,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                                               .sort((a, b)=>((a.textureId === b.textureId)? 0 : ((a.textureId > b.textureId)? 1 : -1)));
 
     // Pre-compute the individual prop textures.
-    const prebakedPropTextures = new Array(textureRects.length).fill().map((tex, idx)=>
+    const prebakedPropTextures = (new Array(textureRects.length)).fill().map((tex, idx)=>
     {
         const width = textureRects[idx].rect.width;
         const height = textureRects[idx].rect.height;
@@ -71,72 +71,69 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         });
     });
 
+    // Pre-compute prop meshes. Each mesh will be an object with the following form:
+    //
+    //     {
+    //         ngons:
+    //         [
+    //             {
+    //                 fill:
+    //                 {
+    //                     type: "color" | "texture",
+    //                     idx: ...
+    //                 }
+    //                 vertices:
+    //                 [
+    //                     {x: ..., y: ..., z: ...},
+    //                     {x: ..., y: ..., z: ...},
+    //                     {x: ..., y: ..., z: ...},
+    //                     ...
+    //                 ]
+    //             },
+    //             {
+    //                 fill: {type: ..., idx: ...}
+    //                 vertices: [{...}]
+    //             },
+    //             ...
+    //         ]
+    //     }
+    //
+    // That is, each mesh consists of one or more n-gons, which themselves consist of
+    // a fill property, which describes whether the n-gon should be filled with a solid
+    // color or a texture (the fill.idx property defines either the color's palette index
+    // or the texture's index, depending on the fill type); and a list of the n vertices
+    // that define the n-gon.
+    //
+    const prebakedPropMeshes = (new Array(propMeshes.length)).fill().map((mesh, idx)=>
+    {
+        return {
+            ngons: propMeshes[idx].ngons.map(ngon=>
+            {
+                const meshNgon =
+                {
+                    fill: Object.freeze(
+                    {
+                        type: ngon.fill.type.slice(),
+                        idx: ngon.fill.idx
+                    }),
+                    vertices: ngon.vertices.map(vert=>(Object.freeze(
+                    {
+                        x: vert.x,
+                        y: -vert.y,
+                        z: -vert.z
+                    }))),
+                };
+
+                Object.freeze(meshNgon.vertices);
+
+                return meshNgon;
+            }),
+        };
+    });
+
     const publicInterface =
     {
-        // Returns an object containing the given prop's 3d mesh (with properties copied by
-        // value). The mesh object will be of the following form:
-        //
-        //     {
-        //         ngons:
-        //         [
-        //             {
-        //                 fill:
-        //                 {
-        //                     type: "color" | "texture",
-        //                     idx: ...
-        //                 }
-        //                 vertices:
-        //                 [
-        //                     {x: ..., y: ..., z: ...},
-        //                     {x: ..., y: ..., z: ...},
-        //                     {x: ..., y: ..., z: ...},
-        //                     ...
-        //                 ]
-        //             },
-        //             {
-        //                 fill: {type: ..., idx: ...}
-        //                 vertices: [{...}]
-        //             },
-        //             ...
-        //         ]
-        //     }
-        //
-        // That is, each mesh consists of one or more n-gons, which themselves consist of
-        // a fill property, which describes whether the n-gon should be filled with a solid
-        // color or a texture (the fill.idx property defines either the color's palette index
-        // or the texture's index, depending on the fill type); and a list of the n vertices
-        // that define the n-gon.
-        //
-        mesh: (propId = 0)=>
-        {
-            Rsed.assert && ((propId >= 0) &&
-                            (propId < propMeshes.length))
-                        || Rsed.throw("Querying a prop mesh out of bounds (" + propId + ").");
-
-            return {
-                ngons: propMeshes[propId].ngons.map(ngon=>
-                {
-                    const meshNgon =
-                    {
-                        fill: Object.freeze(
-                        {
-                            type: ngon.fill.type.slice(),
-                            idx: ngon.fill.idx
-                        }),
-                        vertices: ngon.vertices.map(vert=>(Object.freeze(
-                        {
-                            x: vert.x,
-                            y: -vert.y,
-                            z: -vert.z
-                        }))),
-                    };
-
-                    Object.freeze(meshNgon.vertices);
-
-                    return meshNgon;
-                }),
-            }
-        },
+        mesh: Object.freeze(prebakedPropMeshes),
 
         texture: Object.freeze(prebakedPropTextures),
 

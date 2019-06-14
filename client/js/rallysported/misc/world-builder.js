@@ -169,7 +169,7 @@ Rsed.worldBuilder = function()
                 ...args
             };
 
-            const srcMesh = Rsed.core.current_project().props.mesh(propId);
+            const srcMesh = Rsed.core.current_project().props.mesh[propId];
             const dstMesh = [];
 
             srcMesh.ngons.forEach(ngon=>

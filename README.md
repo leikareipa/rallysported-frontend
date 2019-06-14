@@ -69,7 +69,7 @@ The renderer reproduces Rally-Sport's style of screen-space texture-mapping, whe
 
 | ![space-1.jpg](images/screenshots/misc/texture-1.png) ![space-1.jpg](images/screenshots/misc/texture-2.png)  ![space-1.jpg](images/screenshots/misc/texture-3.png)  ![space-1.jpg](images/screenshots/misc/texture-4.png)  | 
 | :----------------------------------------------: | 
-| **Texture-warping.** The texture's coordinates are determined by the coordinates of its polygon's vertices; resulting in view-dependent warping of the texture. |
+| **Texture-warping.** The texture's coordinates are determined by the screen space coordinates of its polygon's vertices; resulting in view-dependent warping of the texture. |
 
 The [retro n-gon renderer](http://github.com/leikareipa/retro-ngon/) is a standalone fork of RallySportED-js's renderer, which may in time replace the current implementation.
 
