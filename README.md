@@ -63,7 +63,7 @@ The renderer in RallySportED-js (for which the code is found under [render/](cli
 
 | ![space-1.jpg](images/screenshots/misc/rock.png) | 
 | :----------------------------------------------: | 
-| **A rock prop rendered in RallySportED.** The object consists of four- and five-sided polygons that are rasterized without triangulation. |
+| **A rock prop rendered in RallySportED-js.** The object consists of four- and five-sided polygons that are rasterized without triangulation. |
 
 The renderer reproduces Rally-Sport's style of screen-space texture-mapping, where visible warping of textures occurs dependent on the polygon's orientation in screen space. This enables WYSIWYG editing, as the warping can have a considerable impact on how the track looks in-game.
 
