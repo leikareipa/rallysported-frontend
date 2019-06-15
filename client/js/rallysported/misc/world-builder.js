@@ -63,21 +63,24 @@ Rsed.worldBuilder = function()
                         const height2 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1),  tileZ);
                         const height3 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1), (tileZ - 1));
                         const height4 = centerView.y + Rsed.core.current_project().maasto.tile_at( tileX,      (tileZ - 1));
-                        
-                        const groundQuad = new Rsed.geometry_n.polygon_o(4);
-                        groundQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX, height1, vertZ);
-                        groundQuad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), height2, vertZ);
-                        groundQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize));
-                        groundQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, height4, (vertZ + Rsed.constants.groundTileSize));
-                        
-                        groundQuad.hasWireframe = Rsed.ui_view_n.show3dWireframe;
-                        groundQuad.texture = Rsed.core.current_project().palat.texture[tilePalaIdx];
 
+                        const groundQuad = Rngon.ngon([Rngon.vertex( vertX, height1, vertZ, 0, 0),
+                                                       Rngon.vertex((vertX + Rsed.constants.groundTileSize), height2, vertZ, 1, 0),
+                                                       Rngon.vertex((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize), 1, 1),
+                                                       Rngon.vertex( vertX, height4, (vertZ + Rsed.constants.groundTileSize), 0, 1)],
+                                                    {
+                                                        color: Rngon.color_rgba(255, 255, 255),
+                                                        texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
+                                                        textureMapping: "ortho",
+                                                        hasSolidFill: true,
+                                                        hasWireframe: Rsed.ui_view_n.show3dWireframe,
+                                                    });
+                        
                         // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
                         // rasterization we'll write into the mouse-picking buffer, so we can later determine which
                         // quad the mouse cursor is hovering over.
-                        groundQuad.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
-                                                                                         {tileX, tileZ: (tileZ - 1)});
+                      // groundQuad.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
+                      //                                                                   {tileX, tileZ: (tileZ - 1)});
 
                         trackPolygons.push(groundQuad);
                     }
@@ -87,45 +90,58 @@ Rsed.worldBuilder = function()
                     {
                         const baseHeight = centerView.y + Rsed.core.current_project().maasto.tile_at(tileX, (tileZ - 1));
 
-                        const billboardQuad = new Rsed.geometry_n.polygon_o(4);
-                        billboardQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX, baseHeight, vertZ);
-                        billboardQuad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), baseHeight, vertZ);
-                        billboardQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), baseHeight+Rsed.constants.groundTileSize, vertZ);
-                        billboardQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, baseHeight+Rsed.constants.groundTileSize, vertZ);
-
-                        switch (tilePalaIdx)
+                        const texture = (()=>
                         {
-                            // Spectators.
-                            case 240:
-                            case 241:
-                            case 242: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
-                            break;
-        
-                            // Shrubs.
-                            case 243: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(208, {alpha:true}); break;
-                            case 244: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(209, {alpha:true}); break;
-                            case 245: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(210, {alpha:true}); break;
-        
-                            // Small poles.
-                            case 246:
-                            case 247: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(211, {alpha:true}); break;
-                            case 250: bbillboardQuadll.texture = Rsed.core.current_project().palat.generate_texture(212, {alpha:true}); break;
-        
-                            default: Rsed.throw("Unrecognized billboard texture."); continue;
-                        }
+                            switch (tilePalaIdx)
+                            {
+                                // Spectators.
+                                case 240:
+                                case 241:
+                                case 242: return Rsed.core.current_project().palat.generate_texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
+                                break;
+            
+                                // Shrubs.
+                                case 243: return Rsed.core.current_project().palat.generate_texture(208, {alpha:true});
+                                case 244: return Rsed.core.current_project().palat.generate_texture(209, {alpha:true});
+                                case 245: return Rsed.core.current_project().palat.generate_texture(210, {alpha:true});
+            
+                                // Small poles.
+                                case 246:
+                                case 247: return Rsed.core.current_project().palat.generate_texture(211, {alpha:true});
+                                case 250: return Rsed.core.current_project().palat.generate_texture(212, {alpha:true});
+            
+                                default: Rsed.throw("Unrecognized billboard texture."); return null;
+                            }
+                        })();
+
+                        const billboardQuad = Rngon.ngon([Rngon.vertex( vertX, baseHeight, vertZ, 0, 0),
+                                                          Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight, vertZ, 1, 0),
+                                                          Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight+Rsed.constants.groundTileSize, vertZ, 1, 1),
+                                                          Rngon.vertex( vertX, baseHeight+Rsed.constants.groundTileSize, vertZ, 0, 1)],
+                                                          {
+                                                              color: Rngon.color_rgba(255, 255, 255),
+                                                              texture: texture,
+                                                              textureMapping: "ortho",
+                                                              hasSolidFill: true,
+                                                              hasWireframe: false,
+                                                          });
 
                         trackPolygons.push(billboardQuad);
                     }
                     // If the tile has a bridge, add that.
                     else if (tilePalaIdx === 248 || tilePalaIdx === 249)
                     {
-                        const bridgeQuad = new Rsed.geometry_n.polygon_o(4);
-                        bridgeQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX,  centerView.y, vertZ);
-                        bridgeQuad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), centerView.y, vertZ);
-                        bridgeQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize));
-                        bridgeQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize));
-
-                        bridgeQuad.texture = Rsed.core.current_project().palat.generate_texture(177, {alpha:true});
+                        const bridgeQuad = Rngon.ngon([Rngon.vertex( vertX,  centerView.y, vertZ, 0, 0),
+                                                       Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, vertZ, 1, 0),
+                                                       Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize), 1, 1),
+                                                       Rngon.vertex( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize), 0, 1)],
+                                                       {
+                                                           color: Rngon.color_rgba(255, 255, 255),
+                                                           texture: Rsed.core.current_project().palat.generate_texture(177, {alpha:true}),
+                                                           textureMapping: "ortho",
+                                                           hasSolidFill: true,
+                                                           hasWireframe: false,
+                                                       });
 
                         trackPolygons.push(bridgeQuad);
                     }
@@ -146,14 +162,50 @@ Rsed.worldBuilder = function()
                     const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
                     const y = (groundHeight + pos.y);
 
-                    trackPolygons.push(...this.prop_mesh(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
+                    trackPolygons.push(...this.prop_mesh_rngon(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
                 }
             });
 
-            /// TODO. We're tilting down the mesh to get the viewing angle we want, but really it
-            /// should be the camera's view vector that gets tilted down and not the mesh.
-            return new Rsed.geometry_n.polygon_mesh_o(trackPolygons, new Rsed.geometry_n.vector3_o(0, 0, 0),
-                                                                     new Rsed.geometry_n.vector3_o(isTopdownView? (-Math.PI / 2) : -0.45, 0, 0));
+            return Rngon.mesh(trackPolygons);
+        },
+
+        // Returns a renderable 3d mesh of the given prop at the given position (in world units).
+        prop_mesh_rngon: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
+        {
+            args =
+            {
+                ...
+                {
+                    // Whether the renderer should draw a wireframe around this mesh.
+                    wireframe: false,
+                },
+                ...args
+            };
+
+            const srcMesh = Rsed.core.current_project().props.mesh[propId];
+            const dstMesh = [];
+
+            srcMesh.ngons.forEach(ngon=>
+            {
+                const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + pos.x), (v.y + pos.y), (v.z + pos.z))),
+                                            {
+                                                color: (ngon.fill.type === "texture"? Rsed.palette.color(0) : Rsed.palette.color(ngon.fill.idx)),
+                                                texture: (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx] : null),
+                                                textureMapping: "ortho",
+                                                hasSolidFill: true,
+                                                hasWireframe: args.wireframe,
+                                            });
+
+               // newPoly.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
+              //                                                                {
+               //                                                                   propIdx: propId,
+                //                                                                  propTrackId: idxOnTrack
+                //                                                              });
+
+                dstMesh.push(propNgon);
+            });
+
+            return dstMesh;
         },
 
         // Returns a renderable 3d mesh of the given prop at the given position (in world units).

@@ -79,6 +79,24 @@ Rsed.texture = function(args = {})
         flipped: args.flipped,
         pixels: Object.freeze(Array.from(args.pixels)),
         indices: Object.freeze(Array.from(args.indices)),
+
+        // Returns an unfrozen 4-element array containing copies of the texture's RGBA values at the
+        // given x,y texel coordinates. Implemented to interface with the retro n-gon renderer.
+        rgba_channels_at: function(x, y)
+        {
+            x = Math.floor(x);
+            y = Math.floor(y);
+
+            const idx = (x + y * this.width);
+
+            Rsed.assert && (idx <= args.pixels.length)
+                        || Rsed.throw("Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
+
+            return [this.pixels[idx].red,
+                    this.pixels[idx].green,
+                    this.pixels[idx].blue,
+                    ((this.alpha && (this.indices[idx] === 0))? 0 : 255)];
+        }
     });
 
     return publicInterface;

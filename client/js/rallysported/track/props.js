@@ -68,6 +68,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             pixels: pixels,
             indices: indices,
             flipped: "vertical",
+            alpha: true,
         });
     });
 

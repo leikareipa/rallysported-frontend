@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 June 2019 14:41:22 UTC)
+// VERSION: live (15 June 2019 17:28:33 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -73,7 +73,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (15 June 2019 13:37:38 UTC)
+// VERSION: live (15 June 2019 15:55:26 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1071,7 +1071,7 @@ Rngon.render = function(canvasElementId,
                         options = {})
 {
     // Used for performance timing.
-    const perfTime = {initTime:performance.now(), transformTime:0, rasterTime:0, totalTime:performance.now()};
+    const perfTime = {initTimeMs:performance.now(), transformTimeMs:0, rasterTimeMs:0, totalTimeMs:performance.now()};
 
     Rngon.assert && (typeof Rngon.render.defaultOptions.cameraPosition !== "undefined" &&
                      typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
@@ -1090,7 +1090,7 @@ Rngon.render = function(canvasElementId,
 
     const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov);
 
-    perfTime.initTime = (performance.now() - perfTime.initTime);
+    perfTime.initTimeMs = (performance.now() - perfTime.initTimeMs);
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
@@ -1098,7 +1098,7 @@ Rngon.render = function(canvasElementId,
         renderSurface.wipe_clean();
 
         // Transform.
-        perfTime.transformTime = performance.now();
+        perfTime.transformTimeMs = performance.now();
         const transformedNgons = [];
         {
             const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
@@ -1142,14 +1142,14 @@ Rngon.render = function(canvasElementId,
                 default: Rngon.throw("Unknown depth sort option."); break;
             }
         }
-        perfTime.transformTime = (performance.now() - perfTime.transformTime)
+        perfTime.transformTimeMs = (performance.now() - perfTime.transformTimeMs)
 
         // Rasterize.
-        perfTime.rasterTime = performance.now();
+        perfTime.rasterTimeMs = performance.now();
         renderSurface.draw_ngons(transformedNgons);
-        perfTime.rasterTime = (performance.now() - perfTime.rasterTime);
+        perfTime.rasterTimeMs = (performance.now() - perfTime.rasterTimeMs);
 
-        perfTime.totalTime = (performance.now() - perfTime.totalTime);
+        perfTime.totalTimeMs = (performance.now() - perfTime.totalTimeMs);
         return perfTime;
     }
 
@@ -1264,7 +1264,10 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         // at the given x,y texel coordinates.
         rgba_channels_at: function(x, y)
         {
-            const idx = ((Math.floor(x) + Math.floor(y) * data.width) * numColorChannels);
+            x = Math.floor(x);
+            y = Math.floor(y);
+
+            const idx = ((x + y * data.width) * numColorChannels);
             Rngon.assert && ((idx + numColorChannels) <= data.pixels.length)
                          || Rngon.throw("Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
 
@@ -2315,21 +2318,24 @@ Rsed.worldBuilder = function()
                         const height2 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1),  tileZ);
                         const height3 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1), (tileZ - 1));
                         const height4 = centerView.y + Rsed.core.current_project().maasto.tile_at( tileX,      (tileZ - 1));
-                        
-                        const groundQuad = new Rsed.geometry_n.polygon_o(4);
-                        groundQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX, height1, vertZ);
-                        groundQuad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), height2, vertZ);
-                        groundQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize));
-                        groundQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, height4, (vertZ + Rsed.constants.groundTileSize));
-                        
-                        groundQuad.hasWireframe = Rsed.ui_view_n.show3dWireframe;
-                        groundQuad.texture = Rsed.core.current_project().palat.texture[tilePalaIdx];
 
+                        const groundQuad = Rngon.ngon([Rngon.vertex( vertX, height1, vertZ, 0, 0),
+                                                       Rngon.vertex((vertX + Rsed.constants.groundTileSize), height2, vertZ, 1, 0),
+                                                       Rngon.vertex((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize), 1, 1),
+                                                       Rngon.vertex( vertX, height4, (vertZ + Rsed.constants.groundTileSize), 0, 1)],
+                                                    {
+                                                        color: Rngon.color_rgba(255, 255, 255),
+                                                        texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
+                                                        textureMapping: "ortho",
+                                                        hasSolidFill: true,
+                                                        hasWireframe: Rsed.ui_view_n.show3dWireframe,
+                                                    });
+                        
                         // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
                         // rasterization we'll write into the mouse-picking buffer, so we can later determine which
                         // quad the mouse cursor is hovering over.
-                        groundQuad.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
-                                                                                         {tileX, tileZ: (tileZ - 1)});
+                      // groundQuad.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
+                      //                                                                   {tileX, tileZ: (tileZ - 1)});
 
                         trackPolygons.push(groundQuad);
                     }
@@ -2339,45 +2345,58 @@ Rsed.worldBuilder = function()
                     {
                         const baseHeight = centerView.y + Rsed.core.current_project().maasto.tile_at(tileX, (tileZ - 1));
 
-                        const billboardQuad = new Rsed.geometry_n.polygon_o(4);
-                        billboardQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX, baseHeight, vertZ);
-                        billboardQuad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), baseHeight, vertZ);
-                        billboardQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), baseHeight+Rsed.constants.groundTileSize, vertZ);
-                        billboardQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, baseHeight+Rsed.constants.groundTileSize, vertZ);
-
-                        switch (tilePalaIdx)
+                        const texture = (()=>
                         {
-                            // Spectators.
-                            case 240:
-                            case 241:
-                            case 242: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
-                            break;
-        
-                            // Shrubs.
-                            case 243: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(208, {alpha:true}); break;
-                            case 244: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(209, {alpha:true}); break;
-                            case 245: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(210, {alpha:true}); break;
-        
-                            // Small poles.
-                            case 246:
-                            case 247: billboardQuad.texture = Rsed.core.current_project().palat.generate_texture(211, {alpha:true}); break;
-                            case 250: bbillboardQuadll.texture = Rsed.core.current_project().palat.generate_texture(212, {alpha:true}); break;
-        
-                            default: Rsed.throw("Unrecognized billboard texture."); continue;
-                        }
+                            switch (tilePalaIdx)
+                            {
+                                // Spectators.
+                                case 240:
+                                case 241:
+                                case 242: return Rsed.core.current_project().palat.generate_texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
+                                break;
+            
+                                // Shrubs.
+                                case 243: return Rsed.core.current_project().palat.generate_texture(208, {alpha:true});
+                                case 244: return Rsed.core.current_project().palat.generate_texture(209, {alpha:true});
+                                case 245: return Rsed.core.current_project().palat.generate_texture(210, {alpha:true});
+            
+                                // Small poles.
+                                case 246:
+                                case 247: return Rsed.core.current_project().palat.generate_texture(211, {alpha:true});
+                                case 250: return Rsed.core.current_project().palat.generate_texture(212, {alpha:true});
+            
+                                default: Rsed.throw("Unrecognized billboard texture."); return null;
+                            }
+                        })();
+
+                        const billboardQuad = Rngon.ngon([Rngon.vertex( vertX, baseHeight, vertZ, 0, 0),
+                                                          Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight, vertZ, 1, 0),
+                                                          Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight+Rsed.constants.groundTileSize, vertZ, 1, 1),
+                                                          Rngon.vertex( vertX, baseHeight+Rsed.constants.groundTileSize, vertZ, 0, 1)],
+                                                          {
+                                                              color: Rngon.color_rgba(255, 255, 255),
+                                                              texture: texture,
+                                                              textureMapping: "ortho",
+                                                              hasSolidFill: true,
+                                                              hasWireframe: false,
+                                                          });
 
                         trackPolygons.push(billboardQuad);
                     }
                     // If the tile has a bridge, add that.
                     else if (tilePalaIdx === 248 || tilePalaIdx === 249)
                     {
-                        const bridgeQuad = new Rsed.geometry_n.polygon_o(4);
-                        bridgeQuad.verts[0] = new Rsed.geometry_n.vertex_o( vertX,  centerView.y, vertZ);
-                        bridgeQuad.verts[1] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), centerView.y, vertZ);
-                        bridgeQuad.verts[2] = new Rsed.geometry_n.vertex_o((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize));
-                        bridgeQuad.verts[3] = new Rsed.geometry_n.vertex_o( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize));
-
-                        bridgeQuad.texture = Rsed.core.current_project().palat.generate_texture(177, {alpha:true});
+                        const bridgeQuad = Rngon.ngon([Rngon.vertex( vertX,  centerView.y, vertZ, 0, 0),
+                                                       Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, vertZ, 1, 0),
+                                                       Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize), 1, 1),
+                                                       Rngon.vertex( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize), 0, 1)],
+                                                       {
+                                                           color: Rngon.color_rgba(255, 255, 255),
+                                                           texture: Rsed.core.current_project().palat.generate_texture(177, {alpha:true}),
+                                                           textureMapping: "ortho",
+                                                           hasSolidFill: true,
+                                                           hasWireframe: false,
+                                                       });
 
                         trackPolygons.push(bridgeQuad);
                     }
@@ -2398,14 +2417,50 @@ Rsed.worldBuilder = function()
                     const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
                     const y = (groundHeight + pos.y);
 
-                    trackPolygons.push(...this.prop_mesh(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
+                    trackPolygons.push(...this.prop_mesh_rngon(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
                 }
             });
 
-            /// TODO. We're tilting down the mesh to get the viewing angle we want, but really it
-            /// should be the camera's view vector that gets tilted down and not the mesh.
-            return new Rsed.geometry_n.polygon_mesh_o(trackPolygons, new Rsed.geometry_n.vector3_o(0, 0, 0),
-                                                                     new Rsed.geometry_n.vector3_o(isTopdownView? (-Math.PI / 2) : -0.45, 0, 0));
+            return Rngon.mesh(trackPolygons);
+        },
+
+        // Returns a renderable 3d mesh of the given prop at the given position (in world units).
+        prop_mesh_rngon: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
+        {
+            args =
+            {
+                ...
+                {
+                    // Whether the renderer should draw a wireframe around this mesh.
+                    wireframe: false,
+                },
+                ...args
+            };
+
+            const srcMesh = Rsed.core.current_project().props.mesh[propId];
+            const dstMesh = [];
+
+            srcMesh.ngons.forEach(ngon=>
+            {
+                const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + pos.x), (v.y + pos.y), (v.z + pos.z))),
+                                            {
+                                                color: (ngon.fill.type === "texture"? Rsed.palette.color(0) : Rsed.palette.color(ngon.fill.idx)),
+                                                texture: (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx] : null),
+                                                textureMapping: "ortho",
+                                                hasSolidFill: true,
+                                                hasWireframe: args.wireframe,
+                                            });
+
+               // newPoly.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
+              //                                                                {
+               //                                                                   propIdx: propId,
+                //                                                                  propTrackId: idxOnTrack
+                //                                                              });
+
+                dstMesh.push(propNgon);
+            });
+
+            return dstMesh;
         },
 
         // Returns a renderable 3d mesh of the given prop at the given position (in world units).
@@ -2759,6 +2814,24 @@ Rsed.texture = function(args = {})
         flipped: args.flipped,
         pixels: Object.freeze(Array.from(args.pixels)),
         indices: Object.freeze(Array.from(args.indices)),
+
+        // Returns an unfrozen 4-element array containing copies of the texture's RGBA values at the
+        // given x,y texel coordinates. Implemented to interface with the retro n-gon renderer.
+        rgba_channels_at: function(x, y)
+        {
+            x = Math.floor(x);
+            y = Math.floor(y);
+
+            const idx = (x + y * this.width);
+
+            Rsed.assert && (idx <= args.pixels.length)
+                        || Rsed.throw("Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
+
+            return [this.pixels[idx].red,
+                    this.pixels[idx].green,
+                    this.pixels[idx].blue,
+                    ((this.alpha && (this.indices[idx] === 0))? 0 : 255)];
+        }
     });
 
     return publicInterface;
@@ -2779,147 +2852,147 @@ Rsed.palette = (function()
     // during run-time.
     const rallySportPalettes = [
         // Palette #1.
-        [{r:0, g:0, b:0},
-        {r:8, g:64, b:16},
-        {r:16, g:96, b:36},
-        {r:24, g:128, b:48},
-        {r:252, g:0, b:0},
-        {r:252, g:252, b:252},
-        {r:192, g:192, b:192},
-        {r:128, g:128, b:128},
-        {r:64, g:64, b:64},
-        {r:0, g:0, b:252},
-        {r:72, g:128, b:252},
-        {r:208, g:100, b:252},
-        {r:208, g:72, b:44},
-        {r:252, g:112, b:76},
-        {r:16, g:96, b:32},
-        {r:32, g:192, b:64},
-        {r:228, g:56, b:244},
-        {r:132, g:36, b:172},
-        {r:68, g:92, b:252},
-        {r:252, g:252, b:48},
-        {r:32, g:32, b:32},
-        {r:152, g:48, b:24},
-        {r:80, g:24, b:12},
-        {r:124, g:124, b:24},
-        {r:128, g:0, b:0},
-        {r:12, g:20, b:132},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:136, g:28, b:128},
-        {r:16, g:252, b:8}],
+        [{red:0, green:0, blue:0},
+        {red:8, green:64, blue:16},
+        {red:16, green:96, blue:36},
+        {red:24, green:128, blue:48},
+        {red:252, green:0, blue:0},
+        {red:252, green:252, blue:252},
+        {red:192, green:192, blue:192},
+        {red:128, green:128, blue:128},
+        {red:64, green:64, blue:64},
+        {red:0, green:0, blue:252},
+        {red:72, green:128, blue:252},
+        {red:208, green:100, blue:252},
+        {red:208, green:72, blue:44},
+        {red:252, green:112, blue:76},
+        {red:16, green:96, blue:32},
+        {red:32, green:192, blue:64},
+        {red:228, green:56, blue:244},
+        {red:132, green:36, blue:172},
+        {red:68, green:92, blue:252},
+        {red:252, green:252, blue:48},
+        {red:32, green:32, blue:32},
+        {red:152, green:48, blue:24},
+        {red:80, green:24, blue:12},
+        {red:124, green:124, blue:24},
+        {red:128, green:0, blue:0},
+        {red:12, green:20, blue:132},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:136, green:28, blue:128},
+        {red:16, green:252, blue:8}],
 
         // Palette #2.
-        [{r:0, g:0, b:0},
-        {r:80, g:88, b:104},
-        {r:96, g:104, b:120},
-        {r:112, g:128, b:144},
-        {r:252, g:0, b:0},
-        {r:252, g:252, b:252},
-        {r:192, g:192, b:192},
-        {r:128, g:128, b:128},
-        {r:64, g:64, b:64},
-        {r:0, g:0, b:252},
-        {r:72, g:128, b:252},
-        {r:208, g:100, b:252},
-        {r:208, g:72, b:44},
-        {r:252, g:112, b:76},
-        {r:8, g:136, b:16},
-        {r:32, g:192, b:64},
-        {r:228, g:56, b:244},
-        {r:132, g:36, b:172},
-        {r:68, g:92, b:252},
-        {r:252, g:252, b:48},
-        {r:32, g:32, b:32},
-        {r:152, g:48, b:24},
-        {r:80, g:24, b:12},
-        {r:124, g:124, b:24},
-        {r:128, g:0, b:0},
-        {r:12, g:20, b:132},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:136, g:28, b:128},
-        {r:16, g:252, b:8}],
+        [{red:0, green:0, blue:0},
+        {red:80, green:88, blue:104},
+        {red:96, green:104, blue:120},
+        {red:112, green:128, blue:144},
+        {red:252, green:0, blue:0},
+        {red:252, green:252, blue:252},
+        {red:192, green:192, blue:192},
+        {red:128, green:128, blue:128},
+        {red:64, green:64, blue:64},
+        {red:0, green:0, blue:252},
+        {red:72, green:128, blue:252},
+        {red:208, green:100, blue:252},
+        {red:208, green:72, blue:44},
+        {red:252, green:112, blue:76},
+        {red:8, green:136, blue:16},
+        {red:32, green:192, blue:64},
+        {red:228, green:56, blue:244},
+        {red:132, green:36, blue:172},
+        {red:68, green:92, blue:252},
+        {red:252, green:252, blue:48},
+        {red:32, green:32, blue:32},
+        {red:152, green:48, blue:24},
+        {red:80, green:24, blue:12},
+        {red:124, green:124, blue:24},
+        {red:128, green:0, blue:0},
+        {red:12, green:20, blue:132},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:136, green:28, blue:128},
+        {red:16, green:252, blue:8}],
 
         // Palette #3.
-        [{r:0, g:0, b:0},
-        {r:72, g:20, b:12},
-        {r:144, g:44, b:20},
-        {r:168, g:56, b:28},
-        {r:252, g:0, b:0},
-        {r:252, g:252, b:252},
-        {r:192, g:192, b:192},
-        {r:128, g:128, b:128},
-        {r:64, g:64, b:64},
-        {r:0, g:0, b:252},
-        {r:72, g:128, b:252},
-        {r:208, g:100, b:252},
-        {r:208, g:72, b:44},
-        {r:252, g:112, b:76},
-        {r:16, g:96, b:32},
-        {r:32, g:192, b:64},
-        {r:228, g:56, b:244},
-        {r:132, g:36, b:172},
-        {r:68, g:92, b:252},
-        {r:252, g:252, b:48},
-        {r:32, g:32, b:32},
-        {r:152, g:48, b:24},
-        {r:80, g:24, b:12},
-        {r:124, g:124, b:24},
-        {r:128, g:0, b:0},
-        {r:12, g:20, b:132},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:136, g:28, b:128},
-        {r:16, g:252, b:8}],
+        [{red:0, green:0, blue:0},
+        {red:72, green:20, blue:12},
+        {red:144, green:44, blue:20},
+        {red:168, green:56, blue:28},
+        {red:252, green:0, blue:0},
+        {red:252, green:252, blue:252},
+        {red:192, green:192, blue:192},
+        {red:128, green:128, blue:128},
+        {red:64, green:64, blue:64},
+        {red:0, green:0, blue:252},
+        {red:72, green:128, blue:252},
+        {red:208, green:100, blue:252},
+        {red:208, green:72, blue:44},
+        {red:252, green:112, blue:76},
+        {red:16, green:96, blue:32},
+        {red:32, green:192, blue:64},
+        {red:228, green:56, blue:244},
+        {red:132, green:36, blue:172},
+        {red:68, green:92, blue:252},
+        {red:252, green:252, blue:48},
+        {red:32, green:32, blue:32},
+        {red:152, green:48, blue:24},
+        {red:80, green:24, blue:12},
+        {red:124, green:124, blue:24},
+        {red:128, green:0, blue:0},
+        {red:12, green:20, blue:132},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:136, green:28, blue:128},
+        {red:16, green:252, blue:8}],
 
         // Palette #4.
-        [{r:0, g:0, b:0},
-        {r:28, g:52, b:8},
-        {r:64, g:64, b:16},
-        {r:80, g:84, b:28},
-        {r:252, g:0, b:0},
-        {r:252, g:252, b:252},
-        {r:192, g:192, b:192},
-        {r:128, g:128, b:128},
-        {r:64, g:64, b:64},
-        {r:0, g:0, b:252},
-        {r:72, g:128, b:252},
-        {r:208, g:100, b:252},
-        {r:208, g:72, b:44},
-        {r:252, g:112, b:76},
-        {r:32, g:64, b:32},
-        {r:64, g:128, b:64},
-        {r:228, g:56, b:244},
-        {r:132, g:36, b:172},
-        {r:68, g:92, b:252},
-        {r:252, g:252, b:48},
-        {r:32, g:32, b:32},
-        {r:152, g:48, b:24},
-        {r:80, g:24, b:12},
-        {r:124, g:124, b:24},
-        {r:128, g:0, b:0},
-        {r:12, g:20, b:132},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:136, g:28, b:128},
-        {r:16, g:252, b:8}]
+        [{red:0, green:0, blue:0},
+        {red:28, green:52, blue:8},
+        {red:64, green:64, blue:16},
+        {red:80, green:84, blue:28},
+        {red:252, green:0, blue:0},
+        {red:252, green:252, blue:252},
+        {red:192, green:192, blue:192},
+        {red:128, green:128, blue:128},
+        {red:64, green:64, blue:64},
+        {red:0, green:0, blue:252},
+        {red:72, green:128, blue:252},
+        {red:208, green:100, blue:252},
+        {red:208, green:72, blue:44},
+        {red:252, green:112, blue:76},
+        {red:32, green:64, blue:32},
+        {red:64, green:128, blue:64},
+        {red:228, green:56, blue:244},
+        {red:132, green:36, blue:172},
+        {red:68, green:92, blue:252},
+        {red:252, green:252, blue:48},
+        {red:32, green:32, blue:32},
+        {red:152, green:48, blue:24},
+        {red:80, green:24, blue:12},
+        {red:124, green:124, blue:24},
+        {red:128, green:0, blue:0},
+        {red:12, green:20, blue:132},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:136, green:28, blue:128},
+        {red:16, green:252, blue:8}]
     ];
 
     // The palette we'll operate on; which is to say, when the user requests us to return a
     // color for a particular palette index, or to change the color at a particular index,
     // this is the palette we'll use. Generally, this palette will contain a modifiable
     // copy of one of Rally-Sport's hard-coded palettes.
-    const activePalette = (new Array(256)).fill().map(e=>({r:127,g:127,b:127}));
+    const activePalette = (new Array(256)).fill().map(e=>({red:127,green:127,blue:127,alpha:255,unitRange:{red:1, green:1, blue:1, alpha:1}}));
 
     const publicInterface =
     {
@@ -2935,22 +3008,22 @@ Rsed.palette = (function()
             // Named UI colors.
             switch (colorIdx)
             {
-                case "background":  return {r:16,  g:16,  b:16};
-                case "black":       return {r:0,   g:0,   b:0};
+                case "background":  return {red:16,  green:16,  blue:16};
+                case "black":       return {red:0,   green:0,   blue:0};
                 case "gray":
-                case "grey":        return {r:127, g:127, b:127};
+                case "grey":        return {red:127, green:127, blue:127};
                 case "lightgray":
-                case "lightgrey":   return {r:192, g:192, b:192};
+                case "lightgrey":   return {red:192, green:192, blue:192};
                 case "dimgray":
-                case "dimgrey":     return {r:64,  g:64,  b:64};
-                case "white":       return {r:255, g:255, b:255};
-                case "blue":        return {r:0,   g:0,   b:255};
-                case "darkorchid":  return {r:153, g:50,  b:204};
-                case "paleorchid":  return {r:158, g:123, b:176};
-                case "yellow":      return {r:255, g:255, b:0};
-                case "red":         return {r:255, g:0,   b:0};
-                case "green":       return {r:0,   g:255, b:0};
-                case "gold":        return {r:179, g:112, b:25};
+                case "dimgrey":     return {red:64,  green:64,  blue:64};
+                case "white":       return {red:255, green:255, blue:255};
+                case "blue":        return {red:0,   green:0,   blue:255};
+                case "darkorchid":  return {red:153, green:50,  blue:204};
+                case "paleorchid":  return {red:158, green:123, blue:176};
+                case "yellow":      return {red:255, green:255, blue:0};
+                case "red":         return {red:255, green:0,   blue:0};
+                case "green":       return {red:0,   green:255, blue:0};
+                case "gold":        return {red:179, green:112, blue:25};
                 default: break;
             }
 
@@ -2966,14 +3039,14 @@ Rsed.palette = (function()
 
             rallySportPalettes[paletteIdx].forEach((color, idx)=>
             {
-                activePalette[idx].r = color.r;
-                activePalette[idx].g = color.g;
-                activePalette[idx].b = color.b;
+                activePalette[idx].red = color.red;
+                activePalette[idx].green = color.green;
+                activePalette[idx].blue = color.blue;
             });
         },
 
         // Change the color at the given palette index in the current active palette.
-        set_color: (paletteIdx = 0, newColor = {r:0,g:0,b:0})=>
+        set_color: (paletteIdx = 0, newColor = {red:0,green:0,blue:0})=>
         {
             Rsed.assert && ((paletteIdx >= 0) &&
                             (paletteIdx < rallySportPalettes.length))
@@ -2983,16 +3056,16 @@ Rsed.palette = (function()
             {
                 ...
                 {
-                    r: activePalette[paletteIdx].r,
-                    g: activePalette[paletteIdx].g,
-                    b: activePalette[paletteIdx].b,
+                    red: activePalette[paletteIdx].red,
+                    green: activePalette[paletteIdx].green,
+                    blue: activePalette[paletteIdx].blue,
                 },
                 ...newColor,
             }
 
-            activePalette[paletteIdx].r = newColor.r;
-            activePalette[paletteIdx].g = newColor.g;
-            activePalette[paletteIdx].b = newColor.b;
+            activePalette[paletteIdx].red = newColor.red;
+            activePalette[paletteIdx].green = newColor.green;
+            activePalette[paletteIdx].blue = newColor.blue;
         },
     };
 
@@ -4226,6 +4299,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             pixels: pixels,
             indices: indices,
             flipped: "vertical",
+            alpha: true,
         });
     });
 
@@ -6777,7 +6851,7 @@ Rsed.core = (function()
         if (!isRunning) return;
 
         // Create the 3d scene to be rendered.
-        {
+        /*{
             renderer.clear_meshes();
 
             if (Rsed.ui_view_n.current_view() !== "2d-topdown")
@@ -6786,12 +6860,29 @@ Rsed.core = (function()
                                                                        y: 0,
                                                                        z: Math.floor(Rsed.camera_n.pos_z())}))
             }
-        }
+        }*/
 
         // Poll and process user input.
         Rsed.ui_input_n.enact_inputs();
 
-        renderer.render_next_frame(timestamp);
+       // renderer.render_next_frame(timestamp);
+
+        // Rngon test.
+        {
+            const trackMesh = Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
+                                                                    y: 0,
+                                                                    z: Math.floor(Rsed.camera_n.pos_z())});
+
+            const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
+
+            Rngon.render("render_surface_canvas", [trackMesh],
+            {
+                cameraPosition: Rngon.translation_vector(0, 0, 0),
+                cameraDirection: Rngon.rotation_vector(isTopdownView? (-Math.PI / 2) : 21, 0, 0),
+                scale: 0.25,
+                fov: 45,
+            });
+        }
 
         window.requestAnimationFrame((time)=>tick(time));
     }

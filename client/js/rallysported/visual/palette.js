@@ -14,147 +14,147 @@ Rsed.palette = (function()
     // during run-time.
     const rallySportPalettes = [
         // Palette #1.
-        [{r:0, g:0, b:0},
-        {r:8, g:64, b:16},
-        {r:16, g:96, b:36},
-        {r:24, g:128, b:48},
-        {r:252, g:0, b:0},
-        {r:252, g:252, b:252},
-        {r:192, g:192, b:192},
-        {r:128, g:128, b:128},
-        {r:64, g:64, b:64},
-        {r:0, g:0, b:252},
-        {r:72, g:128, b:252},
-        {r:208, g:100, b:252},
-        {r:208, g:72, b:44},
-        {r:252, g:112, b:76},
-        {r:16, g:96, b:32},
-        {r:32, g:192, b:64},
-        {r:228, g:56, b:244},
-        {r:132, g:36, b:172},
-        {r:68, g:92, b:252},
-        {r:252, g:252, b:48},
-        {r:32, g:32, b:32},
-        {r:152, g:48, b:24},
-        {r:80, g:24, b:12},
-        {r:124, g:124, b:24},
-        {r:128, g:0, b:0},
-        {r:12, g:20, b:132},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:136, g:28, b:128},
-        {r:16, g:252, b:8}],
+        [{red:0, green:0, blue:0},
+        {red:8, green:64, blue:16},
+        {red:16, green:96, blue:36},
+        {red:24, green:128, blue:48},
+        {red:252, green:0, blue:0},
+        {red:252, green:252, blue:252},
+        {red:192, green:192, blue:192},
+        {red:128, green:128, blue:128},
+        {red:64, green:64, blue:64},
+        {red:0, green:0, blue:252},
+        {red:72, green:128, blue:252},
+        {red:208, green:100, blue:252},
+        {red:208, green:72, blue:44},
+        {red:252, green:112, blue:76},
+        {red:16, green:96, blue:32},
+        {red:32, green:192, blue:64},
+        {red:228, green:56, blue:244},
+        {red:132, green:36, blue:172},
+        {red:68, green:92, blue:252},
+        {red:252, green:252, blue:48},
+        {red:32, green:32, blue:32},
+        {red:152, green:48, blue:24},
+        {red:80, green:24, blue:12},
+        {red:124, green:124, blue:24},
+        {red:128, green:0, blue:0},
+        {red:12, green:20, blue:132},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:136, green:28, blue:128},
+        {red:16, green:252, blue:8}],
 
         // Palette #2.
-        [{r:0, g:0, b:0},
-        {r:80, g:88, b:104},
-        {r:96, g:104, b:120},
-        {r:112, g:128, b:144},
-        {r:252, g:0, b:0},
-        {r:252, g:252, b:252},
-        {r:192, g:192, b:192},
-        {r:128, g:128, b:128},
-        {r:64, g:64, b:64},
-        {r:0, g:0, b:252},
-        {r:72, g:128, b:252},
-        {r:208, g:100, b:252},
-        {r:208, g:72, b:44},
-        {r:252, g:112, b:76},
-        {r:8, g:136, b:16},
-        {r:32, g:192, b:64},
-        {r:228, g:56, b:244},
-        {r:132, g:36, b:172},
-        {r:68, g:92, b:252},
-        {r:252, g:252, b:48},
-        {r:32, g:32, b:32},
-        {r:152, g:48, b:24},
-        {r:80, g:24, b:12},
-        {r:124, g:124, b:24},
-        {r:128, g:0, b:0},
-        {r:12, g:20, b:132},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:136, g:28, b:128},
-        {r:16, g:252, b:8}],
+        [{red:0, green:0, blue:0},
+        {red:80, green:88, blue:104},
+        {red:96, green:104, blue:120},
+        {red:112, green:128, blue:144},
+        {red:252, green:0, blue:0},
+        {red:252, green:252, blue:252},
+        {red:192, green:192, blue:192},
+        {red:128, green:128, blue:128},
+        {red:64, green:64, blue:64},
+        {red:0, green:0, blue:252},
+        {red:72, green:128, blue:252},
+        {red:208, green:100, blue:252},
+        {red:208, green:72, blue:44},
+        {red:252, green:112, blue:76},
+        {red:8, green:136, blue:16},
+        {red:32, green:192, blue:64},
+        {red:228, green:56, blue:244},
+        {red:132, green:36, blue:172},
+        {red:68, green:92, blue:252},
+        {red:252, green:252, blue:48},
+        {red:32, green:32, blue:32},
+        {red:152, green:48, blue:24},
+        {red:80, green:24, blue:12},
+        {red:124, green:124, blue:24},
+        {red:128, green:0, blue:0},
+        {red:12, green:20, blue:132},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:136, green:28, blue:128},
+        {red:16, green:252, blue:8}],
 
         // Palette #3.
-        [{r:0, g:0, b:0},
-        {r:72, g:20, b:12},
-        {r:144, g:44, b:20},
-        {r:168, g:56, b:28},
-        {r:252, g:0, b:0},
-        {r:252, g:252, b:252},
-        {r:192, g:192, b:192},
-        {r:128, g:128, b:128},
-        {r:64, g:64, b:64},
-        {r:0, g:0, b:252},
-        {r:72, g:128, b:252},
-        {r:208, g:100, b:252},
-        {r:208, g:72, b:44},
-        {r:252, g:112, b:76},
-        {r:16, g:96, b:32},
-        {r:32, g:192, b:64},
-        {r:228, g:56, b:244},
-        {r:132, g:36, b:172},
-        {r:68, g:92, b:252},
-        {r:252, g:252, b:48},
-        {r:32, g:32, b:32},
-        {r:152, g:48, b:24},
-        {r:80, g:24, b:12},
-        {r:124, g:124, b:24},
-        {r:128, g:0, b:0},
-        {r:12, g:20, b:132},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:136, g:28, b:128},
-        {r:16, g:252, b:8}],
+        [{red:0, green:0, blue:0},
+        {red:72, green:20, blue:12},
+        {red:144, green:44, blue:20},
+        {red:168, green:56, blue:28},
+        {red:252, green:0, blue:0},
+        {red:252, green:252, blue:252},
+        {red:192, green:192, blue:192},
+        {red:128, green:128, blue:128},
+        {red:64, green:64, blue:64},
+        {red:0, green:0, blue:252},
+        {red:72, green:128, blue:252},
+        {red:208, green:100, blue:252},
+        {red:208, green:72, blue:44},
+        {red:252, green:112, blue:76},
+        {red:16, green:96, blue:32},
+        {red:32, green:192, blue:64},
+        {red:228, green:56, blue:244},
+        {red:132, green:36, blue:172},
+        {red:68, green:92, blue:252},
+        {red:252, green:252, blue:48},
+        {red:32, green:32, blue:32},
+        {red:152, green:48, blue:24},
+        {red:80, green:24, blue:12},
+        {red:124, green:124, blue:24},
+        {red:128, green:0, blue:0},
+        {red:12, green:20, blue:132},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:136, green:28, blue:128},
+        {red:16, green:252, blue:8}],
 
         // Palette #4.
-        [{r:0, g:0, b:0},
-        {r:28, g:52, b:8},
-        {r:64, g:64, b:16},
-        {r:80, g:84, b:28},
-        {r:252, g:0, b:0},
-        {r:252, g:252, b:252},
-        {r:192, g:192, b:192},
-        {r:128, g:128, b:128},
-        {r:64, g:64, b:64},
-        {r:0, g:0, b:252},
-        {r:72, g:128, b:252},
-        {r:208, g:100, b:252},
-        {r:208, g:72, b:44},
-        {r:252, g:112, b:76},
-        {r:32, g:64, b:32},
-        {r:64, g:128, b:64},
-        {r:228, g:56, b:244},
-        {r:132, g:36, b:172},
-        {r:68, g:92, b:252},
-        {r:252, g:252, b:48},
-        {r:32, g:32, b:32},
-        {r:152, g:48, b:24},
-        {r:80, g:24, b:12},
-        {r:124, g:124, b:24},
-        {r:128, g:0, b:0},
-        {r:12, g:20, b:132},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:252, g:252, b:252},
-        {r:136, g:28, b:128},
-        {r:16, g:252, b:8}]
+        [{red:0, green:0, blue:0},
+        {red:28, green:52, blue:8},
+        {red:64, green:64, blue:16},
+        {red:80, green:84, blue:28},
+        {red:252, green:0, blue:0},
+        {red:252, green:252, blue:252},
+        {red:192, green:192, blue:192},
+        {red:128, green:128, blue:128},
+        {red:64, green:64, blue:64},
+        {red:0, green:0, blue:252},
+        {red:72, green:128, blue:252},
+        {red:208, green:100, blue:252},
+        {red:208, green:72, blue:44},
+        {red:252, green:112, blue:76},
+        {red:32, green:64, blue:32},
+        {red:64, green:128, blue:64},
+        {red:228, green:56, blue:244},
+        {red:132, green:36, blue:172},
+        {red:68, green:92, blue:252},
+        {red:252, green:252, blue:48},
+        {red:32, green:32, blue:32},
+        {red:152, green:48, blue:24},
+        {red:80, green:24, blue:12},
+        {red:124, green:124, blue:24},
+        {red:128, green:0, blue:0},
+        {red:12, green:20, blue:132},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:252, green:252, blue:252},
+        {red:136, green:28, blue:128},
+        {red:16, green:252, blue:8}]
     ];
 
     // The palette we'll operate on; which is to say, when the user requests us to return a
     // color for a particular palette index, or to change the color at a particular index,
     // this is the palette we'll use. Generally, this palette will contain a modifiable
     // copy of one of Rally-Sport's hard-coded palettes.
-    const activePalette = (new Array(256)).fill().map(e=>({r:127,g:127,b:127}));
+    const activePalette = (new Array(256)).fill().map(e=>({red:127,green:127,blue:127,alpha:255,unitRange:{red:1, green:1, blue:1, alpha:1}}));
 
     const publicInterface =
     {
@@ -170,22 +170,22 @@ Rsed.palette = (function()
             // Named UI colors.
             switch (colorIdx)
             {
-                case "background":  return {r:16,  g:16,  b:16};
-                case "black":       return {r:0,   g:0,   b:0};
+                case "background":  return {red:16,  green:16,  blue:16};
+                case "black":       return {red:0,   green:0,   blue:0};
                 case "gray":
-                case "grey":        return {r:127, g:127, b:127};
+                case "grey":        return {red:127, green:127, blue:127};
                 case "lightgray":
-                case "lightgrey":   return {r:192, g:192, b:192};
+                case "lightgrey":   return {red:192, green:192, blue:192};
                 case "dimgray":
-                case "dimgrey":     return {r:64,  g:64,  b:64};
-                case "white":       return {r:255, g:255, b:255};
-                case "blue":        return {r:0,   g:0,   b:255};
-                case "darkorchid":  return {r:153, g:50,  b:204};
-                case "paleorchid":  return {r:158, g:123, b:176};
-                case "yellow":      return {r:255, g:255, b:0};
-                case "red":         return {r:255, g:0,   b:0};
-                case "green":       return {r:0,   g:255, b:0};
-                case "gold":        return {r:179, g:112, b:25};
+                case "dimgrey":     return {red:64,  green:64,  blue:64};
+                case "white":       return {red:255, green:255, blue:255};
+                case "blue":        return {red:0,   green:0,   blue:255};
+                case "darkorchid":  return {red:153, green:50,  blue:204};
+                case "paleorchid":  return {red:158, green:123, blue:176};
+                case "yellow":      return {red:255, green:255, blue:0};
+                case "red":         return {red:255, green:0,   blue:0};
+                case "green":       return {red:0,   green:255, blue:0};
+                case "gold":        return {red:179, green:112, blue:25};
                 default: break;
             }
 
@@ -201,14 +201,14 @@ Rsed.palette = (function()
 
             rallySportPalettes[paletteIdx].forEach((color, idx)=>
             {
-                activePalette[idx].r = color.r;
-                activePalette[idx].g = color.g;
-                activePalette[idx].b = color.b;
+                activePalette[idx].red = color.red;
+                activePalette[idx].green = color.green;
+                activePalette[idx].blue = color.blue;
             });
         },
 
         // Change the color at the given palette index in the current active palette.
-        set_color: (paletteIdx = 0, newColor = {r:0,g:0,b:0})=>
+        set_color: (paletteIdx = 0, newColor = {red:0,green:0,blue:0})=>
         {
             Rsed.assert && ((paletteIdx >= 0) &&
                             (paletteIdx < rallySportPalettes.length))
@@ -218,16 +218,16 @@ Rsed.palette = (function()
             {
                 ...
                 {
-                    r: activePalette[paletteIdx].r,
-                    g: activePalette[paletteIdx].g,
-                    b: activePalette[paletteIdx].b,
+                    red: activePalette[paletteIdx].red,
+                    green: activePalette[paletteIdx].green,
+                    blue: activePalette[paletteIdx].blue,
                 },
                 ...newColor,
             }
 
-            activePalette[paletteIdx].r = newColor.r;
-            activePalette[paletteIdx].g = newColor.g;
-            activePalette[paletteIdx].b = newColor.b;
+            activePalette[paletteIdx].red = newColor.red;
+            activePalette[paletteIdx].green = newColor.green;
+            activePalette[paletteIdx].blue = newColor.blue;
         },
     };
 

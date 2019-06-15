@@ -157,7 +157,7 @@ Rsed.core = (function()
         if (!isRunning) return;
 
         // Create the 3d scene to be rendered.
-        {
+        /*{
             renderer.clear_meshes();
 
             if (Rsed.ui_view_n.current_view() !== "2d-topdown")
@@ -166,12 +166,29 @@ Rsed.core = (function()
                                                                        y: 0,
                                                                        z: Math.floor(Rsed.camera_n.pos_z())}))
             }
-        }
+        }*/
 
         // Poll and process user input.
         Rsed.ui_input_n.enact_inputs();
 
-        renderer.render_next_frame(timestamp);
+       // renderer.render_next_frame(timestamp);
+
+        // Rngon test.
+        {
+            const trackMesh = Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
+                                                                    y: 0,
+                                                                    z: Math.floor(Rsed.camera_n.pos_z())});
+
+            const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
+
+            Rngon.render("render_surface_canvas", [trackMesh],
+            {
+                cameraPosition: Rngon.translation_vector(0, 0, 0),
+                cameraDirection: Rngon.rotation_vector(isTopdownView? (-Math.PI / 2) : 21, 0, 0),
+                scale: 0.25,
+                fov: 45,
+            });
+        }
 
         window.requestAnimationFrame((time)=>tick(time));
     }
