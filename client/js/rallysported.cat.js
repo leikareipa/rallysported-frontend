@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 June 2019 23:06:32 UTC)
+// VERSION: live (15 June 2019 23:07:59 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -14,11 +14,11 @@
 //	../client/js/rallysported/project/manifesto.js
 //	../client/js/rallysported/project/project.js
 //	../client/js/rallysported/misc/constants.js
-//	../client/js/rallysported/misc/world-builder.js
 //	../client/js/rallysported/misc/shared-mode.js
+//	../client/js/rallysported/world/world-builder.js
+//	../client/js/rallysported/world/camera.js
 //	../client/js/rallysported/visual/texture.js
 //	../client/js/rallysported/visual/palette.js
-//	../client/js/rallysported/render/camera.js
 //	../client/js/rallysported/track/varimaa.js
 //	../client/js/rallysported/track/maasto.js
 //	../client/js/rallysported/track/palat.js
@@ -28,8 +28,8 @@
 //	../client/js/rallysported/ui/brush.js
 //	../client/js/rallysported/ui/draw.js
 //	../client/js/rallysported/ui/input.js
-//	../client/js/rallysported/core.js
 //	../client/js/rallysported/ui/window.js
+//	../client/js/rallysported/core.js
 /////////////////////////////////////////////////
 
 /*!
@@ -2273,6 +2273,203 @@ Rsed.constants = Object.freeze(
     paletteSize: 32,
 });
 /*
+ * Most recent known filename: js/misc/shared-mode.js
+ *
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
+ * 
+ * Implements client-side communication with RallySportED-js's shared-mode server.
+ * 
+ * The central function is server_io(), which orchestrates the communication.
+ * But before communication can take place, register_as_participant() should be
+ * called to establish ourselves as a participant on the server.
+ *
+ */
+
+"use strict";
+
+Rsed.shared_mode_n = (function()
+{
+    // A string that uniquely identifies us as a participant in the shared editing. We'll
+    // need to provide this id any time we GET or POST data to the server.
+    let participantId = null;
+
+    // The number of milliseconds to wait between polling the server with/for data.
+    const serverPollingInterval = 6000;
+
+    // POSTs our most recent edits to the server for other participants to see. Will throw
+    // on errors.
+    function send_local_caches_to_server(localCaches = {})
+    {
+        localCaches =
+        {
+            ...{
+                maasto:[],
+                varimaa:[]
+            },
+            ...localCaches
+        }
+
+        function cacheToDataArray(cache)
+        {
+            return ((dataArray = [])=>{ cache.forEach((v, idx)=>{ if (v != null) dataArray.push(idx, v); }); return dataArray; })();
+        };
+        
+        const postData =
+        {
+            participantId,
+            maasto: cacheToDataArray(localCaches["maasto"]),
+            varimaa: cacheToDataArray(localCaches["varimaa"]),
+        };
+
+        return fetch(("server/shared-editing/post.php?projectName=" + Rsed.core.current_project().name +
+                                                    "&participantId=" + participantId),
+                {
+                    method: "POST",
+                    cache: "no-store",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(postData)
+                })
+                .then(response=>
+                {
+                    if (!response.ok)
+                    {
+                        throw "A POST request to the server failed.";
+                    }
+    
+                    return response.json();
+                })
+                .then(ticket=>
+                {
+                    if (!ticket.valid ||
+                        (typeof ticket.data === "undefined"))
+                    {
+                        throw ("The server sent a POST ticket marked invalid. It said: " + ticket.message);
+                    }
+
+                    return ticket.data;
+                })
+                .catch(error=>{ Rsed.throw(error); });
+    }
+
+    // Takes in an object holding edit data we've received from the server made by other
+    // participants, and applies those data to our local data (like our MAASTO heightmap
+    // and VARIMAA tilemap).
+    function apply_server_data_to_local_data(serverData)
+    {
+        if (!serverData) return;
+
+        const resources =
+        {
+            "maasto": Rsed.core.current_project().maasto.set_tile_value_at,
+            "varimaa": Rsed.core.current_project().varimaa.set_tile_value_at,
+        };
+
+        for (const [resourceName, dataCallback] of Object.entries(resources))
+        {
+            if (Array.isArray(serverData[resourceName]))
+            {
+                for (let i = 0; i < serverData[resourceName].length; i += 2)
+                {
+                    dataCallback(...idx_to_xy(serverData[resourceName][i]), serverData[resourceName][i+1]);
+                }
+            }
+        }
+
+        // Converts a 1d array index into a 2d x,y coordinate pair.
+        function idx_to_xy(idx)
+        {
+            return [(idx % Rsed.core.current_project().maasto.width),
+                    Math.floor(idx / Rsed.core.current_project().maasto.width)];
+        }
+    }
+
+    // Sends the server a POST request containing the local edits we've made since the last
+    // time we contacted the server in this manner. Will receive back from the server any
+    // edits made by the other participants in the shared editing.
+    async function server_io(participantId = "")
+    {
+        if (!publicInterface.enabled()) return;
+
+        if (Rsed.ui_input_n.are_editing_keys_pressed())
+        {
+            setTimeout(poll_server, 500);
+            return;
+        }
+
+        const newServerData = await send_local_caches_to_server({
+            maasto: Rsed.ui_brush_n.flush_brush_cache("maasto"),
+            varimaa: Rsed.ui_brush_n.flush_brush_cache("varimaa")
+        });
+
+        apply_server_data_to_local_data(newServerData);
+
+        // Loop.
+        setTimeout(poll_server, serverPollingInterval);
+
+        function poll_server() { server_io(participantId); };
+    }
+
+    const publicInterface = {};
+    {
+        // Returns null if shared mode is disabled; our participant id otherwise (which will be a
+        // truthy value).
+        publicInterface.enabled = function() { return participantId; };
+
+        // Start two-way communication with the shared-mode server.
+        publicInterface.start_polling_server = function()
+        {
+            Rsed.assert && (publicInterface.enabled())
+                        || Rsed.throw("Was asked to start polling the shared-mode server before having registered as a participant in it.");
+
+            server_io(participantId);
+
+            return;
+        }
+
+        // Asks the server to register us as a participant in the shared editing. Being a participant
+        // means we can have our edits broadcast to the server and to receive edits from the server made
+        // by other participants. If an error occurs while registering, the client side will be terminated.
+        publicInterface.register_as_participant_in_project = function(projectName = "")
+        {
+            // If we were already registered as a participant, unregister that previous registration, first.
+            if (publicInterface.enabled()) publicInterface.unregister_current_registration();
+
+            return fetch(("server/shared-editing/register.php?projectName=" + projectName), {cache: "no-store"})
+                    .then(response=>
+                    {
+                        if (!response.ok)
+                        {
+                            throw "A POST request to the server failed.";
+                        }
+
+                        return response.json();
+                    })
+                    .then(ticket=>
+                    {
+                        if (!ticket.valid || (typeof ticket.participantId === "undefined"))
+                        {
+                            throw "Failed to register as a new participant in the shared editing.";
+                        }
+
+                        participantId = ticket.participantId;
+                    })
+                    .catch(error=>{ Rsed.throw("Error while registering as a participant in shared editing: " + error); });
+        };
+
+        // Tell the server that we no longer want to participate in the shared editing. Our edits
+        // will no longer be broadcast to the server, and we don't receive other participants'
+        // edits from the server.
+        publicInterface.unregister_current_registration = function()
+        {
+            participantId = null;
+
+            /// TODO. Maybe flush the latest local changes to the server, etc.
+        }
+    };
+    return publicInterface;
+})();
+/*
  * Most recent known filename: js/misc/world-builder.js
  *
  * 2019 Tarpeeksi Hyvae Soft /
@@ -2503,203 +2700,67 @@ Rsed.worldBuilder = function()
     }
 };
 /*
- * Most recent known filename: js/misc/shared-mode.js
+ * Most recent known filename: js/render/camera.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
- * 
- * Implements client-side communication with RallySportED-js's shared-mode server.
- * 
- * The central function is server_io(), which orchestrates the communication.
- * But before communication can take place, register_as_participant() should be
- * called to establish ourselves as a participant on the server.
  *
  */
 
 "use strict";
 
-Rsed.shared_mode_n = (function()
+Rsed.camera_n = (function()
 {
-    // A string that uniquely identifies us as a participant in the shared editing. We'll
-    // need to provide this id any time we GET or POST data to the server.
-    let participantId = null;
+    // The camera's position, in tile units.
+    const position = {x:0, y:0, z:0};
 
-    // The number of milliseconds to wait between polling the server with/for data.
-    const serverPollingInterval = 6000;
-
-    // POSTs our most recent edits to the server for other participants to see. Will throw
-    // on errors.
-    function send_local_caches_to_server(localCaches = {})
-    {
-        localCaches =
-        {
-            ...{
-                maasto:[],
-                varimaa:[]
-            },
-            ...localCaches
-        }
-
-        function cacheToDataArray(cache)
-        {
-            return ((dataArray = [])=>{ cache.forEach((v, idx)=>{ if (v != null) dataArray.push(idx, v); }); return dataArray; })();
-        };
-        
-        const postData =
-        {
-            participantId,
-            maasto: cacheToDataArray(localCaches["maasto"]),
-            varimaa: cacheToDataArray(localCaches["varimaa"]),
-        };
-
-        return fetch(("server/shared-editing/post.php?projectName=" + Rsed.core.current_project().name +
-                                                    "&participantId=" + participantId),
-                {
-                    method: "POST",
-                    cache: "no-store",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(postData)
-                })
-                .then(response=>
-                {
-                    if (!response.ok)
-                    {
-                        throw "A POST request to the server failed.";
-                    }
-    
-                    return response.json();
-                })
-                .then(ticket=>
-                {
-                    if (!ticket.valid ||
-                        (typeof ticket.data === "undefined"))
-                    {
-                        throw ("The server sent a POST ticket marked invalid. It said: " + ticket.message);
-                    }
-
-                    return ticket.data;
-                })
-                .catch(error=>{ Rsed.throw(error); });
-    }
-
-    // Takes in an object holding edit data we've received from the server made by other
-    // participants, and applies those data to our local data (like our MAASTO heightmap
-    // and VARIMAA tilemap).
-    function apply_server_data_to_local_data(serverData)
-    {
-        if (!serverData) return;
-
-        const resources =
-        {
-            "maasto": Rsed.core.current_project().maasto.set_tile_value_at,
-            "varimaa": Rsed.core.current_project().varimaa.set_tile_value_at,
-        };
-
-        for (const [resourceName, dataCallback] of Object.entries(resources))
-        {
-            if (Array.isArray(serverData[resourceName]))
-            {
-                for (let i = 0; i < serverData[resourceName].length; i += 2)
-                {
-                    dataCallback(...idx_to_xy(serverData[resourceName][i]), serverData[resourceName][i+1]);
-                }
-            }
-        }
-
-        // Converts a 1d array index into a 2d x,y coordinate pair.
-        function idx_to_xy(idx)
-        {
-            return [(idx % Rsed.core.current_project().maasto.width),
-                    Math.floor(idx / Rsed.core.current_project().maasto.width)];
-        }
-    }
-
-    // Sends the server a POST request containing the local edits we've made since the last
-    // time we contacted the server in this manner. Will receive back from the server any
-    // edits made by the other participants in the shared editing.
-    async function server_io(participantId = "")
-    {
-        if (!publicInterface.enabled()) return;
-
-        if (Rsed.ui_input_n.are_editing_keys_pressed())
-        {
-            setTimeout(poll_server, 500);
-            return;
-        }
-
-        const newServerData = await send_local_caches_to_server({
-            maasto: Rsed.ui_brush_n.flush_brush_cache("maasto"),
-            varimaa: Rsed.ui_brush_n.flush_brush_cache("varimaa")
-        });
-
-        apply_server_data_to_local_data(newServerData);
-
-        // Loop.
-        setTimeout(poll_server, serverPollingInterval);
-
-        function poll_server() { server_io(participantId); };
-    }
+    const moveSpeed = 0.4;
 
     const publicInterface = {};
     {
-        // Returns null if shared mode is disabled; our participant id otherwise (which will be a
-        // truthy value).
-        publicInterface.enabled = function() { return participantId; };
-
-        // Start two-way communication with the shared-mode server.
-        publicInterface.start_polling_server = function()
+        // Restore the camera's default position.
+        publicInterface.reset_camera_position = function()
         {
-            Rsed.assert && (publicInterface.enabled())
-                        || Rsed.throw("Was asked to start polling the shared-mode server before having registered as a participant in it.");
-
-            server_io(participantId);
-
-            return;
+            position.x = 15;
+            position.y = 0;
+            position.z = 13;
         }
 
-        // Asks the server to register us as a participant in the shared editing. Being a participant
-        // means we can have our edits broadcast to the server and to receive edits from the server made
-        // by other participants. If an error occurs while registering, the client side will be terminated.
-        publicInterface.register_as_participant_in_project = function(projectName = "")
+        publicInterface.move_camera = function(deltaX, deltaY, deltaZ, enforceBounds = true)
         {
-            // If we were already registered as a participant, unregister that previous registration, first.
-            if (publicInterface.enabled()) publicInterface.unregister_current_registration();
+            position.x += (deltaX * moveSpeed);
+            position.y += (deltaY * moveSpeed);
+            position.z += (deltaZ * moveSpeed);
 
-            return fetch(("server/shared-editing/register.php?projectName=" + projectName), {cache: "no-store"})
-                    .then(response=>
-                    {
-                        if (!response.ok)
-                        {
-                            throw "A POST request to the server failed.";
-                        }
-
-                        return response.json();
-                    })
-                    .then(ticket=>
-                    {
-                        if (!ticket.valid || (typeof ticket.participantId === "undefined"))
-                        {
-                            throw "Failed to register as a new participant in the shared editing.";
-                        }
-
-                        participantId = ticket.participantId;
-                    })
-                    .catch(error=>{ Rsed.throw("Error while registering as a participant in shared editing: " + error); });
-        };
-
-        // Tell the server that we no longer want to participate in the shared editing. Our edits
-        // will no longer be broadcast to the server, and we don't receive other participants'
-        // edits from the server.
-        publicInterface.unregister_current_registration = function()
-        {
-            participantId = null;
-
-            /// TODO. Maybe flush the latest local changes to the server, etc.
+            if (enforceBounds)
+            {
+                if (position.x < 0) position.x = 0;
+                if (position.z < 1) position.z = 1;
+                if (position.x > (Rsed.core.current_project().maasto.width - this.view_width())) position.x = (Rsed.core.current_project().maasto.width - this.view_width());
+                if (position.z > (Rsed.core.current_project().maasto.width - this.view_height()+1)) position.z = (Rsed.core.current_project().maasto.width - this.view_height()+1);
+            }
         }
-    };
+
+        publicInterface.rotate_camera = function(rotX, rotY, rotZ)
+        {
+            Rsed.throw("This function has not yet been prepared for use.");
+        }
+
+        publicInterface.pos_x = function() { return position.x; }
+        publicInterface.pos_y = function() { return position.y; }
+        publicInterface.pos_z = function() { return position.z; }
+
+        publicInterface.movement_speed = function() { return moveSpeed; }
+
+        // How many tiles horizontally and vertically should be visible on screen with this camera.
+        publicInterface.view_width = function() { return 17; }
+        publicInterface.view_height = function() { return 17; }
+    }
+
+    publicInterface.reset_camera_position();
+
     return publicInterface;
-})();
-/*
+})();/*
  * Most recent known filename: js/texture.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
@@ -3038,67 +3099,6 @@ Rsed.palette = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/render/camera.js
- *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
- *
- */
-
-"use strict";
-
-Rsed.camera_n = (function()
-{
-    // The camera's position, in tile units.
-    const position = {x:0, y:0, z:0};
-
-    const moveSpeed = 0.4;
-
-    const publicInterface = {};
-    {
-        // Restore the camera's default position.
-        publicInterface.reset_camera_position = function()
-        {
-            position.x = 15;
-            position.y = 0;
-            position.z = 13;
-        }
-
-        publicInterface.move_camera = function(deltaX, deltaY, deltaZ, enforceBounds = true)
-        {
-            position.x += (deltaX * moveSpeed);
-            position.y += (deltaY * moveSpeed);
-            position.z += (deltaZ * moveSpeed);
-
-            if (enforceBounds)
-            {
-                if (position.x < 0) position.x = 0;
-                if (position.z < 1) position.z = 1;
-                if (position.x > (Rsed.core.current_project().maasto.width - this.view_width())) position.x = (Rsed.core.current_project().maasto.width - this.view_width());
-                if (position.z > (Rsed.core.current_project().maasto.width - this.view_height()+1)) position.z = (Rsed.core.current_project().maasto.width - this.view_height()+1);
-            }
-        }
-
-        publicInterface.rotate_camera = function(rotX, rotY, rotZ)
-        {
-            Rsed.throw("This function has not yet been prepared for use.");
-        }
-
-        publicInterface.pos_x = function() { return position.x; }
-        publicInterface.pos_y = function() { return position.y; }
-        publicInterface.pos_z = function() { return position.z; }
-
-        publicInterface.movement_speed = function() { return moveSpeed; }
-
-        // How many tiles horizontally and vertically should be visible on screen with this camera.
-        publicInterface.view_width = function() { return 17; }
-        publicInterface.view_height = function() { return 17; }
-    }
-
-    publicInterface.reset_camera_position();
-
-    return publicInterface;
-})();/*
  * Most recent known filename: js/track/varimaa.js
  *
  * 2019 Tarpeeksi Hyvae Soft /
@@ -5523,253 +5523,6 @@ Rsed.ui_input_n = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/main.js
- *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
- *
- */
-
-"use strict";
-
-Rsed.core = (function()
-{
-    // Set to true while the core is running (e.g. as a result of calling run()).
-    let isRunning = false;
-
-    // The number of frames per second being generated.
-    let programFPS = 0;
-
-    // The project we've currently got loaded. When the user makes edits or requests a save,
-    // this is the target project.
-    let project = Rsed.project.placeholder;
-
-    const renderScalingMultiplier = 0.25;
-
-    // Whether to display an FPS counter to the user.
-    const fpsCounterEnabled = (()=>
-    {
-        const params = new URLSearchParams(window.location.search);
-        return (params.has("showFramerate") && (Number(params.get("showFramerate")) === 1));
-    })();
-
-    const htmlUI = (function()
-    {
-        const uiContainer = new Vue(
-        {
-            el: "#html-ui",
-            data:
-            {
-                // The display name of the track that's currently open in the editor.
-                trackName: "",
-
-                propList: [],
-
-                // Whether the UI should be displayed or kept invisible at this time.
-                uiVisible: false,
-            },
-            methods:
-            {
-                // Called when the user selects a prop from the prop dropdown menu.
-                /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
-                activate_prop: function(name = "")
-                {
-                    Rsed.core.current_project().props.change_prop_type(Rsed.core.current_project().track_id(),
-                                                                       Rsed.ui_input_n.mouse_hover_args().trackId,
-                                                                       Rsed.core.current_project().props.id_for_name(name));
-                    window.close_dropdowns();
-
-                    return;
-                },
-                
-                refresh: function()
-                {
-                    this.trackName = Rsed.core.current_project().name;
-                    this.propList = Rsed.core.current_project().props.names()
-                                                    .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
-                                                    .map(propName=>({propName}));
-
-                    return;
-                }
-            }
-        });
-
-        const publicInterface = {};
-        {
-            publicInterface.refresh = function()
-            {
-                uiContainer.refresh();
-
-                return;
-            };
-    
-            publicInterface.set_visible = function(isVisible)
-            {
-                uiContainer.uiVisible = isVisible;
-
-                return;
-            };
-        }
-        return publicInterface;
-    })();
-
-    // The canvas we'll render into.
-    const canvas =
-    {
-        width: 0,
-        height: 0,
-        scalingFactor: 0.25,
-        element: document.getElementById("render-canvas"),
-    };
-
-    Rsed.assert && (canvas.element != null)
-                || Rsed.throw("Failed to find a canvas element to render into.");
-
-    const publicInterface =
-    {
-        // Starts up RallySportED with the given project to edit.
-        run: async function(startupArgs = {})
-        {
-            Rsed.assert && ((typeof startupArgs.project.dataLocality !== "undefined") &&
-                            (typeof startupArgs.editMode !== "undefined"))
-                        || Rsed.throw("Missing startup parameters for launching RallySportED.");
-
-            isRunning = false;
-
-            // Hide the UI while we load up the project's data etc.
-            htmlUI.set_visible(false);
-
-            verify_browser_compatibility();
-
-            await load_project(startupArgs);
-
-            Rsed.ui_draw_n.prebake_palat_pane();
-
-            htmlUI.refresh();
-            htmlUI.set_visible(true);
-
-            isRunning = true;
-            tick();
-        },
-
-        // Terminate RallySporED with an error message.
-        panic: function(errorMessage)
-        {
-            //renderer.indicate_error(errorMessage);
-            //renderer.remove_callbacks();
-            htmlUI.set_visible(false);
-            isRunning = false;
-            this.run = ()=>{};
-        },
-
-        current_project: ()=>
-        {
-            Rsed.assert && (project !== null)
-                        || Rsed.throw("Attempting to access an uninitialized project.");
-
-            return project;
-        },
-        
-        is_running: ()=>isRunning,
-        render_width: ()=>canvas.width,
-        render_height: ()=>canvas.height,
-        renderer_fps: ()=>programFPS,
-        render_surface_id: ()=>canvas.element.getAttribute("id"),
-        fps_counter_enabled: ()=>fpsCounterEnabled,
-        scaling_multiplier: ()=>renderScalingMultiplier,
-        mouse_pick_buffer_value_at: (x, y)=>0,//renderer.mouse_pick_buffer_value_at(x, y),
-    }
-
-    return publicInterface;
-
-    // Called once per frame to orchestrate program flow.
-    function tick(timestamp = 0, frameDeltaMs = 0)
-    {
-        if (!isRunning) return;
-
-        programFPS = Math.round(1000 / (frameDeltaMs || 1));
-
-        // Poll and process user input.
-        Rsed.ui_input_n.enact_inputs();
-
-        // Render the next frame.
-        {
-            const trackMesh = Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
-                                                              y: 0,
-                                                              z: Math.floor(Rsed.camera_n.pos_z())});
-
-            const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
-
-            const renderInfo = Rngon.render(canvas.element.getAttribute("id"), [trackMesh],
-            {
-                cameraPosition: Rngon.translation_vector(0, 0, 0),
-                cameraDirection: Rngon.rotation_vector((isTopdownView? 90 : 21), 0, 0),
-                scale: canvas.scalingFactor,
-                fov: 45,
-            });
-
-            // If the rendering was resized since the previous frame...
-            if ((renderInfo.renderWidth !== canvas.width ||
-                (renderInfo.renderHeight !== canvas.height)))
-            {
-                canvas.width = renderInfo.renderWidth;
-                canvas.height = renderInfo.renderHeight;
-
-                // The PALAT pane needs to adjust to the new size of the canvas.
-                Rsed.ui_draw_n.prebake_palat_pane();
-            }
-
-            Rsed.ui_draw_n.draw_ui(canvas.element);
-        }
-
-        window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
-    }
-
-    // Test various browser compatibility factors, and give the user messages of warning where appropriate.
-    function verify_browser_compatibility()
-    {
-        // We expect to export projects with JSZip using blobs.
-        /// TODO: Doesn't need to be checked in shared mode, since it doesn't use JSZip for saving.
-        if (!JSZip.support.blob)
-        {
-            alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
-        }
-    }
-
-    async function load_project(args = {})
-    {
-        Rsed.assert && ((typeof args.editMode !== "undefined") &&
-                        (typeof args.project.dataIdentifier !== "undefined"))
-                    || Rsed.throw("Missing required arguments for loading a project.");
-            
-        if (args.editMode === "shared")
-        {
-            await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.project.dataIdentifier);
-        }
-        else
-        {
-            Rsed.shared_mode_n.unregister_current_registration();
-        }
-
-        project = await Rsed.project(args.project);
-
-        Rsed.apply_manifesto(project);
-        
-        Rsed.camera_n.reset_camera_position();
-
-        Rsed.palette.set_palette(project.track_id() === 4? 1 :
-                                 project.track_id() === 7? 3 : 0);
-
-        /// TODO. This needs to be implemented in a better way and/or somewhere
-        /// else - ideally so you don't have to manually start the poll loop;
-        /// so you don't risk starting it twice or whatever.
-        if (Rsed.shared_mode_n.enabled())
-        {
-            Rsed.shared_mode_n.start_polling_server();
-        }
-    }
-})();
-/*
  * Most recent known filename: js/misc/window.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
@@ -6040,3 +5793,250 @@ window.drop_handler = function(event)
     const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
     window.history.replaceState({}, document.title, basePath);
 }
+/*
+ * Most recent known filename: js/main.js
+ *
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
+ *
+ */
+
+"use strict";
+
+Rsed.core = (function()
+{
+    // Set to true while the core is running (e.g. as a result of calling run()).
+    let isRunning = false;
+
+    // The number of frames per second being generated.
+    let programFPS = 0;
+
+    // The project we've currently got loaded. When the user makes edits or requests a save,
+    // this is the target project.
+    let project = Rsed.project.placeholder;
+
+    const renderScalingMultiplier = 0.25;
+
+    // Whether to display an FPS counter to the user.
+    const fpsCounterEnabled = (()=>
+    {
+        const params = new URLSearchParams(window.location.search);
+        return (params.has("showFramerate") && (Number(params.get("showFramerate")) === 1));
+    })();
+
+    const htmlUI = (function()
+    {
+        const uiContainer = new Vue(
+        {
+            el: "#html-ui",
+            data:
+            {
+                // The display name of the track that's currently open in the editor.
+                trackName: "",
+
+                propList: [],
+
+                // Whether the UI should be displayed or kept invisible at this time.
+                uiVisible: false,
+            },
+            methods:
+            {
+                // Called when the user selects a prop from the prop dropdown menu.
+                /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
+                activate_prop: function(name = "")
+                {
+                    Rsed.core.current_project().props.change_prop_type(Rsed.core.current_project().track_id(),
+                                                                       Rsed.ui_input_n.mouse_hover_args().trackId,
+                                                                       Rsed.core.current_project().props.id_for_name(name));
+                    window.close_dropdowns();
+
+                    return;
+                },
+                
+                refresh: function()
+                {
+                    this.trackName = Rsed.core.current_project().name;
+                    this.propList = Rsed.core.current_project().props.names()
+                                                    .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
+                                                    .map(propName=>({propName}));
+
+                    return;
+                }
+            }
+        });
+
+        const publicInterface = {};
+        {
+            publicInterface.refresh = function()
+            {
+                uiContainer.refresh();
+
+                return;
+            };
+    
+            publicInterface.set_visible = function(isVisible)
+            {
+                uiContainer.uiVisible = isVisible;
+
+                return;
+            };
+        }
+        return publicInterface;
+    })();
+
+    // The canvas we'll render into.
+    const canvas =
+    {
+        width: 0,
+        height: 0,
+        scalingFactor: 0.25,
+        element: document.getElementById("render-canvas"),
+    };
+
+    Rsed.assert && (canvas.element != null)
+                || Rsed.throw("Failed to find a canvas element to render into.");
+
+    const publicInterface =
+    {
+        // Starts up RallySportED with the given project to edit.
+        run: async function(startupArgs = {})
+        {
+            Rsed.assert && ((typeof startupArgs.project.dataLocality !== "undefined") &&
+                            (typeof startupArgs.editMode !== "undefined"))
+                        || Rsed.throw("Missing startup parameters for launching RallySportED.");
+
+            isRunning = false;
+
+            // Hide the UI while we load up the project's data etc.
+            htmlUI.set_visible(false);
+
+            verify_browser_compatibility();
+
+            await load_project(startupArgs);
+
+            Rsed.ui_draw_n.prebake_palat_pane();
+
+            htmlUI.refresh();
+            htmlUI.set_visible(true);
+
+            isRunning = true;
+            tick();
+        },
+
+        // Terminate RallySporED with an error message.
+        panic: function(errorMessage)
+        {
+            //renderer.indicate_error(errorMessage);
+            //renderer.remove_callbacks();
+            htmlUI.set_visible(false);
+            isRunning = false;
+            this.run = ()=>{};
+        },
+
+        current_project: ()=>
+        {
+            Rsed.assert && (project !== null)
+                        || Rsed.throw("Attempting to access an uninitialized project.");
+
+            return project;
+        },
+        
+        is_running: ()=>isRunning,
+        render_width: ()=>canvas.width,
+        render_height: ()=>canvas.height,
+        renderer_fps: ()=>programFPS,
+        render_surface_id: ()=>canvas.element.getAttribute("id"),
+        fps_counter_enabled: ()=>fpsCounterEnabled,
+        scaling_multiplier: ()=>renderScalingMultiplier,
+        mouse_pick_buffer_value_at: (x, y)=>0,//renderer.mouse_pick_buffer_value_at(x, y),
+    }
+
+    return publicInterface;
+
+    // Called once per frame to orchestrate program flow.
+    function tick(timestamp = 0, frameDeltaMs = 0)
+    {
+        if (!isRunning) return;
+
+        programFPS = Math.round(1000 / (frameDeltaMs || 1));
+
+        // Poll and process user input.
+        Rsed.ui_input_n.enact_inputs();
+
+        // Render the next frame.
+        {
+            const trackMesh = Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
+                                                              y: 0,
+                                                              z: Math.floor(Rsed.camera_n.pos_z())});
+
+            const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
+
+            const renderInfo = Rngon.render(canvas.element.getAttribute("id"), [trackMesh],
+            {
+                cameraPosition: Rngon.translation_vector(0, 0, 0),
+                cameraDirection: Rngon.rotation_vector((isTopdownView? 90 : 21), 0, 0),
+                scale: canvas.scalingFactor,
+                fov: 45,
+            });
+
+            // If the rendering was resized since the previous frame...
+            if ((renderInfo.renderWidth !== canvas.width ||
+                (renderInfo.renderHeight !== canvas.height)))
+            {
+                canvas.width = renderInfo.renderWidth;
+                canvas.height = renderInfo.renderHeight;
+
+                // The PALAT pane needs to adjust to the new size of the canvas.
+                Rsed.ui_draw_n.prebake_palat_pane();
+            }
+
+            Rsed.ui_draw_n.draw_ui(canvas.element);
+        }
+
+        window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
+    }
+
+    // Test various browser compatibility factors, and give the user messages of warning where appropriate.
+    function verify_browser_compatibility()
+    {
+        // We expect to export projects with JSZip using blobs.
+        /// TODO: Doesn't need to be checked in shared mode, since it doesn't use JSZip for saving.
+        if (!JSZip.support.blob)
+        {
+            alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
+        }
+    }
+
+    async function load_project(args = {})
+    {
+        Rsed.assert && ((typeof args.editMode !== "undefined") &&
+                        (typeof args.project.dataIdentifier !== "undefined"))
+                    || Rsed.throw("Missing required arguments for loading a project.");
+            
+        if (args.editMode === "shared")
+        {
+            await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.project.dataIdentifier);
+        }
+        else
+        {
+            Rsed.shared_mode_n.unregister_current_registration();
+        }
+
+        project = await Rsed.project(args.project);
+
+        Rsed.apply_manifesto(project);
+        
+        Rsed.camera_n.reset_camera_position();
+
+        Rsed.palette.set_palette(project.track_id() === 4? 1 :
+                                 project.track_id() === 7? 3 : 0);
+
+        /// TODO. This needs to be implemented in a better way and/or somewhere
+        /// else - ideally so you don't have to manually start the poll loop;
+        /// so you don't risk starting it twice or whatever.
+        if (Rsed.shared_mode_n.enabled())
+        {
+            Rsed.shared_mode_n.start_polling_server();
+        }
+    }
+})();
