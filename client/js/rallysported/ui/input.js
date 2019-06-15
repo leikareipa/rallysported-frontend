@@ -15,13 +15,13 @@ Rsed.ui_input_n = (function()
     const publicInterface = {};
 
     // The current x,y pixel position of the mouse on the screen.
-    const mousePos = new Rsed.geometry_n.vector2_o(0, 0);
+    const mousePos = {x:0, y:0};
 
     // The number of pixels the mouse has moved since the last time set_mouse_pos() was called.
-    const mousePosDelta = new Rsed.geometry_n.vector2_o(0, 0);
+    const mousePosDelta = {x:0, y:0};
 
     // The x,y coordinates of the ground tile the mouse is currently hovering over.
-    const mouseTileHover = new Rsed.geometry_n.vector2_o(-1, -1);
+    const mouseTileHover = {x:-1, y:-1};
 
     // Whenever the user presses down a mouse button, this object gets filled with relevant information
     // about the click's target (e.g. track prop), so we can maintain that information across frames.
@@ -57,7 +57,7 @@ Rsed.ui_input_n = (function()
 
     function enact_key_presses()
     {
-        const movement = new Rsed.geometry_n.vector3_o(0, 0, 0);
+        const movement = {x:0, y:0, z:0};
 
         if (keyDown["s"]) movement.x += -1;
         if (keyDown["f"]) movement.x += 1;

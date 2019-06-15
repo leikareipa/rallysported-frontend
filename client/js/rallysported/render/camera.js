@@ -11,9 +11,7 @@
 Rsed.camera_n = (function()
 {
     // The camera's position, in tile units.
-    const position = new Rsed.geometry_n.vector3_o(15, 0, 13);
-    
-    const direction = new Rsed.geometry_n.vector3_o(0, 0, 0);
+    const position = {x:0, y:0, z:0};
 
     const moveSpeed = 0.4;
 
@@ -57,5 +55,8 @@ Rsed.camera_n = (function()
         publicInterface.view_width = function() { return 17; }
         publicInterface.view_height = function() { return 17; }
     }
+
+    publicInterface.reset_camera_position();
+
     return publicInterface;
 })();
