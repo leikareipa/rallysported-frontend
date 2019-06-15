@@ -13,6 +13,9 @@ Rsed.core = (function()
     // Set to true while the core is running (e.g. as a result of calling run()).
     let isRunning = false;
 
+    // The number of frames per second being generated.
+    let programFPS = 0;
+
     // The project we've currently got loaded. When the user makes edits or requests a save,
     // this is the target project.
     let project = Rsed.project.placeholder;
@@ -25,16 +28,6 @@ Rsed.core = (function()
         const params = new URLSearchParams(window.location.search);
         return (params.has("showFramerate") && (Number(params.get("showFramerate")) === 1));
     })();
-
-    // Initialize the renderer.
-    const renderer = new Rsed.renderer_o("render_container", renderScalingMultiplier);
-    {
-        // This function will be called whenever the size of the render surface changes.
-        renderer.set_resize_callback(()=>
-        {
-            Rsed.ui_draw_n.prebake_palat_pane();
-        });
-    }
 
     const htmlUI = (function()
     {
@@ -96,6 +89,18 @@ Rsed.core = (function()
         return publicInterface;
     })();
 
+    // The canvas we'll render into.
+    const canvas =
+    {
+        width: 0,
+        height: 0,
+        scalingFactor: 0.25,
+        element: document.getElementById("render-canvas"),
+    };
+
+    Rsed.assert && (canvas.element != null)
+                || Rsed.throw("Failed to find a canvas element to render into.");
+
     const publicInterface =
     {
         // Starts up RallySportED with the given project to edit.
@@ -114,6 +119,8 @@ Rsed.core = (function()
 
             await load_project(startupArgs);
 
+            Rsed.ui_draw_n.prebake_palat_pane();
+
             htmlUI.refresh();
             htmlUI.set_visible(true);
 
@@ -124,8 +131,8 @@ Rsed.core = (function()
         // Terminate RallySporED with an error message.
         panic: function(errorMessage)
         {
-            renderer.indicate_error(errorMessage);
-            renderer.remove_callbacks();
+            //renderer.indicate_error(errorMessage);
+            //renderer.remove_callbacks();
             htmlUI.set_visible(false);
             isRunning = false;
             this.run = ()=>{};
@@ -140,57 +147,58 @@ Rsed.core = (function()
         },
         
         is_running: ()=>isRunning,
-        render_width: ()=>renderer.render_width(),
-        render_height: ()=>renderer.render_height(),
-        render_latency: ()=>renderer.previousFrameLatencyMs,
-        render_surface_id: ()=>renderer.renderSurfaceId,
+        render_width: ()=>canvas.width,
+        render_height: ()=>canvas.height,
+        renderer_fps: ()=>programFPS,
+        render_surface_id: ()=>canvas.element.getAttribute("id"),
         fps_counter_enabled: ()=>fpsCounterEnabled,
         scaling_multiplier: ()=>renderScalingMultiplier,
-        mouse_pick_buffer_value_at: (x, y)=>renderer.mouse_pick_buffer_value_at(x, y),
+        mouse_pick_buffer_value_at: (x, y)=>0,//renderer.mouse_pick_buffer_value_at(x, y),
     }
 
     return publicInterface;
 
     // Called once per frame to orchestrate program flow.
-    function tick(timestamp = 0)
+    function tick(timestamp = 0, frameDeltaMs = 0)
     {
         if (!isRunning) return;
 
-        // Create the 3d scene to be rendered.
-        /*{
-            renderer.clear_meshes();
-
-            if (Rsed.ui_view_n.current_view() !== "2d-topdown")
-            {
-                renderer.register_mesh(Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
-                                                                       y: 0,
-                                                                       z: Math.floor(Rsed.camera_n.pos_z())}))
-            }
-        }*/
+        programFPS = Math.round(1000 / (frameDeltaMs || 1));
 
         // Poll and process user input.
         Rsed.ui_input_n.enact_inputs();
 
-       // renderer.render_next_frame(timestamp);
-
-        // Rngon test.
+        // Render the next frame.
         {
             const trackMesh = Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
-                                                                    y: 0,
-                                                                    z: Math.floor(Rsed.camera_n.pos_z())});
+                                                              y: 0,
+                                                              z: Math.floor(Rsed.camera_n.pos_z())});
 
             const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
 
-            Rngon.render("render_surface_canvas", [trackMesh],
+            const renderInfo = Rngon.render(canvas.element.getAttribute("id"), [trackMesh],
             {
                 cameraPosition: Rngon.translation_vector(0, 0, 0),
-                cameraDirection: Rngon.rotation_vector(isTopdownView? (-Math.PI / 2) : 21, 0, 0),
-                scale: 0.25,
+                cameraDirection: Rngon.rotation_vector((isTopdownView? 90 : 21), 0, 0),
+                scale: canvas.scalingFactor,
                 fov: 45,
             });
+
+            // If the rendering was resized since the previous frame...
+            if ((renderInfo.renderWidth !== canvas.width ||
+                (renderInfo.renderHeight !== canvas.height)))
+            {
+                canvas.width = renderInfo.renderWidth;
+                canvas.height = renderInfo.renderHeight;
+
+                // The PALAT pane needs to adjust to the new size of the canvas.
+                Rsed.ui_draw_n.prebake_palat_pane();
+            }
+
+            Rsed.ui_draw_n.draw_ui(canvas.element);
         }
 
-        window.requestAnimationFrame((time)=>tick(time));
+        window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
     }
 
     // Test various browser compatibility factors, and give the user messages of warning where appropriate.

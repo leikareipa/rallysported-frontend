@@ -40,7 +40,7 @@
 
         <div id="render_container" class="canvas_container"
              ondrop="window.drop_handler(event);" ondragover="event.preventDefault();">
-             <!-- The rendering goes here.-->
+             <canvas id="render-canvas" class="canvas"></canvas>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>

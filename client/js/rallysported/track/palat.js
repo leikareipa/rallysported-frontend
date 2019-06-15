@@ -70,8 +70,6 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
         },
     });
 
-    Rsed.ui_draw_n.prebake_palat_pane();
-
     // Returns the given PALA's pixel data as a texture, whose arguments are set as given.
     function generate_texture(palaId = 0, args = {})
     {

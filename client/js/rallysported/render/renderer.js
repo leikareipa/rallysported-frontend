@@ -129,8 +129,6 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
                                 
                     surface.draw_polygons(polyList);
                 }
-
-                Rsed.ui_draw_n.draw_ui(this.renderSurface);
             }
         }
     }

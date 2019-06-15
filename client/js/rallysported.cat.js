@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 June 2019 17:28:33 UTC)
+// VERSION: live (15 June 2019 22:54:03 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -73,7 +73,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (15 June 2019 15:55:26 UTC)
+// VERSION: live (15 June 2019 21:22:26 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1070,9 +1070,32 @@ Rngon.render = function(canvasElementId,
                         meshes = [Rngon.mesh()],
                         options = {})
 {
-    // Used for performance timing.
-    const perfTime = {initTimeMs:performance.now(), transformTimeMs:0, rasterTimeMs:0, totalTimeMs:performance.now()};
+    // Initialize the object containing the data we'll return from this function.
+    const callMetadata =
+    {
+        renderWidth: 0,
+        renderHeight: 0,
+        performance:
+        {
+            // How long we took to perform certain actions. All values are in milliseconds.
+            timingMs:
+            {
+                // How long we took to initialize the renderer.
+                initialization: performance.now(),
 
+                // How long we took to transform all the supplied n-gons into screen space.
+                transformation: 0,
+
+                // How long we took to rasterize the supplied n-gons onto the target canvas.
+                rasterization: 0,
+
+                // How much time this function took, in total.
+                total: performance.now(),
+            }
+        }
+    }
+
+    // Confirm that the default render options are valid.
     Rngon.assert && (typeof Rngon.render.defaultOptions.cameraPosition !== "undefined" &&
                      typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
                      typeof Rngon.render.defaultOptions.scale !== "undefined" &&
@@ -1081,7 +1104,7 @@ Rngon.render = function(canvasElementId,
                      typeof Rngon.render.defaultOptions.fov !== "undefined")
                  || Rngon.throw("The default options object for render() is missing required properties.");
 
-    // Combine default render options with the user-supplied ones.
+    // Combine the default render options with the user-supplied ones.
     options = Object.freeze(
     {
         ...Rngon.render.defaultOptions,
@@ -1090,7 +1113,10 @@ Rngon.render = function(canvasElementId,
 
     const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov);
 
-    perfTime.initTimeMs = (performance.now() - perfTime.initTimeMs);
+    callMetadata.renderWidth = renderSurface.width;
+    callMetadata.renderHeight = renderSurface.height;
+
+    callMetadata.performance.timingMs.initialization = (performance.now() - callMetadata.performance.timingMs.initialization);
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
@@ -1098,7 +1124,7 @@ Rngon.render = function(canvasElementId,
         renderSurface.wipe_clean();
 
         // Transform.
-        perfTime.transformTimeMs = performance.now();
+        callMetadata.performance.timingMs.transformation = performance.now();
         const transformedNgons = [];
         {
             const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
@@ -1142,15 +1168,15 @@ Rngon.render = function(canvasElementId,
                 default: Rngon.throw("Unknown depth sort option."); break;
             }
         }
-        perfTime.transformTimeMs = (performance.now() - perfTime.transformTimeMs)
+        callMetadata.performance.timingMs.transformation = (performance.now() - callMetadata.performance.timingMs.transformation)
 
         // Rasterize.
-        perfTime.rasterTimeMs = performance.now();
+        callMetadata.performance.timingMs.rasterization = performance.now();
         renderSurface.draw_ngons(transformedNgons);
-        perfTime.rasterTimeMs = (performance.now() - perfTime.rasterTimeMs);
+        callMetadata.performance.timingMs.rasterization = (performance.now() - callMetadata.performance.timingMs.rasterization);
 
-        perfTime.totalTimeMs = (performance.now() - perfTime.totalTimeMs);
-        return perfTime;
+        callMetadata.performance.timingMs.total = (performance.now() - callMetadata.performance.timingMs.total);
+        return callMetadata;
     }
 
     // Returns true if any horizontal part of the render surface DOM container is within the page's
@@ -2417,7 +2443,7 @@ Rsed.worldBuilder = function()
                     const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
                     const y = (groundHeight + pos.y);
 
-                    trackPolygons.push(...this.prop_mesh_rngon(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
+                    trackPolygons.push(...this.prop_mesh(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
                 }
             });
 
@@ -2425,7 +2451,7 @@ Rsed.worldBuilder = function()
         },
 
         // Returns a renderable 3d mesh of the given prop at the given position (in world units).
-        prop_mesh_rngon: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
+        prop_mesh: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
         {
             args =
             {
@@ -2462,59 +2488,6 @@ Rsed.worldBuilder = function()
 
             return dstMesh;
         },
-
-        // Returns a renderable 3d mesh of the given prop at the given position (in world units).
-        prop_mesh: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
-        {
-            args =
-            {
-                ...
-                {
-                    // Whether the renderer should draw a wireframe around this mesh.
-                    wireframe: false,
-                },
-                ...args
-            };
-
-            const srcMesh = Rsed.core.current_project().props.mesh[propId];
-            const dstMesh = [];
-
-            srcMesh.ngons.forEach(ngon=>
-            {
-                const newPoly = new Rsed.geometry_n.polygon_o(ngon.vertices.length);
-                
-                dstMesh.push(newPoly);
-
-                ngon.vertices.forEach((vert, idx)=>
-                {
-                    newPoly.verts[idx].x = (vert.x + pos.x);
-                    newPoly.verts[idx].y = (vert.y + pos.y);
-                    newPoly.verts[idx].z = (vert.z + pos.z);
-                });
-
-                newPoly.color = Rsed.palette.color(0);
-                newPoly.texture = null;
-
-                if (ngon.fill.type === "texture")
-                {
-                    newPoly.texture = Rsed.core.current_project().props.texture[ngon.fill.idx];
-                }
-                else
-                {
-                    newPoly.color = Rsed.palette.color(ngon.fill.idx);
-                }
-
-                newPoly.hasWireframe = args.wireframe;
-                newPoly.isEthereal = Rsed.ui_view_n.hideProps;
-                newPoly.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
-                                                                              {
-                                                                                  propIdx: propId,
-                                                                                  propTrackId: idxOnTrack
-                                                                              });
-            });
-
-            return dstMesh;
-        }
     };
 
     return publicInterface;
@@ -3737,8 +3710,6 @@ Rsed.renderer_o = function(containerElementId = "", scaleFactor = 1)
                                 
                     surface.draw_polygons(polyList);
                 }
-
-                Rsed.ui_draw_n.draw_ui(this.renderSurface);
             }
         }
     }
@@ -4181,8 +4152,6 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
             return generate_texture(palaId, args);
         },
     });
-
-    Rsed.ui_draw_n.prebake_palat_pane();
 
     // Returns the given PALA's pixel data as a texture, whose arguments are set as given.
     function generate_texture(palaId = 0, args = {})
@@ -5504,7 +5473,7 @@ Rsed.ui_draw_n = (function()
                 if (alpha && (pixel === 0)) continue;
 
                 const color = ((typeof pixel === "object")? pixel : Rsed.palette.color(pixel));
-                put_pixel((x + cx), (y + cy), color.r, color.g, color.b);
+                put_pixel((x + cx), (y + cy), color.red, color.green, color.blue);
 
                 if (mousePick != null)
                 {
@@ -5589,7 +5558,10 @@ Rsed.ui_draw_n = (function()
             {
                 str = "PROP:" + Rsed.core.current_project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
                       " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
+
+                break;
             }
+            default: break;
         }
 
         draw_string(str, 0, Rsed.core.render_height() - Rsed.ui_font_n.font_height()-0);
@@ -5597,7 +5569,7 @@ Rsed.ui_draw_n = (function()
 
     function draw_fps()
     {
-        const fpsString = "FPS: " + Math.round((1000 / (Rsed.core.render_latency() || 1)));
+        const fpsString = ("FPS: " + Rsed.core.renderer_fps());
         draw_string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui_font_n.font_width()/2) - 73, 3);
     }
 
@@ -5744,25 +5716,20 @@ Rsed.ui_draw_n = (function()
         {
             if (!(renderSurface instanceof Rsed.render_surface_n.render_surface_o)) return;
 
-            pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
+            pixelSurface = renderSurface.getContext("2d").getImageData(0, 0, renderSurface.width, renderSurface.height);
 
             draw_string("RALLYSPORTED HAS STOPPED RUNNING. SORRY ABOUT THAT!", 2, Rsed.ui_font_n.font_height()*1);
             draw_string("C:>_", 2, Rsed.ui_font_n.font_height()*3);
 
-            renderSurface.exposed().putImageData(pixelSurface, 0, 0);
+            renderSurface.getContext("2d").putImageData(pixelSurface, 0, 0);
             pixelSurface = null;
         }
 
         publicInterface.draw_ui = function(renderSurface = Rsed.render_surface_n.render_surface_o)
         {
-            Rsed.assert && (renderSurface instanceof Rsed.render_surface_n.render_surface_o)
-                        || Rsed.throw("Expected to receive the render surface.");
-
             // Draw the UI.
-            pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
-            mousePickBuffer = renderSurface.mousePickBuffer;
-            Rsed.assert && (mousePickBuffer.length === (pixelSurface.width * pixelSurface.height))
-                        || Rsed.throw("Incompatible mouse-picking buffer.");
+            pixelSurface = renderSurface.getContext("2d").getImageData(0, 0, renderSurface.width, renderSurface.height);
+            mousePickBuffer = [];//renderSurface.mousePickBuffer;
             {
                 switch (Rsed.ui_view_n.current_view())
                 {
@@ -5792,7 +5759,7 @@ Rsed.ui_draw_n = (function()
                 
                 draw_mouse_cursor();
             }
-            renderSurface.exposed().putImageData(pixelSurface, 0, 0);
+            renderSurface.getContext("2d").putImageData(pixelSurface, 0, 0);
             pixelSurface = null;
             mousePickBuffer = null;
         }
@@ -6707,6 +6674,9 @@ Rsed.core = (function()
     // Set to true while the core is running (e.g. as a result of calling run()).
     let isRunning = false;
 
+    // The number of frames per second being generated.
+    let programFPS = 0;
+
     // The project we've currently got loaded. When the user makes edits or requests a save,
     // this is the target project.
     let project = Rsed.project.placeholder;
@@ -6719,16 +6689,6 @@ Rsed.core = (function()
         const params = new URLSearchParams(window.location.search);
         return (params.has("showFramerate") && (Number(params.get("showFramerate")) === 1));
     })();
-
-    // Initialize the renderer.
-    const renderer = new Rsed.renderer_o("render_container", renderScalingMultiplier);
-    {
-        // This function will be called whenever the size of the render surface changes.
-        renderer.set_resize_callback(()=>
-        {
-            Rsed.ui_draw_n.prebake_palat_pane();
-        });
-    }
 
     const htmlUI = (function()
     {
@@ -6790,6 +6750,18 @@ Rsed.core = (function()
         return publicInterface;
     })();
 
+    // The canvas we'll render into.
+    const canvas =
+    {
+        width: 0,
+        height: 0,
+        scalingFactor: 0.25,
+        element: document.getElementById("render-canvas"),
+    };
+
+    Rsed.assert && (canvas.element != null)
+                || Rsed.throw("Failed to find a canvas element to render into.");
+
     const publicInterface =
     {
         // Starts up RallySportED with the given project to edit.
@@ -6808,6 +6780,8 @@ Rsed.core = (function()
 
             await load_project(startupArgs);
 
+            Rsed.ui_draw_n.prebake_palat_pane();
+
             htmlUI.refresh();
             htmlUI.set_visible(true);
 
@@ -6818,8 +6792,8 @@ Rsed.core = (function()
         // Terminate RallySporED with an error message.
         panic: function(errorMessage)
         {
-            renderer.indicate_error(errorMessage);
-            renderer.remove_callbacks();
+            //renderer.indicate_error(errorMessage);
+            //renderer.remove_callbacks();
             htmlUI.set_visible(false);
             isRunning = false;
             this.run = ()=>{};
@@ -6834,57 +6808,58 @@ Rsed.core = (function()
         },
         
         is_running: ()=>isRunning,
-        render_width: ()=>renderer.render_width(),
-        render_height: ()=>renderer.render_height(),
-        render_latency: ()=>renderer.previousFrameLatencyMs,
-        render_surface_id: ()=>renderer.renderSurfaceId,
+        render_width: ()=>canvas.width,
+        render_height: ()=>canvas.height,
+        renderer_fps: ()=>programFPS,
+        render_surface_id: ()=>canvas.element.getAttribute("id"),
         fps_counter_enabled: ()=>fpsCounterEnabled,
         scaling_multiplier: ()=>renderScalingMultiplier,
-        mouse_pick_buffer_value_at: (x, y)=>renderer.mouse_pick_buffer_value_at(x, y),
+        mouse_pick_buffer_value_at: (x, y)=>0,//renderer.mouse_pick_buffer_value_at(x, y),
     }
 
     return publicInterface;
 
     // Called once per frame to orchestrate program flow.
-    function tick(timestamp = 0)
+    function tick(timestamp = 0, frameDeltaMs = 0)
     {
         if (!isRunning) return;
 
-        // Create the 3d scene to be rendered.
-        /*{
-            renderer.clear_meshes();
-
-            if (Rsed.ui_view_n.current_view() !== "2d-topdown")
-            {
-                renderer.register_mesh(Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
-                                                                       y: 0,
-                                                                       z: Math.floor(Rsed.camera_n.pos_z())}))
-            }
-        }*/
+        programFPS = Math.round(1000 / (frameDeltaMs || 1));
 
         // Poll and process user input.
         Rsed.ui_input_n.enact_inputs();
 
-       // renderer.render_next_frame(timestamp);
-
-        // Rngon test.
+        // Render the next frame.
         {
             const trackMesh = Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
-                                                                    y: 0,
-                                                                    z: Math.floor(Rsed.camera_n.pos_z())});
+                                                              y: 0,
+                                                              z: Math.floor(Rsed.camera_n.pos_z())});
 
             const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
 
-            Rngon.render("render_surface_canvas", [trackMesh],
+            const renderInfo = Rngon.render(canvas.element.getAttribute("id"), [trackMesh],
             {
                 cameraPosition: Rngon.translation_vector(0, 0, 0),
-                cameraDirection: Rngon.rotation_vector(isTopdownView? (-Math.PI / 2) : 21, 0, 0),
-                scale: 0.25,
+                cameraDirection: Rngon.rotation_vector((isTopdownView? 90 : 21), 0, 0),
+                scale: canvas.scalingFactor,
                 fov: 45,
             });
+
+            // If the rendering was resized since the previous frame...
+            if ((renderInfo.renderWidth !== canvas.width ||
+                (renderInfo.renderHeight !== canvas.height)))
+            {
+                canvas.width = renderInfo.renderWidth;
+                canvas.height = renderInfo.renderHeight;
+
+                // The PALAT pane needs to adjust to the new size of the canvas.
+                Rsed.ui_draw_n.prebake_palat_pane();
+            }
+
+            Rsed.ui_draw_n.draw_ui(canvas.element);
         }
 
-        window.requestAnimationFrame((time)=>tick(time));
+        window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
     }
 
     // Test various browser compatibility factors, and give the user messages of warning where appropriate.

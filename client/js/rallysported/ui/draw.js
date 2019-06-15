@@ -89,7 +89,7 @@ Rsed.ui_draw_n = (function()
                 if (alpha && (pixel === 0)) continue;
 
                 const color = ((typeof pixel === "object")? pixel : Rsed.palette.color(pixel));
-                put_pixel((x + cx), (y + cy), color.r, color.g, color.b);
+                put_pixel((x + cx), (y + cy), color.red, color.green, color.blue);
 
                 if (mousePick != null)
                 {
@@ -174,7 +174,10 @@ Rsed.ui_draw_n = (function()
             {
                 str = "PROP:" + Rsed.core.current_project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
                       " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
+
+                break;
             }
+            default: break;
         }
 
         draw_string(str, 0, Rsed.core.render_height() - Rsed.ui_font_n.font_height()-0);
@@ -182,7 +185,7 @@ Rsed.ui_draw_n = (function()
 
     function draw_fps()
     {
-        const fpsString = "FPS: " + Math.round((1000 / (Rsed.core.render_latency() || 1)));
+        const fpsString = ("FPS: " + Rsed.core.renderer_fps());
         draw_string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui_font_n.font_width()/2) - 73, 3);
     }
 
@@ -329,25 +332,20 @@ Rsed.ui_draw_n = (function()
         {
             if (!(renderSurface instanceof Rsed.render_surface_n.render_surface_o)) return;
 
-            pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
+            pixelSurface = renderSurface.getContext("2d").getImageData(0, 0, renderSurface.width, renderSurface.height);
 
             draw_string("RALLYSPORTED HAS STOPPED RUNNING. SORRY ABOUT THAT!", 2, Rsed.ui_font_n.font_height()*1);
             draw_string("C:>_", 2, Rsed.ui_font_n.font_height()*3);
 
-            renderSurface.exposed().putImageData(pixelSurface, 0, 0);
+            renderSurface.getContext("2d").putImageData(pixelSurface, 0, 0);
             pixelSurface = null;
         }
 
         publicInterface.draw_ui = function(renderSurface = Rsed.render_surface_n.render_surface_o)
         {
-            Rsed.assert && (renderSurface instanceof Rsed.render_surface_n.render_surface_o)
-                        || Rsed.throw("Expected to receive the render surface.");
-
             // Draw the UI.
-            pixelSurface = renderSurface.exposed().getImageData(0, 0, renderSurface.width, renderSurface.height);
-            mousePickBuffer = renderSurface.mousePickBuffer;
-            Rsed.assert && (mousePickBuffer.length === (pixelSurface.width * pixelSurface.height))
-                        || Rsed.throw("Incompatible mouse-picking buffer.");
+            pixelSurface = renderSurface.getContext("2d").getImageData(0, 0, renderSurface.width, renderSurface.height);
+            mousePickBuffer = [];//renderSurface.mousePickBuffer;
             {
                 switch (Rsed.ui_view_n.current_view())
                 {
@@ -377,7 +375,7 @@ Rsed.ui_draw_n = (function()
                 
                 draw_mouse_cursor();
             }
-            renderSurface.exposed().putImageData(pixelSurface, 0, 0);
+            renderSurface.getContext("2d").putImageData(pixelSurface, 0, 0);
             pixelSurface = null;
             mousePickBuffer = null;
         }

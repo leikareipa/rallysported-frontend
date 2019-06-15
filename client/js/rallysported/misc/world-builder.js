@@ -162,7 +162,7 @@ Rsed.worldBuilder = function()
                     const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
                     const y = (groundHeight + pos.y);
 
-                    trackPolygons.push(...this.prop_mesh_rngon(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
+                    trackPolygons.push(...this.prop_mesh(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
                 }
             });
 
@@ -170,7 +170,7 @@ Rsed.worldBuilder = function()
         },
 
         // Returns a renderable 3d mesh of the given prop at the given position (in world units).
-        prop_mesh_rngon: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
+        prop_mesh: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
         {
             args =
             {
@@ -207,59 +207,6 @@ Rsed.worldBuilder = function()
 
             return dstMesh;
         },
-
-        // Returns a renderable 3d mesh of the given prop at the given position (in world units).
-        prop_mesh: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
-        {
-            args =
-            {
-                ...
-                {
-                    // Whether the renderer should draw a wireframe around this mesh.
-                    wireframe: false,
-                },
-                ...args
-            };
-
-            const srcMesh = Rsed.core.current_project().props.mesh[propId];
-            const dstMesh = [];
-
-            srcMesh.ngons.forEach(ngon=>
-            {
-                const newPoly = new Rsed.geometry_n.polygon_o(ngon.vertices.length);
-                
-                dstMesh.push(newPoly);
-
-                ngon.vertices.forEach((vert, idx)=>
-                {
-                    newPoly.verts[idx].x = (vert.x + pos.x);
-                    newPoly.verts[idx].y = (vert.y + pos.y);
-                    newPoly.verts[idx].z = (vert.z + pos.z);
-                });
-
-                newPoly.color = Rsed.palette.color(0);
-                newPoly.texture = null;
-
-                if (ngon.fill.type === "texture")
-                {
-                    newPoly.texture = Rsed.core.current_project().props.texture[ngon.fill.idx];
-                }
-                else
-                {
-                    newPoly.color = Rsed.palette.color(ngon.fill.idx);
-                }
-
-                newPoly.hasWireframe = args.wireframe;
-                newPoly.isEthereal = Rsed.ui_view_n.hideProps;
-                newPoly.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
-                                                                              {
-                                                                                  propIdx: propId,
-                                                                                  propTrackId: idxOnTrack
-                                                                              });
-            });
-
-            return dstMesh;
-        }
     };
 
     return publicInterface;
