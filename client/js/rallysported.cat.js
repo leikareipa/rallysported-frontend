@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 June 2019 00:44:19 UTC)
+// VERSION: live (16 June 2019 02:10:16 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -66,7 +66,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (16 June 2019 00:44:15 UTC)
+// VERSION: live (16 June 2019 01:41:01 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -911,8 +911,6 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                          || Rngon.throw("Expected each side list to have at least one vertex.");
             Rngon.assert && ((leftVerts.length + rightVerts.length) === verts.length)
                          || Rngon.throw("Vertices appear to have gone missing.");
-
-            Rngon.if && ((leftVerts.length === 0) || (rightVerts.length === 0)) && Rngon.bail("Expected each side list to have at least one vertex.")
         }
 
         // Create an array for each edge, where the index represents the y coordinate and the
@@ -1421,7 +1419,7 @@ const Rsed = {};
 // Various small utility functions and the like.
 {
     // Defined 'true' to allow for the conveniency of named in-place assertions,
-    // e.g. Rsed.assert && (x === 1) ||Rsed.throw("X wasn't 1.").
+    // e.g. Rsed.assert && (x === 1) || Rsed.throw("X wasn't 1.").
     // Note that setting this to 'false' won't disable assertions - for that,
     // you'll want to search/replace "Rsed.assert &&" with "Rsed.assert ||"
     // and keep this set to 'true'. The comparison against Rsed.assert may still
@@ -5829,8 +5827,6 @@ Rsed.core = (function()
     // this is the target project.
     let project = Rsed.project.placeholder;
 
-    const renderScalingMultiplier = 0.25;
-
     // Whether to display an FPS counter to the user.
     const fpsCounterEnabled = (()=>
     {
@@ -5965,7 +5961,7 @@ Rsed.core = (function()
         renderer_fps: ()=>programFPS,
         render_surface_id: ()=>canvas.element.getAttribute("id"),
         fps_counter_enabled: ()=>fpsCounterEnabled,
-        scaling_multiplier: ()=>renderScalingMultiplier,
+        scaling_multiplier: ()=>canvas.scalingFactor,
         mouse_pick_buffer_value_at: (x, y)=>canvas.mousePickingBuffer[x + y * canvas.width],
     }
 

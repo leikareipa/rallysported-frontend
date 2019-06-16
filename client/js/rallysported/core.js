@@ -20,8 +20,6 @@ Rsed.core = (function()
     // this is the target project.
     let project = Rsed.project.placeholder;
 
-    const renderScalingMultiplier = 0.25;
-
     // Whether to display an FPS counter to the user.
     const fpsCounterEnabled = (()=>
     {
@@ -156,7 +154,7 @@ Rsed.core = (function()
         renderer_fps: ()=>programFPS,
         render_surface_id: ()=>canvas.element.getAttribute("id"),
         fps_counter_enabled: ()=>fpsCounterEnabled,
-        scaling_multiplier: ()=>renderScalingMultiplier,
+        scaling_multiplier: ()=>canvas.scalingFactor,
         mouse_pick_buffer_value_at: (x, y)=>canvas.mousePickingBuffer[x + y * canvas.width],
     }
 

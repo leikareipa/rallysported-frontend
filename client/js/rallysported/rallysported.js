@@ -14,7 +14,7 @@ const Rsed = {};
 // Various small utility functions and the like.
 {
     // Defined 'true' to allow for the conveniency of named in-place assertions,
-    // e.g. Rsed.assert && (x === 1) ||Rsed.throw("X wasn't 1.").
+    // e.g. Rsed.assert && (x === 1) || Rsed.throw("X wasn't 1.").
     // Note that setting this to 'false' won't disable assertions - for that,
     // you'll want to search/replace "Rsed.assert &&" with "Rsed.assert ||"
     // and keep this set to 'true'. The comparison against Rsed.assert may still
