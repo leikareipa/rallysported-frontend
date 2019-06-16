@@ -74,12 +74,14 @@ Rsed.worldBuilder = function()
                                                            textureMapping: "ortho",
                                                            hasSolidFill: true,
                                                            hasWireframe: Rsed.ui_view_n.show3dWireframe,
-
-                                                           // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
-                                                           // rasterization we'll write into the mouse-picking buffer, so we can later determine which
-                                                           // quad the mouse cursor is hovering over.
-                                                           mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
-                                                                                                                {tileX, tileZ: (tileZ - 1)}),
+                                                           auxiliary:
+                                                           {
+                                                               // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
+                                                               // rasterization we'll write into the mouse-picking buffer, so we can later determine which
+                                                               // quad the mouse cursor is hovering over.
+                                                               mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
+                                                                                                                    {tileX, tileZ: (tileZ - 1)}),
+                                                           }
                                                        });
                         
                         trackPolygons.push(groundQuad);
@@ -124,7 +126,10 @@ Rsed.worldBuilder = function()
                                                               textureMapping: "ortho",
                                                               hasSolidFill: true,
                                                               hasWireframe: false,
-                                                              mousePickId: null,
+                                                              auxiliary:
+                                                              {
+                                                                  mousePickId: null,
+                                                              }
                                                           });
 
                         trackPolygons.push(billboardQuad);
@@ -142,7 +147,10 @@ Rsed.worldBuilder = function()
                                                            textureMapping: "ortho",
                                                            hasSolidFill: true,
                                                            hasWireframe: false,
-                                                           mousePickId: null,
+                                                           auxiliary:
+                                                           {
+                                                               mousePickId: null,
+                                                           }
                                                        });
 
                         trackPolygons.push(bridgeQuad);
@@ -196,12 +204,14 @@ Rsed.worldBuilder = function()
                                                 textureMapping: "ortho",
                                                 hasSolidFill: true,
                                                 hasWireframe: args.wireframe,
-
-                                                mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
-                                                                                                     {
-                                                                                                         propIdx: propId,
-                                                                                                         propTrackId: idxOnTrack
-                                                                                                     }),
+                                                auxiliary:
+                                                {
+                                                    mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
+                                                                                                        {
+                                                                                                            propIdx: propId,
+                                                                                                            propTrackId: idxOnTrack
+                                                                                                        }),
+                                                }
                                             });
 
                 dstMesh.push(propNgon);
