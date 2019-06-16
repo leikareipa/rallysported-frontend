@@ -68,20 +68,20 @@ Rsed.worldBuilder = function()
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), height2, vertZ, 1, 0),
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize), 1, 1),
                                                        Rngon.vertex( vertX, height4, (vertZ + Rsed.constants.groundTileSize), 0, 1)],
-                                                    {
-                                                        color: Rngon.color_rgba(255, 255, 255),
-                                                        texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
-                                                        textureMapping: "ortho",
-                                                        hasSolidFill: true,
-                                                        hasWireframe: Rsed.ui_view_n.show3dWireframe,
-                                                    });
-                        
-                        // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
-                        // rasterization we'll write into the mouse-picking buffer, so we can later determine which
-                        // quad the mouse cursor is hovering over.
-                      // groundQuad.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
-                      //                                                                   {tileX, tileZ: (tileZ - 1)});
+                                                       {
+                                                           color: Rngon.color_rgba(255, 255, 255),
+                                                           texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
+                                                           textureMapping: "ortho",
+                                                           hasSolidFill: true,
+                                                           hasWireframe: Rsed.ui_view_n.show3dWireframe,
 
+                                                           // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
+                                                           // rasterization we'll write into the mouse-picking buffer, so we can later determine which
+                                                           // quad the mouse cursor is hovering over.
+                                                           mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
+                                                                                                                {tileX, tileZ: (tileZ - 1)}),
+                                                       });
+                        
                         trackPolygons.push(groundQuad);
                     }
 
@@ -124,6 +124,7 @@ Rsed.worldBuilder = function()
                                                               textureMapping: "ortho",
                                                               hasSolidFill: true,
                                                               hasWireframe: false,
+                                                              mousePickId: null,
                                                           });
 
                         trackPolygons.push(billboardQuad);
@@ -141,6 +142,7 @@ Rsed.worldBuilder = function()
                                                            textureMapping: "ortho",
                                                            hasSolidFill: true,
                                                            hasWireframe: false,
+                                                           mousePickId: null,
                                                        });
 
                         trackPolygons.push(bridgeQuad);
@@ -194,13 +196,13 @@ Rsed.worldBuilder = function()
                                                 textureMapping: "ortho",
                                                 hasSolidFill: true,
                                                 hasWireframe: args.wireframe,
-                                            });
 
-               // newPoly.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
-              //                                                                {
-               //                                                                   propIdx: propId,
-                //                                                                  propTrackId: idxOnTrack
-                //                                                              });
+                                                mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
+                                                                                                     {
+                                                                                                         propIdx: propId,
+                                                                                                         propTrackId: idxOnTrack
+                                                                                                     }),
+                                            });
 
                 dstMesh.push(propNgon);
             });

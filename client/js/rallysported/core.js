@@ -96,6 +96,10 @@ Rsed.core = (function()
         height: 0,
         scalingFactor: 0.25,
         element: document.getElementById("render-canvas"),
+        
+        // An array where each element corresponds to a rendered pixel on the canvas and contains
+        // a 32-bit value identifying the source n-gon.
+        mousePickingBuffer: [],
     };
 
     Rsed.assert && (canvas.element != null)
@@ -153,7 +157,7 @@ Rsed.core = (function()
         render_surface_id: ()=>canvas.element.getAttribute("id"),
         fps_counter_enabled: ()=>fpsCounterEnabled,
         scaling_multiplier: ()=>renderScalingMultiplier,
-        mouse_pick_buffer_value_at: (x, y)=>0,//renderer.mouse_pick_buffer_value_at(x, y),
+        mouse_pick_buffer_value_at: (x, y)=>canvas.mousePickingBuffer[x + y * canvas.width],
     }
 
     return publicInterface;
@@ -170,6 +174,8 @@ Rsed.core = (function()
 
         // Render the next frame.
         {
+            canvas.mousePickingBuffer.fill(null);
+
             const trackMesh = Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
                                                               y: 0,
                                                               z: Math.floor(Rsed.camera_n.pos_z())});
@@ -182,6 +188,7 @@ Rsed.core = (function()
                 cameraDirection: Rngon.rotation_vector((isTopdownView? 90 : 21), 0, 0),
                 scale: canvas.scalingFactor,
                 fov: 45,
+                auxiliaryBuffers: [{buffer:canvas.mousePickingBuffer, property:"mousePickId"}],
             });
 
             // If the rendering was resized since the previous frame...

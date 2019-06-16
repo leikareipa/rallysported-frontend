@@ -1,0 +1,5 @@
+Retro n-gon renderer by Tarpeeksi Hyvae Soft
+https://github.com/leikareipa/retro-ngon/
+
+Released under the GNU General Public License v3.
+

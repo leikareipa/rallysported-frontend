@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 June 2019 23:07:59 UTC)
+// VERSION: live (16 June 2019 00:44:19 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -66,7 +66,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (15 June 2019 21:22:26 UTC)
+// VERSION: live (16 June 2019 00:44:15 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -830,7 +830,7 @@ Rngon.matrix44 = (()=>
 "use strict";
 
 // Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
-Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
+Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], renderWidth, renderHeight)
 {
     Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
     Rngon.assert && ((renderWidth > 0) && (renderHeight > 0))
@@ -1003,12 +1003,22 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
 
                                     const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
 
+                                    // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
                                     if (texelColorChannels[3] === 255)
                                     {
                                         pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.material.color.unitRange.red);
                                         pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.material.color.unitRange.green);
                                         pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.material.color.unitRange.blue);
                                         pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.material.color.unitRange.alpha);
+                                    }
+                                }
+
+                                for (let b = 0; b < auxiliaryBuffers.length; b++)
+                                {
+                                    if (ngon.material[auxiliaryBuffers[b].property] !== null)
+                                    {
+                                        // Buffers are expected to be one byte per pixel.
+                                        auxiliaryBuffers[b].buffer[idx/4] = ngon.material[auxiliaryBuffers[b].property];
                                     }
                                 }
                             }
@@ -1093,7 +1103,7 @@ Rngon.render = function(canvasElementId,
                      typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
                      typeof Rngon.render.defaultOptions.scale !== "undefined" &&
                      typeof Rngon.render.defaultOptions.depthSort !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.hibernateWhenNotOnScren !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.hibernateWhenNotOnScreen !== "undefined" &&
                      typeof Rngon.render.defaultOptions.fov !== "undefined")
                  || Rngon.throw("The default options object for render() is missing required properties.");
 
@@ -1104,7 +1114,7 @@ Rngon.render = function(canvasElementId,
         ...options
     });
 
-    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov);
+    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov, options.auxiliaryBuffers);
 
     callMetadata.renderWidth = renderSurface.width;
     callMetadata.renderHeight = renderSurface.height;
@@ -1190,9 +1200,10 @@ Rngon.render.defaultOptions =
     cameraPosition: Rngon.vector3(0, 0, 0),
     cameraDirection: Rngon.vector3(0, 0, 0),
     scale: 1,
-    depthSort: "painter",
     fov: 43,
-    hibernateWhenNotOnScren: true,
+    depthSort: "painter",
+    hibernateWhenNotOnScreen: true,
+    auxiliaryBuffers: [],
 };
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1332,7 +1343,8 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         ngon_fill_f = function(){},        // A function that rasterizes the given ngons onto the canvas.
                         ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
                         scaleFactor = 1,
-                        fov = 43)
+                        fov = 43,
+                        auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
     Rngon.assert && (typeof ngon_fill_f === "function" && typeof ngon_transform_f === "function")
@@ -1386,7 +1398,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
             const renderContext = exposed_render_context();
             const pixelBuffer = renderContext.getImageData(0, 0, screenWidth, screenHeight);
 
-            ngon_fill_f(ngons, pixelBuffer.data, screenWidth, screenHeight);
+            ngon_fill_f(ngons, pixelBuffer.data, auxiliaryBuffers, screenWidth, screenHeight);
 
             renderContext.putImageData(pixelBuffer, 0, 0);
         },
@@ -2539,20 +2551,20 @@ Rsed.worldBuilder = function()
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), height2, vertZ, 1, 0),
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize), 1, 1),
                                                        Rngon.vertex( vertX, height4, (vertZ + Rsed.constants.groundTileSize), 0, 1)],
-                                                    {
-                                                        color: Rngon.color_rgba(255, 255, 255),
-                                                        texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
-                                                        textureMapping: "ortho",
-                                                        hasSolidFill: true,
-                                                        hasWireframe: Rsed.ui_view_n.show3dWireframe,
-                                                    });
-                        
-                        // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
-                        // rasterization we'll write into the mouse-picking buffer, so we can later determine which
-                        // quad the mouse cursor is hovering over.
-                      // groundQuad.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
-                      //                                                                   {tileX, tileZ: (tileZ - 1)});
+                                                       {
+                                                           color: Rngon.color_rgba(255, 255, 255),
+                                                           texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
+                                                           textureMapping: "ortho",
+                                                           hasSolidFill: true,
+                                                           hasWireframe: Rsed.ui_view_n.show3dWireframe,
 
+                                                           // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
+                                                           // rasterization we'll write into the mouse-picking buffer, so we can later determine which
+                                                           // quad the mouse cursor is hovering over.
+                                                           mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
+                                                                                                                {tileX, tileZ: (tileZ - 1)}),
+                                                       });
+                        
                         trackPolygons.push(groundQuad);
                     }
 
@@ -2595,6 +2607,7 @@ Rsed.worldBuilder = function()
                                                               textureMapping: "ortho",
                                                               hasSolidFill: true,
                                                               hasWireframe: false,
+                                                              mousePickId: null,
                                                           });
 
                         trackPolygons.push(billboardQuad);
@@ -2612,6 +2625,7 @@ Rsed.worldBuilder = function()
                                                            textureMapping: "ortho",
                                                            hasSolidFill: true,
                                                            hasWireframe: false,
+                                                           mousePickId: null,
                                                        });
 
                         trackPolygons.push(bridgeQuad);
@@ -2665,13 +2679,13 @@ Rsed.worldBuilder = function()
                                                 textureMapping: "ortho",
                                                 hasSolidFill: true,
                                                 hasWireframe: args.wireframe,
-                                            });
 
-               // newPoly.mousePickId = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
-              //                                                                {
-               //                                                                   propIdx: propId,
-                //                                                                  propTrackId: idxOnTrack
-                //                                                              });
+                                                mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
+                                                                                                     {
+                                                                                                         propIdx: propId,
+                                                                                                         propTrackId: idxOnTrack
+                                                                                                     }),
+                                            });
 
                 dstMesh.push(propNgon);
             });
@@ -5891,6 +5905,10 @@ Rsed.core = (function()
         height: 0,
         scalingFactor: 0.25,
         element: document.getElementById("render-canvas"),
+        
+        // An array where each element corresponds to a rendered pixel on the canvas and contains
+        // a 32-bit value identifying the source n-gon.
+        mousePickingBuffer: [],
     };
 
     Rsed.assert && (canvas.element != null)
@@ -5948,7 +5966,7 @@ Rsed.core = (function()
         render_surface_id: ()=>canvas.element.getAttribute("id"),
         fps_counter_enabled: ()=>fpsCounterEnabled,
         scaling_multiplier: ()=>renderScalingMultiplier,
-        mouse_pick_buffer_value_at: (x, y)=>0,//renderer.mouse_pick_buffer_value_at(x, y),
+        mouse_pick_buffer_value_at: (x, y)=>canvas.mousePickingBuffer[x + y * canvas.width],
     }
 
     return publicInterface;
@@ -5965,6 +5983,8 @@ Rsed.core = (function()
 
         // Render the next frame.
         {
+            canvas.mousePickingBuffer.fill(null);
+
             const trackMesh = Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
                                                               y: 0,
                                                               z: Math.floor(Rsed.camera_n.pos_z())});
@@ -5977,6 +5997,7 @@ Rsed.core = (function()
                 cameraDirection: Rngon.rotation_vector((isTopdownView? 90 : 21), 0, 0),
                 scale: canvas.scalingFactor,
                 fov: 45,
+                auxiliaryBuffers: [{buffer:canvas.mousePickingBuffer, property:"mousePickId"}],
             });
 
             // If the rendering was resized since the previous frame...
