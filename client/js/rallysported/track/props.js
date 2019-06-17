@@ -107,29 +107,39 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     //
     const prebakedPropMeshes = (new Array(propMeshes.length)).fill().map((mesh, idx)=>
     {
-        return {
-            ngons: propMeshes[idx].ngons.map(ngon=>
+        const ngons = propMeshes[idx].ngons.map(ngon=>
+        {
+            const meshNgon =
             {
-                const meshNgon =
+                fill: Object.freeze(
                 {
-                    fill: Object.freeze(
-                    {
-                        type: ngon.fill.type.slice(),
-                        idx: ngon.fill.idx
-                    }),
-                    vertices: ngon.vertices.map(vert=>(Object.freeze(
-                    {
-                        x: vert.x,
-                        y: -vert.y,
-                        z: -vert.z
-                    }))),
-                };
+                    type: ngon.fill.type.slice(),
+                    idx: ngon.fill.idx
+                }),
+                vertices: ngon.vertices.map(vert=>(Object.freeze(
+                {
+                    x: vert.x,
+                    y: -vert.y,
+                    z: -vert.z
+                }))),
+            };
 
-                Object.freeze(meshNgon.vertices);
+            Object.freeze(meshNgon.vertices);
 
-                return meshNgon;
-            }),
-        };
+            return meshNgon;
+        });
+
+        // Pre-sort the mesh's ngons by depth, so that during rendering, we don't need to depth-
+        // sort them every frame.
+        ngons.sort((ngonA, ngonB)=>
+        {
+            const depthA = ngonA.vertices.reduce((depth, z)=>(depth + z)) / ngonA.vertices.length;
+            const depthB = ngonB.vertices.reduce((depth, z)=>(depth + z)) / ngonB.vertices.length;
+
+            return ((depthA === depthB)? 0 : ((depthA < depthB)? 1 : -1));
+        });
+
+        return {ngons};
     });
 
     const publicInterface =

@@ -29,9 +29,9 @@ Rsed.worldBuilder = function()
                                 y: (isTopdownView? -1800 : -680),
                                 z: (isTopdownView? 700 : 2612)};
 
-            // Add the ground tiles.
             for (let z = 0; z < Rsed.camera_n.view_height(); z++)
             {
+                // Add the ground tiles.
                 for (let x = 0; x < Rsed.camera_n.view_width(); x++)
                 {
                     // Coordinates of the current ground tile.
@@ -86,8 +86,35 @@ Rsed.worldBuilder = function()
                         
                         trackPolygons.push(groundQuad);
                     }
+                }
 
-                    // If this tile has a billboard, add that too.
+                // Add the billboard and bridge tiles. We do this as a separate loop from adding
+                // the ground tiles so that the n-gons are properly sorted by depth for rendering.
+                // Otherwise, billboard/bridge tiles can become obscured by ground tiles behind
+                // them.
+                for (let x = 0; x < Rsed.camera_n.view_width(); x++)
+                {
+                    const tileX = (x + viewPos.x);
+                    const tileZ = (z + viewPos.z);
+
+                    const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
+                    const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
+                    
+                    const tilePalaIdx = (()=>
+                    {
+                        let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
+
+                        // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
+                        if ((tileX === Rsed.ui_input_n.mouse_tile_hover_x()) &&
+                            ((tileZ - 1) === Rsed.ui_input_n.mouse_tile_hover_y()))
+                        {
+                            idx = Rsed.ui_brush_n.brush_pala_idx();
+                        }
+
+                        return idx;
+                    })();
+
+                    // If this tile has a billboard, add it.
                     if (tilePalaIdx > 239 && tilePalaIdx < 248)
                     {
                         const baseHeight = centerView.y + Rsed.core.current_project().maasto.tile_at(tileX, (tileZ - 1));

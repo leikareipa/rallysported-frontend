@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (17 June 2019 00:25:02 UTC)
+// VERSION: live (17 June 2019 22:41:11 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -66,7 +66,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (16 June 2019 10:51:42 UTC)
+// VERSION: live (17 June 2019 22:40:32 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1151,17 +1151,10 @@ Rngon.render = function(canvasElementId,
                 {
                     transformedNgons.sort((ngonA, ngonB)=>
                     {
-                        let a = 0;
-                        let b = 0;
-                        ngonA.vertices.forEach(v=>{a += v.z});
-                        ngonB.vertices.forEach(v=>{b += v.z});
-        
-                        // Ngons aren't guaranteed to have the same number of vertices each,
-                        // so factor out the vertex count.
-                        a /= ngonA.vertices.length;
-                        b /= ngonB.vertices.length;
-                        
-                        return ((a === b)? 0 : ((a < b)? 1 : -1));
+                        const depthA = ngonA.vertices.reduce((depth, z)=>(depth + z)) / ngonA.vertices.length;
+                        const depthB = ngonB.vertices.reduce((depth, z)=>(depth + z)) / ngonB.vertices.length;
+            
+                        return ((depthA === depthB)? 0 : ((depthA < depthB)? 1 : -1));
                     });
 
                     break;
@@ -2511,9 +2504,9 @@ Rsed.worldBuilder = function()
                                 y: (isTopdownView? -1800 : -680),
                                 z: (isTopdownView? 700 : 2612)};
 
-            // Add the ground tiles.
             for (let z = 0; z < Rsed.camera_n.view_height(); z++)
             {
+                // Add the ground tiles.
                 for (let x = 0; x < Rsed.camera_n.view_width(); x++)
                 {
                     // Coordinates of the current ground tile.
@@ -2568,8 +2561,35 @@ Rsed.worldBuilder = function()
                         
                         trackPolygons.push(groundQuad);
                     }
+                }
 
-                    // If this tile has a billboard, add that too.
+                // Add the billboard and bridge tiles. We do this as a separate loop from adding
+                // the ground tiles so that the n-gons are properly sorted by depth for rendering.
+                // Otherwise, billboard/bridge tiles can become obscured by ground tiles behind
+                // them.
+                for (let x = 0; x < Rsed.camera_n.view_width(); x++)
+                {
+                    const tileX = (x + viewPos.x);
+                    const tileZ = (z + viewPos.z);
+
+                    const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
+                    const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
+                    
+                    const tilePalaIdx = (()=>
+                    {
+                        let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
+
+                        // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
+                        if ((tileX === Rsed.ui_input_n.mouse_tile_hover_x()) &&
+                            ((tileZ - 1) === Rsed.ui_input_n.mouse_tile_hover_y()))
+                        {
+                            idx = Rsed.ui_brush_n.brush_pala_idx();
+                        }
+
+                        return idx;
+                    })();
+
+                    // If this tile has a billboard, add it.
                     if (tilePalaIdx > 239 && tilePalaIdx < 248)
                     {
                         const baseHeight = centerView.y + Rsed.core.current_project().maasto.tile_at(tileX, (tileZ - 1));
@@ -3547,29 +3567,39 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     //
     const prebakedPropMeshes = (new Array(propMeshes.length)).fill().map((mesh, idx)=>
     {
-        return {
-            ngons: propMeshes[idx].ngons.map(ngon=>
+        const ngons = propMeshes[idx].ngons.map(ngon=>
+        {
+            const meshNgon =
             {
-                const meshNgon =
+                fill: Object.freeze(
                 {
-                    fill: Object.freeze(
-                    {
-                        type: ngon.fill.type.slice(),
-                        idx: ngon.fill.idx
-                    }),
-                    vertices: ngon.vertices.map(vert=>(Object.freeze(
-                    {
-                        x: vert.x,
-                        y: -vert.y,
-                        z: -vert.z
-                    }))),
-                };
+                    type: ngon.fill.type.slice(),
+                    idx: ngon.fill.idx
+                }),
+                vertices: ngon.vertices.map(vert=>(Object.freeze(
+                {
+                    x: vert.x,
+                    y: -vert.y,
+                    z: -vert.z
+                }))),
+            };
 
-                Object.freeze(meshNgon.vertices);
+            Object.freeze(meshNgon.vertices);
 
-                return meshNgon;
-            }),
-        };
+            return meshNgon;
+        });
+
+        // Pre-sort the mesh's ngons by depth, so that during rendering, we don't need to depth-
+        // sort them every frame.
+        ngons.sort((ngonA, ngonB)=>
+        {
+            const depthA = ngonA.vertices.reduce((depth, z)=>(depth + z)) / ngonA.vertices.length;
+            const depthB = ngonB.vertices.reduce((depth, z)=>(depth + z)) / ngonB.vertices.length;
+
+            return ((depthA === depthB)? 0 : ((depthA < depthB)? 1 : -1));
+        });
+
+        return {ngons};
     });
 
     const publicInterface =
@@ -6004,6 +6034,7 @@ Rsed.core = (function()
                 cameraDirection: Rngon.rotation_vector((isTopdownView? 90 : 21), 0, 0),
                 scale: canvas.scalingFactor,
                 fov: 45,
+                depthSort: "none",
                 auxiliaryBuffers: [{buffer:canvas.mousePickingBuffer, property:"mousePickId"}],
             });
 

@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (16 June 2019 10:51:42 UTC)
+// VERSION: live (17 June 2019 22:40:32 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1085,17 +1085,10 @@ Rngon.render = function(canvasElementId,
                 {
                     transformedNgons.sort((ngonA, ngonB)=>
                     {
-                        let a = 0;
-                        let b = 0;
-                        ngonA.vertices.forEach(v=>{a += v.z});
-                        ngonB.vertices.forEach(v=>{b += v.z});
-        
-                        // Ngons aren't guaranteed to have the same number of vertices each,
-                        // so factor out the vertex count.
-                        a /= ngonA.vertices.length;
-                        b /= ngonB.vertices.length;
-                        
-                        return ((a === b)? 0 : ((a < b)? 1 : -1));
+                        const depthA = ngonA.vertices.reduce((depth, z)=>(depth + z)) / ngonA.vertices.length;
+                        const depthB = ngonB.vertices.reduce((depth, z)=>(depth + z)) / ngonB.vertices.length;
+            
+                        return ((depthA === depthB)? 0 : ((depthA < depthB)? 1 : -1));
                     });
 
                     break;
