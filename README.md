@@ -3,11 +3,11 @@
 `Note!` The master branch currently contains an on-going rewrite of sections of the codebase, and may be considered unstable for the time being. The rewrite begins with commit f6acac08822a17540407af8998b67537bbd154d0.
 
 # RallySportED-js
-A version of [RallySportED](../../../rallysported)'s track editor for browsers, written in JavaScript. You should find it capable of running in a modern browser on a desktop system. (Mobile support is on the cards but not yet available.)
+A version of [RallySportED](https://github.com/leikareipa/rallysported/)'s track editor for browsers, written in JavaScript. You should find it capable of running in a modern browser on a desktop system. (Mobile support is on the cards but not yet available.)
 
-You can find more information about RallySportED in general, including more technically-oriented documentation, in [RallySportED's umbrella repo](../../../rallysported).
+You can find more information about RallySportED in general, including more technically-oriented documentation, in [RallySportED's umbrella repo](https://github.com/leikareipa/rallysported/).
 
-A live page of RallySportED-js is available [here](http://tarpeeksihyvaesoft.com/rallysported/).
+A live page running RallySportED-js is available [here](http://tarpeeksihyvaesoft.com/rallysported/) - it loads up a track in your browser for local editing. Alternately, you can check out [this version](http://tarpeeksihyvaesoft.com/rallysported/?shared=xcrbdyb), which demonstrates shared editing - changes you make to the track are dynamically sent to the server and broadcast to others viewing the page, and vice versa. (Note that the shared version is publically available but generally uncurated. I encourage users' creativity, but can't guarantee that the content they produce is at all times appropriate for all occasions.)
 
 ### Features!
 - Edit Rally-Sport's tracks in your browser!

@@ -162,7 +162,7 @@ Rsed.palette = (function()
         // a string identifying one of the pre-set UI colors (which are otherwise the same as
         // regular colors, but guaranteed to remain constant even when the palette is otherwise
         // altered during operation). The color is returned as an object containing the color's
-        // r, g, and b (for red, green, blue) properties. Aside from the UI colors, the object
+        // red, green, and blue channels as properties. Aside from the UI colors, the object
         // will be returned by reference to an index in the palette, so any changes to the
         // palette afterwards will be reflected in colors returned previously.
         color: (colorIdx = 0)=>

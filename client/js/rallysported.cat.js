@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 June 2019 10:54:45 UTC)
+// VERSION: live (17 June 2019 00:25:02 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3050,7 +3050,7 @@ Rsed.palette = (function()
         // a string identifying one of the pre-set UI colors (which are otherwise the same as
         // regular colors, but guaranteed to remain constant even when the palette is otherwise
         // altered during operation). The color is returned as an object containing the color's
-        // r, g, and b (for red, green, blue) properties. Aside from the UI colors, the object
+        // red, green, and blue channels as properties. Aside from the UI colors, the object
         // will be returned by reference to an index in the palette, so any changes to the
         // palette afterwards will be reflected in colors returned previously.
         color: (colorIdx = 0)=>
