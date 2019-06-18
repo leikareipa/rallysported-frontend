@@ -21,15 +21,15 @@ A live page running RallySportED-js is available [here](http://tarpeeksihyvaesof
 # Technical matters
 *(Coming.)*
 
-### Rally-Sport
+## Rally-Sport
 Rally-Sport is a racing game released by Jukka Jäkälä in 1996 for DOS-based computers; featuring fun, tongue-in-cheek rallying in fully 3d environments. Its original website is available [via archive.org](https://web.archive.org/web/19970805142345/http://www.cs.tut.fi/~k140734/Rally-Sport/index.html).
 
 Although no official modding tools were released for the game, many of its assets are stored in straightforward binary formats, making them readily moddable. Further technical information about Rally-Sport's assets and their data formats are available under the [docs/](https://github.com/leikareipa/rallysported/tree/master/docs) folder in [RallySportED's umbrella repo](https://github.com/leikareipa/rallysported/).
 
-### RallySportED
+## RallySportED
 *(Coming.)*
 
-#### Projects
+### Projects
 Tracks created with RallySportED are called *projects*; each project holding the data of one modded track.
 
 For example, given a project entitled "Suorundi", it would consists of the following two files:
@@ -41,7 +41,8 @@ The `dta` file (also called the project's `container`) holds the various modded 
 
 The `$ft` file (also called the project's `manifesto`) is a plain ASCII file giving additional directives to RallySportED on how to modify certain hard-coded parameters in Rally-Sport for the purposes of the project's track - such as to adjust the colors of the palette that Rally-Sport uses to render the track.
 
-**The project's container file.** The container file gets its name from the fact that it consists of a number of discrete asset files. The following individual asset files are contained in a project's .dta file:
+#### The project's container file
+The container file gets its name from the fact that it consists of a number of discrete asset files. The following individual asset files are contained in a project's .dta file:
 
 | Asset     | Description                                            |
 | --------- | ------------------------------------------------------ |
@@ -56,27 +57,35 @@ The asset names derive directly from the names of the corresponding data files i
 
 The assets are laid out in the container file in a straightforward manner. The first four bytes of the container give as a little-endian 32-bit unsigned integer the byte size *n* of the `Maasto` data. The following *n* bytes are the `Maasto` data. The next four bytes give as a 32-bit unsigned integer the byte size *n* of the `Varimaa` data, and the following *n* bytes are the `Varimaa` data. This pattern repeats in the order given in the table, above; such that `Maasto` is the first contained asset and `Kierros` is the last. There is no data compression or the like - the individual assets are stored 1:1 with Rally-Sport's formats.
 
-**The project's manifesto file.** *(Coming.)*
-
-#### Renderer
-The renderer in RallySportED-js (for which the code is found under [render/](client/js/rallysported/render/)) is a custom software-based 3d engine capable of natively rendering Rally-Sport's *n*-sided polygons into a HTML5 canvas.
-
-| ![space-1.jpg](images/screenshots/misc/rock.png) | 
-| :----------------------------------------------: | 
-| **A rock prop rendered in RallySportED-js.** The object consists of four- and five-sided polygons that are rasterized without triangulation. |
-
-The renderer reproduces Rally-Sport's style of screen-space texture-mapping, where visible warping of textures occurs dependent on the polygon's orientation in screen space. This enables WYSIWYG editing, as the warping can have a considerable impact on how the track looks in-game.
-
-| ![space-1.jpg](images/screenshots/misc/texture-1.png) ![space-1.jpg](images/screenshots/misc/texture-2.png)  ![space-1.jpg](images/screenshots/misc/texture-3.png)  ![space-1.jpg](images/screenshots/misc/texture-4.png)  | 
-| :----------------------------------------------: | 
-| **Texture-warping.** The texture's coordinates are determined by the screen space coordinates of its polygon's vertices; resulting in view-dependent warping of the texture. |
-
-The [retro n-gon renderer](http://github.com/leikareipa/retro-ngon/) is a standalone fork of RallySportED-js's renderer, which may in time replace the current implementation.
-
-#### Client and server
+#### The project's manifesto file
 *(Coming.)*
 
-### The codebase
+### Renderer
+RallySportED-js uses the [retro n-gon renderer](https://www.github.com/leikareipa/retro-ngon/) to faithfully reproduce the look of Rally-Sport in the editor.
+
+The retro n-gon renderer - forked from RallySportED-js's original renderer, developed into a standalone renderer, then backported into RallySportED-js - is a custom software 3d engine capable of natively rendering Rally-Sport's *n*-sided polygons into a HTML5 canvas.
+
+Below is a 3d model of a rock from the game as rendered in RallySportED-js. Its mesh consists of four- and five-sided polygons that were rasterized directly without intervening triangulation.
+
+![rock.png](images/screenshots/misc/rock.png)
+
+The renderer also reproduces Rally-Sport's somewhat quirky style of texture-mapping, where texture coordinates are derived at render-time from the screen-space coordinates of the polygon's vertices; resulting in noticeable warping of the texture dependent on e.g. the viewing angle.
+
+Below is a series of images of a texture-mapped polygon demonstrating the texture-warping effect. The upper-right vertex of the polygon is successively raised, resulting in progressively increasing warping of the texture.
+
+![texture-1.png](images/screenshots/misc/texture-1.png)
+![texture-2.png](images/screenshots/misc/texture-2.png)
+![texture-3.png](images/screenshots/misc/texture-3.png)
+![texture-4.png](images/screenshots/misc/texture-4.png)
+
+To explain why this happens, consider that the texture's *v* coordinate is derived from the polygon's height in screen space, such that *v* equals 0 at the highest vertex and 1 at the lowest vertex; and the *u* coordinate from the length of each horizontal pixel span of the polygon on-screen, such that *u* equals 0 at the left end of the span and 1 at the right end.
+
+As a result, in the right-most image above, nearly half of the texture is mapped onto the raised triangular region at the top of the polygon, and becomes more and more squished horizontally toward the polygon's peak, where the horizontal pixels spans are ever shorter.
+
+### Client and server
+*(Coming.)*
+
+## The codebase
 *(Coming.)*
 
 # How to use
