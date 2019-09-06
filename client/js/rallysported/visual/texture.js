@@ -12,9 +12,8 @@ Rsed.texture = function(args = {})
 {
     args =
     {
-        ...
-        {
-            // Pixel RGB values, each element being {r,g,b} (value range 0-255).
+        ...{
+            // Pixel RGB values, each element being {red, green, blue} (value range 0-255).
             pixels: [],
 
             // Each pixel's corresponding palette index.
@@ -68,9 +67,17 @@ Rsed.texture = function(args = {})
         default: Rsed.throw("Unknown texture-flipping mode."); break;
     }
 
+    // Insert an alpha component into the pixel data. Assumes that the 'indices' array has
+    // the same number of elements as the 'pixels' array, and indeed that each element in
+    // these two arrays corresponds with that in the other array.
+    args.pixels.forEach((p, idx)=>
+    {
+        p.alpha = ((args.alpha && (args.indices[idx] === 0))? 0 : 255);
+    });
+
     // Note: The elements of the 'pixels' array are returned by reference (they're objects of the
-    // form {r,g,b}). This is done to allow textures to be pre-generated and still have their colors
-    // reflect any changes to the global palette without requiring a re-generation.
+    // form {red, green, blue, alpha}). This is done to allow textures to be pre-generated and still
+    // have their colors reflect any changes to the global palette without requiring a re-generation.
     const publicInterface = Object.freeze(
     {
         width: args.width,
@@ -79,24 +86,6 @@ Rsed.texture = function(args = {})
         flipped: args.flipped,
         pixels: Object.freeze(Array.from(args.pixels)),
         indices: Object.freeze(Array.from(args.indices)),
-
-        // Returns an unfrozen 4-element array containing copies of the texture's RGBA values at the
-        // given x,y texel coordinates. Implemented to interface with the retro n-gon renderer.
-        rgba_channels_at: function(x, y)
-        {
-            x = Math.floor(x);
-            y = Math.floor(y);
-
-            const idx = (x + y * this.width);
-
-            Rsed.assert && (idx <= args.pixels.length)
-                        || Rsed.throw("Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
-
-            return [this.pixels[idx].red,
-                    this.pixels[idx].green,
-                    this.pixels[idx].blue,
-                    ((this.alpha && (this.indices[idx] === 0))? 0 : 255)];
-        }
     });
 
     return publicInterface;

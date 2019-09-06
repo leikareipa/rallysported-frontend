@@ -38,7 +38,7 @@ const unitTestResults = unit_tests("RallySportED-js", ()=>
 
     unit("Texture", ()=>
     {
-        const pixels = [{r:255, g:0, b:123}, {r:0, g:111, b:222}];
+        const pixels = [{red:255, green:0, blue:123}, {red:0, green:111, blue:222}];
         const indices = [0, 4];
         const texture = Rsed.texture(
         {

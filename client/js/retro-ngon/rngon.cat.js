@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (17 June 2019 22:40:32 UTC)
+// VERSION: live (06 September 2019 05:34:50 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -302,54 +302,35 @@ Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
 
 "use strict";
 
-// NOTE: Expects to remain immutable.
+// NOTE: The returned object is not immutable.
 Rngon.vector3 = function(x = 0, y = 0, z = 0)
 {
     Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number")
                  || Rngon.throw("Expected numbers as parameters to the vector3 factory.");
 
-    const publicInterface = Object.freeze(
+    const returnObject =
     {
         x,
         y,
         z,
+    };
 
-        cross: function(other = {})
-        {
-            return Rngon.vector3(((y * other.z) - (z * other.y)),
-                                 ((z * other.x) - (x * other.z)),
-                                 ((x * other.y) - (y * other.x)));
-        },
-
-        // Returns a normalized copy of the vector.
-        normalized: function()
-        {
-            const sn = ((x * x) + (y * y) + (z * z));
-
-            if (sn != 0 && sn != 1)
-            {
-                const inv = (1.0 / Math.sqrt(sn));
-                return Rngon.vector3((x * inv), (y * inv), (z * inv));
-            }
-            else return Rngon.vector3(x, y, z);
-        },
-    });
-
-    return publicInterface;
+    return returnObject;
 }
+
 // Convenience aliases for vector3.
 Rngon.translation_vector = Rngon.vector3;
 Rngon.rotation_vector = (x, y, z)=>Rngon.vector3(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
 Rngon.scaling_vector = Rngon.vector3;
 
-// NOTE: Expects to remain immutable.
+// NOTE: The returned object is not immutable.
 Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 {
     Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
                      typeof w === "number" && typeof u === "number" && typeof v === "number")
                  || Rngon.throw("Expected numbers as parameters to the vertex factory.");
 
-    const publicInterface = Object.freeze(
+    const returnObject =
     {
         x,
         y,
@@ -358,32 +339,37 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         u,
         v,
 
-        // Returns a copy of the vertex transformed by the given matrix.
-        transformed: function(m = [])
+        // Transforms the vertex by the given 4x4 matrix.
+        transform: function(m = [])
         {
             Rngon.assert && (m.length === 16)
                          || Rngon.throw("Expected a 4 x 4 matrix to transform the vertex by.");
             
-            const x_ = ((m[0] * x) + (m[4] * y) + (m[ 8] * z) + (m[12] * w));
-            const y_ = ((m[1] * x) + (m[5] * y) + (m[ 9] * z) + (m[13] * w));
-            const z_ = ((m[2] * x) + (m[6] * y) + (m[10] * z) + (m[14] * w));
-            const w_ = ((m[3] * x) + (m[7] * y) + (m[11] * z) + (m[15] * w));
+            const x_ = ((m[0] * this.x) + (m[4] * this.y) + (m[ 8] * this.z) + (m[12] * this.w));
+            const y_ = ((m[1] * this.x) + (m[5] * this.y) + (m[ 9] * this.z) + (m[13] * this.w));
+            const z_ = ((m[2] * this.x) + (m[6] * this.y) + (m[10] * this.z) + (m[14] * this.w));
+            const w_ = ((m[3] * this.x) + (m[7] * this.y) + (m[11] * this.z) + (m[15] * this.w));
 
-            return Rngon.vertex(x_, y_, z_, u, v, w_);
+            this.x = x_;
+            this.y = y_;
+            this.z = z_;
+            this.w = w_;
         },
 
-        // Returns a copy of the vertex with perspective division applied.
-        perspective_divided: function()
+        // Applies perspective division to the vertex.
+        perspective_divide: function()
         {
-            return Rngon.vertex((x/w), (y/w), (z/w), u, v, w);
+            this.x /= this.w;
+            this.y /= this.w;
+            this.z /= this.w;
         }
-    });
+    };
 
-    return publicInterface;
+    return returnObject;
 }
 
 // A single n-sided ngon.
-// NOTE: Expects to remain immutable.
+// NOTE: The return object is not immutable.
 Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
 {
     Rngon.assert && (vertices instanceof Array) || Rngon.throw("Expected an array of vertices to make an ngon.");
@@ -397,33 +383,195 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
                  || Rngon.throw("The default material object for ngon() is missing required properties.");
 
     // Combine default material options with the user-supplied ones.
-    material = Object.freeze(
+    material =
     {
         ...Rngon.ngon.defaultMaterial,
         ...material
-    });
+    };
 
-    vertices = Object.freeze(vertices);
-
-    const publicInterface = Object.freeze(
+    const returnObject =
     {
         vertices,
         material,
 
-        perspective_divided: function()
+        // Returns clone of the n-gon such that its vertices are deep-copied. The material, however,
+        // is copied by reference.
+        clone: function()
         {
-            // First clip the n-gon's vertices against the near plane, then apply perspective
-            // division to them.
-            return Rngon.ngon(vertices.filter(v=>(v.w >= 1)).map(v=>v.perspective_divided()), material);
+            return Rngon.ngon(this.vertices.map(v=>Rngon.vertex(v.x, v.y, v.z, v.u, v.v, v.w)), this.material);
         },
 
-        transformed: function(matrix44)
+        // Clips all vertices against the sides of the viewport ([0, width) and [0, height)).
+        // Adapted from Benny Bobaganoosh's 3d software renderer, whose source is available at
+        // https://github.com/BennyQBD/3DSoftwareRenderer.
+        //
+        /// TODO: This is a sloppy implementation that gets the job done but could be improved on.
+        clip_to_viewport: function(width, height)
         {
-            return Rngon.ngon(vertices.map(vertex=>vertex.transformed(matrix44)), material);
+            if (vertices.length >= 1)
+            {
+                clip_on_axis.call(this, "x", 0, (width - 1));
+                clip_on_axis.call(this, "y", 0, (height - 1));
+            }
+
+            return;
+
+            function clip_on_axis(axis, min, max)
+            {
+                if (!this.vertices.length)
+                {
+                    return;
+                }
+
+                // Clip min.
+                {
+                    let prevVertex = this.vertices[this.vertices.length - 1];
+                    let isPrevVertexInside = (prevVertex[axis] >= min);
+
+                    this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
+                    {
+                        const isThisVertexInside = (currentVert[axis] >= min);
+
+                        // If either the current vertex or the previous vertex is inside but the other isn't,
+                        // and they aren't both inside, interpolate a new vertex between them that lies on
+                        // the clipping plane.
+                        if (isThisVertexInside ^ isPrevVertexInside)
+                        {
+                            const lerpStep = ((prevVertex[axis] - min) / ((prevVertex[axis] - min) - (currentVert[axis] - min) + 0.5));
+                            clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
+                        }
+                        
+                        if (isThisVertexInside)
+                        {
+                            clippedVerts.push(currentVert);
+                        }
+
+                        prevVertex = currentVert;
+                        isPrevVertexInside = (prevVertex[axis] >= min);
+
+                        return clippedVerts;
+                    }, []);
+                }
+
+                if (!this.vertices.length)
+                {
+                    return;
+                }
+
+                // Clip max.
+                {
+                    let prevVertex = this.vertices[this.vertices.length - 1];
+                    let isPrevVertexInside = (prevVertex[axis] < max);
+
+                    this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
+                    {
+                        const isThisVertexInside = (currentVert[axis] < max);
+
+                        if (isThisVertexInside ^ isPrevVertexInside)
+                        {
+                            const lerpStep = ((prevVertex[axis] - max) / ((prevVertex[axis] - max) - (currentVert[axis] - max)));
+                            clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
+                        }
+                        
+                        if (isThisVertexInside)
+                        {
+                            clippedVerts.push(currentVert);
+                        }
+
+                        prevVertex = currentVert;
+                        isPrevVertexInside = (prevVertex[axis] < max);
+
+                        return clippedVerts;
+                    }, []);
+                }
+
+                return;
+
+                function interpolated_vertex(vert1, vert2, lerpStep)
+                {
+                    return Rngon.vertex(Rngon.lerp(vert1.x, vert2.x, lerpStep),
+                                        Rngon.lerp(vert1.y, vert2.y, lerpStep),
+                                        Rngon.lerp(vert1.z, vert2.z, lerpStep),
+                                        Rngon.lerp(vert1.u, vert2.u, lerpStep),
+                                        Rngon.lerp(vert1.v, vert2.v, lerpStep),
+                                        Rngon.lerp(vert1.w, vert2.w, lerpStep));
+                }
+            }
         },
-    });
-    return publicInterface;
+
+        // Clips all vertices against the near plane. Adapted from Benny Bobaganoosh's 3d software
+        // renderer, whose source is available at https://github.com/BennyQBD/3DSoftwareRenderer.
+        clip_to_near_plane: function(nearPlaneDistance)
+        {
+            if (!nearPlaneDistance)
+            {
+                return;
+            }
+
+            if (vertices.length <= 0)
+            {
+                return;
+            }
+
+            let prevVertex = this.vertices[this.vertices.length - 1];
+            let isPrevVertexInside = is_vertex_inside(prevVertex);
+
+            this.vertices = this.vertices.reduce((clippedVerts, curVertex)=>
+            {
+                const isThisVertexInside = is_vertex_inside(curVertex);
+
+                // If either the current vertex or the previous vertex is inside but the other isn't,
+                // and they aren't both inside, interpolate a new vertex between them that lies on
+                // the clipping plane.
+                if (isThisVertexInside ^ isPrevVertexInside)
+                {
+                    const lerpStep = ((prevVertex.w - nearPlaneDistance) / ((prevVertex.w - nearPlaneDistance) - (curVertex.w - nearPlaneDistance)));
+
+                    clippedVerts.push(Rngon.vertex(Rngon.lerp(prevVertex.x, curVertex.x, lerpStep),
+                                                    Rngon.lerp(prevVertex.y, curVertex.y, lerpStep),
+                                                    Rngon.lerp(prevVertex.z, curVertex.z, lerpStep),
+                                                    Rngon.lerp(prevVertex.u, curVertex.u, lerpStep),
+                                                    Rngon.lerp(prevVertex.v, curVertex.v, lerpStep),
+                                                    Rngon.lerp(prevVertex.w, curVertex.w, lerpStep)));
+                }
+                
+                if (isThisVertexInside)
+                {
+                    clippedVerts.push(curVertex);
+                }
+
+                prevVertex = curVertex;
+                isPrevVertexInside = is_vertex_inside(prevVertex);
+
+                return clippedVerts;
+            }, []);
+
+            function is_vertex_inside(vert)
+            {
+                return (vert.w >= nearPlaneDistance);
+            }
+        },
+
+        perspective_divide: function()
+        {
+            this.vertices.forEach(vert=>
+            {
+                vert.perspective_divide();
+            });
+        },
+
+        transform: function(matrix44)
+        {
+            this.vertices.forEach(vert=>
+            {
+                vert.transform(matrix44);
+            });
+        },
+    };
+
+    return returnObject;
 }
+
 Rngon.ngon.defaultMaterial = 
 {
     color: Rngon.color_rgba(255, 255, 255, 255),
@@ -448,41 +596,39 @@ Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
                  || Rngon.throw("The default transforms object for mesh() is missing required properties.");
 
     // Combine default transformations with the user-supplied ones.
-    transform = Object.freeze(
+    transform =
     {
         ...Rngon.mesh.defaultTransform,
         ...transform
-    });
+    };
 
-    // A matrix by which the ngons of this mesh should be transformed to get the ngongs into
-    // the mesh's object space.
-    const objectSpaceMatrix = (()=>
-    {
-        const translationMatrix = Rngon.matrix44.translate(transform.translation.x,
-                                                           transform.translation.y,
-                                                           transform.translation.z);
-        const rotationMatrix = Rngon.matrix44.rotate(transform.rotation.x,
-                                                     transform.rotation.y,
-                                                     transform.rotation.z);
-        const scalingMatrix = Rngon.matrix44.scale(transform.scaling.x,
-                                                   transform.scaling.y,
-                                                   transform.scaling.z);
-
-        return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
-    })();
-
-    ngons = Object.freeze(ngons);
-    
-    const publicInterface = Object.freeze(
+    const publicInterface =
     {
         ngons,
         rotation: transform.rotation,
         translation: transform.translation,
         scale: transform.scaling,
-        objectSpaceMatrix,
-    });
+        objectSpaceMatrix: function()
+        {
+            const translationMatrix = Rngon.matrix44.translate(this.translation.x,
+                                                               this.translation.y,
+                                                               this.translation.z);
+
+            const rotationMatrix = Rngon.matrix44.rotate(this.rotation.x,
+                                                         this.rotation.y,
+                                                         this.rotation.z);
+
+            const scalingMatrix = Rngon.matrix44.scale(this.scale.x,
+                                                       this.scale.y,
+                                                       this.scale.z);
+
+            return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
+        },
+    };
+    
     return publicInterface;
 }
+
 Rngon.mesh.defaultTransform = 
 {
     translation: Rngon.translation_vector(0, 0, 0),
@@ -812,7 +958,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         // entries following successively lower in y. In other words, by tracing the vertices
         // first through 'left' and then 'right', you end up with an anti-clockwise loop around
         // the ngon.
-        const verts = ngon.vertices.slice();
+        const verts = ngon.vertices;
         const leftVerts = [];
         const rightVerts = [];
         {
@@ -889,71 +1035,64 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
 
                     for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
                     {
-                        if (leftEdge[y].x >= 0 && leftEdge[y].x < renderWidth)
+                        const px = leftEdge[y].x;
+                        const py = (y + polyYOffset);
+                        const idx = ((px + py * renderWidth) * 4);
+                        
+                        // Solid fill.
+                        if (ngon.material.texture == null)
                         {
-                            const px = leftEdge[y].x;
-                            const py = (y + polyYOffset);
-
-                            if (py >= 0 && py < renderHeight)
+                            pixelBuffer[idx + 0] = ngon.material.color.red;
+                            pixelBuffer[idx + 1] = ngon.material.color.green;
+                            pixelBuffer[idx + 2] = ngon.material.color.blue;
+                            pixelBuffer[idx + 3] = ngon.material.color.alpha;
+                        }
+                        // Textured fill.
+                        else
+                        {
+                            let u = 0, v = 0;
+                            switch (ngon.material.textureMapping)
                             {
-                                const idx = ((px + py * renderWidth) * 4);
-                                
-                                // Solid fill.
-                                if (ngon.material.texture == null)
+                                case "affine":
                                 {
-                                    pixelBuffer[idx + 0] = ngon.material.color.red;
-                                    pixelBuffer[idx + 1] = ngon.material.color.green;
-                                    pixelBuffer[idx + 2] = ngon.material.color.blue;
-                                    pixelBuffer[idx + 3] = ngon.material.color.alpha;
+                                    u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.material.texture.width-0.001));
+                                    v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.material.texture.height-0.001));
+
+                                    // Wrap with repetition.
+                                    /// FIXME: Doesn't wrap correctly.
+                                    u %= ngon.material.texture.width;
+                                    v %= ngon.material.texture.height;
+
+                                    break;
                                 }
-                                // Textured fill.
-                                else
+                                case "ortho":
                                 {
-                                    let u = 0, v = 0;
-                                    switch (ngon.material.textureMapping)
-                                    {
-                                        case "affine":
-                                        {
-                                            u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.material.texture.width-0.001));
-                                            v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.material.texture.height-0.001));
+                                    u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
+                                    v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight-1)||1));
 
-                                            // Wrap with repetition.
-                                            /// FIXME: Doesn't wrap correctly.
-                                            u %= ngon.material.texture.width;
-                                            v %= ngon.material.texture.height;
-
-                                            break;
-                                        }
-                                        case "ortho":
-                                        {
-                                            u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
-                                            v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight-1)||1));
-
-                                            break;
-                                        }
-                                        default: Rngon.throw("Unknown texture-mapping mode."); break;
-                                    }
-
-                                    const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
-
-                                    // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                                    if (texelColorChannels[3] === 255)
-                                    {
-                                        pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.material.color.unitRange.red);
-                                        pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.material.color.unitRange.green);
-                                        pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.material.color.unitRange.blue);
-                                        pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.material.color.unitRange.alpha);
-                                    }
+                                    break;
                                 }
+                                default: Rngon.throw("Unknown texture-mapping mode."); break;
+                            }
 
-                                for (let b = 0; b < auxiliaryBuffers.length; b++)
-                                {
-                                    if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
-                                    {
-                                        // Buffers are expected to consist of one element per pixel.
-                                        auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
-                                    }
-                                }
+                            const texelIdx = ((~~u) + (~~v) * ngon.material.texture.width);
+
+                            // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
+                            if (ngon.material.texture.pixels[texelIdx].alpha === 255)
+                            {
+                                pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx].red   * ngon.material.color.unitRange.red);
+                                pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx].green * ngon.material.color.unitRange.green);
+                                pixelBuffer[idx + 2] = (ngon.material.texture.pixels[texelIdx].blue  * ngon.material.color.unitRange.blue);
+                                pixelBuffer[idx + 3] = (ngon.material.texture.pixels[texelIdx].alpha * ngon.material.color.unitRange.alpha);
+                            }
+                        }
+
+                        for (let b = 0; b < auxiliaryBuffers.length; b++)
+                        {
+                            if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                            {
+                                // Buffers are expected to consist of one element per pixel.
+                                auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
                             }
                         }
                     }
@@ -963,7 +1102,6 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
             // Draw a wireframe around any ngons that wish for one.
             if (ngon.material.hasWireframe)
             {
-                const wireColor = Rngon.color_rgba(0, 0, 0, 255);
                 const putline = (vert1, vert2)=>
                 {
                     Rngon.line_draw.into_pixel_buffer(vert1, vert2,
@@ -1066,13 +1204,16 @@ Rngon.render = function(canvasElementId,
             const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
                                                                                           options.cameraDirection.y,
                                                                                           options.cameraDirection.z),
-                                                                    Rngon.matrix44.translate(options.cameraPosition.x,
-                                                                                             options.cameraPosition.y,
-                                                                                             options.cameraPosition.z));
+                                                                    Rngon.matrix44.translate(-options.cameraPosition.x,
+                                                                                             -options.cameraPosition.y,
+                                                                                             -options.cameraPosition.z));
 
-            meshes.forEach((mesh)=>
+            meshes.forEach(mesh=>
             {
-                transformedNgons.push(...renderSurface.transformed_ngons(mesh.ngons, mesh.objectSpaceMatrix, cameraMatrix));
+                const meshVerts = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
+                renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix(), cameraMatrix, options.nearPlaneDistance);
+
+                transformedNgons.push(...meshVerts);
             });
 
             // Apply depth sorting to the transformed ngons.
@@ -1085,10 +1226,10 @@ Rngon.render = function(canvasElementId,
                 {
                     transformedNgons.sort((ngonA, ngonB)=>
                     {
-                        const depthA = ngonA.vertices.reduce((depth, z)=>(depth + z)) / ngonA.vertices.length;
-                        const depthB = ngonB.vertices.reduce((depth, z)=>(depth + z)) / ngonB.vertices.length;
-            
-                        return ((depthA === depthB)? 0 : ((depthA < depthB)? 1 : -1));
+                        const a = (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length);
+                        const b = (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length);
+
+                        return ((a === b)? 0 : ((a < b)? 1 : -1));
                     });
 
                     break;
@@ -1130,6 +1271,7 @@ Rngon.render.defaultOptions =
     depthSort: "painter",
     hibernateWhenNotOnScreen: true,
     auxiliaryBuffers: [],
+    nearPlaneDistance: false,
 };
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1139,11 +1281,33 @@ Rngon.render.defaultOptions =
 
 "use strict";
 
-// Returns a copy of the given list of ngons such that each ngon in the copy
-// has been transformed into screen-space.
-Rngon.ngon_transformer = function(ngons = [], screenSpaceMatrix = [])
+// Transforms the given n-gons into screen space for rendering.
+Rngon.ngon_transformer = function(ngons = [], renderWidth, renderHeight, screenSpaceMatrix = [], nearPlaneDistance)
 {
-    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix).perspective_divided());
+    ngons.forEach(ngon=>
+    {
+        ngon.transform(screenSpaceMatrix);
+        ngon.clip_to_near_plane(nearPlaneDistance);
+        ngon.perspective_divide();
+        ngon.clip_to_viewport(renderWidth, renderHeight);
+    });
+
+    // Remove n-gons that have no vertices (e.g. due to all of them having been all clipped away).
+    {
+        let cur = 0;
+        
+        for (let i = 0; i < ngons.length; i++)
+        {
+            if (ngons[i].vertices.length)
+            {
+                ngons[cur++] = ngons[i];
+            }
+        }
+
+        ngons.length = cur;
+    }
+
+    return;
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1164,8 +1328,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
 
     Rngon.assert && (Number.isInteger(data.width) && Number.isInteger(data.height))
                  || Rngon.throw("Expected texture width and height to be integer values.");
-    Rngon.assert && (data.width > 0 && data.height > 0)
-                 || Rngon.throw("Expected texture width and height to be greater than zero.");
+    Rngon.assert && (data.width >= 0 && data.height >= 0)
+                 || Rngon.throw("Expected texture width and height to be no less than zero.");
     Rngon.assert && (data.width <= maxWidth && data.height <= maxHeight)
                  || Rngon.throw("Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
 
@@ -1210,31 +1374,24 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
 
     Rngon.assert && (data.pixels.length === (data.width * data.height * numColorChannels))
                  || Rngon.throw("The texture's pixel array size doesn't match its width and height.");
+
+    // Convert the raw pixel data into objects of the form {red, green, blue, alpha}.
+    const pixelArray = [];
+    for (let i = 0; i < data.pixels.length; i += numColorChannels)
+    {
+        pixelArray.push({red:   data.pixels[i+0],
+                         green: data.pixels[i+1],
+                         blue:  data.pixels[i+2],
+                         alpha: data.pixels[i+3]});
+    }
         
     const publicInterface = Object.freeze(
     {
         width: data.width,
         height: data.height,
-        
-        // Returns an unfrozen 4-element array containing copies of the texture's RGBA values
-        // at the given x,y texel coordinates.
-        rgba_channels_at: function(x, y)
-        {
-            x = Math.floor(x);
-            y = Math.floor(y);
-
-            const idx = ((x + y * data.width) * numColorChannels);
-            Rngon.assert && ((idx + numColorChannels) <= data.pixels.length)
-                         || Rngon.throw("Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
-
-            // Note: For performance reasons, the array isn't returned frozen. You can try freezing it
-            // and running a perf test with textured rendering to see the effect.
-            return [data.pixels[idx + 0],
-                    data.pixels[idx + 1],
-                    data.pixels[idx + 2],
-                    data.pixels[idx + 3]];
-        }
+        pixels: pixelArray,
     });
+    
     return publicInterface;
 }
 
@@ -1309,13 +1466,13 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
         // Takes as input the ngons to be transformed, an object matrix which contains the object's
         // transforms, and a camera matrix, which contains the camera's translation and rotation.
-        transformed_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [])
+        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], nearPlaneDistance)
         {
             const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
             const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
             const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(screenMatrix, clipSpaceMatrix);
 
-            return ngon_transform_f(ngons, screenSpaceMatrix);
+            ngon_transform_f(ngons, screenWidth, screenHeight, screenSpaceMatrix, nearPlaneDistance);
         },
 
         // Draw the given ngons onto this render surface.

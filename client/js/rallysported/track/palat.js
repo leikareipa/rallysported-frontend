@@ -78,8 +78,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
             // NOTE: If you change these default values, you may need to reflect the changes in
             // publicInterface.generate_texture(), as well; which, for instance, expects that
             // textures are generated with vertical flip, by default.
-            ...
-            {
+            ...{
                 alpha: true,
                 flipped: "vertical",
             },
