@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (07 September 2019 02:22:27 UTC)
+// VERSION: live (07 September 2019 02:58:08 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5939,7 +5939,17 @@ window.onkeydown = function(event)
             case "w": case 87: Rsed.ui_view_n.show3dWireframe = !Rsed.ui_view_n.show3dWireframe; break;
             case "a": case 65: Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane; break;
             case "r": case 82: Rsed.ui_view_n.toggle_view("3d", "3d-topdown"); break;
-            case "l": case 76: Rsed.core.current_project().maasto.bulldoze(window.prompt("Level the terrain to a height of...")); break;
+            case "l": case 76:
+            {
+                const newHeight = parseInt(window.prompt("Level the terrain to a height of..."), 10);
+
+                if (!isNaN(newHeight))
+                {
+                    Rsed.core.current_project().maasto.bulldoze(newHeight);
+                }
+
+                break;
+            }
             case "b": case 66: Rsed.ui_view_n.hideProps = !Rsed.ui_view_n.hideProps; break;
             case "spacebar": case 32: Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens; event.preventDefault(); break;
             case "1": case 49: Rsed.ui_brush_n.set_brush_size(0); break;
