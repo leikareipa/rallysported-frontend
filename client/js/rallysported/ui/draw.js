@@ -341,11 +341,11 @@ Rsed.ui_draw_n = (function()
             pixelSurface = null;
         }
 
-        publicInterface.draw_ui = function(renderSurface = Rsed.render_surface_n.render_surface_o)
+        publicInterface.draw_ui = function(renderSurface = Rsed.render_surface_n.render_surface_o, surfaceMousePickBuffer)
         {
             // Draw the UI.
             pixelSurface = renderSurface.getContext("2d").getImageData(0, 0, renderSurface.width, renderSurface.height);
-            mousePickBuffer = [];//renderSurface.mousePickBuffer;
+            mousePickBuffer = surfaceMousePickBuffer;
             {
                 switch (Rsed.ui_view_n.current_view())
                 {

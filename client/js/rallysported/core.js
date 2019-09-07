@@ -201,7 +201,7 @@ Rsed.core = (function()
                 Rsed.ui_draw_n.prebake_palat_pane();
             }
 
-            Rsed.ui_draw_n.draw_ui(canvas.element);
+            Rsed.ui_draw_n.draw_ui(canvas.element, canvas.mousePickingBuffer);
         }
 
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));

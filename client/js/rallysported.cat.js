@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (06 September 2019 05:36:50 UTC)
+// VERSION: live (07 September 2019 02:22:27 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2970,6 +2970,9 @@ Rsed.camera_n = (function()
 
 "use strict";
 
+// Implements a 32-bit texture whose output interface is compatible with the retro n-gon
+// renderer's texture_rgba() object (so that n-gons can be textured with the object from
+// this function and rendered with the retro n-gon renderer).
 Rsed.texture = function(args = {})
 {
     args =
@@ -5140,11 +5143,11 @@ Rsed.ui_draw_n = (function()
             pixelSurface = null;
         }
 
-        publicInterface.draw_ui = function(renderSurface = Rsed.render_surface_n.render_surface_o)
+        publicInterface.draw_ui = function(renderSurface = Rsed.render_surface_n.render_surface_o, surfaceMousePickBuffer)
         {
             // Draw the UI.
             pixelSurface = renderSurface.getContext("2d").getImageData(0, 0, renderSurface.width, renderSurface.height);
-            mousePickBuffer = [];//renderSurface.mousePickBuffer;
+            mousePickBuffer = surfaceMousePickBuffer;
             {
                 switch (Rsed.ui_view_n.current_view())
                 {
@@ -6194,7 +6197,7 @@ Rsed.core = (function()
                 Rsed.ui_draw_n.prebake_palat_pane();
             }
 
-            Rsed.ui_draw_n.draw_ui(canvas.element);
+            Rsed.ui_draw_n.draw_ui(canvas.element, canvas.mousePickingBuffer);
         }
 
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
