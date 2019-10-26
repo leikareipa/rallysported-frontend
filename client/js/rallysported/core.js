@@ -186,6 +186,9 @@ Rsed.core = (function()
                 cameraDirection: Rngon.rotation_vector((isTopdownView? 90 : 21), 0, 0),
                 scale: canvas.scalingFactor,
                 fov: 45,
+                nearPlane: 300,
+                farPlane: 10000,
+                clipToViewport: true,
                 depthSort: "none",
                 auxiliaryBuffers: [{buffer:canvas.mousePickingBuffer, property:"mousePickId"}],
             });

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (07 September 2019 02:58:08 UTC)
+// VERSION: live (26 October 2019 02:04:51 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -66,7 +66,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (06 September 2019 05:34:50 UTC)
+// VERSION: live (26 October 2019 01:48:57 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -116,6 +116,32 @@ const Rngon = {};
     {
         console.log("Retro n-gon: " + string);
     }
+}
+
+// Global render toggles. These should not be modified directly; they're instead
+// set by the renderer based on render parameters requested by the user.
+Rngon.internalState =
+{
+    // Whether to require pixels to pass a depth test before being allowed on screen.
+    useDepthBuffer: false,
+    depthBuffer: {width:1, height:1, buffer:new Array(1), clearValue:Number.MAX_VALUE},
+
+    // Pixel buffer for rasterization.
+    pixelBuffer: new ImageData(1, 1),
+
+    usePerspectiveCorrectTexturing: false,
+
+    // If set to true, all n-gons will be rendered with a wireframe.
+    showGlobalWireframe: false,
+
+    applyViewportClipping: true,
+
+    // All transformed n-gons on a particular call to render() will be placed here.
+    // The cache size will be dynamically adjusted up to match the largest number
+    // of transformed n-gons, so at any given time the number of active n-gons (those
+    // that have been transformed for the current frame) may be smaller than the
+    // cache's total capacity.
+    transformedNgonsCache: {numActiveNgons:0, ngons:[]},
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -379,6 +405,50 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
         x,
         y,
         z,
+
+        // Transforms the vector by the given 4x4 matrix.
+        transform: function(m = [])
+        {
+            Rngon.assert && (m.length === 16)
+                         || Rngon.throw("Expected a 4 x 4 matrix to transform the vector by.");
+            
+            const x_ = ((m[0] * this.x) + (m[4] * this.y) + (m[ 8] * this.z));
+            const y_ = ((m[1] * this.x) + (m[5] * this.y) + (m[ 9] * this.z));
+            const z_ = ((m[2] * this.x) + (m[6] * this.y) + (m[10] * this.z));
+
+            this.x = x_;
+            this.y = y_;
+            this.z = z_;
+        },
+
+        normalize: function()
+        {
+            const sn = ((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
+
+            if (sn != 0 && sn != 1)
+            {
+                const inv = (1 / Math.sqrt(sn));
+                this.x *= inv;
+                this.y *= inv;
+                this.z *= inv;
+            }
+        },
+
+        dot: function(other)
+        {
+            return ((this.x * other.x) + (this.y * other.y) + (this.z * other.z));
+        },
+
+        cross: function(other)
+        {
+            const c = Rngon.vector3();
+
+            c.x = ((this.y * other.z) - (this.z * other.y));
+            c.y = ((this.z * other.x) - (this.x * other.z));
+            c.z = ((this.x * other.y) - (this.y * other.x));
+
+            return c;
+        },
     };
 
     return returnObject;
@@ -401,9 +471,9 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         x,
         y,
         z,
-        w,
         u,
         v,
+        w,
 
         // Transforms the vertex by the given 4x4 matrix.
         transform: function(m = [])
@@ -436,7 +506,7 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 
 // A single n-sided ngon.
 // NOTE: The return object is not immutable.
-Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
+Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon.vector3(0, 1, 0))
 {
     Rngon.assert && (vertices instanceof Array) || Rngon.throw("Expected an array of vertices to make an ngon.");
     Rngon.assert && (material instanceof Object) || Rngon.throw("Expected an object containing user-supplied options.");
@@ -455,183 +525,108 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
         ...material
     };
 
+    // If we get vertex U or V coordinates in the range [0,-x], we want to change 0 to
+    // -eps to avoid incorrect rounding during texture-mapping.
+    {
+        const hasNegativeU = vertices.map(v=>v.u).some(u=>(u < 0));
+        const hasNegativeV = vertices.map(v=>v.v).some(v=>(v < 0));
+
+        if (hasNegativeU || hasNegativeV)
+        {
+            for (const vert of vertices)
+            {
+                if (hasNegativeU && vert.u === 0) vert.u = -Number.EPSILON;
+                if (hasNegativeV && vert.v === 0) vert.v = -Number.EPSILON;
+            }
+        }
+    }
+
     const returnObject =
     {
         vertices,
         material,
+        normal,
 
-        // Returns clone of the n-gon such that its vertices are deep-copied. The material, however,
-        // is copied by reference.
-        clone: function()
-        {
-            return Rngon.ngon(this.vertices.map(v=>Rngon.vertex(v.x, v.y, v.z, v.u, v.v, v.w)), this.material);
-        },
-
-        // Clips all vertices against the sides of the viewport ([0, width) and [0, height)).
-        // Adapted from Benny Bobaganoosh's 3d software renderer, whose source is available at
+        // Clips all vertices against the sides of the viewport. Adapted from Benny
+        // Bobaganoosh's 3d software renderer, the source for which is available at
         // https://github.com/BennyQBD/3DSoftwareRenderer.
-        //
-        /// TODO: This is a sloppy implementation that gets the job done but could be improved on.
-        clip_to_viewport: function(width, height)
+        clip_to_viewport: function()
         {
-            if (vertices.length >= 1)
-            {
-                clip_on_axis.call(this, "x", 0, (width - 1));
-                clip_on_axis.call(this, "y", 0, (height - 1));
-            }
+            clip_on_axis.call(this, "x", 1);
+            clip_on_axis.call(this, "x", -1);
+            clip_on_axis.call(this, "y", 1);
+            clip_on_axis.call(this, "y", -1);
+            clip_on_axis.call(this, "z", 1);
+            clip_on_axis.call(this, "z", -1);
 
             return;
 
-            function clip_on_axis(axis, min, max)
+            function clip_on_axis(axis, factor)
             {
                 if (!this.vertices.length)
                 {
                     return;
                 }
 
-                // Clip min.
-                {
-                    let prevVertex = this.vertices[this.vertices.length - 1];
-                    let isPrevVertexInside = (prevVertex[axis] >= min);
-
-                    this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
-                    {
-                        const isThisVertexInside = (currentVert[axis] >= min);
-
-                        // If either the current vertex or the previous vertex is inside but the other isn't,
-                        // and they aren't both inside, interpolate a new vertex between them that lies on
-                        // the clipping plane.
-                        if (isThisVertexInside ^ isPrevVertexInside)
-                        {
-                            const lerpStep = ((prevVertex[axis] - min) / ((prevVertex[axis] - min) - (currentVert[axis] - min) + 0.5));
-                            clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
-                        }
-                        
-                        if (isThisVertexInside)
-                        {
-                            clippedVerts.push(currentVert);
-                        }
-
-                        prevVertex = currentVert;
-                        isPrevVertexInside = (prevVertex[axis] >= min);
-
-                        return clippedVerts;
-                    }, []);
-                }
-
-                if (!this.vertices.length)
-                {
-                    return;
-                }
-
-                // Clip max.
-                {
-                    let prevVertex = this.vertices[this.vertices.length - 1];
-                    let isPrevVertexInside = (prevVertex[axis] < max);
-
-                    this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
-                    {
-                        const isThisVertexInside = (currentVert[axis] < max);
-
-                        if (isThisVertexInside ^ isPrevVertexInside)
-                        {
-                            const lerpStep = ((prevVertex[axis] - max) / ((prevVertex[axis] - max) - (currentVert[axis] - max)));
-                            clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
-                        }
-                        
-                        if (isThisVertexInside)
-                        {
-                            clippedVerts.push(currentVert);
-                        }
-
-                        prevVertex = currentVert;
-                        isPrevVertexInside = (prevVertex[axis] < max);
-
-                        return clippedVerts;
-                    }, []);
-                }
-
-                return;
-
-                function interpolated_vertex(vert1, vert2, lerpStep)
-                {
-                    return Rngon.vertex(Rngon.lerp(vert1.x, vert2.x, lerpStep),
-                                        Rngon.lerp(vert1.y, vert2.y, lerpStep),
-                                        Rngon.lerp(vert1.z, vert2.z, lerpStep),
-                                        Rngon.lerp(vert1.u, vert2.u, lerpStep),
-                                        Rngon.lerp(vert1.v, vert2.v, lerpStep),
-                                        Rngon.lerp(vert1.w, vert2.w, lerpStep));
-                }
-            }
-        },
-
-        // Clips all vertices against the near plane. Adapted from Benny Bobaganoosh's 3d software
-        // renderer, whose source is available at https://github.com/BennyQBD/3DSoftwareRenderer.
-        clip_to_near_plane: function(nearPlaneDistance)
-        {
-            if (!nearPlaneDistance)
-            {
-                return;
-            }
-
-            if (vertices.length <= 0)
-            {
-                return;
-            }
-
-            let prevVertex = this.vertices[this.vertices.length - 1];
-            let isPrevVertexInside = is_vertex_inside(prevVertex);
-
-            this.vertices = this.vertices.reduce((clippedVerts, curVertex)=>
-            {
-                const isThisVertexInside = is_vertex_inside(curVertex);
-
-                // If either the current vertex or the previous vertex is inside but the other isn't,
-                // and they aren't both inside, interpolate a new vertex between them that lies on
-                // the clipping plane.
-                if (isThisVertexInside ^ isPrevVertexInside)
-                {
-                    const lerpStep = ((prevVertex.w - nearPlaneDistance) / ((prevVertex.w - nearPlaneDistance) - (curVertex.w - nearPlaneDistance)));
-
-                    clippedVerts.push(Rngon.vertex(Rngon.lerp(prevVertex.x, curVertex.x, lerpStep),
-                                                    Rngon.lerp(prevVertex.y, curVertex.y, lerpStep),
-                                                    Rngon.lerp(prevVertex.z, curVertex.z, lerpStep),
-                                                    Rngon.lerp(prevVertex.u, curVertex.u, lerpStep),
-                                                    Rngon.lerp(prevVertex.v, curVertex.v, lerpStep),
-                                                    Rngon.lerp(prevVertex.w, curVertex.w, lerpStep)));
-                }
+                let prevVertex = this.vertices[this.vertices.length - 1];
+                let prevComponent = prevVertex[axis] * factor;
+                let isPrevVertexInside = (prevComponent <= prevVertex.w);
                 
-                if (isThisVertexInside)
+                // The vertices array will be modified in-place by appending the clipped vertices
+                // onto the end of the array, then removing the previous ones.
+                let k = 0;
+                let numOriginalVertices = this.vertices.length;
+                for (let i = 0; i < numOriginalVertices; i++)
                 {
-                    clippedVerts.push(curVertex);
+                    const curComponent = this.vertices[i][axis] * factor;
+                    const isThisVertexInside = (curComponent <= this.vertices[i].w);
+
+                    // If either the current vertex or the previous vertex is inside but the other isn't,
+                    // and they aren't both inside, interpolate a new vertex between them that lies on
+                    // the clipping plane.
+                    if (isThisVertexInside ^ isPrevVertexInside)
+                    {
+                        const lerpStep = (prevVertex.w - prevComponent) /
+                                          ((prevVertex.w - prevComponent) - (this.vertices[i].w - curComponent));
+
+                        this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
+                                                                                Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
+                                                                                Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
+                                                                                Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
+                                                                                Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
+                                                                                Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep))
+                    }
+                    
+                    if (isThisVertexInside)
+                    {
+                        this.vertices[numOriginalVertices + k++] = this.vertices[i];
+                    }
+
+                    prevVertex = this.vertices[i];
+                    prevComponent = curComponent;
+                    isPrevVertexInside = isThisVertexInside;
                 }
 
-                prevVertex = curVertex;
-                isPrevVertexInside = is_vertex_inside(prevVertex);
+                this.vertices.splice(0, numOriginalVertices);
 
-                return clippedVerts;
-            }, []);
-
-            function is_vertex_inside(vert)
-            {
-                return (vert.w >= nearPlaneDistance);
+                return;
             }
         },
 
         perspective_divide: function()
         {
-            this.vertices.forEach(vert=>
+            for (const vert of this.vertices)
             {
                 vert.perspective_divide();
-            });
+            }
         },
 
         transform: function(matrix44)
         {
-            this.vertices.forEach(vert=>
+            for (const vert of this.vertices)
             {
                 vert.transform(matrix44);
-            });
+            }
         },
     };
 
@@ -643,8 +638,10 @@ Rngon.ngon.defaultMaterial =
     color: Rngon.color_rgba(255, 255, 255, 255),
     texture: null,
     textureMapping: "ortho",
+    uvWrapping: "repeat",
     hasSolidFill: true,
     hasWireframe: false,
+    isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
     auxiliary: {},
 };
@@ -708,138 +705,85 @@ Rngon.line_draw = (()=>
 {
     return Object.freeze(
     {
-        // Draws a line between the two given vertices into the given array of pixels. It's
+        // Draws a line between the two given vertices into the render's pixel buffer. It's
         // expected that the pixel array packs the pixels as consecutive RGBA values, each
-        // in the range 0..255.
+        // in the range 0..255. If the 'respectDepth' option is set to true, the line's pixels
+        // will be tested against the depth buffer before rendering.
         into_pixel_buffer: function(vert1 = Rngon.vertex(),
                                     vert2 = Rngon.vertex(),
-                                    pixelBuffer = [],
-                                    bufferWidth = 0,
-                                    bufferHeight = 0,
-                                    lineColor = Rngon.color_rgba(127, 127, 127, 255))
+                                    lineColor = Rngon.color_rgba(127, 127, 127, 255),
+                                    respectDepth = false)
         {
-            function put_pixel(x = 0, y = 0)
+            const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+            const bufferWidth = Rngon.internalState.pixelBuffer.width;
+            const bufferHeight = Rngon.internalState.pixelBuffer.height;
+
+            /// TODO: Depth-aware drawing is disabled until a better implementation of it is in place.
+            respectDepth = false;
+
+            let x0 = Math.round(vert1.x);
+            let y0 = Math.round(vert1.y);
+            const x1 = Math.round(vert2.x);
+            const y1 = Math.round(vert2.y);
+            const lineLength = (respectDepth? this.distanceBetween(x0, y0, x1, y1) : 1);
+
+            // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
+            {
+                let dx = Math.abs(x1 - x0);
+                let dy = Math.abs(y1 - y0);
+                const sx = ((x0 < x1)? 1 : -1);
+                const sy = ((y0 < y1)? 1 : -1); 
+                let err = (((dx > dy)? dx : -dy) / 2);
+                
+                while (1)
+                {
+                    const l = (respectDepth? (this.distanceBetween(x1, y1, x0, y0) / (lineLength || 1)) : 1);
+
+                    put_pixel(x0, y0, (respectDepth? Rngon.lerp((vert2.w - 5), (vert1.w - 5), l) : 0));
+
+                    if ((x0 === x1) && (y0 === y1)) break;
+
+                    const e2 = err;
+                    if (e2 > -dx)
+                    {
+                        err -= dy;
+                        x0 += sx;
+                    }
+                    if (e2 < dy)
+                    {
+                        err += dx;
+                        y0 += sy;
+                    }
+                }
+            }
+
+            function put_pixel(x = 0, y = 0, depth = 0)
             {
                 if (x < 0 || x >= bufferWidth ||
-                   (y < 0 || y >= bufferHeight)) return;
+                   (y < 0 || y >= bufferHeight))
+                {
+                    return;
+                }
 
                 const idx = ((x + y * bufferWidth) * 4);
+
+                if (respectDepth &&
+                    (Rngon.internalState.depthBuffer.buffer[idx/4] <= depth))
+                {
+                    return;
+                }
+
                 pixelBuffer[idx + 0] = lineColor.red;
                 pixelBuffer[idx + 1] = lineColor.green;
                 pixelBuffer[idx + 2] = lineColor.blue;
                 pixelBuffer[idx + 3] = lineColor.alpha;
             }
-
-            let x0 = Math.floor(vert1.x);
-            let y0 = Math.floor(vert1.y);
-            const x1 = Math.floor(vert2.x);
-            const y1 = Math.floor(vert2.y);
-
-            Rngon.assert && (!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1))
-                         || Rngon.throw("Invalid vertex coordinates for line-drawing.");
-
-            // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
-            {
-                let dx = Math.abs(x1 - x0);
-                let dy = Math.abs(y1 - y0);
-                const sx = ((x0 < x1)? 1 : -1);
-                const sy = ((y0 < y1)? 1 : -1); 
-                let err = (((dx > dy)? dx : -dy) / 2);
-                
-                while (1)
-                {
-                    put_pixel(x0, y0);
-
-                    if ((x0 === x1) && (y0 === y1)) break;
-
-                    const e2 = err;
-                    if (e2 > -dx)
-                    {
-                        err -= dy;
-                        x0 += sx;
-                    }
-                    if (e2 < dy)
-                    {
-                        err += dx;
-                        y0 += sy;
-                    }
-                }
-            }
         },
-        
-        // 'Draws' a line between the two given vertices into the given array, such that
-        // e.g. the coordinates 5,8 would be represented as array[8].x === 5. The yOffset
-        // parameter lets you specify a value that'll be subtracted from all y coordinates
-        // (i.e. from indices when writing into the array). Will interpolate the vertices'
-        // u,v coordinates, as well, and place them into array[].u and array[].v.
-        into_array: function(vert1 = Rngon.vertex(),
-                             vert2 = Rngon.vertex(),
-                             array = [],
-                             yOffset = 0)
+
+        distanceBetween: function(x1, y1, x2, y2)
         {
-            yOffset = Math.floor(yOffset);
-
-            let x0 = Math.floor(vert1.x);
-            let y0 = Math.floor(vert1.y);
-            const x1 = Math.floor(vert2.x);
-            const y1 = Math.floor(vert2.y);
-
-            Rngon.assert && (!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1))
-                         || Rngon.throw("Invalid vertex coordinates for line-drawing.");
-
-            const lineLength = distanceBetween(x0, y0, x1, y1);
-
-            // If true, we won't touch non-null elements in the array. Useful in preventing certain
-            // edge rendering errors.
-            const noOverwrite = (y1 <= y0);
-
-            // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
-            {
-                let dx = Math.abs(x1 - x0);
-                let dy = Math.abs(y1 - y0);
-                const sx = ((x0 < x1)? 1 : -1);
-                const sy = ((y0 < y1)? 1 : -1); 
-                let err = (((dx > dy)? dx : -dy) / 2);
-                
-                while (1)
-                {
-                    // Mark the pixel into the array.
-                    {
-                        // Interpolate the u,v coordinates.
-                        const l = (distanceBetween(x1, y1, x0, y0) / (lineLength||1));
-                        const u = Rngon.lerp(vert2.u, vert1.u, l);
-                        const v = Rngon.lerp(vert2.v, vert1.v, l);
-
-                        const pixel = {x:x0, u, v:(1-v)};
-
-                        if (noOverwrite)
-                        {
-                            if (array[y0 - yOffset] == null) array[y0 - yOffset] = pixel;
-                        }
-                        else array[y0 - yOffset] = pixel;
-                    }
-                    
-                    if ((x0 === x1) && (y0 === y1)) break;
-
-                    const e2 = err;
-                    if (e2 > -dx)
-                    {
-                        err -= dy;
-                        x0 += sx;
-                    }
-                    if (e2 < dy)
-                    {
-                        err += dx;
-                        y0 += sy;
-                    }
-                }
-            }
-
-            function distanceBetween(x1, y1, x2, y2)
-            {
-                return Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));
-            }
-        },
+            return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        }
     });
 })();
 /*
@@ -976,225 +920,393 @@ Rngon.matrix44 = (()=>
 
 "use strict";
 
-// Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
-Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], renderWidth, renderHeight)
+// Rasterizes into the internal pixel buffer all n-gons currently stored in the internal n-gon cache.
+Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
-    Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
-    Rngon.assert && ((renderWidth > 0) && (renderHeight > 0))
-                 || Rngon.throw("The transform surface can't have zero width or height.");
+    const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.buffer : null);
+    const renderWidth = Rngon.internalState.pixelBuffer.width;
+    const renderHeight = Rngon.internalState.pixelBuffer.height;
 
-    ngons.forEach((ngon)=>
+    const vertexSorters =
     {
-        // Deal with n-gons that have fewer than 3 vertices.
-        switch (ngon.vertices.length)
+        verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
+        verticalDescending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y > vertB.y)? -1 : 1))
+    }
+
+    // Rasterize the n-gons.
+    for (let n = 0; n < Rngon.internalState.transformedNgonsCache.numActiveNgons; n++)
+    {
+        const ngon = Rngon.internalState.transformedNgonsCache.ngons[n];
+
+        // In theory, we should never receive n-gons that have no vertices, but let's check
+        // to make sure.
+        if (ngon.vertices.length <= 0)
         {
-            case 0: return;
-
-            // A single point.
-            case 1:
-            {
-                const idx = ((Math.floor(ngon.vertices[0].x) + Math.floor(ngon.vertices[0].y) * renderWidth) * 4);
-                pixelBuffer[idx + 0] = ngon.material.color.red;
-                pixelBuffer[idx + 1] = ngon.material.color.green;
-                pixelBuffer[idx + 2] = ngon.material.color.blue;
-                pixelBuffer[idx + 3] = ngon.material.color.alpha;
-
-                // Move on to the next iteration in the forEach() chain.
-                return;
-            }
-
-            // A line segment.
-            case 2:
-            {
-                Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1],
-                                                  pixelBuffer, renderWidth, renderHeight,
-                                                  ngon.material.color)
-                return;
-            }
-
-            // If the ngon has more than 2 vertices, fall through to the code below the switch block.
-            default: break;
+            continue;
         }
 
-        // Find which of the ngon's vertices form the ngon's left side and which the right.
-        // With that information, we can then fill in the horizontal pixel spans between them.
-        // The vertices will be arranged such that the first entry in the 'left' list will be the
-        // ngon's top-most (lowest y) vertex, and entries after that successively higher in y.
-        // For the 'right' list, the first entry will be the ngon's bottom-most vertex, and
-        // entries following successively lower in y. In other words, by tracing the vertices
-        // first through 'left' and then 'right', you end up with an anti-clockwise loop around
-        // the ngon.
-        const verts = ngon.vertices;
-        const leftVerts = [];
-        const rightVerts = [];
+        // Handle n-gons that constitute points and lines.
+        /// TODO: Add depth and alpha testing for points and lines.
+        if (ngon.vertices.length === 1)
         {
-            // Sort the vertices by height (i.e. by increasing y).
-            verts.sort((vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)));
-            const topVert = verts[0];
-            const bottomVert = verts[verts.length-1];
+            const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
+                
+            pixelBuffer[idx + 0] = ngon.material.color.red;
+            pixelBuffer[idx + 1] = ngon.material.color.green;
+            pixelBuffer[idx + 2] = ngon.material.color.blue;
+            pixelBuffer[idx + 3] = ngon.material.color.alpha;
 
-            // The left side will always start with the top-most vertex, and the right side with
-            // the bottom-most vertex.
-            leftVerts.push(topVert);
-            rightVerts.push(bottomVert);
+            continue;
+        }
+        else if (ngon.vertices.length === 2)
+        {
+            Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], ngon.material.color, Rngon.internalState.useDepthBuffer);
 
-            // Trace a line along x,y between the top-most vertex and the bottom-most vertex; and for
-            // the two intervening vertices, find whether they're to the left or right of that line on
-            // x. Being on the left side of that line means the vertex is on the ngon's left side,
-            // and same for the right side.
-            for (let i = 1; i < (verts.length - 1); i++)
-            {
-                const lr = Rngon.lerp(topVert.x, bottomVert.x, ((verts[i].y - topVert.y) / (bottomVert.y - topVert.y)));
-                ((verts[i].x >= lr)? rightVerts : leftVerts).push(verts[i]);
-            }
-
-            // Sort the two sides' vertices so that we can trace them anti-clockwise starting from the top,
-            // going down to the bottom vertex on the left side, and then back up to the top vertex along
-            // the right side.
-            leftVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1)));
-            rightVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y > b.y)? -1 : 1)));
-
-            Rngon.assert && ((leftVerts.length !== 0) && (rightVerts.length !== 0))
-                         || Rngon.throw("Expected each side list to have at least one vertex.");
-            Rngon.assert && ((leftVerts.length + rightVerts.length) === verts.length)
-                         || Rngon.throw("Vertices appear to have gone missing.");
+            continue;
         }
 
-        // Create an array for each edge, where the index represents the y coordinate and the
-        // value is the x coordinates at that y (e.g. the coordinates 5,8 would be represented
-        // as array[8] === 5).
-        /// CLEANUP: The code for this is a bit unsightly.
-        const leftEdge = [];
-        const rightEdge = [];
+        // Handle n-gons with 3 or more vertices.
         {
-            // Left edge.
-            let prevVert = leftVerts[0];
-            for (let l = 1; l < leftVerts.length; l++)
-            {
-                Rngon.line_draw.into_array(prevVert, leftVerts[l], leftEdge, verts[0].y);
-                prevVert = leftVerts[l];
-            }
-            Rngon.line_draw.into_array(prevVert, rightVerts[0], leftEdge, verts[0].y);
+            // We'll sort the n-gon's vertices into those on its left side and those on its
+            // right side.
+            const leftVerts = [];
+            const rightVerts = [];
+
+            // Then we'll organize the sorted vertices into edges (lines between given two
+            // vertices). Once we've got the edges figured out, we can render the n-gon by filling
+            // in the spans between its edges.
+            const leftEdges = [];
+            const rightEdges = [];
             
-            // Right edge.
-            prevVert = rightVerts[0];
-            for (let r = 1; r < rightVerts.length; r++)
+            // Figure out which of the n-gon's vertices are on its left side and which on the
+            // right. The vertices on both sides will be arranged from smallest Y to largest
+            // Y, i.e. top-to-bottom in screen space. The top-most vertex and the bottom-most
+            // vertex will be shared between the two sides.
             {
-                Rngon.line_draw.into_array(prevVert, rightVerts[r], rightEdge, verts[0].y);
-                prevVert = rightVerts[r];
-            }
-            Rngon.line_draw.into_array(prevVert, leftVerts[0], rightEdge, verts[0].y);
-        }
-
-        // Draw the ngon.
-        {
-            // Solid/textured fill.
-            if (ngon.material.hasSolidFill)
-            {
-                const polyYOffset = Math.floor(verts[0].y);
-                const polyHeight = leftEdge.length;
-
-                for (let y = 0; y < polyHeight; y++)
+                // Generic algorithm for n-sided convex polygons.
                 {
-                    const rowWidth = (rightEdge[y].x - leftEdge[y].x);
-                    if (rowWidth <= 0) continue;
+                    // Sort the vertices by height from smallest Y to largest Y.
+                    ngon.vertices.sort(vertexSorters.verticalAscending);
 
-                    for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
+                    const topVert = ngon.vertices[0];
+                    const bottomVert = ngon.vertices[ngon.vertices.length-1];
+
+                    leftVerts.push(topVert);
+                    rightVerts.push(topVert);
+
+                    // Trace a line along XY between the top-most vertex and the bottom-most vertex;
+                    // and for the intervening vertices, find whether they're to the left or right of
+                    // that line on X. Being on the left means the vertex is on the n-gon's left side,
+                    // otherwise it's on the right side.
+                    for (let i = 1; i < (ngon.vertices.length - 1); i++)
                     {
-                        const px = leftEdge[y].x;
-                        const py = (y + polyYOffset);
-                        const idx = ((px + py * renderWidth) * 4);
-                        
-                        // Solid fill.
-                        if (ngon.material.texture == null)
+                        const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
+                        ((ngon.vertices[i].x >= lr)? rightVerts : leftVerts).push(ngon.vertices[i]);
+                    }
+
+                    leftVerts.push(bottomVert);
+                    rightVerts.push(bottomVert);
+                }
+            }
+
+            // Create edges out of the vertices.
+            {
+                const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
+
+                const add_edge = (vert1, vert2, isLeftEdge, )=>
+                {
+                    const startY = Math.min((renderHeight - 1), Math.max(0, Math.round(vert1.y)));
+                    const endY = Math.min((renderHeight - 1), Math.max(0, Math.round(vert2.y)));
+                    
+                    // Ignore horizontal edges.
+                    if ((endY - startY) === 0) return;
+
+                    const edgeHeight = (endY - startY);
+
+                    const startX = Math.min((renderWidth - 1), Math.max(0, Math.round(vert1.x)));
+                    const endX = Math.min((renderWidth - 1), Math.max(0, Math.ceil(vert2.x)));
+                    const deltaX = ((endX - startX) / edgeHeight);
+
+                    const startDepth = vert1.z;
+                    const deltaDepth = ((vert2.z - vert1.z) / edgeHeight);
+
+                    const u1 = (ngon.material.texture? vert1.u : 1);
+                    const v1 = (ngon.material.texture? vert1.v : 1);
+                    const u2 = (ngon.material.texture? vert2.u : 1);
+                    const v2 = (ngon.material.texture? vert2.v : 1);
+
+                    const startU = interpolatePerspective? (u1 / vert1.w)
+                                                         : u1;
+                    const deltaU = interpolatePerspective? (((u2 / vert2.w) - (u1 / vert1.w)) / edgeHeight)
+                                                         : ((u2 - u1) / edgeHeight);
+
+                    const startV = interpolatePerspective? (v1 / vert1.w)
+                                                         : v1;
+                    const deltaV = interpolatePerspective? (((v2 / vert2.w) - (v1 / vert1.w)) / edgeHeight)
+                                                         : ((v2 - v1) / edgeHeight);
+
+                    const startUVW = interpolatePerspective? (1 / vert1.w)
+                                                           : 1;
+                    const deltaUVW = interpolatePerspective? (((1 / vert2.w) - (1 / vert1.w)) / edgeHeight)
+                                                           : 0;
+
+                    const edge =
+                    {
+                        startY, endY,
+                        startX, deltaX,
+                        startDepth, deltaDepth,
+                        startU, deltaU,
+                        startV, deltaV,
+                        startUVW, deltaUVW,
+                    }
+
+                    if (isLeftEdge) leftEdges.push(edge);
+                    else rightEdges.push(edge);
+                };
+
+                for (let l = 1; l < leftVerts.length; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
+                for (let r = 1; r < rightVerts.length; r++) add_edge(rightVerts[r-1], rightVerts[r], false);
+            }
+
+            // Draw the n-gon. On each horizontal raster line, there will be two edges: left and right.
+            // We'll render into the pixel buffer each horizontal span that runs between the two edges.
+            {
+                let curLeftEdgeIdx = 0;
+                let curRightEdgeIdx = 0;
+                let leftEdge = leftEdges[curLeftEdgeIdx];
+                let rightEdge = rightEdges[curRightEdgeIdx];
+                
+                if (!leftEdges.length || !rightEdges.length) continue;
+
+                // Note: We assume the n-gon's vertices to be sorted by increasing Y.
+                const ngonStartY = leftEdges[0].startY;
+                const ngonEndY = leftEdges[leftEdges.length-1].endY;
+                
+                // Rasterize the n-gon in horizontal pixel spans over its height.
+                for (let y = ngonStartY; y < ngonEndY; y++)
+                {
+                    const spanStartX = Math.min((renderWidth - 1), Math.max(0, Math.round(leftEdge.startX)));
+                    const spanEndX = Math.min((renderWidth - 1), Math.max(0, Math.round(rightEdge.startX)));
+                    const spanWidth = ((spanEndX - spanStartX) + 1);
+
+                    if (spanWidth > 0)
+                    {
+                        // We'll interpolate these parameters across the span.
+                        const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
+                        let iplDepth = (leftEdge.startDepth - deltaDepth);
+
+                        const deltaU = ((rightEdge.startU - leftEdge.startU) / spanWidth);
+                        let iplU = (leftEdge.startU - deltaU);
+
+                        const deltaV = ((rightEdge.startV - leftEdge.startV) / spanWidth);
+                        let iplV = (leftEdge.startV - deltaV);
+
+                        const deltaUVW = ((rightEdge.startUVW - leftEdge.startUVW) / spanWidth);
+                        let iplUVW = (leftEdge.startUVW - deltaUVW);
+
+                        // Assumes the pixel buffer consists of 4 elements (RGBA) per pixel.
+                        let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
+
+                        // Assumes the depth buffer consists of 1 element per pixel.
+                        let depthBufferIdx = (pixelBufferIdx / 4);
+
+                        // Draw the span into the pixel buffer.
+                        for (let x = spanStartX; x < spanEndX; x++)
                         {
-                            pixelBuffer[idx + 0] = ngon.material.color.red;
-                            pixelBuffer[idx + 1] = ngon.material.color.green;
-                            pixelBuffer[idx + 2] = ngon.material.color.blue;
-                            pixelBuffer[idx + 3] = ngon.material.color.alpha;
-                        }
-                        // Textured fill.
-                        else
-                        {
-                            let u = 0, v = 0;
-                            switch (ngon.material.textureMapping)
+                            // Update values that're interpolated horizontally along the span.
+                            iplDepth += deltaDepth;
+                            iplU += deltaU;
+                            iplV += deltaV;
+                            iplUVW += deltaUVW;
+                            pixelBufferIdx += 4;
+                            depthBufferIdx++;
+
+                            // Depth test.
+                            if (depthBuffer[depthBufferIdx] <= iplDepth) continue;
+
+                            // Solid fill.
+                            if (!ngon.material.texture)
                             {
-                                case "affine":
+                                // Alpha test. If the pixel is fully opaque, draw it; otherwise, skip it.
+                                if (ngon.material.color.alpha !== 255) continue;
+
+                                pixelBuffer[pixelBufferIdx + 0] = ngon.material.color.red;
+                                pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
+                                pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
+                                pixelBuffer[pixelBufferIdx + 3] = ngon.material.color.alpha;
+                                depthBuffer[depthBufferIdx] = iplDepth;
+                            }
+                            // Textured fill.
+                            else
+                            {
+                                let u, v;
+
+                                switch (ngon.material.textureMapping)
                                 {
-                                    u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.material.texture.width-0.001));
-                                    v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.material.texture.height-0.001));
+                                    // Affine mapping for power-of-two textures.
+                                    case "affine":
+                                    {
+                                        u = (iplU / iplUVW);
+                                        v = (iplV / iplUVW);
 
-                                    // Wrap with repetition.
-                                    /// FIXME: Doesn't wrap correctly.
-                                    u %= ngon.material.texture.width;
-                                    v %= ngon.material.texture.height;
+                                        switch (ngon.material.uvWrapping)
+                                        {
+                                            case "clamp":
+                                            {
+                                                const signU = Math.sign(u);
+                                                const signV = Math.sign(v);
+                                                const upperLimit = (1 - Number.EPSILON);
 
-                                    break;
+                                                u = Math.max(0, Math.min(Math.abs(u), upperLimit));
+                                                v = Math.max(0, Math.min(Math.abs(v), upperLimit));
+
+                                                // Negative UV coordinates flip the texture.
+                                                if (signU === -1) u = (upperLimit - u);
+                                                if (signV === -1) v = (upperLimit - v);
+
+                                                u *= ngon.material.texture.width;
+                                                v *= ngon.material.texture.height;
+
+                                                break;
+                                            }
+                                            case "repeat":
+                                            {
+                                                u -= Math.floor(u);
+                                                v -= Math.floor(v);
+
+                                                u *= ngon.material.texture.width;
+                                                v *= ngon.material.texture.height;
+
+                                                // Modulo for power-of-two. This will also flip the texture for
+                                                // negative UV coordinates.
+                                                u = (u & (ngon.material.texture.width - 1));
+                                                v = (v & (ngon.material.texture.height - 1));
+
+                                                break;
+                                            }
+                                            default: Rngon.throw("Unrecognized UV wrapping mode."); break;
+                                        }
+
+                                        break;
+                                    }
+                                    // Affine mapping for wrapping non-power-of-two textures.
+                                    /// FIXME: This implementation is a bit kludgy.
+                                    /// TODO: Add clamped UV wrapping mode (we can just use the one for
+                                    /// power-of-two textures).
+                                    case "affine-npot":
+                                    {
+                                        u = (iplU / iplUVW);
+                                        v = (iplV / iplUVW);
+
+                                        u *= ngon.material.texture.width;
+                                        v *= ngon.material.texture.height;
+                
+                                        // Wrap with repetition.
+                                        /// FIXME: Why do we need to test for UV < 0 even when using positive
+                                        /// but tiling UV coordinates? Doesn't render properly unless we do.
+                                        if ((u < 0) ||
+                                            (v < 0) ||
+                                            (u >= ngon.material.texture.width) ||
+                                            (v >= ngon.material.texture.height))
+                                        {
+                                            const uWasNeg = (u < 0);
+                                            const vWasNeg = (v < 0);
+                
+                                            u = (Math.abs(u) % ngon.material.texture.width);
+                                            v = (Math.abs(v) % ngon.material.texture.height);
+                
+                                            if (uWasNeg) u = (ngon.material.texture.width - u);
+                                            if (vWasNeg) v = (ngon.material.texture.height - v);
+                                        }
+                
+                                        break;
+                                    }
+                                    // Screen-space UV mapping, as used e.g. in the DOS game Rally-Sport.
+                                    case "ortho":
+                                    {
+                                        const ngonHeight = (ngonEndY - ngonStartY);
+
+                                        // Pixel coordinates relative to the polygon.
+                                        const ngonX = (x - spanStartX + 1);
+                                        const ngonY = (y - ngonStartY);
+
+                                        u = (ngonX * ((ngon.material.texture.width - 0.001) / spanWidth));
+                                        v = (ngonY * ((ngon.material.texture.height - 0.001) / ngonHeight));
+
+                                        // The texture image is flipped, so we need to flip V as well.
+                                        v = (ngon.material.texture.height - v);
+
+                                        break;
+                                    }
+                                    default: Rngon.throw("Unknown texture-mapping mode."); break;
                                 }
-                                case "ortho":
-                                {
-                                    u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
-                                    v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight-1)||1));
 
-                                    break;
-                                }
-                                default: Rngon.throw("Unknown texture-mapping mode."); break;
+                                const texel = ngon.material.texture.pixels[(~~u) + (~~v) * ngon.material.texture.width];
+
+                                // Verify that the texel isn't out of bounds.
+                                if (!texel) continue;
+
+                                // Alpha test. If the pixel is fully opaque, draw it; otherwise, skip it.
+                                if (texel.alpha !== 255) continue;
+
+                                pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red);
+                                pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
+                                pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
+                                pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
+                                depthBuffer[depthBufferIdx] = iplDepth;
                             }
 
-                            const texelIdx = ((~~u) + (~~v) * ngon.material.texture.width);
-
-                            // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                            if (ngon.material.texture.pixels[texelIdx].alpha === 255)
+                            for (let b = 0; b < auxiliaryBuffers.length; b++)
                             {
-                                pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx].red   * ngon.material.color.unitRange.red);
-                                pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx].green * ngon.material.color.unitRange.green);
-                                pixelBuffer[idx + 2] = (ngon.material.texture.pixels[texelIdx].blue  * ngon.material.color.unitRange.blue);
-                                pixelBuffer[idx + 3] = (ngon.material.texture.pixels[texelIdx].alpha * ngon.material.color.unitRange.alpha);
-                            }
-                        }
-
-                        for (let b = 0; b < auxiliaryBuffers.length; b++)
-                        {
-                            if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
-                            {
-                                // Buffers are expected to consist of one element per pixel.
-                                auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
+                                if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                                {
+                                    // Buffers are expected to consist of one element per pixel.
+                                    auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
+                                }
                             }
                         }
                     }
-                }
-            }
 
-            // Draw a wireframe around any ngons that wish for one.
-            if (ngon.material.hasWireframe)
-            {
-                const putline = (vert1, vert2)=>
-                {
-                    Rngon.line_draw.into_pixel_buffer(vert1, vert2,
-                                                      pixelBuffer, renderWidth, renderHeight,
-                                                      ngon.material.wireframeColor)
-                };
+                    // Update values that're interpolated vertically along the edges.
+                    {
+                        leftEdge.startX += leftEdge.deltaX;
+                        leftEdge.startDepth += leftEdge.deltaDepth;
+                        leftEdge.startU += leftEdge.deltaU;
+                        leftEdge.startV += leftEdge.deltaV;
+                        leftEdge.startUVW += leftEdge.deltaUVW;
 
-                // Left edge.
-                let prevVert = leftVerts[0];
-                for (let l = 1; l < leftVerts.length; l++)
-                {
-                    putline(prevVert, leftVerts[l]);
-                    prevVert = leftVerts[l];
-                }
-                putline(prevVert, rightVerts[0]);
+                        rightEdge.startX += rightEdge.deltaX;
+                        rightEdge.startDepth += rightEdge.deltaDepth;
+                        rightEdge.startU += rightEdge.deltaU;
+                        rightEdge.startV += rightEdge.deltaV;
+                        rightEdge.startUVW += rightEdge.deltaUVW;
+                    }
 
-                // Right edge.
-                prevVert = rightVerts[0];
-                for (let r = 1; r < rightVerts.length; r++)
-                {
-                    putline(prevVert, rightVerts[r]);
-                    prevVert = rightVerts[r];
+                    // We can move onto the next edge when we're at the end of the current one.
+                    if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
+                    if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
                 }
-                putline(prevVert, leftVerts[0]);
+
+                // Draw a wireframe around any n-gons that wish for one.
+                if (Rngon.internalState.showGlobalWireframe ||
+                    ngon.material.hasWireframe)
+                {
+                    for (let l = 1; l < leftVerts.length; l++)
+                    {
+                        Rngon.line_draw.into_pixel_buffer(leftVerts[l-1], leftVerts[l], ngon.material.wireframeColor, Rngon.internalState.useDepthBuffer);
+                    }
+
+                    for (let r = 1; r < rightVerts.length; r++)
+                    {
+                        Rngon.line_draw.into_pixel_buffer(rightVerts[r-1], rightVerts[r], ngon.material.wireframeColor, Rngon.internalState.useDepthBuffer);
+                    }
+                }
             }
         }
-    });
+    }
+
+    return;
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1215,34 +1327,15 @@ Rngon.render = function(canvasElementId,
     {
         renderWidth: 0,
         renderHeight: 0,
-        performance:
-        {
-            // How long we took to perform certain actions. All values are in milliseconds.
-            timingMs:
-            {
-                // How long we took to initialize the renderer.
-                initialization: performance.now(),
 
-                // How long we took to transform all the supplied n-gons into screen space.
-                transformation: 0,
+        // The total count of n-gons rendered. May be smaller than the number of n-gons
+        // originally submitted for rendering, due to visibility culling etc. performed
+        // during the rendering process.
+        numNgonsRendered: 0,
 
-                // How long we took to rasterize the supplied n-gons onto the target canvas.
-                rasterization: 0,
-
-                // How much time this function took, in total.
-                total: performance.now(),
-            }
-        }
+        // The total time this call to render() took, in milliseconds.
+        totalRenderTimeMs: performance.now(),
     }
-
-    // Confirm that the default render options are valid.
-    Rngon.assert && (typeof Rngon.render.defaultOptions.cameraPosition !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.scale !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.depthSort !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.hibernateWhenNotOnScreen !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.fov !== "undefined")
-                 || Rngon.throw("The default options object for render() is missing required properties.");
 
     // Combine the default render options with the user-supplied ones.
     options = Object.freeze(
@@ -1251,69 +1344,42 @@ Rngon.render = function(canvasElementId,
         ...options
     });
 
-    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov, options.auxiliaryBuffers);
-
-    callMetadata.renderWidth = renderSurface.width;
-    callMetadata.renderHeight = renderSurface.height;
-
-    callMetadata.performance.timingMs.initialization = (performance.now() - callMetadata.performance.timingMs.initialization);
+    // Modify any internal render parameters based on the user's options.
+    Rngon.internalState.useDepthBuffer = true;
+    Rngon.internalState.showGlobalWireframe = (options.globalWireframe === true);
+    Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
+    Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
     {
+        const renderSurface = Rngon.screen(canvasElementId,
+                                           Rngon.ngon_filler,
+                                           Rngon.ngon_transformer,
+                                           options.scale,
+                                           options.fov,
+                                           options.nearPlane,
+                                           options.farPlane,
+                                           options.auxiliaryBuffers);
+
+        callMetadata.renderWidth = renderSurface.width;
+        callMetadata.renderHeight = renderSurface.height;
+
+        prepare_ngon_cache(Rngon.internalState.transformedNgonsCache, meshes);
+    
+        transform_ngons(meshes, renderSurface, options.cameraPosition, options.cameraDirection);
+        mark_npot_textures(Rngon.internalState.transformedNgonsCache);
+        depth_sort_ngons(Rngon.internalState.transformedNgonsCache.ngons, options.depthSort);
+
         renderSurface.wipe_clean();
+        renderSurface.rasterize_ngon_cache();
 
-        // Transform.
-        callMetadata.performance.timingMs.transformation = performance.now();
-        const transformedNgons = [];
-        {
-            const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
-                                                                                          options.cameraDirection.y,
-                                                                                          options.cameraDirection.z),
-                                                                    Rngon.matrix44.translate(-options.cameraPosition.x,
-                                                                                             -options.cameraPosition.y,
-                                                                                             -options.cameraPosition.z));
-
-            meshes.forEach(mesh=>
-            {
-                const meshVerts = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
-                renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix(), cameraMatrix, options.nearPlaneDistance);
-
-                transformedNgons.push(...meshVerts);
-            });
-
-            // Apply depth sorting to the transformed ngons.
-            switch (options.depthSort)
-            {
-                case "none": break;
-
-                // Painter's algorithm, i.e. sort by depth.
-                case "painter":
-                {
-                    transformedNgons.sort((ngonA, ngonB)=>
-                    {
-                        const a = (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length);
-                        const b = (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length);
-
-                        return ((a === b)? 0 : ((a < b)? 1 : -1));
-                    });
-
-                    break;
-                }
-                
-                default: Rngon.throw("Unknown depth sort option."); break;
-            }
-        }
-        callMetadata.performance.timingMs.transformation = (performance.now() - callMetadata.performance.timingMs.transformation)
-
-        // Rasterize.
-        callMetadata.performance.timingMs.rasterization = performance.now();
-        renderSurface.draw_ngons(transformedNgons);
-        callMetadata.performance.timingMs.rasterization = (performance.now() - callMetadata.performance.timingMs.rasterization);
-
-        callMetadata.performance.timingMs.total = (performance.now() - callMetadata.performance.timingMs.total);
-        return callMetadata;
+        callMetadata.numNgonsRendered = Rngon.internalState.transformedNgonsCache.numActiveNgons;
     }
+
+    callMetadata.totalRenderTimeMs = (performance.now() - callMetadata.totalRenderTimeMs);
+
+    return callMetadata;
 
     // Returns true if any horizontal part of the render surface DOM container is within the page's
     // visible region (accounting for the user having possibly scrolled the page up/down to cause
@@ -1322,22 +1388,144 @@ Rngon.render = function(canvasElementId,
     {
         const viewHeight = window.innerHeight;
         const containerRect = document.getElementById(canvasElementId).getBoundingClientRect();
-        Rngon.assert && (containerRect != null) || Rngon.throw("Couldn't find the canvas container element.");
+        
+        Rngon.assert && (containerRect != null)
+                     || Rngon.throw("Couldn't find the canvas container element.");
 
         return Boolean((containerRect.top > -containerRect.height) &&
                        (containerRect.top < viewHeight));
     }
+
+    // Creates or resizes the n-gon cache (where we place transformed n-gons for rendering) to fit
+    // at least the number of n-gons contained in the array of meshes we've been asked to render.
+    function prepare_ngon_cache(ngonCache = {}, meshes = [])
+    {
+        Rngon.assert && (typeof ngonCache === "object")
+                     && (meshes instanceof Array)
+                     || Rngon.throw("Invalid arguments to n-gon cache initialization.");
+
+        const sceneNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
+
+        if (!ngonCache ||
+            !ngonCache.ngons.length ||
+            (ngonCache.ngons.length < sceneNgonCount))
+        {
+            const lengthDelta = (sceneNgonCount - ngonCache.ngons.length);
+
+            ngonCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
+        }
+
+        ngonCache.numActiveNgons = 0;
+
+        return;
+    }
+
+    function transform_ngons(meshes = [], renderSurface, cameraPosition = Rngon.vector3(), cameraDirection = Rngon.vector3())
+    {
+        const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(cameraDirection.x,
+                                                                                      cameraDirection.y,
+                                                                                      cameraDirection.z),
+                                                                Rngon.matrix44.translate(-cameraPosition.x,
+                                                                                         -cameraPosition.y,
+                                                                                         -cameraPosition.z));
+
+        for (const mesh of meshes)
+        {
+            renderSurface.transform_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, cameraPosition);
+        };
+
+        return;
+    }
+
+    // Mark any non-power-of-two affine-mapped faces as using the non-power-of-two affine
+    // mapper, as the default affine mapper expects textures to be power-of-two.
+    function mark_npot_textures(ngonCache = {})
+    {
+        for (let i = 0; i < ngonCache.numActiveNgons; i++)
+        {
+            const ngon = ngonCache.ngons[i];
+
+            if (ngon.material.texture &&
+                ngon.material.textureMapping === "affine")
+            {
+                const widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
+                const heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
+
+                if (ngon.material.texture.width === 0) widthIsPOT = false;
+                if (ngon.material.texture.height === 0) heightIsPOT = false;
+
+                if (!widthIsPOT ||
+                    !heightIsPOT)
+                {
+                    ngon.material.textureMapping = "affine-npot";
+                }
+            }
+        }
+
+        return;
+    }
+
+    // Apply depth sorting to the transformed n-gons (which are now stored in the internal
+    // n-gon cache).
+    function depth_sort_ngons(ngons = [], depthSortingMode = "")
+    {
+        switch (depthSortingMode)
+        {
+            case "none": break;
+
+            // Painter's algorithm. Sort back-to-front; i.e. so that n-gons furthest from the camera
+            // will be first in the list.
+            case "painter":
+            {
+                ngons.sort((ngonA, ngonB)=>
+                {
+                    // Separate inactive n-gons (which are to be ignored when rendering the current
+                    // frame) from the n-gons we're intended to render.
+                    const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
+                    const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
+
+                    return ((a === b)? 0 : ((a < b)? 1 : -1));
+                });
+
+                break;
+            }
+            
+            // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
+            // list. Together with the depth buffer, this allows early rejection of obscured polygons.
+            default:
+            {
+                ngons.sort((ngonA, ngonB)=>
+                {
+                    // Separate inactive n-gons (which are to be ignored when rendering the current
+                    // frame) from the n-gons we're intended to render.
+                    const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
+                    const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
+
+                    return ((a === b)? 0 : ((a > b)? 1 : -1));
+                });
+
+                break;
+            }
+        }
+
+        return;
+    }
 };
+
 Rngon.render.defaultOptions = 
 {
     cameraPosition: Rngon.vector3(0, 0, 0),
     cameraDirection: Rngon.vector3(0, 0, 0),
     scale: 1,
     fov: 43,
-    depthSort: "painter",
+    nearPlane: 1,
+    farPlane: 1000,
+    depthSort: "", // Use default.
+    clipToViewport: true,
+    globalWireframe: false,
     hibernateWhenNotOnScreen: true,
+    perspectiveCorrectTexturing: false,
     auxiliaryBuffers: [],
-    nearPlaneDistance: false,
 };
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1347,30 +1535,80 @@ Rngon.render.defaultOptions =
 
 "use strict";
 
-// Transforms the given n-gons into screen space for rendering.
-Rngon.ngon_transformer = function(ngons = [], renderWidth, renderHeight, screenSpaceMatrix = [], nearPlaneDistance)
+// Transforms the given n-gons into screen space for rendering. The transformed n-gons
+// are stored in the internal n-gon cache.
+Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceMatrix = [], cameraPos)
 {
-    ngons.forEach(ngon=>
-    {
-        ngon.transform(screenSpaceMatrix);
-        ngon.clip_to_near_plane(nearPlaneDistance);
-        ngon.perspective_divide();
-        ngon.clip_to_viewport(renderWidth, renderHeight);
-    });
+    let viewVector = {x:0.0, y:0.0, z:0.0};
+    const transformedNgonsCache = Rngon.internalState.transformedNgonsCache;
 
-    // Remove n-gons that have no vertices (e.g. due to all of them having been all clipped away).
+    for (const ngon of ngons)
     {
-        let cur = 0;
-        
-        for (let i = 0; i < ngons.length; i++)
+        // Backface culling.
+        if (!ngon.material.isTwoSided)
         {
-            if (ngons[i].vertices.length)
+            viewVector.x = (ngon.vertices[0].x - cameraPos.x);
+            viewVector.y = (ngon.vertices[0].y - cameraPos.y);
+            viewVector.z = (ngon.vertices[0].z - cameraPos.z);
+
+            if (ngon.normal.dot(viewVector) >= 0)
             {
-                ngons[cur++] = ngons[i];
+                continue;
             }
         }
 
-        ngons.length = cur;
+        // Copy the ngon into the internal n-gon cache, so we can operate on it later in the
+        // render pipeline without destroying the original data.
+        const cachedNgon = transformedNgonsCache.ngons[transformedNgonsCache.numActiveNgons++];
+        {
+            cachedNgon.vertices.length = 0;
+
+            // Copy by value.
+            for (let v = 0; v < ngon.vertices.length; v++)
+            {
+                cachedNgon.vertices[v] = Rngon.vertex(ngon.vertices[v].x,
+                                                      ngon.vertices[v].y,
+                                                      ngon.vertices[v].z,
+                                                      ngon.vertices[v].u,
+                                                      ngon.vertices[v].v,
+                                                      ngon.vertices[v].w,);
+            }
+
+            // Copy by value.
+            cachedNgon.material = {...ngon.material};
+
+            // Copy by reference.
+            cachedNgon.normal = ngon.normal;
+
+            cachedNgon.isActive = true;
+        }
+
+        // Clipping.
+        cachedNgon.transform(clipSpaceMatrix);
+        {
+            if (Rngon.internalState.applyViewportClipping)
+            {
+                cachedNgon.clip_to_viewport();
+
+                // If there are no vertices left after clipping, it means this n-gon is not visible
+                // on the screen at all. We can just ignore it.
+                if (!cachedNgon.vertices.length)
+                {
+                    transformedNgonsCache.numActiveNgons--;
+                    continue;
+                }
+            }
+        }
+
+        cachedNgon.transform(screenSpaceMatrix);
+        cachedNgon.perspective_divide();
+    };
+
+    // Mark as inactive any cached n-gons that we didn't touch, so the renderer knows
+    // to ignore them for the current frame.
+    for (let i = transformedNgonsCache.numActiveNgons; i < transformedNgonsCache.ngons.length; i++)
+    {
+        transformedNgonsCache.ngons[i].isActive = false;
     }
 
     return;
@@ -1442,13 +1680,20 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
                  || Rngon.throw("The texture's pixel array size doesn't match its width and height.");
 
     // Convert the raw pixel data into objects of the form {red, green, blue, alpha}.
+    // Note: We also flip the texture on the Y axis, to counter the fact that textures
+    // become flipped on Y during rendering (i.e. we pre-emptively un-flip it, here).
     const pixelArray = [];
-    for (let i = 0; i < data.pixels.length; i += numColorChannels)
+    for (let y = 0; y < data.height; y++)
     {
-        pixelArray.push({red:   data.pixels[i+0],
-                         green: data.pixels[i+1],
-                         blue:  data.pixels[i+2],
-                         alpha: data.pixels[i+3]});
+        for (let x = 0; x < data.width; x++)
+        {
+            const idx = ((x + (data.height - y - 1) * data.width) * numColorChannels);
+
+            pixelArray.push({red:   data.pixels[idx + 0],
+                             green: data.pixels[idx + 1],
+                             blue:  data.pixels[idx + 2],
+                             alpha: data.pixels[idx + 3]});
+        }
     }
         
     const publicInterface = Object.freeze(
@@ -1493,6 +1738,8 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
                         scaleFactor = 1,
                         fov = 43,
+                        nearPlane = 1,
+                        farPlane = 1000,
                         auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
@@ -1509,12 +1756,25 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
     canvasElement.setAttribute("width", screenWidth);
     canvasElement.setAttribute("height", screenHeight);
 
-    const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), 1, 1000);
-    const screenMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
+    const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), nearPlane, farPlane);
+    const screenSpaceMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
 
-    function exposed_render_context()
+    const renderContext = canvasElement.getContext("2d");
+
+    if ((Rngon.internalState.pixelBuffer.width != screenWidth) ||
+        (Rngon.internalState.pixelBuffer.height != screenHeight))
     {
-        return canvasElement.getContext("2d");
+        Rngon.internalState.pixelBuffer = new ImageData(screenWidth, screenHeight);
+    }
+
+    if (Rngon.internalState.useDepthBuffer &&
+        (Rngon.internalState.depthBuffer.width != screenWidth) ||
+        (Rngon.internalState.depthBuffer.height != screenHeight) ||
+        !Rngon.internalState.depthBuffer.buffer.length)
+    {
+        Rngon.internalState.depthBuffer.width = screenWidth;
+        Rngon.internalState.depthBuffer.height = screenHeight;
+        Rngon.internalState.depthBuffer.buffer = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height); 
     }
 
     const publicInterface = Object.freeze(
@@ -1524,34 +1784,34 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
 
         wipe_clean: function()
         {
-            const renderContext = exposed_render_context();
-            renderContext.fillStyle = "transparent";
-            renderContext.fillRect(0, 0, screenWidth, screenHeight);
+            Rngon.internalState.pixelBuffer.data.fill(0);
+
+            if (Rngon.internalState.useDepthBuffer)
+            {
+                Rngon.internalState.depthBuffer.buffer.fill(Rngon.internalState.depthBuffer.clearValue);
+            }
         },
 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
         // Takes as input the ngons to be transformed, an object matrix which contains the object's
-        // transforms, and a camera matrix, which contains the camera's translation and rotation.
-        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], nearPlaneDistance)
+        // transforms, a camera matrix, which contains the camera's translation and rotation, and
+        // a vector containing the camera's raw world position.
+        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], cameraPos)
         {
-            const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
-            const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
-            const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(screenMatrix, clipSpaceMatrix);
+            const viewSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
+            const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, viewSpaceMatrix);
 
-            ngon_transform_f(ngons, screenWidth, screenHeight, screenSpaceMatrix, nearPlaneDistance);
+            ngon_transform_f(ngons, clipSpaceMatrix, screenSpaceMatrix, cameraPos);
         },
 
-        // Draw the given ngons onto this render surface.
-        draw_ngons: function(ngons = [])
+        // Draw all n-gons currently stored in the internal n-gon cache onto the render surface.
+        rasterize_ngon_cache: function()
         {
-            const renderContext = exposed_render_context();
-            const pixelBuffer = renderContext.getImageData(0, 0, screenWidth, screenHeight);
-
-            ngon_fill_f(ngons, pixelBuffer.data, auxiliaryBuffers, screenWidth, screenHeight);
-
-            renderContext.putImageData(pixelBuffer, 0, 0);
+            ngon_fill_f(auxiliaryBuffers);
+            renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
         },
     });
+
     return publicInterface;
 }
 /*
@@ -3601,6 +3861,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
             height: palaHeight,
             pixels: pixels.slice(dataIdx, (dataIdx + palaSize)),
             indices: data.slice(dataIdx, (dataIdx + palaSize)),
+            flipped: "no",
         });
     }
     
@@ -3675,7 +3936,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             height,
             pixels: pixels,
             indices: indices,
-            flipped: "vertical",
+            flipped: "no",
             alpha: true,
         });
     });
@@ -4847,7 +5108,7 @@ Rsed.ui_draw_n = (function()
     // Draws the given set of paletted pixels (each being a value in the range 0..31 in Rally-Sport's
     // palette) of the given dimensions, starting at the x,y screen coordinates and working right/down.
     // If alpha is true, will not draw pixels that have a palette index of 0.
-    function draw_image(pixels = [], mousePick = [], width = 0, height = 0, x = 0, y = 0, alpha = false)
+    function draw_image(pixels = [], mousePick = [], width = 0, height = 0, x = 0, y = 0, alpha = false, flipped = false)
     {
         // Convert from percentages into absolute screen coordinates.
         if (x < 0) x = Math.floor(-x * pixelSurface.width);
@@ -4887,7 +5148,7 @@ Rsed.ui_draw_n = (function()
                 if ((x + cx) < 0) continue;
                 if ((x + cx) >= pixelSurface.width) break;
 
-                const pixel = pixels[cx + cy * width];
+                const pixel = pixels[cx + (flipped? (height - cy - 1) : cy) * width];
                 if (alpha && (pixel === 0)) continue;
 
                 const color = ((typeof pixel === "object")? pixel : Rsed.palette.color(pixel));
@@ -5068,7 +5329,7 @@ Rsed.ui_draw_n = (function()
 
         if (pala != null)
         {
-            draw_image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false);
+            draw_image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false, true);
             draw_string((Rsed.ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
         }
     }
@@ -5213,7 +5474,7 @@ Rsed.ui_draw_n = (function()
                     {
                         for (let px = 0; px < palaWidth; px++)
                         {
-                            const palaTexel = Math.floor(px + py * palaWidth);
+                            const palaTexel = Math.floor(px + (palaHeight - py - 1) * palaWidth);
                             const bufferTexel = Math.floor((Math.floor(x * palaWidth + px) / 2) +
                                                             Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
 
@@ -6192,6 +6453,9 @@ Rsed.core = (function()
                 cameraDirection: Rngon.rotation_vector((isTopdownView? 90 : 21), 0, 0),
                 scale: canvas.scalingFactor,
                 fov: 45,
+                nearPlane: 300,
+                farPlane: 10000,
+                clipToViewport: true,
                 depthSort: "none",
                 auxiliaryBuffers: [{buffer:canvas.mousePickingBuffer, property:"mousePickId"}],
             });

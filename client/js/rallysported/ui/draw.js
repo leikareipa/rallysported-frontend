@@ -45,7 +45,7 @@ Rsed.ui_draw_n = (function()
     // Draws the given set of paletted pixels (each being a value in the range 0..31 in Rally-Sport's
     // palette) of the given dimensions, starting at the x,y screen coordinates and working right/down.
     // If alpha is true, will not draw pixels that have a palette index of 0.
-    function draw_image(pixels = [], mousePick = [], width = 0, height = 0, x = 0, y = 0, alpha = false)
+    function draw_image(pixels = [], mousePick = [], width = 0, height = 0, x = 0, y = 0, alpha = false, flipped = false)
     {
         // Convert from percentages into absolute screen coordinates.
         if (x < 0) x = Math.floor(-x * pixelSurface.width);
@@ -85,7 +85,7 @@ Rsed.ui_draw_n = (function()
                 if ((x + cx) < 0) continue;
                 if ((x + cx) >= pixelSurface.width) break;
 
-                const pixel = pixels[cx + cy * width];
+                const pixel = pixels[cx + (flipped? (height - cy - 1) : cy) * width];
                 if (alpha && (pixel === 0)) continue;
 
                 const color = ((typeof pixel === "object")? pixel : Rsed.palette.color(pixel));
@@ -266,7 +266,7 @@ Rsed.ui_draw_n = (function()
 
         if (pala != null)
         {
-            draw_image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false);
+            draw_image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false, true);
             draw_string((Rsed.ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
         }
     }
@@ -411,7 +411,7 @@ Rsed.ui_draw_n = (function()
                     {
                         for (let px = 0; px < palaWidth; px++)
                         {
-                            const palaTexel = Math.floor(px + py * palaWidth);
+                            const palaTexel = Math.floor(px + (palaHeight - py - 1) * palaWidth);
                             const bufferTexel = Math.floor((Math.floor(x * palaWidth + px) / 2) +
                                                             Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
 

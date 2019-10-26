@@ -109,6 +109,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
             height: palaHeight,
             pixels: pixels.slice(dataIdx, (dataIdx + palaSize)),
             indices: data.slice(dataIdx, (dataIdx + palaSize)),
+            flipped: "no",
         });
     }
     
