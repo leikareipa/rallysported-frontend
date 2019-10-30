@@ -238,8 +238,8 @@ Rsed.ui.draw = (function()
         if (image && xMul && yMul)
         {
             const frame = [];
-            const frameWidth = Math.round((Rsed.camera_n.view_width() / xMul));
-            const frameHeight = Math.floor((Rsed.camera_n.view_height() / yMul));
+            const frameWidth = Math.round((Rsed.world.camera_n.view_width() / xMul));
+            const frameHeight = Math.floor((Rsed.world.camera_n.view_height() / yMul));
             
             for (let y = 0; y < frameHeight; y++)
             {
@@ -253,8 +253,8 @@ Rsed.ui.draw = (function()
                 }
             }
 
-            const camX = (Rsed.camera_n.pos_x() / xMul);
-            const camZ = (Rsed.camera_n.pos_z() / yMul);
+            const camX = (Rsed.world.camera_n.pos_x() / xMul);
+            const camZ = (Rsed.world.camera_n.pos_z() / yMul);
             draw_image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 3 + camZ, true);
         }
     }

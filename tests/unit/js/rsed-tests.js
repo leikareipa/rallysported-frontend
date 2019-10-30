@@ -21,18 +21,18 @@ const unitTestResults = unit_tests("RallySportED-js", ()=>
     {
         // Movement.
         {
-            Rsed.camera_n.reset_camera_position();
-            const camPos = {x:Rsed.camera_n.pos_x(), y:Rsed.camera_n.pos_y(), z:Rsed.camera_n.pos_z()};
+            Rsed.world.camera_n.reset_camera_position();
+            const camPos = {x:Rsed.world.camera_n.pos_x(), y:Rsed.world.camera_n.pos_y(), z:Rsed.world.camera_n.pos_z()};
 
-            Rsed.camera_n.move_camera(11, 12, 13, false);
-            expect_true([()=>((camPos.x + 11 * Rsed.camera_n.movement_speed()) === Rsed.camera_n.pos_x()),
-                         ()=>((camPos.y + 12 * Rsed.camera_n.movement_speed()) === Rsed.camera_n.pos_y()),
-                         ()=>((camPos.z + 13 * Rsed.camera_n.movement_speed()) === Rsed.camera_n.pos_z())]);
+            Rsed.world.camera_n.move_camera(11, 12, 13, false);
+            expect_true([()=>((camPos.x + 11 * Rsed.world.camera_n.movement_speed()) === Rsed.world.camera_n.pos_x()),
+                         ()=>((camPos.y + 12 * Rsed.world.camera_n.movement_speed()) === Rsed.world.camera_n.pos_y()),
+                         ()=>((camPos.z + 13 * Rsed.world.camera_n.movement_speed()) === Rsed.world.camera_n.pos_z())]);
 
-            Rsed.camera_n.reset_camera_position();
-            expect_true([()=>(Rsed.camera_n.pos_x() === camPos.x),
-                         ()=>(Rsed.camera_n.pos_y() === camPos.y),
-                         ()=>(Rsed.camera_n.pos_z() === camPos.z)]);
+            Rsed.world.camera_n.reset_camera_position();
+            expect_true([()=>(Rsed.world.camera_n.pos_x() === camPos.x),
+                         ()=>(Rsed.world.camera_n.pos_y() === camPos.y),
+                         ()=>(Rsed.world.camera_n.pos_z() === camPos.z)]);
         }
     });
 

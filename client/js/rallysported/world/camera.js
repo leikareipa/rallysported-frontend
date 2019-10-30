@@ -8,7 +8,7 @@
 
 "use strict";
 
-Rsed.camera_n = (function()
+Rsed.world.camera_n = (function()
 {
     // The camera's position, in tile units.
     const position = {x:0, y:0, z:0};
