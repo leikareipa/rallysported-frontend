@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/texture.js
+ * Most recent known filename: js/visual/texture.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js

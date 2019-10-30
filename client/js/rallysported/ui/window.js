@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/misc/window.js
+ * Most recent known filename: js/ui/window.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js

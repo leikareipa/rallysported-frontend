@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (30 October 2019 17:08:37 UTC)
+// VERSION: live (30 October 2019 17:10:52 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2663,7 +2663,7 @@ Rsed.project.hitable = [0x41,0x2d,0x4a,0x75,0x6e,0x69,0x6f,0x72,0x69,0x00,0x20,0
                         0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,
                         0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x2d,0x0d,0x0a];
 /*
- * Most recent known filename: js/constants.js
+ * Most recent known filename: js/misc/constants.js
  *
  * Tarpeeksi Hyvae Soft 2019 /
  * RallySportED-js
@@ -2904,7 +2904,7 @@ Rsed.shared_mode_n = (function()
 
 Rsed.world = {};
 /*
- * Most recent known filename: js/misc/world-builder.js
+ * Most recent known filename: js/world/mesh-builder.js
  *
  * 2019 Tarpeeksi Hyvae Soft /
  * RallySportED-js
@@ -3173,7 +3173,7 @@ Rsed.world.mesh_builder = (function()
     }
 })();
 /*
- * Most recent known filename: js/render/camera.js
+ * Most recent known filename: js/world/camera.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
@@ -3234,7 +3234,7 @@ Rsed.world.camera = (function()
 
     return publicInterface;
 })();/*
- * Most recent known filename: js/texture.js
+ * Most recent known filename: js/visual/texture.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
@@ -6011,7 +6011,7 @@ Rsed.ui_input_n = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/misc/window.js
+ * Most recent known filename: js/ui/window.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
@@ -6292,7 +6292,7 @@ window.drop_handler = function(event)
     window.history.replaceState({}, document.title, basePath);
 }
 /*
- * Most recent known filename: js/main.js
+ * Most recent known filename: js/core.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
