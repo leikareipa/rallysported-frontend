@@ -6,28 +6,110 @@ body
     color: rgb(109, 109, 109);
 }
 
-table
-{
-    color: black;
-    margin: 0 auto;
-    margin-bottom: 20px;
-    text-align: left;
-    border-collapse:collapse;
-    width: 250px;
-}
-
-table td, th
-{
-    padding: 10px;
-    border: none;
-}
-
 .pass
 {
-    background-color: rgb(60, 179, 96);
+    color: rgb(60, 179, 96);
 }
 
 .fail
 {
-    background-color: crimson;
+    color: rgb(204, 58, 102);
+}
+
+#overall-result
+{
+    margin: 25px;
+    font-size: 800%;
+    display: inline-block;
+    width: 250px;
+    height: 250px;
+    line-height: 250px;
+    border-radius: 20%;
+    border-top-right-radius: 5%;
+    background-color: transparent;
+}
+
+#overall-result.pass
+{
+    background-color: rgb(60, 179, 96);
+    color: white;
+}
+
+#overall-result.fail
+{
+    background-color: rgb(204, 58, 102);
+    color: white;
+}
+
+#individual-results > span.fail
+{
+    text-decoration: wavy underline;
+}
+
+/*
+#individual-results > span.fail::before
+{
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    font-family: "Font Awesome 5 Free";
+    content: "\f00d";
+    font-weight: 900;
+    margin-right: 5px;
+}
+*/
+
+#overall-result::after
+{
+    display: inline-block;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    font-family: "Font Awesome 5 Free";
+    content: "\f110";
+    font-weight: 900;
+    animation: fa-spin 2.7s infinite linear;
+}
+
+#overall-result.pass::after
+{
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    font-family: "Font Awesome 5 Free";
+    content: "\f00c";
+    font-weight: 900;
+    animation: none;
+}
+
+#overall-result.fail::after
+{
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    font-family: "Font Awesome 5 Free";
+    content: "\f00d";
+    font-weight: 900;
+    animation: none;
+}
+
+#individual-results
+{
+    display: inline-block;
+    width: 500px;
+    max-width: 100%;
+    visibility: hidden;
+}
+
+#finish-date
+{
+    margin: 25px;
+    color: rgb(128, 128, 128);
+}
+
+#title
+{
+    font-size: 200%;
+    margin-top: 25px;
+    font-weight: bold;
 }

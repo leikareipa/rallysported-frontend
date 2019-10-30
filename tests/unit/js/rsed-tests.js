@@ -102,38 +102,51 @@ const unitTestResults = unit_tests("RallySportED-js", ()=>
 
 // Output the test results as HTML.
 {
-    const resultsTableElement = document.createElement("table");
+    let someTestsFail = false;
 
-    unitTestResults.forEach((r, idx)=>
+    unitTestResults.forEach((test, idx)=>
     {
-        if (idx === 0)
+        someTestsFail = (!test.passed || someTestsFail);
+
+        // Add the result of this unit's test to the HTML.
         {
-            const header = document.createElement("th");
-            header.setAttribute("colspan", "2");
-            header.appendChild(document.createTextNode(r));
-            header.style.backgroundColor = "lightgray";
+            const nameElement = document.createElement("span");
+            nameElement.style.whiteSpace = "nowrap";
 
-            resultsTableElement.appendChild(header);
-        }
-        else
-        {
-            const newRow = document.createElement("tr");
-            newRow.className = (r.passed? "pass" : "fail");
-            
-            const unitName = document.createElement("td");
-            unitName.appendChild(document.createTextNode(r.unitName));
+            if (test.passed)
+            {
+                nameElement.className = "pass";
+            }
+            else
+            {
+                nameElement.className = "fail";
+                nameElement.title = `${test.unitName} fails: ${test.error}`;
 
-            const testResult = document.createElement("td");
-            testResult.appendChild(document.createTextNode(r.passed? "Passed" : "Failed"));
+                console.warn(`Unit ${test.unitName} fails: ${test.error}`);
+            }
 
-            newRow.appendChild(unitName);
-            newRow.appendChild(testResult)
-            resultsTableElement.appendChild(newRow);
+            nameElement.appendChild(document.createTextNode(test.unitName));
+            document.getElementById("individual-results").appendChild(nameElement);
 
-            if (!r.passed) console.log(r.unitName, "fail:", r.error)
+            if (idx !== (unitTestResults.length - 1))
+            {
+                document.getElementById("individual-results").appendChild(document.createTextNode(", "));
+            }
         }
     });
 
-    document.body.appendChild(resultsTableElement);
-    document.body.appendChild(document.createTextNode(Date()));
+    if (someTestsFail)
+    {
+        document.getElementById("overall-result").classList.add("fail");
+        document.getElementById("overall-result").title = "One or more tests fail";
+    }
+    else
+    {
+        document.getElementById("overall-result").classList.add("pass");
+        document.getElementById("overall-result").title = "All tests pass";
+    }
+
+    document.getElementById("individual-results").style.visibility = "visible";
+
+    document.getElementById("finish-date").appendChild(document.createTextNode(Date()));
 }

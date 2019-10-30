@@ -11,7 +11,7 @@ function unit_tests(title = "", tests_f = ()=>{/*Tests*/})
 {
     // A list of objects giving the test result of each unit tested.
     // Something along the lines of [{unitName: "", passed: Boolean, error: "Set if !passes."}].
-    const testResults = [title];
+    const testResults = [];
 
     // Run the tests.
     verify_tester_functionality();
