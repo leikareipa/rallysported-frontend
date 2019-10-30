@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (30 October 2019 06:21:57 UTC)
+// VERSION: live (30 October 2019 06:29:50 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5146,11 +5146,11 @@ Rsed.ui.draw = (function()
                         (height > 0))
                     || Rsed.throw("Expected a valid image resolution.");
 
-        Rsed.assert && ((x >= 0) ||
-                        (x < pixelSurface.width) ||
-                        (y >= 0) ||
+        Rsed.assert && ((x >= 0) &&
+                        (x < pixelSurface.width) &&
+                        (y >= 0) &&
                         (y < pixelSurface.height))
-                    || Rsed.throw("Invalid screen coordinates for drawing the image.");
+                    || Rsed.throw("Invalid screen coordinates for drawing a UI image.");
 
         for (let cy = 0; cy < height; cy++)
         {

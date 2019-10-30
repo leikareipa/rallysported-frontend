@@ -69,11 +69,11 @@ Rsed.ui.draw = (function()
                         (height > 0))
                     || Rsed.throw("Expected a valid image resolution.");
 
-        Rsed.assert && ((x >= 0) ||
-                        (x < pixelSurface.width) ||
-                        (y >= 0) ||
+        Rsed.assert && ((x >= 0) &&
+                        (x < pixelSurface.width) &&
+                        (y >= 0) &&
                         (y < pixelSurface.height))
-                    || Rsed.throw("Invalid screen coordinates for drawing the image.");
+                    || Rsed.throw("Invalid screen coordinates for drawing a UI image.");
 
         for (let cy = 0; cy < height; cy++)
         {
