@@ -10,7 +10,7 @@
 
 "use strict";
 
-Rsed.ui_draw_n = (function()
+Rsed.ui.draw = (function()
 {
     // The pixel buffer that UI render commands will draw into.
     let pixelSurface = null;

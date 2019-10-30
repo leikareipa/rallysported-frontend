@@ -121,7 +121,7 @@ Rsed.core = (function()
 
             await load_project(startupArgs);
 
-            Rsed.ui_draw_n.prebake_palat_pane();
+            Rsed.ui.draw.prebake_palat_pane();
 
             htmlUI.refresh();
             htmlUI.set_visible(true);
@@ -201,10 +201,10 @@ Rsed.core = (function()
                 canvas.height = renderInfo.renderHeight;
 
                 // The PALAT pane needs to adjust to the new size of the canvas.
-                Rsed.ui_draw_n.prebake_palat_pane();
+                Rsed.ui.draw.prebake_palat_pane();
             }
 
-            Rsed.ui_draw_n.draw_ui(canvas.element, canvas.mousePickingBuffer);
+            Rsed.ui.draw.draw_ui(canvas.element, canvas.mousePickingBuffer);
         }
 
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));

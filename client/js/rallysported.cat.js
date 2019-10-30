@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (30 October 2019 06:12:27 UTC)
+// VERSION: live (30 October 2019 06:15:42 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5087,7 +5087,7 @@ Rsed.ui_brush_n = (function()
 
 "use strict";
 
-Rsed.ui_draw_n = (function()
+Rsed.ui.draw = (function()
 {
     // The pixel buffer that UI render commands will draw into.
     let pixelSurface = null;
@@ -6402,7 +6402,7 @@ Rsed.core = (function()
 
             await load_project(startupArgs);
 
-            Rsed.ui_draw_n.prebake_palat_pane();
+            Rsed.ui.draw.prebake_palat_pane();
 
             htmlUI.refresh();
             htmlUI.set_visible(true);
@@ -6482,10 +6482,10 @@ Rsed.core = (function()
                 canvas.height = renderInfo.renderHeight;
 
                 // The PALAT pane needs to adjust to the new size of the canvas.
-                Rsed.ui_draw_n.prebake_palat_pane();
+                Rsed.ui.draw.prebake_palat_pane();
             }
 
-            Rsed.ui_draw_n.draw_ui(canvas.element, canvas.mousePickingBuffer);
+            Rsed.ui.draw.draw_ui(canvas.element, canvas.mousePickingBuffer);
         }
 
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
