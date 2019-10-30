@@ -10,7 +10,7 @@
 
 // Provides functions returning renderable 3d meshes of various world items - like the track and
 // its props - accounting for user-specified arguments such as camera position.
-Rsed.worldBuilder = function()
+Rsed.world_builder = (function()
 {
     const publicInterface =
     {
@@ -266,4 +266,4 @@ Rsed.worldBuilder = function()
 
         return palaId;
     }
-};
+})();

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (30 October 2019 06:29:50 UTC)
+// VERSION: live (30 October 2019 06:38:32 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2903,7 +2903,7 @@ Rsed.shared_mode_n = (function()
 
 // Provides functions returning renderable 3d meshes of various world items - like the track and
 // its props - accounting for user-specified arguments such as camera position.
-Rsed.worldBuilder = function()
+Rsed.world_builder = (function()
 {
     const publicInterface =
     {
@@ -3159,7 +3159,7 @@ Rsed.worldBuilder = function()
 
         return palaId;
     }
-};
+})();
 /*
  * Most recent known filename: js/render/camera.js
  *
@@ -6455,9 +6455,9 @@ Rsed.core = (function()
         {
             canvas.mousePickingBuffer.fill(null);
 
-            const trackMesh = Rsed.worldBuilder().track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
-                                                              y: 0,
-                                                              z: Math.floor(Rsed.camera_n.pos_z())});
+            const trackMesh = Rsed.world_builder.track_mesh({x: Math.floor(Rsed.camera_n.pos_x()),
+                                                             y: 0,
+                                                             z: Math.floor(Rsed.camera_n.pos_z())});
 
             const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
 
