@@ -382,7 +382,7 @@ Rsed.ui.draw = (function()
 
         // Create a set of thumbnails of the contents of the current PALAT file. We'll display this pane of
         // thumbnails to the user for selecting PALAs.
-        publicInterface.prebake_palat_pane = function()
+        publicInterface.generate_palat_pane = function()
         {
             const maxNumPalas = 253;
 

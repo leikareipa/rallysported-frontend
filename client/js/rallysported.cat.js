@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (30 October 2019 06:15:42 UTC)
+// VERSION: live (30 October 2019 06:21:57 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5459,7 +5459,7 @@ Rsed.ui.draw = (function()
 
         // Create a set of thumbnails of the contents of the current PALAT file. We'll display this pane of
         // thumbnails to the user for selecting PALAs.
-        publicInterface.prebake_palat_pane = function()
+        publicInterface.generate_palat_pane = function()
         {
             const maxNumPalas = 253;
 
@@ -6402,7 +6402,7 @@ Rsed.core = (function()
 
             await load_project(startupArgs);
 
-            Rsed.ui.draw.prebake_palat_pane();
+            Rsed.ui.draw.generate_palat_pane();
 
             htmlUI.refresh();
             htmlUI.set_visible(true);
@@ -6482,7 +6482,7 @@ Rsed.core = (function()
                 canvas.height = renderInfo.renderHeight;
 
                 // The PALAT pane needs to adjust to the new size of the canvas.
-                Rsed.ui.draw.prebake_palat_pane();
+                Rsed.ui.draw.generate_palat_pane();
             }
 
             Rsed.ui.draw.draw_ui(canvas.element, canvas.mousePickingBuffer);
