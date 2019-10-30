@@ -29,10 +29,10 @@ Rsed.world.mesh_builder = (function()
                                 y: (isTopdownView? -1800 : -680),
                                 z: (isTopdownView? 700 : 2612)};
 
-            for (let z = 0; z < Rsed.world.camera_n.view_height(); z++)
+            for (let z = 0; z < Rsed.world.camera.view_height(); z++)
             {
                 // Add the ground tiles.
-                for (let x = 0; x < Rsed.world.camera_n.view_width(); x++)
+                for (let x = 0; x < Rsed.world.camera.view_width(); x++)
                 {
                     // Coordinates of the current ground tile.
                     const tileX = (x + viewPos.x);
@@ -92,7 +92,7 @@ Rsed.world.mesh_builder = (function()
                 // the ground tiles so that the n-gons are properly sorted by depth for rendering.
                 // Otherwise, billboard/bridge tiles can become obscured by ground tiles behind
                 // them.
-                for (let x = 0; x < Rsed.world.camera_n.view_width(); x++)
+                for (let x = 0; x < Rsed.world.camera.view_width(); x++)
                 {
                     const tileX = (x + viewPos.x);
                     const tileZ = (z + viewPos.z);
@@ -189,10 +189,10 @@ Rsed.world.mesh_builder = (function()
             const propLocations = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().track_id());
             propLocations.forEach((pos, idx)=>
             {
-                if ((pos.x >= (Rsed.world.camera_n.pos_x() * Rsed.constants.groundTileSize)) &&
-                    (pos.x <= ((Rsed.world.camera_n.pos_x() + Rsed.world.camera_n.view_width()) * Rsed.constants.groundTileSize)) &&
-                    (pos.z >= (Rsed.world.camera_n.pos_z() * Rsed.constants.groundTileSize)) &&
-                    (pos.z <= ((Rsed.world.camera_n.pos_z() + Rsed.world.camera_n.view_height()) * Rsed.constants.groundTileSize)))
+                if ((pos.x >= (Rsed.world.camera.pos_x() * Rsed.constants.groundTileSize)) &&
+                    (pos.x <= ((Rsed.world.camera.pos_x() + Rsed.world.camera.view_width()) * Rsed.constants.groundTileSize)) &&
+                    (pos.z >= (Rsed.world.camera.pos_z() * Rsed.constants.groundTileSize)) &&
+                    (pos.z <= ((Rsed.world.camera.pos_z() + Rsed.world.camera.view_height()) * Rsed.constants.groundTileSize)))
                 {
                     const x = (pos.x + centerView.x - (viewPos.x * Rsed.constants.groundTileSize));
                     const z = (centerView.z - pos.z + (viewPos.z * Rsed.constants.groundTileSize));

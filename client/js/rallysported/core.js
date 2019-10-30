@@ -174,9 +174,9 @@ Rsed.core = (function()
         {
             canvas.mousePickingBuffer.fill(null);
 
-            const trackMesh = Rsed.world.mesh_builder.track_mesh({x: Math.floor(Rsed.world.camera_n.pos_x()),
+            const trackMesh = Rsed.world.mesh_builder.track_mesh({x: Math.floor(Rsed.world.camera.pos_x()),
                                                                   y: 0,
-                                                                  z: Math.floor(Rsed.world.camera_n.pos_z())});
+                                                                  z: Math.floor(Rsed.world.camera.pos_z())});
 
             const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
 
@@ -240,7 +240,7 @@ Rsed.core = (function()
 
         Rsed.apply_manifesto(project);
         
-        Rsed.world.camera_n.reset_camera_position();
+        Rsed.world.camera.reset_camera_position();
 
         Rsed.palette.set_palette(project.track_id() === 4? 1 :
                                  project.track_id() === 7? 3 : 0);

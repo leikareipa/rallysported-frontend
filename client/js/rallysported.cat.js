@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (30 October 2019 16:29:07 UTC)
+// VERSION: live (30 October 2019 16:31:34 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2934,10 +2934,10 @@ Rsed.world.mesh_builder = (function()
                                 y: (isTopdownView? -1800 : -680),
                                 z: (isTopdownView? 700 : 2612)};
 
-            for (let z = 0; z < Rsed.world.camera_n.view_height(); z++)
+            for (let z = 0; z < Rsed.world.camera.view_height(); z++)
             {
                 // Add the ground tiles.
-                for (let x = 0; x < Rsed.world.camera_n.view_width(); x++)
+                for (let x = 0; x < Rsed.world.camera.view_width(); x++)
                 {
                     // Coordinates of the current ground tile.
                     const tileX = (x + viewPos.x);
@@ -2997,7 +2997,7 @@ Rsed.world.mesh_builder = (function()
                 // the ground tiles so that the n-gons are properly sorted by depth for rendering.
                 // Otherwise, billboard/bridge tiles can become obscured by ground tiles behind
                 // them.
-                for (let x = 0; x < Rsed.world.camera_n.view_width(); x++)
+                for (let x = 0; x < Rsed.world.camera.view_width(); x++)
                 {
                     const tileX = (x + viewPos.x);
                     const tileZ = (z + viewPos.z);
@@ -3094,10 +3094,10 @@ Rsed.world.mesh_builder = (function()
             const propLocations = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().track_id());
             propLocations.forEach((pos, idx)=>
             {
-                if ((pos.x >= (Rsed.world.camera_n.pos_x() * Rsed.constants.groundTileSize)) &&
-                    (pos.x <= ((Rsed.world.camera_n.pos_x() + Rsed.world.camera_n.view_width()) * Rsed.constants.groundTileSize)) &&
-                    (pos.z >= (Rsed.world.camera_n.pos_z() * Rsed.constants.groundTileSize)) &&
-                    (pos.z <= ((Rsed.world.camera_n.pos_z() + Rsed.world.camera_n.view_height()) * Rsed.constants.groundTileSize)))
+                if ((pos.x >= (Rsed.world.camera.pos_x() * Rsed.constants.groundTileSize)) &&
+                    (pos.x <= ((Rsed.world.camera.pos_x() + Rsed.world.camera.view_width()) * Rsed.constants.groundTileSize)) &&
+                    (pos.z >= (Rsed.world.camera.pos_z() * Rsed.constants.groundTileSize)) &&
+                    (pos.z <= ((Rsed.world.camera.pos_z() + Rsed.world.camera.view_height()) * Rsed.constants.groundTileSize)))
                 {
                     const x = (pos.x + centerView.x - (viewPos.x * Rsed.constants.groundTileSize));
                     const z = (centerView.z - pos.z + (viewPos.z * Rsed.constants.groundTileSize));
@@ -3182,7 +3182,7 @@ Rsed.world.mesh_builder = (function()
 
 "use strict";
 
-Rsed.world.camera_n = (function()
+Rsed.world.camera = (function()
 {
     // The camera's position, in tile units.
     const position = {x:0, y:0, z:0};
@@ -5327,8 +5327,8 @@ Rsed.ui.draw = (function()
         if (image && xMul && yMul)
         {
             const frame = [];
-            const frameWidth = Math.round((Rsed.world.camera_n.view_width() / xMul));
-            const frameHeight = Math.floor((Rsed.world.camera_n.view_height() / yMul));
+            const frameWidth = Math.round((Rsed.world.camera.view_width() / xMul));
+            const frameHeight = Math.floor((Rsed.world.camera.view_height() / yMul));
             
             for (let y = 0; y < frameHeight; y++)
             {
@@ -5342,8 +5342,8 @@ Rsed.ui.draw = (function()
                 }
             }
 
-            const camX = (Rsed.world.camera_n.pos_x() / xMul);
-            const camZ = (Rsed.world.camera_n.pos_z() / yMul);
+            const camX = (Rsed.world.camera.pos_x() / xMul);
+            const camZ = (Rsed.world.camera.pos_z() / yMul);
             draw_image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 3 + camZ, true);
         }
     }
@@ -5598,7 +5598,7 @@ Rsed.ui_input_n = (function()
         if (keyDown["d"]) movement.z += 1;
 
         //movement.normalize(); /// TODO: Disabled for now, since diagonal movement is too jerky without the double movement speed.
-        Rsed.world.camera_n.move_camera(movement.x, movement.y, movement.z);
+        Rsed.world.camera.move_camera(movement.x, movement.y, movement.z);
     }
 
     // Depending on which mouse button (if any) the user has pressed, make corresponding things happen.
@@ -6467,9 +6467,9 @@ Rsed.core = (function()
         {
             canvas.mousePickingBuffer.fill(null);
 
-            const trackMesh = Rsed.world.mesh_builder.track_mesh({x: Math.floor(Rsed.world.camera_n.pos_x()),
+            const trackMesh = Rsed.world.mesh_builder.track_mesh({x: Math.floor(Rsed.world.camera.pos_x()),
                                                                   y: 0,
-                                                                  z: Math.floor(Rsed.world.camera_n.pos_z())});
+                                                                  z: Math.floor(Rsed.world.camera.pos_z())});
 
             const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
 
@@ -6533,7 +6533,7 @@ Rsed.core = (function()
 
         Rsed.apply_manifesto(project);
         
-        Rsed.world.camera_n.reset_camera_position();
+        Rsed.world.camera.reset_camera_position();
 
         Rsed.palette.set_palette(project.track_id() === 4? 1 :
                                  project.track_id() === 7? 3 : 0);
