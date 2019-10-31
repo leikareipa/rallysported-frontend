@@ -120,9 +120,9 @@ const unitTestResults = unit_tests("RallySportED-js", ()=>
             else
             {
                 nameElement.className = "fail";
-                nameElement.title = `${test.unitName} fails: ${test.error}`;
+                nameElement.title = `${test.unitName} fails - ${test.error}`;
 
-                console.warn(`Unit ${test.unitName} fails: ${test.error}`);
+                console.warn(`Unit "${test.unitName}" fails - ${test.error}`);
             }
 
             nameElement.appendChild(document.createTextNode(test.unitName));
