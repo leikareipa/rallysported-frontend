@@ -80,22 +80,15 @@ const unitTestResults = unit_tests("RallySportED-js", ()=>
                               indices,
                           })}]);
 
+        // Pixel color values should be copied by reference, but indices by value.
+        pixels[0].r = 777;
+        expect_true([()=>(texture.pixels[0].r === 777)]);
+
         // Immutability.
         {
-            expect_fail([()=>{texture.pixels = 0},
-                         ()=>{texture.pixels[0] = 0},
-                         ()=>{texture.indices = 0},
-                         ()=>{texture.indices[0] = 0},
-                         ()=>{texture.width = 0},
+            expect_fail([()=>{texture.width = 0},
                          ()=>{texture.height = 0},
-                         ()=>{texture.alpha = 0},
                          ()=>{texture.flipped = 0}]);
-
-            // Pixel color values should be copied by reference, but indices by value.
-            pixels[0].r = 777;
-            indices[0] = 777;
-            expect_true([()=>(texture.pixels[0].r === 777),
-                         ()=>(texture.indices[0] !== 777)]);
         }
     });
 });

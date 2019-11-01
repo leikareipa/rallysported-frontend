@@ -152,8 +152,7 @@ Rsed.palette = (function()
 
     // The palette we'll operate on; which is to say, when the user requests us to return a
     // color for a particular palette index, or to change the color at a particular index,
-    // this is the palette we'll use. Generally, this palette will contain a modifiable
-    // copy of one of Rally-Sport's hard-coded palettes.
+    // this is the palette we'll use.
     const activePalette = (new Array(256)).fill().map(e=>({red:127,green:127,blue:127,alpha:255,unitRange:{red:1, green:1, blue:1, alpha:1}}));
 
     const publicInterface =
@@ -170,25 +169,26 @@ Rsed.palette = (function()
             // Named UI colors.
             switch (colorIdx)
             {
-                case "background":  return {red:16,  green:16,  blue:16};
-                case "black":       return {red:0,   green:0,   blue:0};
+                case "background":  return {red:16,  green:16,  blue:16,  alpha:255};
+                case "black":       return {red:0,   green:0,   blue:0,   alpha:255};
                 case "gray":
-                case "grey":        return {red:127, green:127, blue:127};
+                case "grey":        return {red:127, green:127, blue:127, alpha:255};
                 case "lightgray":
-                case "lightgrey":   return {red:192, green:192, blue:192};
+                case "lightgrey":   return {red:192, green:192, blue:192, alpha:255};
                 case "dimgray":
-                case "dimgrey":     return {red:64,  green:64,  blue:64};
-                case "white":       return {red:255, green:255, blue:255};
-                case "blue":        return {red:0,   green:0,   blue:255};
-                case "darkorchid":  return {red:153, green:50,  blue:204};
-                case "paleorchid":  return {red:158, green:123, blue:176};
-                case "yellow":      return {red:255, green:255, blue:0};
-                case "red":         return {red:255, green:0,   blue:0};
-                case "green":       return {red:0,   green:255, blue:0};
-                case "gold":        return {red:179, green:112, blue:25};
+                case "dimgrey":     return {red:64,  green:64,  blue:64,  alpha:255};
+                case "white":       return {red:255, green:255, blue:255, alpha:255};
+                case "blue":        return {red:0,   green:0,   blue:255, alpha:255};
+                case "darkorchid":  return {red:153, green:50,  blue:204, alpha:255};
+                case "paleorchid":  return {red:158, green:123, blue:176, alpha:255};
+                case "yellow":      return {red:255, green:255, blue:0,   alpha:255};
+                case "red":         return {red:255, green:0,   blue:0,   alpha:255};
+                case "green":       return {red:0,   green:255, blue:0,   alpha:255};
+                case "gold":        return {red:179, green:112, blue:25,  alpha:255};
                 default: break;
             }
 
+            // In Rally-Sport, the first color in a palette is always transparent.
             return activePalette[colorIdx];
         },
 
@@ -204,6 +204,7 @@ Rsed.palette = (function()
                 activePalette[idx].red = color.red;
                 activePalette[idx].green = color.green;
                 activePalette[idx].blue = color.blue;
+                activePalette[idx].alpha = ((idx === 0)? 0 : 255);
             });
         },
 
@@ -214,7 +215,7 @@ Rsed.palette = (function()
                             (paletteIdx < rallySportPalettes.length))
                         || Rsed.throw("Trying to access a palette index out of bounds.");
 
-            newcolor =
+            newColor =
             {
                 ...
                 {
@@ -228,6 +229,7 @@ Rsed.palette = (function()
             activePalette[paletteIdx].red = newColor.red;
             activePalette[paletteIdx].green = newColor.green;
             activePalette[paletteIdx].blue = newColor.blue;
+            activePalette[paletteIdx].alpha = ((paletteIdx === 0)? 0 : 255);
         },
     };
 

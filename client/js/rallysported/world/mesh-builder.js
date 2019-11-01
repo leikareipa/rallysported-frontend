@@ -83,7 +83,7 @@ Rsed.world.mesh_builder = (function()
                                                                                                                     {tileX, tileZ: (tileZ - 1)}),
                                                            }
                                                        });
-                        
+
                         trackPolygons.push(groundQuad);
                     }
                 }
@@ -126,18 +126,18 @@ Rsed.world.mesh_builder = (function()
                                 // Spectators.
                                 case 240:
                                 case 241:
-                                case 242: return Rsed.core.current_project().palat.generate_texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
+                                case 242: return Rsed.core.current_project().palat.texture[spectator_texture_at(tileX, (tileZ - 1))];
                                 break;
             
                                 // Shrubs.
-                                case 243: return Rsed.core.current_project().palat.generate_texture(208, {alpha:true});
-                                case 244: return Rsed.core.current_project().palat.generate_texture(209, {alpha:true});
-                                case 245: return Rsed.core.current_project().palat.generate_texture(210, {alpha:true});
+                                case 243: return Rsed.core.current_project().palat.texture[208];
+                                case 244: return Rsed.core.current_project().palat.texture[209];
+                                case 245: return Rsed.core.current_project().palat.texture[210];
             
                                 // Small poles.
                                 case 246:
-                                case 247: return Rsed.core.current_project().palat.generate_texture(211, {alpha:true});
-                                case 250: return Rsed.core.current_project().palat.generate_texture(212, {alpha:true});
+                                case 247: return Rsed.core.current_project().palat.texture[211];
+                                case 250: return Rsed.core.current_project().palat.texture[212];
             
                                 default: Rsed.throw("Unrecognized billboard texture."); return null;
                             }
@@ -170,7 +170,7 @@ Rsed.world.mesh_builder = (function()
                                                        Rngon.vertex( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize), 0, 1)],
                                                        {
                                                            color: Rngon.color_rgba(255, 255, 255),
-                                                           texture: Rsed.core.current_project().palat.generate_texture(177, {alpha:true}),
+                                                           texture: Rsed.core.current_project().palat.texture[177],
                                                            textureMapping: "ortho",
                                                            hasSolidFill: true,
                                                            hasWireframe: false,

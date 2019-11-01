@@ -12,7 +12,7 @@
 // renderer's texture_rgba() object (so that n-gons can be textured with the object from
 // this function and rendered with the retro n-gon renderer).
 Rsed.texture = function(args = {})
-{
+{ 
     args =
     {
         ...{
@@ -25,10 +25,6 @@ Rsed.texture = function(args = {})
             // The texture's dimensions.
             width: 0,
             height: 0,
-
-            // Whether pixels with palette index 0 should be see-through. This is a hint to
-            // the renderer, which may or may not comply.
-            alpha: false,
 
             // Whether to flip (mirror) the texture's pixels.
             flipped: "no", // | "vertical"
@@ -70,14 +66,6 @@ Rsed.texture = function(args = {})
         default: Rsed.throw("Unknown texture-flipping mode."); break;
     }
 
-    // Insert an alpha component into the pixel data. Assumes that the 'indices' array has
-    // the same number of elements as the 'pixels' array, and indeed that each element in
-    // these two arrays corresponds with that in the other array.
-    args.pixels.forEach((p, idx)=>
-    {
-        p.alpha = ((args.alpha && (args.indices[idx] === 0))? 0 : 255);
-    });
-
     // Note: The elements of the 'pixels' array are returned by reference (they're objects of the
     // form {red, green, blue, alpha}). This is done to allow textures to be pre-generated and still
     // have their colors reflect any changes to the global palette without requiring a re-generation.
@@ -85,10 +73,9 @@ Rsed.texture = function(args = {})
     {
         width: args.width,
         height: args.height,
-        alpha: args.alpha,
         flipped: args.flipped,
-        pixels: Object.freeze(Array.from(args.pixels)),
-        indices: Object.freeze(Array.from(args.indices)),
+        pixels: args.pixels,
+        indices: args.indices,
     });
 
     return publicInterface;

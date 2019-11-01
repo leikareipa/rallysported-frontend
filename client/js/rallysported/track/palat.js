@@ -36,11 +36,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
     // Pre-compute the individual PALA textures.
     const prebakedPalaTextures = new Array(256).fill().map((pala, idx)=>
     {
-        return generate_texture(idx,
-                                {
-                                    alpha: false,
-                                    flipped: "vertical",
-                                });
+        return generate_texture(idx);
     });
 
     const publicInterface = Object.freeze(
@@ -48,26 +44,6 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
         width: palaWidth,
         height: palaHeight,
         texture: Object.freeze(prebakedPalaTextures),
-
-        // Generates a texture of the given PALA using the given arguments. You'd call this
-        // function if the pre-baked version of the texture wasn't generated with suitable
-        // arguments for you purposes - for instance, if it was generated with vertical flip,
-        // but you want it without the flip.
-        generate_texture: (palaId = 0, args = {})=>
-        {
-            // If the arguments provided don't actually necessitate a re-generating of the
-            // texture (some arguments are just hints about how the texture should be rendered
-            // and don't affect the texture data, per se), we can return the pre-generated
-            // texture along with the new arguments.
-            if ((typeof args.flipped === "undefined") ||
-                (args.flipped === "vertical")) // Assume the pre-baked textures are generated with vertical flip.
-            {
-                return {...prebakedPalaTextures[palaId], ...args};
-            }
-
-            // Otherwise, re-generate the whole texture.
-            return generate_texture(palaId, args);
-        },
     });
 
     // Returns the given PALA's pixel data as a texture, whose arguments are set as given.
@@ -75,11 +51,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
     {
         args =
         {
-            // NOTE: If you change these default values, you may need to reflect the changes in
-            // publicInterface.generate_texture(), as well; which, for instance, expects that
-            // textures are generated with vertical flip, by default.
             ...{
-                alpha: true,
                 flipped: "vertical",
             },
             ...args,
@@ -89,7 +61,6 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
 
         // For attempts to access the PALA data out of bounds, return a dummy texture.
         if ((dataIdx < 0) ||
-            ((dataIdx + palaSize) >= pixels.length) ||
             ((dataIdx + palaSize) >= data.byteLength))
         {
             return Rsed.texture(

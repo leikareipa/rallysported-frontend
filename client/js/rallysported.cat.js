@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (30 October 2019 17:10:52 UTC)
+// VERSION: live (01 November 2019 19:46:00 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2988,7 +2988,7 @@ Rsed.world.mesh_builder = (function()
                                                                                                                     {tileX, tileZ: (tileZ - 1)}),
                                                            }
                                                        });
-                        
+
                         trackPolygons.push(groundQuad);
                     }
                 }
@@ -3031,18 +3031,18 @@ Rsed.world.mesh_builder = (function()
                                 // Spectators.
                                 case 240:
                                 case 241:
-                                case 242: return Rsed.core.current_project().palat.generate_texture(spectator_texture_at(tileX, (tileZ - 1)), {alpha:true});
+                                case 242: return Rsed.core.current_project().palat.texture[spectator_texture_at(tileX, (tileZ - 1))];
                                 break;
             
                                 // Shrubs.
-                                case 243: return Rsed.core.current_project().palat.generate_texture(208, {alpha:true});
-                                case 244: return Rsed.core.current_project().palat.generate_texture(209, {alpha:true});
-                                case 245: return Rsed.core.current_project().palat.generate_texture(210, {alpha:true});
+                                case 243: return Rsed.core.current_project().palat.texture[208];
+                                case 244: return Rsed.core.current_project().palat.texture[209];
+                                case 245: return Rsed.core.current_project().palat.texture[210];
             
                                 // Small poles.
                                 case 246:
-                                case 247: return Rsed.core.current_project().palat.generate_texture(211, {alpha:true});
-                                case 250: return Rsed.core.current_project().palat.generate_texture(212, {alpha:true});
+                                case 247: return Rsed.core.current_project().palat.texture[211];
+                                case 250: return Rsed.core.current_project().palat.texture[212];
             
                                 default: Rsed.throw("Unrecognized billboard texture."); return null;
                             }
@@ -3075,7 +3075,7 @@ Rsed.world.mesh_builder = (function()
                                                        Rngon.vertex( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize), 0, 1)],
                                                        {
                                                            color: Rngon.color_rgba(255, 255, 255),
-                                                           texture: Rsed.core.current_project().palat.generate_texture(177, {alpha:true}),
+                                                           texture: Rsed.core.current_project().palat.texture[177],
                                                            textureMapping: "ortho",
                                                            hasSolidFill: true,
                                                            hasWireframe: false,
@@ -3247,7 +3247,7 @@ Rsed.world.camera = (function()
 // renderer's texture_rgba() object (so that n-gons can be textured with the object from
 // this function and rendered with the retro n-gon renderer).
 Rsed.texture = function(args = {})
-{
+{ 
     args =
     {
         ...{
@@ -3260,10 +3260,6 @@ Rsed.texture = function(args = {})
             // The texture's dimensions.
             width: 0,
             height: 0,
-
-            // Whether pixels with palette index 0 should be see-through. This is a hint to
-            // the renderer, which may or may not comply.
-            alpha: false,
 
             // Whether to flip (mirror) the texture's pixels.
             flipped: "no", // | "vertical"
@@ -3305,14 +3301,6 @@ Rsed.texture = function(args = {})
         default: Rsed.throw("Unknown texture-flipping mode."); break;
     }
 
-    // Insert an alpha component into the pixel data. Assumes that the 'indices' array has
-    // the same number of elements as the 'pixels' array, and indeed that each element in
-    // these two arrays corresponds with that in the other array.
-    args.pixels.forEach((p, idx)=>
-    {
-        p.alpha = ((args.alpha && (args.indices[idx] === 0))? 0 : 255);
-    });
-
     // Note: The elements of the 'pixels' array are returned by reference (they're objects of the
     // form {red, green, blue, alpha}). This is done to allow textures to be pre-generated and still
     // have their colors reflect any changes to the global palette without requiring a re-generation.
@@ -3320,10 +3308,9 @@ Rsed.texture = function(args = {})
     {
         width: args.width,
         height: args.height,
-        alpha: args.alpha,
         flipped: args.flipped,
-        pixels: Object.freeze(Array.from(args.pixels)),
-        indices: Object.freeze(Array.from(args.indices)),
+        pixels: args.pixels,
+        indices: args.indices,
     });
 
     return publicInterface;
@@ -3482,8 +3469,7 @@ Rsed.palette = (function()
 
     // The palette we'll operate on; which is to say, when the user requests us to return a
     // color for a particular palette index, or to change the color at a particular index,
-    // this is the palette we'll use. Generally, this palette will contain a modifiable
-    // copy of one of Rally-Sport's hard-coded palettes.
+    // this is the palette we'll use.
     const activePalette = (new Array(256)).fill().map(e=>({red:127,green:127,blue:127,alpha:255,unitRange:{red:1, green:1, blue:1, alpha:1}}));
 
     const publicInterface =
@@ -3500,25 +3486,26 @@ Rsed.palette = (function()
             // Named UI colors.
             switch (colorIdx)
             {
-                case "background":  return {red:16,  green:16,  blue:16};
-                case "black":       return {red:0,   green:0,   blue:0};
+                case "background":  return {red:16,  green:16,  blue:16,  alpha:255};
+                case "black":       return {red:0,   green:0,   blue:0,   alpha:255};
                 case "gray":
-                case "grey":        return {red:127, green:127, blue:127};
+                case "grey":        return {red:127, green:127, blue:127, alpha:255};
                 case "lightgray":
-                case "lightgrey":   return {red:192, green:192, blue:192};
+                case "lightgrey":   return {red:192, green:192, blue:192, alpha:255};
                 case "dimgray":
-                case "dimgrey":     return {red:64,  green:64,  blue:64};
-                case "white":       return {red:255, green:255, blue:255};
-                case "blue":        return {red:0,   green:0,   blue:255};
-                case "darkorchid":  return {red:153, green:50,  blue:204};
-                case "paleorchid":  return {red:158, green:123, blue:176};
-                case "yellow":      return {red:255, green:255, blue:0};
-                case "red":         return {red:255, green:0,   blue:0};
-                case "green":       return {red:0,   green:255, blue:0};
-                case "gold":        return {red:179, green:112, blue:25};
+                case "dimgrey":     return {red:64,  green:64,  blue:64,  alpha:255};
+                case "white":       return {red:255, green:255, blue:255, alpha:255};
+                case "blue":        return {red:0,   green:0,   blue:255, alpha:255};
+                case "darkorchid":  return {red:153, green:50,  blue:204, alpha:255};
+                case "paleorchid":  return {red:158, green:123, blue:176, alpha:255};
+                case "yellow":      return {red:255, green:255, blue:0,   alpha:255};
+                case "red":         return {red:255, green:0,   blue:0,   alpha:255};
+                case "green":       return {red:0,   green:255, blue:0,   alpha:255};
+                case "gold":        return {red:179, green:112, blue:25,  alpha:255};
                 default: break;
             }
 
+            // In Rally-Sport, the first color in a palette is always transparent.
             return activePalette[colorIdx];
         },
 
@@ -3534,6 +3521,7 @@ Rsed.palette = (function()
                 activePalette[idx].red = color.red;
                 activePalette[idx].green = color.green;
                 activePalette[idx].blue = color.blue;
+                activePalette[idx].alpha = ((idx === 0)? 0 : 255);
             });
         },
 
@@ -3544,7 +3532,7 @@ Rsed.palette = (function()
                             (paletteIdx < rallySportPalettes.length))
                         || Rsed.throw("Trying to access a palette index out of bounds.");
 
-            newcolor =
+            newColor =
             {
                 ...
                 {
@@ -3558,6 +3546,7 @@ Rsed.palette = (function()
             activePalette[paletteIdx].red = newColor.red;
             activePalette[paletteIdx].green = newColor.green;
             activePalette[paletteIdx].blue = newColor.blue;
+            activePalette[paletteIdx].alpha = ((paletteIdx === 0)? 0 : 255);
         },
     };
 
@@ -3801,11 +3790,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
     // Pre-compute the individual PALA textures.
     const prebakedPalaTextures = new Array(256).fill().map((pala, idx)=>
     {
-        return generate_texture(idx,
-                                {
-                                    alpha: false,
-                                    flipped: "vertical",
-                                });
+        return generate_texture(idx);
     });
 
     const publicInterface = Object.freeze(
@@ -3813,26 +3798,6 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
         width: palaWidth,
         height: palaHeight,
         texture: Object.freeze(prebakedPalaTextures),
-
-        // Generates a texture of the given PALA using the given arguments. You'd call this
-        // function if the pre-baked version of the texture wasn't generated with suitable
-        // arguments for you purposes - for instance, if it was generated with vertical flip,
-        // but you want it without the flip.
-        generate_texture: (palaId = 0, args = {})=>
-        {
-            // If the arguments provided don't actually necessitate a re-generating of the
-            // texture (some arguments are just hints about how the texture should be rendered
-            // and don't affect the texture data, per se), we can return the pre-generated
-            // texture along with the new arguments.
-            if ((typeof args.flipped === "undefined") ||
-                (args.flipped === "vertical")) // Assume the pre-baked textures are generated with vertical flip.
-            {
-                return {...prebakedPalaTextures[palaId], ...args};
-            }
-
-            // Otherwise, re-generate the whole texture.
-            return generate_texture(palaId, args);
-        },
     });
 
     // Returns the given PALA's pixel data as a texture, whose arguments are set as given.
@@ -3840,11 +3805,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
     {
         args =
         {
-            // NOTE: If you change these default values, you may need to reflect the changes in
-            // publicInterface.generate_texture(), as well; which, for instance, expects that
-            // textures are generated with vertical flip, by default.
             ...{
-                alpha: true,
                 flipped: "vertical",
             },
             ...args,
@@ -3854,7 +3815,6 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
 
         // For attempts to access the PALA data out of bounds, return a dummy texture.
         if ((dataIdx < 0) ||
-            ((dataIdx + palaSize) >= pixels.length) ||
             ((dataIdx + palaSize) >= data.byteLength))
         {
             return Rsed.texture(
@@ -3950,7 +3910,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             pixels: pixels,
             indices: indices,
             flipped: "no",
-            alpha: true,
         });
     });
 
@@ -5494,7 +5453,7 @@ Rsed.ui.draw = (function()
                 for (let x = 0; x < numPalatPaneCols; (x++, palaIdx++))
                 {
                     if (palaIdx > maxNumPalas) break;
-
+                    
                     const pala = Rsed.core.current_project().palat.texture[palaIdx];
                     for (let py = 0; py < palaHeight; py++)
                     {

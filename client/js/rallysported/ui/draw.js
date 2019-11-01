@@ -405,7 +405,7 @@ Rsed.ui.draw = (function()
                 for (let x = 0; x < numPalatPaneCols; (x++, palaIdx++))
                 {
                     if (palaIdx > maxNumPalas) break;
-
+                    
                     const pala = Rsed.core.current_project().palat.texture[palaIdx];
                     for (let py = 0; py < palaHeight; py++)
                     {
