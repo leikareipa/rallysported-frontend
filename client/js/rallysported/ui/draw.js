@@ -88,7 +88,7 @@ Rsed.ui.draw = (function()
                 const pixel = pixels[cx + (flipped? (height - cy - 1) : cy) * width];
                 if (alpha && (pixel === 0)) continue;
 
-                const color = ((typeof pixel === "object")? pixel : Rsed.palette.color(pixel));
+                const color = ((typeof pixel === "object")? pixel : Rsed.palette.color_at_idx(pixel));
                 put_pixel((x + cx), (y + cy), color.red, color.green, color.blue);
 
                 if (mousePick != null)
@@ -405,7 +405,7 @@ Rsed.ui.draw = (function()
                 for (let x = 0; x < numPalatPaneCols; (x++, palaIdx++))
                 {
                     if (palaIdx > maxNumPalas) break;
-                    
+
                     const pala = Rsed.core.current_project().palat.texture[palaIdx];
                     for (let py = 0; py < palaHeight; py++)
                     {
@@ -415,7 +415,7 @@ Rsed.ui.draw = (function()
                             const bufferTexel = Math.floor((Math.floor(x * palaWidth + px) / 2) +
                                                             Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
 
-                            palatPaneBuffer[bufferTexel] = Rsed.palette.color(pala.indices[palaTexel]);
+                            palatPaneBuffer[bufferTexel] = Rsed.palette.color_at_idx(pala.indices[palaTexel]);
                             palatPaneMousePick[bufferTexel] = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
                                                                                                       {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
                         }

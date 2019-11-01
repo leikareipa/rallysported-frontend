@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (01 November 2019 19:46:00 UTC)
+// VERSION: live (01 November 2019 19:55:15 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3131,7 +3131,7 @@ Rsed.world.mesh_builder = (function()
             {
                 const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + pos.x), (v.y + pos.y), (v.z + pos.z))),
                                             {
-                                                color: (ngon.fill.type === "texture"? Rsed.palette.color(0) : Rsed.palette.color(ngon.fill.idx)),
+                                                color: (ngon.fill.type === "texture"? Rsed.palette.color_at_idx(0) : Rsed.palette.color_at_idx(ngon.fill.idx)),
                                                 texture: (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx] : null),
                                                 textureMapping: "ortho",
                                                 hasSolidFill: true,
@@ -3481,7 +3481,7 @@ Rsed.palette = (function()
         // red, green, and blue channels as properties. Aside from the UI colors, the object
         // will be returned by reference to an index in the palette, so any changes to the
         // palette afterwards will be reflected in colors returned previously.
-        color: (colorIdx = 0)=>
+        color_at_idx: (colorIdx = 0)=>
         {
             // Named UI colors.
             switch (colorIdx)
@@ -3783,7 +3783,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                     (palaHeight > 0))
                 || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
 
-    const pixels = Array.from(data, (colorIdx)=>Rsed.palette.color(colorIdx));
+    const pixels = Array.from(data, (colorIdx)=>Rsed.palette.color_at_idx(colorIdx));
 
     const palaSize = (palaWidth * palaHeight);
 
@@ -3822,7 +3822,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                 ...args,
                 width: 1,
                 height: 1,
-                pixels: [Rsed.palette.color("black")],
+                pixels: [Rsed.palette.color_at_idx("black")],
                 indices: [0],
             });
         }
@@ -3899,7 +3899,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 const dataIdx = ((textureRects[idx].rect.topLeft.x + x) + (textureRects[idx].rect.topLeft.y + y) * textureAtlasWidth);
 
                 indices.push(textureAtlas[dataIdx]);
-                pixels.push(Rsed.palette.color(textureAtlas[dataIdx]));
+                pixels.push(Rsed.palette.color_at_idx(textureAtlas[dataIdx]));
             }
         }
 
@@ -5136,7 +5136,7 @@ Rsed.ui.draw = (function()
                 const pixel = pixels[cx + (flipped? (height - cy - 1) : cy) * width];
                 if (alpha && (pixel === 0)) continue;
 
-                const color = ((typeof pixel === "object")? pixel : Rsed.palette.color(pixel));
+                const color = ((typeof pixel === "object")? pixel : Rsed.palette.color_at_idx(pixel));
                 put_pixel((x + cx), (y + cy), color.red, color.green, color.blue);
 
                 if (mousePick != null)
@@ -5453,7 +5453,7 @@ Rsed.ui.draw = (function()
                 for (let x = 0; x < numPalatPaneCols; (x++, palaIdx++))
                 {
                     if (palaIdx > maxNumPalas) break;
-                    
+
                     const pala = Rsed.core.current_project().palat.texture[palaIdx];
                     for (let py = 0; py < palaHeight; py++)
                     {
@@ -5463,7 +5463,7 @@ Rsed.ui.draw = (function()
                             const bufferTexel = Math.floor((Math.floor(x * palaWidth + px) / 2) +
                                                             Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
 
-                            palatPaneBuffer[bufferTexel] = Rsed.palette.color(pala.indices[palaTexel]);
+                            palatPaneBuffer[bufferTexel] = Rsed.palette.color_at_idx(pala.indices[palaTexel]);
                             palatPaneMousePick[bufferTexel] = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
                                                                                                       {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
                         }

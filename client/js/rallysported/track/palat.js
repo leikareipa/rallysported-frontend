@@ -29,7 +29,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                     (palaHeight > 0))
                 || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
 
-    const pixels = Array.from(data, (colorIdx)=>Rsed.palette.color(colorIdx));
+    const pixels = Array.from(data, (colorIdx)=>Rsed.palette.color_at_idx(colorIdx));
 
     const palaSize = (palaWidth * palaHeight);
 
@@ -68,7 +68,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                 ...args,
                 width: 1,
                 height: 1,
-                pixels: [Rsed.palette.color("black")],
+                pixels: [Rsed.palette.color_at_idx("black")],
                 indices: [0],
             });
         }

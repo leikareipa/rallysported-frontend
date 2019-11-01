@@ -226,7 +226,7 @@ Rsed.world.mesh_builder = (function()
             {
                 const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + pos.x), (v.y + pos.y), (v.z + pos.z))),
                                             {
-                                                color: (ngon.fill.type === "texture"? Rsed.palette.color(0) : Rsed.palette.color(ngon.fill.idx)),
+                                                color: (ngon.fill.type === "texture"? Rsed.palette.color_at_idx(0) : Rsed.palette.color_at_idx(ngon.fill.idx)),
                                                 texture: (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx] : null),
                                                 textureMapping: "ortho",
                                                 hasSolidFill: true,

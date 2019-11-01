@@ -164,7 +164,7 @@ Rsed.palette = (function()
         // red, green, and blue channels as properties. Aside from the UI colors, the object
         // will be returned by reference to an index in the palette, so any changes to the
         // palette afterwards will be reflected in colors returned previously.
-        color: (colorIdx = 0)=>
+        color_at_idx: (colorIdx = 0)=>
         {
             // Named UI colors.
             switch (colorIdx)
