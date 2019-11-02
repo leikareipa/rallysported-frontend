@@ -210,10 +210,9 @@ window.onkeydown = function(event)
 
         switch (event.keyCode)
         {
-            case "q": case 81: Rsed.ui_view_n.toggle_view("2d-topdown", "3d"); break;
+            case "q": case 81: Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d"); break;
             case "w": case 87: Rsed.ui_view_n.show3dWireframe = !Rsed.ui_view_n.show3dWireframe; break;
             case "a": case 65: Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane; break;
-            case "r": case 82: Rsed.ui_view_n.toggle_view("3d", "3d-topdown"); break;
             case "l": case 76:
             {
                 const newHeight = parseInt(window.prompt("Level the terrain to a height of..."), 10);

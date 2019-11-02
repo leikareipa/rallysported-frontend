@@ -3,13 +3,12 @@
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
- *
- * Renders the RallySportED UI.
  * 
  */
 
 "use strict";
 
+// Handles rendering the RallySportED-js UI.
 Rsed.ui.draw = (function()
 {
     // The pixel buffer that UI render commands will draw into.
@@ -25,364 +24,291 @@ Rsed.ui.draw = (function()
     const palatPaneMousePick = [];
     let numPalatPaneCols = 9;
     let numPalatPaneRows = 29;
-    let palatPaneWidth = ((numPalatPaneCols * (Rsed.constants.palaWidth / 2)) + 1);
-    let palatPaneHeight = ((numPalatPaneRows * (Rsed.constants.palaHeight / 2)) + 1);
-    
-    function put_pixel(x = 0, y = 0, r = 255, g = 255, b = 255)
+    let palatPaneWidth = 0;
+    let palatPaneHeight = 0;
+
+    const publicInterface =
     {
-        const idx = ((x + y * pixelSurface.width) * 4);
-        pixelSurface.data[idx + 0] = r;
-        pixelSurface.data[idx + 1] = g;
-        pixelSurface.data[idx + 2] = b;
-        pixelSurface.data[idx + 3] = 255;
-    }
-
-    function put_mouse_pick_value(x = 0, y = 0, value = 0)
-    {
-        mousePickBuffer[(x + y * pixelSurface.width)] = value;
-    }
-
-    // Draws the given set of paletted pixels (each being a value in the range 0..31 in Rally-Sport's
-    // palette) of the given dimensions, starting at the x,y screen coordinates and working right/down.
-    // If alpha is true, will not draw pixels that have a palette index of 0.
-    function draw_image(pixels = [], mousePick = [], width = 0, height = 0, x = 0, y = 0, alpha = false, flipped = false)
-    {
-        // Convert from percentages into absolute screen coordinates.
-        if (x < 0) x = Math.floor(-x * pixelSurface.width);
-        if (y < 0) y = Math.floor(-y * pixelSurface.height);
-
-        x = Math.floor(x);
-        y = Math.floor(y);
-
-        Rsed.assert && ((mousePick instanceof Array) ||
-                        (mousePick === null))
-                    || Rsed.throw("Expected a valid mouse-picking buffer.");
-
-        Rsed.assert && (pixelSurface != null)
-                    || Rsed.throw("Expected a valid pixel surface.");
-
-        Rsed.assert && ((pixels[0] != null) &&
-                        (pixels.length > 0))
-                    || Rsed.throw("Expected a valid array of pixels.");
-
-        Rsed.assert && ((width > 0) &&
-                        (height > 0))
-                    || Rsed.throw("Expected a valid image resolution.");
-
-        Rsed.assert && ((x >= 0) &&
-                        (x < pixelSurface.width) &&
-                        (y >= 0) &&
-                        (y < pixelSurface.height))
-                    || Rsed.throw("Invalid screen coordinates for drawing a UI image.");
-
-        for (let cy = 0; cy < height; cy++)
+        // Readies the pixel buffer for UI drawing. This should be called before any draw
+        // calls are made for the current frame.
+        begin_drawing: function(canvas)
         {
-            if ((y + cy) < 0) continue;
-            if ((y + cy) >= pixelSurface.height) break;
+            Rsed.assert && (!pixelSurface &&
+                            !mousePickBuffer)
+                        || Rsed.throw("Cannot begin drawing while the pixel buffer is already in use.");
 
-            for (let cx = 0; cx < width; cx++)
+            pixelSurface = canvas.domElement.getContext("2d").getImageData(0, 0, canvas.width, canvas.height);
+            mousePickBuffer = canvas.mousePickingBuffer;
+
+            return;
+        },
+
+        // Uploads the current pixel buffer onto the target canvas. This should be called
+        // once all draw calls for the current frame have been made.
+        finish_drawing: function(canvas)
+        {
+            Rsed.assert && (pixelSurface &&
+                            mousePickBuffer)
+                        || Rsed.throw("Cannot finish drawing when drawing hasn't begun.");
+
+            canvas.domElement.getContext("2d").putImageData(pixelSurface, 0, 0);
+
+            pixelSurface = null;
+            mousePickBuffer = null;
+
+            return;
+        },
+        
+        // Draws the given set of paletted pixels (each being a value in the range 0..31 in Rally-Sport's
+        // palette) of the given dimensions, starting at the x,y screen coordinates and working right/down.
+        // If alpha is true, will not draw pixels that have a palette index of 0.
+        image: function(pixels = [], mousePick = [], width = 0, height = 0, x = 0, y = 0, alpha = false, flipped = false)
+        {
+            // Convert from percentages into absolute screen coordinates.
+            if (x < 0) x = Math.floor(-x * pixelSurface.width);
+            if (y < 0) y = Math.floor(-y * pixelSurface.height);
+
+            x = Math.floor(x);
+            y = Math.floor(y);
+
+            Rsed.assert && ((mousePick instanceof Array) ||
+                            (mousePick === null))
+                        || Rsed.throw("Expected a valid mouse-picking buffer.");
+
+            Rsed.assert && (pixelSurface != null)
+                        || Rsed.throw("Expected a valid pixel surface.");
+
+            Rsed.assert && ((pixels[0] != null) &&
+                            (pixels.length > 0))
+                        || Rsed.throw("Expected a valid array of pixels.");
+
+            Rsed.assert && ((width > 0) &&
+                            (height > 0))
+                        || Rsed.throw("Expected a valid image resolution.");
+
+            Rsed.assert && ((x >= 0) &&
+                            (x < pixelSurface.width) &&
+                            (y >= 0) &&
+                            (y < pixelSurface.height))
+                        || Rsed.throw("Invalid screen coordinates for drawing a UI image.");
+
+            for (let cy = 0; cy < height; cy++)
             {
-                if ((x + cx) < 0) continue;
-                if ((x + cx) >= pixelSurface.width) break;
+                if ((y + cy) < 0) continue;
+                if ((y + cy) >= pixelSurface.height) break;
 
-                const pixel = pixels[cx + (flipped? (height - cy - 1) : cy) * width];
-                if (alpha && (pixel === 0)) continue;
-
-                const color = ((typeof pixel === "object")? pixel : Rsed.palette.color_at_idx(pixel));
-                put_pixel((x + cx), (y + cy), color.red, color.green, color.blue);
-
-                if (mousePick != null)
+                for (let cx = 0; cx < width; cx++)
                 {
-                    put_mouse_pick_value((x + cx), (y + cy), mousePick[cx + cy * width]);
-                }
-            }
-        }
-    }
+                    if ((x + cx) < 0) continue;
+                    if ((x + cx) >= pixelSurface.width) break;
 
-    // Draws the given string onto the screen at the given coordinates.
-    // NOTE: If a coordinate's value is less than 0, its absolute value is interpreted as a percentage
-    // of the screen's resolution in the range 0..1.
-    function draw_string(string = "", x = 0, y = 0)
-    {
-        string = String(string).toUpperCase();
+                    const pixel = pixels[cx + (flipped? (height - cy - 1) : cy) * width];
+                    if (alpha && (pixel === 0)) continue;
 
-        Rsed.assert && (pixelSurface != null)
-                    || Rsed.throw("Expected a valid pixel surface.");
+                    const color = ((typeof pixel === "object")? pixel : Rsed.palette.color_at_idx(pixel));
+                    put_pixel((x + cx), (y + cy), color.red, color.green, color.blue);
 
-        Rsed.assert && (string.length != null)
-                    || Rsed.throw("Expected a non-empty string");
-
-        // Convert from percentages into absolute screen coordinates.
-        if (x < 0) x = Math.floor(-x * pixelSurface.width);
-        if (y < 0) y = Math.floor(-y * pixelSurface.height);
-
-        // Draw the string, one character at a time.
-        for (let i = 0; i < string.length; i++)
-        {
-            const character = Rsed.ui.font.character(string[i]);
-            const width = Rsed.ui.font.font_width();
-            const height = Rsed.ui.font.font_height();
-            
-            draw_image(character, null, width, height, x, y, false);
-            
-            x += ((Rsed.ui.font.font_width() / 2) + 0.3);
-        }
-    }
-
-    // Draws the mouse cursor, and any indicators attached to it.
-    function draw_mouse_cursor()
-    {
-        if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.ui &&
-            Rsed.ui_input_n.mouse_hover_args().elementId === Rsed.ui_input_n.uiElement.palat_pane)
-        {
-            draw_string("PALA:" + Rsed.ui_input_n.mouse_hover_args().x, Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
-        }
-        else if (Rsed.ui_brush_n.brushSmoothens)
-        {
-            draw_string("SMOOTHING", Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
-        }
-    }
-
-    function draw_watermark()
-    {
-        draw_string("RALLY", -.012, 3);
-        draw_string("SPORT", -.012, 3 + Rsed.ui.font.font_height()-1);
-        draw_string("ED%", -.012, 3 + ((Rsed.ui.font.font_height()-1) * 2));
-    }
-
-    function draw_footer_info()
-    {
-        const x = Rsed.ui_input_n.mouse_tile_hover_x();
-        const y = Rsed.ui_input_n.mouse_tile_hover_y();
-
-        let str = "HEIGHT:+000 PALA:000 X,Y:000,000";
-        switch (Rsed.ui_input_n.mouse_hover_type())
-        {
-            case Rsed.ui_input_n.mousePickingType.ground:
-            {
-                const xStr = String(x).padStart(3, "0");
-                const yStr = String(y).padStart(3, "0");
-                const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
-                                  String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
-                const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
-
-                str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
-
-                break;
-            }
-            case Rsed.ui_input_n.mousePickingType.prop:
-            {
-                str = "PROP:" + Rsed.core.current_project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
-                      " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
-
-                break;
-            }
-            default: break;
-        }
-
-        draw_string(str, 0, Rsed.core.render_height() - Rsed.ui.font.font_height()-0);
-    }
-
-    function draw_fps()
-    {
-        const fpsString = ("FPS: " + Rsed.core.renderer_fps());
-        draw_string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui.font.font_width()/2) - 73, 3);
-    }
-
-    function draw_palat_pane()
-    {
-        if (palatPaneBuffer.length > 0)
-        {
-            draw_image(palatPaneBuffer, palatPaneMousePick, palatPaneWidth, palatPaneHeight, 0, 0);
-        }
-    }
-
-    function draw_minimap()
-    {
-        // The minimap image by iterating over the tilemap and grabbing a pixel off each corresponding
-        // PALA texture.
-        /// TODO: You can pre-generate the image rather than re-generating it each frame.
-        const width = 64;
-        const height = 32;
-        const xMul = (Rsed.core.current_project().maasto.width / width);
-        const yMul = (Rsed.core.current_project().maasto.width / height);
-        const image = [];   // An array of palette indices that forms the minimap image.
-        const mousePick = [];
-        for (let y = 0; y < height; y++)
-        {
-            for (let x = 0; x < width; x++)
-            {
-                const tileX = (x * xMul);
-                const tileZ = (y * yMul);
-
-                const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
-                let color = ((pala == null)? 0 : pala.indices[1]);
-
-                // Have a black outline.
-                if (y % (height - 1) === 0) color = "black";
-                if (x % (width - 1) === 0) color = "black";
-
-                image.push(color);
-                mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
-                                                                       {
-                                                                           elementId: Rsed.ui_input_n.uiElement.minimap,
-                                                                           uiX: tileX,
-                                                                           uiY: tileZ
-                                                                       }));
-            }
-        }
-
-        draw_image(image, null, width, height, pixelSurface.width - width - 4, 3, false);
-
-        // Draw a frame around the camera view on the minimap.
-        if (image && xMul && yMul)
-        {
-            const frame = [];
-            const frameWidth = Math.round((Rsed.world.camera.view_width() / xMul));
-            const frameHeight = Math.floor((Rsed.world.camera.view_height() / yMul));
-            
-            for (let y = 0; y < frameHeight; y++)
-            {
-                for (let x = 0; x < frameWidth; x++)
-                {
-                    let color = 0;
-                    if (y % (frameHeight - 1) === 0) color = "yellow";
-                    if (x % (frameWidth - 1) === 0) color = "yellow";
-
-                    frame.push(color);
+                    if (mousePick != null)
+                    {
+                        put_mouse_pick_value((x + cx), (y + cy), mousePick[cx + cy * width]);
+                    }
                 }
             }
 
-            const camX = (Rsed.world.camera.pos_x() / xMul);
-            const camZ = (Rsed.world.camera.pos_z() / yMul);
-            draw_image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 3 + camZ, true);
-        }
-    }
+            return;
+        },
 
-    function draw_active_pala()
-    {
-        const currentPala = Rsed.ui_brush_n.brush_pala_idx();
-        const pala = Rsed.core.current_project().palat.texture[currentPala];
-
-        if (pala != null)
+        // Draws the given string onto the screen at the given coordinates.
+        // NOTE: If a coordinate's value is less than 0, its absolute value is interpreted as a percentage
+        // of the screen's resolution in the range 0..1.
+        string: function(string = "", x = 0, y = 0)
         {
-            draw_image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false, true);
-            draw_string((Rsed.ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
-        }
-    }
+            string = String(string).toUpperCase();
 
-    /// FIXME: This gets very slow to draw, because each pixel is paletted. Pre-bake the image as RGBA values
-    /// into a buffer and just blit it out, updating the buffer whenever you edit the VARIMAA.
-    function draw_paint_view()
-    {
-        // Draw a large minimap of the track in the middle of the screen.
-        const width = Math.floor(Rsed.core.render_width() * 0.81);
-        const height = Math.floor(Rsed.core.render_height() * 0.72);
+            Rsed.assert && (pixelSurface != null)
+                        || Rsed.throw("Expected a valid pixel surface.");
+
+            Rsed.assert && (string.length != null)
+                        || Rsed.throw("Expected a non-empty string");
+
+            // Convert from percentages into absolute screen coordinates.
+            if (x < 0) x = Math.floor(-x * pixelSurface.width);
+            if (y < 0) y = Math.floor(-y * pixelSurface.height);
+
+            // Draw the string, one character at a time.
+            for (let i = 0; i < string.length; i++)
+            {
+                const character = Rsed.ui.font.character(string[i]);
+                const width = Rsed.ui.font.font_width();
+                const height = Rsed.ui.font.font_height();
+                
+                this.image(character, null, width, height, x, y, false);
+                
+                x += ((Rsed.ui.font.font_width() / 2) + 0.3);
+            }
+
+            return;
+        },
+
+        // Draws the mouse cursor, and any indicators attached to it.
+        mouse_cursor: function()
         {
+            if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.ui &&
+                Rsed.ui_input_n.mouse_hover_args().elementId === Rsed.ui_input_n.uiElement.palat_pane)
+            {
+                this.string("PALA:" + Rsed.ui_input_n.mouse_hover_args().x, Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
+            }
+            else if (Rsed.ui_brush_n.brushSmoothens)
+            {
+                this.string("SMOOTHING", Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
+            }
+
+            return;
+        },
+
+        watermark: function()
+        {
+            this.string("RALLY", -.012, 3);
+            this.string("SPORT", -.012, 3 + Rsed.ui.font.font_height()-1);
+            this.string("ED%", -.012, 3 + ((Rsed.ui.font.font_height()-1) * 2));
+
+            return;
+        },
+
+        footer_info: function()
+        {
+            const x = Rsed.ui_input_n.mouse_tile_hover_x();
+            const y = Rsed.ui_input_n.mouse_tile_hover_y();
+
+            let str = "HEIGHT:+000 PALA:000 X,Y:000,000";
+            switch (Rsed.ui_input_n.mouse_hover_type())
+            {
+                case Rsed.ui_input_n.mousePickingType.ground:
+                {
+                    const xStr = String(x).padStart(3, "0");
+                    const yStr = String(y).padStart(3, "0");
+                    const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
+                                        String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
+                    const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
+
+                    str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
+
+                    break;
+                }
+                case Rsed.ui_input_n.mousePickingType.prop:
+                {
+                    str = "PROP:" + Rsed.core.current_project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
+                            " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
+
+                    break;
+                }
+                default: break;
+            }
+
+            this.string(str, 0, Rsed.core.render_height() - Rsed.ui.font.font_height()-0);
+
+            return;
+        },
+
+        fps: function()
+        {
+            const fpsString = ("FPS: " + Rsed.core.renderer_fps());
+            this.string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui.font.font_width()/2) - 73, 3);
+
+            return;
+        },
+
+        palat_pane: function()
+        {
+            if (palatPaneBuffer.length > 0)
+            {
+                this.image(palatPaneBuffer, palatPaneMousePick, palatPaneWidth, palatPaneHeight, 0, 0);
+            }
+
+            return;
+        },
+
+        minimap: function()
+        {
+            // The minimap image by iterating over the tilemap and grabbing a pixel off each corresponding
+            // PALA texture.
+            /// TODO: You can pre-generate the image rather than re-generating it each frame.
+            const width = 64;
+            const height = 32;
             const xMul = (Rsed.core.current_project().maasto.width / width);
-            const zMul = (Rsed.core.current_project().maasto.width / height);
+            const yMul = (Rsed.core.current_project().maasto.width / height);
             const image = [];   // An array of palette indices that forms the minimap image.
             const mousePick = [];
-
-            for (let z = 0; z < height; z++)
+            for (let y = 0; y < height; y++)
             {
                 for (let x = 0; x < width; x++)
                 {
-                    const tileX = Math.floor(x * xMul);
-                    const tileZ = Math.floor(z * zMul);
+                    const tileX = (x * xMul);
+                    const tileZ = (y * yMul);
 
                     const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
                     let color = ((pala == null)? 0 : pala.indices[1]);
 
-                    // Create an outline.
-                    if (z % (height - 1) === 0) color = "gray";
-                    if (x % (width - 1) === 0) color = "gray";
-
-                    // Indicate the location of the track's checkpoint.
-                    /// FIXME: Disabled for now. Will be reimplemented for the new resource-handling code.
-                    /*if ((tileX === Rsed.maasto_n.track_checkpoint_x()) &&
-                        (tileZ === Rsed.maasto_n.track_checkpoint_y()))
-                    {
-                        color = "white";
-                    }*/
+                    // Have a black outline.
+                    if (y % (height - 1) === 0) color = "black";
+                    if (x % (width - 1) === 0) color = "black";
 
                     image.push(color);
                     mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
-                        {elementId:Rsed.ui_input_n.uiElement.large_minimap,
-                        uiX:tileX, uiY:tileZ}));
+                                                                            {
+                                                                                elementId: Rsed.ui_input_n.uiElement.minimap,
+                                                                                uiX: tileX,
+                                                                                uiY: tileZ
+                                                                            }));
                 }
             }
 
+            this.image(image, null, width, height, pixelSurface.width - width - 4, 3, false);
 
-
-            draw_image(image, mousePick, width, height, ((pixelSurface.width / 2) - (width / 2)), ((pixelSurface.height / 2) - (height / 2)), false);
-        }
-
-        draw_string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
-                    ((pixelSurface.width / 2) - (width / 2)),
-                    ((pixelSurface.height / 2) - (height / 2)) - Rsed.ui.font.font_height());
-    }
-
-    const publicInterface = {};
-    {
-        // Call this when RallySportED crashes and you want the user to be given a visual indication of that
-        // on the render surface.
-        // NOTE: Avoid evoking Rsed.assert in this function, since the function itself may be called on asserts.
-        publicInterface.draw_crash_message = function(renderSurface, message)
-        {
-            if (!(renderSurface instanceof Rsed.render_surface_n.render_surface_o)) return;
-
-            pixelSurface = renderSurface.getContext("2d").getImageData(0, 0, renderSurface.width, renderSurface.height);
-
-            draw_string("RALLYSPORTED HAS STOPPED RUNNING. SORRY ABOUT THAT!", 2, Rsed.ui.font.font_height()*1);
-            draw_string("C:>_", 2, Rsed.ui.font.font_height()*3);
-
-            renderSurface.getContext("2d").putImageData(pixelSurface, 0, 0);
-            pixelSurface = null;
-        }
-
-        publicInterface.draw_ui = function(renderSurface = Rsed.render_surface_n.render_surface_o, surfaceMousePickBuffer)
-        {
-            // Draw the UI.
-            pixelSurface = renderSurface.getContext("2d").getImageData(0, 0, renderSurface.width, renderSurface.height);
-            mousePickBuffer = surfaceMousePickBuffer;
+            // Draw a frame around the camera view on the minimap.
+            if (image && xMul && yMul)
             {
-                switch (Rsed.ui_view_n.current_view())
+                const frame = [];
+                const frameWidth = Math.round((Rsed.world.camera.view_width() / xMul));
+                const frameHeight = Math.floor((Rsed.world.camera.view_height() / yMul));
+                
+                for (let y = 0; y < frameHeight; y++)
                 {
-                    case "3d":
-                    case "3d-topdown":
+                    for (let x = 0; x < frameWidth; x++)
                     {
-                        draw_watermark();
-                        draw_minimap();
-                        draw_active_pala();
-                        draw_footer_info();
-                        if (Rsed.ui_view_n.showPalatPane) draw_palat_pane();
+                        let color = 0;
+                        if (y % (frameHeight - 1) === 0) color = "yellow";
+                        if (x % (frameWidth - 1) === 0) color = "yellow";
 
-                        break;
+                        frame.push(color);
                     }
-                    case "2d-topdown":
-                    {
-                        draw_paint_view();
-                        draw_active_pala();
-                        if (Rsed.ui_view_n.showPalatPane) draw_palat_pane();
-                        
-                        break;
-                    }
-                    default: break;
                 }
 
-                if (Rsed.core.fps_counter_enabled()) draw_fps();
-                
-                draw_mouse_cursor();
+                const camX = (Rsed.world.camera.pos_x() / xMul);
+                const camZ = (Rsed.world.camera.pos_z() / yMul);
+                this.image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 3 + camZ, true);
             }
-            renderSurface.getContext("2d").putImageData(pixelSurface, 0, 0);
-            pixelSurface = null;
-            mousePickBuffer = null;
-        }
+
+            return;
+        },
+
+        active_pala: function()
+        {
+            const currentPala = Rsed.ui_brush_n.brush_pala_idx();
+            const pala = Rsed.core.current_project().palat.texture[currentPala];
+
+            if (pala != null)
+            {
+                this.image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false, true);
+                this.string((Rsed.ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
+            }
+
+            return;
+        },
 
         // Create a set of thumbnails of the contents of the current PALAT file. We'll display this pane of
         // thumbnails to the user for selecting PALAs.
-        publicInterface.generate_palat_pane = function()
+        generate_palat_pane: function()
         {
             const maxNumPalas = 253;
 
@@ -438,7 +364,28 @@ Rsed.ui.draw = (function()
                     palatPaneBuffer[i + (y * palaHeight/2) * palatPaneWidth] = "black";
                 }
             }
+
+            return;
         }
+    };
+
+    function put_pixel(x = 0, y = 0, r = 255, g = 255, b = 255)
+    {
+        const idx = ((x + y * pixelSurface.width) * 4);
+        pixelSurface.data[idx + 0] = r;
+        pixelSurface.data[idx + 1] = g;
+        pixelSurface.data[idx + 2] = b;
+        pixelSurface.data[idx + 3] = 255;
+
+        return;
     }
+
+    function put_mouse_pick_value(x = 0, y = 0, value = 0)
+    {
+        mousePickBuffer[(x + y * pixelSurface.width)] = value;
+
+        return;
+    }
+
     return publicInterface;
 })();

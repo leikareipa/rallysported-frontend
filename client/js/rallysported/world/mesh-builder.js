@@ -22,12 +22,10 @@ Rsed.world.mesh_builder = (function()
             // The polygons that make up the track mesh.
             const trackPolygons = [];
 
-            const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
-
             // We'll shift the track mesh by these values (world units) to center the mesh on screen.
-            const centerView = {x: (isTopdownView? -1152 : -1088),
-                                y: (isTopdownView? -1800 : -680),
-                                z: (isTopdownView? 700 : 2612)};
+            const centerView = {x: -1088,
+                                y: -680,
+                                z: 2612};
 
             for (let z = 0; z < Rsed.world.camera.view_height(); z++)
             {

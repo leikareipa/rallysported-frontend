@@ -20,6 +20,9 @@ Rsed.core = (function()
     // this is the target project.
     let project = Rsed.project.placeholder;
 
+    // The scene we're currently viewing.
+    let scene = Rsed.scenes["3d"];
+
     // Whether to display an FPS counter to the user.
     const fpsCounterEnabled = (()=>
     {
@@ -60,8 +63,8 @@ Rsed.core = (function()
                 {
                     this.trackName = Rsed.core.current_project().name;
                     this.propList = Rsed.core.current_project().props.names()
-                                                    .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
-                                                    .map(propName=>({propName}));
+                                             .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
+                                             .map(propName=>({propName}));
 
                     return;
                 }
@@ -93,14 +96,14 @@ Rsed.core = (function()
         width: 0,
         height: 0,
         scalingFactor: 0.25,
-        element: document.getElementById("render-canvas"),
+        domElement: document.getElementById("render-canvas"),
         
         // An array where each element corresponds to a rendered pixel on the canvas and contains
         // a 32-bit value identifying the source n-gon.
         mousePickingBuffer: [],
     };
 
-    Rsed.assert && (canvas.element != null)
+    Rsed.assert && (canvas.domElement != null)
                 || Rsed.throw("Failed to find a canvas element to render into.");
 
     const publicInterface =
@@ -140,19 +143,37 @@ Rsed.core = (function()
             this.run = ()=>{};
         },
 
-        current_project: ()=>
+        current_project: function()
         {
             Rsed.assert && (project !== null)
                         || Rsed.throw("Attempting to access an uninitialized project.");
 
             return project;
         },
+
+        current_scene: function()
+        {
+            Rsed.assert && (scene !== null)
+                        || Rsed.throw("Attempting to access an uninitialized scene.");
+
+            return scene;
+        },
+
+        set_scene: function(sceneName)
+        {
+            Rsed.assert && (Rsed.scenes[sceneName])
+                        || Rsed.throw("Attempting to set an unknown scene.");
+
+            scene = Rsed.scenes[sceneName];
+
+            return;
+        },
         
         is_running: ()=>isRunning,
         render_width: ()=>canvas.width,
         render_height: ()=>canvas.height,
         renderer_fps: ()=>programFPS,
-        render_surface_id: ()=>canvas.element.getAttribute("id"),
+        render_surface_id: ()=>canvas.domElement.getAttribute("id"),
         fps_counter_enabled: ()=>fpsCounterEnabled,
         scaling_multiplier: ()=>canvas.scalingFactor,
         mouse_pick_buffer_value_at: (x, y)=>canvas.mousePickingBuffer[x + y * canvas.width],
@@ -171,41 +192,9 @@ Rsed.core = (function()
         Rsed.ui_input_n.enact_inputs();
 
         // Render the next frame.
-        {
-            canvas.mousePickingBuffer.fill(null);
-
-            const trackMesh = Rsed.world.mesh_builder.track_mesh({x: Math.floor(Rsed.world.camera.pos_x()),
-                                                                  y: 0,
-                                                                  z: Math.floor(Rsed.world.camera.pos_z())});
-
-            const isTopdownView = (Rsed.ui_view_n.current_view() === "3d-topdown");
-
-            const renderInfo = Rngon.render(canvas.element.getAttribute("id"), [trackMesh],
-            {
-                cameraPosition: Rngon.translation_vector(0, 0, 0),
-                cameraDirection: Rngon.rotation_vector((isTopdownView? 90 : 21), 0, 0),
-                scale: canvas.scalingFactor,
-                fov: 45,
-                nearPlane: 300,
-                farPlane: 10000,
-                clipToViewport: true,
-                depthSort: "none",
-                auxiliaryBuffers: [{buffer:canvas.mousePickingBuffer, property:"mousePickId"}],
-            });
-
-            // If the rendering was resized since the previous frame...
-            if ((renderInfo.renderWidth !== canvas.width ||
-                (renderInfo.renderHeight !== canvas.height)))
-            {
-                canvas.width = renderInfo.renderWidth;
-                canvas.height = renderInfo.renderHeight;
-
-                // The PALAT pane needs to adjust to the new size of the canvas.
-                Rsed.ui.draw.generate_palat_pane();
-            }
-
-            Rsed.ui.draw.draw_ui(canvas.element, canvas.mousePickingBuffer);
-        }
+        canvas.mousePickingBuffer.fill(null);
+        scene.draw_mesh(canvas);
+        scene.draw_ui(canvas);
 
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
     }
