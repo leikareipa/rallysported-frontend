@@ -101,11 +101,22 @@ window.onload = function(event)
         }
     }
 
-    Rsed.core.run(rsedStartupArgs);
+    if (Rsed && Rsed.core)
+    {
+        Rsed.core.run(rsedStartupArgs);
+    }
+    else
+    {
+        Rsed.throw("Failed to launch RallySportED.");
+    }
+
+    return;
 }
 
 window.close_dropdowns = function()
 {
+    if (!Rsed || !Rsed.core) return;
+
     const dropdowns = document.getElementsByClassName("dropdown_list");
     for (let i = 0; i < dropdowns.length; i++)
     {
@@ -119,13 +130,18 @@ window.close_dropdowns = function()
 // Disable the right-click browser menu, since we want to use the right mouse button for other things.
 window.oncontextmenu = function(event)
 {
+    if (!Rsed || !Rsed.core) return;
+
     if (RSED_DROPDOWN_ACTIVATED)
     {
         window.close_dropdowns();
         return false;
     }
 
-    if (event.target.id !== Rsed.core.render_surface_id()) return;
+    if (!Rsed || !Rsed.core || (event.target.id !== Rsed.core.render_surface_id()))
+    {
+        return;
+    }
 
     // Display a right-click menu for changing the type of the prop under the cursor.
     if (!Rsed.shared_mode_n.enabled() &&
@@ -146,6 +162,8 @@ window.oncontextmenu = function(event)
 // to close any open dropdown lists.
 window.onclick = function(event)
 {
+    if (!Rsed || !Rsed.core) return;
+
     if (RSED_DROPDOWN_ACTIVATED &&
         (event.target.id === Rsed.core.render_surface_id()))
     {
@@ -156,6 +174,8 @@ window.onclick = function(event)
 
 window.onmousedown = function(event)
 {
+    if (!Rsed || !Rsed.core) return;
+    
     switch (event.button)
     {
         case 0: Rsed.ui_input_n.set_left_click(true); break;
@@ -167,6 +187,8 @@ window.onmousedown = function(event)
 
 window.onmouseup = function(event)
 {
+    if (!Rsed || !Rsed.core) return;
+
     switch (event.button)
     {
         case 0: Rsed.ui_input_n.set_left_click(false); break;
@@ -178,6 +200,8 @@ window.onmouseup = function(event)
 
 window.onmousemove = function(event)
 {
+    if (!Rsed || !Rsed.core) return;
+
     if (event.target.id !== Rsed.core.render_surface_id())
     {
         /// Temp hack. Prevent mouse clicks over prop dropdown dialogs from falling through and
@@ -202,6 +226,8 @@ window.onmousemove = function(event)
 
 window.onkeydown = function(event)
 {
+    if (!Rsed || !Rsed.core) return;
+
     Rsed.ui_input_n.update_key_status(event, true);
 
     /// Temp hack. Process some of the key presses here, for convenience.
@@ -239,6 +265,8 @@ window.onkeydown = function(event)
 
 window.onkeyup = function(event)
 {
+    if (!Rsed || !Rsed.core) return;
+
     Rsed.ui_input_n.update_key_status(event, false);
 }
 
@@ -247,6 +275,8 @@ window.onkeyup = function(event)
 // load up. If it's not, we'll ignore the drop.
 window.drop_handler = function(event)
 {
+    if (!Rsed || !Rsed.core) return;
+
     // Don't let the browser handle the drop.
     event.preventDefault();
 
