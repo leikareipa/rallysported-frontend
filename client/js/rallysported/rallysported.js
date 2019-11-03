@@ -23,7 +23,7 @@ const Rsed = {};
     
     Rsed.throw = (errMessage = "")=>
     {
-        Rsed.core.panic(errMessage);
+        if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
 
         alert("RallySportED error: " + errMessage);
         throw new Error("RallySportED error: " + errMessage);
@@ -39,7 +39,41 @@ const Rsed = {};
         console.log("RallySportED: " + message);
     }
 
-    // Linear interpolation.
+    Rsed.throw_if_undefined = (...properties)=>
+    {
+        for (const property of properties)
+        {
+            if (typeof property === "undefined")
+            {
+                Rsed.throw("A required property is undefined.");
+            }
+        }
+
+        return;
+    }
+
+    Rsed.throw_if_not_type = (typeName, ...properties)=>
+    {
+        for (const property of properties)
+        {
+            const isOfType = (()=>
+            {
+                switch (typeName)
+                {
+                    case "array": return Array.isArray(property);
+                    default: return (typeof property === typeName);
+                }
+            })();
+
+            if (!isOfType)
+            {
+                Rsed.throw(`A property is of the wrong type; expected "${typeName}".`);
+            }
+        }
+
+        return;
+    }
+
     Rsed.lerp = (x = 0, y = 0, interval = 0)=>(x + (interval * (y - x)));
 
     Rsed.clamp = (value = 0, min = 0, max = 1)=>Math.min(Math.max(value, min), max);
