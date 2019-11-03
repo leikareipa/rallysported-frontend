@@ -191,6 +191,8 @@ Rsed.core = (function()
         // Poll and process user input.
         Rsed.ui_input_n.enact_inputs();
 
+        scene.handle_input();
+
         // Render the next frame.
         canvas.mousePickingBuffer.fill(null);
         scene.draw_mesh(canvas);

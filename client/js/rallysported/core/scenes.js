@@ -64,6 +64,98 @@ Rsed.scenes =
 
             return;
         },
+
+        handle_input: function()
+        {
+            // Handle keyboard input to move the camera.
+            {
+                const movement = {x:0, y:0, z:0};
+
+                if (Rsed.ui.inputState.key_down("s")) movement.x += -1;
+                if (Rsed.ui.inputState.key_down("f")) movement.x +=  1;
+                if (Rsed.ui.inputState.key_down("e")) movement.z += -1;
+                if (Rsed.ui.inputState.key_down("d")) movement.z +=  1;
+        
+                //movement.normalize(); /// TODO: Disabled for now, since diagonal movement is too jerky without the double movement speed.
+                Rsed.world.camera.move_camera(movement.x, movement.y, movement.z);
+            }
+
+            // Handle keyboard input for one-off events, where the key press is registered
+            // only once (no repeat).
+            {
+                if (Rsed.ui.inputState.key_down("q"))
+                {
+                    Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
+                    Rsed.ui.inputState.set_key_down("q", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("w"))
+                {
+                    Rsed.ui_view_n.show3dWireframe = !Rsed.ui_view_n.show3dWireframe;
+                    Rsed.ui.inputState.set_key_down("w", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("a"))
+                {
+                    Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane;
+                    Rsed.ui.inputState.set_key_down("a", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("l"))
+                {
+                    const newHeight = parseInt(window.prompt("Level the terrain to a height of..."), 10);
+    
+                    if (!isNaN(newHeight))
+                    {
+                        Rsed.core.current_project().maasto.bulldoze(newHeight);
+                    }
+
+                    Rsed.ui.inputState.set_key_down("l", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("b"))
+                {
+                    Rsed.ui_view_n.hideProps = !Rsed.ui_view_n.hideProps;
+                    Rsed.ui.inputState.set_key_down("b", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("spacebar"))
+                {
+                    Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens;
+                    Rsed.ui.inputState.set_key_down("spacebar", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("1"))
+                {
+                    Rsed.ui_brush_n.set_brush_size(0);
+                    Rsed.ui.inputState.set_key_down("1", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("2"))
+                {
+                    Rsed.ui_brush_n.set_brush_size(1);
+                    Rsed.ui.inputState.set_key_down("2", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("3"))
+                {
+                    Rsed.ui_brush_n.set_brush_size(2);
+                    Rsed.ui.inputState.set_key_down("3", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("4"))
+                {
+                    Rsed.ui_brush_n.set_brush_size(3);
+                    Rsed.ui.inputState.set_key_down("4", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("5"))
+                {
+                    Rsed.ui_brush_n.set_brush_size(8);
+                    Rsed.ui.inputState.set_key_down("5", false);
+                }
+            }
+        },
     }),
 
     // Presents a top-down view of the project's tilemap. The user can edit the tilemap
@@ -151,6 +243,55 @@ Rsed.scenes =
             }
             
             return;
+        },
+
+        handle_input: function()
+        {
+            // Handle keyboard input for one-off events, where the key press is registered
+            // only once (no repeat).
+            {
+                if (Rsed.ui.inputState.key_down("q"))
+                {
+                    Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
+                    Rsed.ui.inputState.set_key_down("q", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("a"))
+                {
+                    Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane;
+                    Rsed.ui.inputState.set_key_down("a", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("1"))
+                {
+                    Rsed.ui_brush_n.set_brush_size(0);
+                    Rsed.ui.inputState.set_key_down("1", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("2"))
+                {
+                    Rsed.ui_brush_n.set_brush_size(1);
+                    Rsed.ui.inputState.set_key_down("2", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("3"))
+                {
+                    Rsed.ui_brush_n.set_brush_size(2);
+                    Rsed.ui.inputState.set_key_down("3", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("4"))
+                {
+                    Rsed.ui_brush_n.set_brush_size(3);
+                    Rsed.ui.inputState.set_key_down("4", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("5"))
+                {
+                    Rsed.ui_brush_n.set_brush_size(8);
+                    Rsed.ui.inputState.set_key_down("5", false);
+                }
+            }
         },
     }),
 };

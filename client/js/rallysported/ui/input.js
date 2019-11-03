@@ -382,7 +382,7 @@ Rsed.ui_input_n = (function()
         publicInterface.enact_inputs = function()
         {
             enact_mouse_clicks();
-            enact_key_presses();
+           // enact_key_presses();
 
             // Mouse position deltas shouldn't carry across frames, so now that we've enacted all inputs,
             // we can reset them.

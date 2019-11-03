@@ -15,10 +15,6 @@
 /// might otherwise fall through the dropdown menu.
 let RSED_DROPDOWN_ACTIVATED = false;
 
-/// Temp hack. Gets updated with onmousemove, and stores the mouse's position relative to the
-/// canvas.
-const RSED_MOUSE_POS = {x:0, y:0};
-
 // Parses any address bar parameters, then launches RallySportED.
 window.onload = function(event)
 {
@@ -148,8 +144,10 @@ window.oncontextmenu = function(event)
         (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
         !Rsed.core.current_project().props.name(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
+        const mousePos = Rsed.ui.inputState.mouse_pos();
         const propDropdown = document.getElementById("prop-dropdown");
-        propDropdown.style.transform = "translate(" + (RSED_MOUSE_POS.x - 40) + "px, " + (RSED_MOUSE_POS.y - 0) + "px)";
+
+        propDropdown.style.transform = "translate(" + (mousePos.x - 40) + "px, " + (mousePos.y - 0) + "px)";
         propDropdown.classList.toggle("show");
 
         RSED_DROPDOWN_ACTIVATED = true;
@@ -178,9 +176,9 @@ window.onmousedown = function(event)
     
     switch (event.button)
     {
-        case 0: Rsed.ui_input_n.set_left_click(true); break;
-        case 1: Rsed.ui_input_n.set_middle_click(true); break;
-        case 2: Rsed.ui_input_n.set_right_click(true); break;
+        case 0: Rsed.ui.inputState.set_mouse_button_down({left:true}); Rsed.ui_input_n.set_left_click(true); break;
+        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:true});Rsed.ui_input_n.set_middle_click(true); break;
+        case 2: Rsed.ui.inputState.set_mouse_button_down({right:true});Rsed.ui_input_n.set_right_click(true); break;
         default: break;
     }
 }
@@ -191,9 +189,9 @@ window.onmouseup = function(event)
 
     switch (event.button)
     {
-        case 0: Rsed.ui_input_n.set_left_click(false); break;
-        case 1: Rsed.ui_input_n.set_middle_click(false); break;
-        case 2: Rsed.ui_input_n.set_right_click(false); break;
+        case 0: Rsed.ui.inputState.set_mouse_button_down({left:false}); Rsed.ui_input_n.set_left_click(false); break;
+        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:false}); Rsed.ui_input_n.set_middle_click(false); break;
+        case 2: Rsed.ui.inputState.set_mouse_button_down({right:false}); Rsed.ui_input_n.set_right_click(false); break;
         default: break;
     }
 }
@@ -216,58 +214,44 @@ window.onmousemove = function(event)
 
     if (!RSED_DROPDOWN_ACTIVATED)
     {
-        RSED_MOUSE_POS.x = (event.clientX - event.target.getBoundingClientRect().left);
-        RSED_MOUSE_POS.y = (event.clientY - event.target.getBoundingClientRect().top);
+        const mouseX = (event.clientX - event.target.getBoundingClientRect().left);
+        const mouseY = (event.clientY - event.target.getBoundingClientRect().top);
 
-        Rsed.ui_input_n.set_mouse_pos(Math.floor(RSED_MOUSE_POS.x * Rsed.core.scaling_multiplier()),
-                                      Math.floor(RSED_MOUSE_POS.y * Rsed.core.scaling_multiplier()));
+        Rsed.ui.inputState.set_mouse_pos(mouseX, mouseY);
+
+        Rsed.ui_input_n.set_mouse_pos(Math.floor(mouseX * Rsed.core.scaling_multiplier()),
+                                      Math.floor(mouseY * Rsed.core.scaling_multiplier()));
     }
+
+    return;
 }
 
 window.onkeydown = function(event)
 {
     if (!Rsed || !Rsed.core) return;
 
-    Rsed.ui_input_n.update_key_status(event, true);
-
-    /// Temp hack. Process some of the key presses here, for convenience.
+    // For keys used by RallySportED to which the browser also coincidentally responds,
+    // prevent the browser from doing so.
+    switch (event.keyCode)
     {
-        if (event.repeat) return;
-
-        switch (event.keyCode)
-        {
-            case "q": case 81: Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d"); break;
-            case "w": case 87: Rsed.ui_view_n.show3dWireframe = !Rsed.ui_view_n.show3dWireframe; break;
-            case "a": case 65: Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane; break;
-            case "l": case 76:
-            {
-                const newHeight = parseInt(window.prompt("Level the terrain to a height of..."), 10);
-
-                if (!isNaN(newHeight))
-                {
-                    Rsed.core.current_project().maasto.bulldoze(newHeight);
-                }
-
-                break;
-            }
-            case "b": case 66: Rsed.ui_view_n.hideProps = !Rsed.ui_view_n.hideProps; break;
-            case "spacebar": case 32: Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens; event.preventDefault(); break;
-            case "1": case 49: Rsed.ui_brush_n.set_brush_size(0); break;
-            case "2": case 50: Rsed.ui_brush_n.set_brush_size(1); break;
-            case "3": case 51: Rsed.ui_brush_n.set_brush_size(2); break;
-            case "4": case 52: Rsed.ui_brush_n.set_brush_size(3); break;
-            case "5": case 53: Rsed.ui_brush_n.set_brush_size(8); break;
-            case "tab": case 9: event.preventDefault(); break;
-            default: break;
-        }
+        case "tab": case 9:
+        case "spacebar": case 32: event.preventDefault(); break;
+        default: break;
     }
+
+    if (!event.repeat) Rsed.ui.inputState.set_key_down(event.keyCode, true);
+
+    return;
 }
 
 window.onkeyup = function(event)
 {
     if (!Rsed || !Rsed.core) return;
 
+    Rsed.ui.inputState.set_key_down(event.keyCode, false);
     Rsed.ui_input_n.update_key_status(event, false);
+
+    return;
 }
 
 // Gets called when something is dropped onto RallySportED's render canvas. We expect
