@@ -125,34 +125,13 @@ Rsed.scenes =
                     Rsed.ui.inputState.set_key_down("spacebar", false);
                 }
 
-                if (Rsed.ui.inputState.key_down("1"))
+                for (const brushSizeKey of ["1", "2", "3", "4", "5"])
                 {
-                    Rsed.ui_brush_n.set_brush_size(0);
-                    Rsed.ui.inputState.set_key_down("1", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("2"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(1);
-                    Rsed.ui.inputState.set_key_down("2", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("3"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(2);
-                    Rsed.ui.inputState.set_key_down("3", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("4"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(3);
-                    Rsed.ui.inputState.set_key_down("4", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("5"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(8);
-                    Rsed.ui.inputState.set_key_down("5", false);
+                    if (Rsed.ui.inputState.key_down(brushSizeKey))
+                    {
+                        Rsed.ui_brush_n.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+                        Rsed.ui.inputState.set_key_down(brushSizeKey, false);
+                    }
                 }
             }
         },
@@ -262,34 +241,13 @@ Rsed.scenes =
                     Rsed.ui.inputState.set_key_down("a", false);
                 }
 
-                if (Rsed.ui.inputState.key_down("1"))
+                for (const brushSizeKey of ["1", "2", "3", "4", "5"])
                 {
-                    Rsed.ui_brush_n.set_brush_size(0);
-                    Rsed.ui.inputState.set_key_down("1", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("2"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(1);
-                    Rsed.ui.inputState.set_key_down("2", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("3"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(2);
-                    Rsed.ui.inputState.set_key_down("3", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("4"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(3);
-                    Rsed.ui.inputState.set_key_down("4", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("5"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(8);
-                    Rsed.ui.inputState.set_key_down("5", false);
+                    if (Rsed.ui.inputState.key_down(brushSizeKey))
+                    {
+                        Rsed.ui_brush_n.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+                        Rsed.ui.inputState.set_key_down(brushSizeKey, false);
+                    }
                 }
             }
         },
