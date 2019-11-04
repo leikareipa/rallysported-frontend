@@ -40,13 +40,22 @@ Rsed.ui.inputState = (function()
             return {...mouseState.position};
         },
 
-        // Mouse position scaled to the render resolution.
-        mouse_pos_scaled: function()
+        mouse_pos_scaled_to_render_resolution: function()
         {
-            return {
-                x: Math.floor(mouseState.position.x * Rsed.core.scaling_multiplier()),
-                y: Math.floor(mouseState.position.y * Rsed.core.scaling_multiplier()),
-            };
+            const scaledX = Math.floor(mouseState.position.x * Rsed.core.scaling_multiplier());
+            const scaledY = Math.floor(mouseState.position.y * Rsed.core.scaling_multiplier());
+
+            const clampedX = Math.max(0, Math.min((Rsed.core.render_width() - 1), scaledX));
+            const clampedY = Math.max(0, Math.min((Rsed.core.render_height() - 1), scaledY));
+
+            return {clampedX, clampedY};
+        },
+
+        mouse_button_down: function()
+        {
+            return (mouseState.buttons.left |
+                    mouseState.buttons.mid  |
+                    mouseState.buttons.right);
         },
 
         left_mouse_button_down: function()
