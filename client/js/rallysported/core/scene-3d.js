@@ -122,10 +122,10 @@ Rsed.scenes = Rsed.scenes || {};
                     Rsed.ui.inputState.set_key_down("b", false);
                 }
 
-                if (Rsed.ui.inputState.key_down("spacebar"))
+                if (Rsed.ui.inputState.key_down(" "))
                 {
                     Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens;
-                    Rsed.ui.inputState.set_key_down("spacebar", false);
+                    Rsed.ui.inputState.set_key_down(" ", false);
                 }
 
                 for (const brushSizeKey of ["1", "2", "3", "4", "5"])

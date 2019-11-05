@@ -246,8 +246,8 @@ window.onkeydown = function(event)
     // prevent the browser from doing so.
     switch (event.key)
     {
-        case "tab":
-        case "spacebar": event.preventDefault(); break;
+        case "Tab":
+        case " ": event.preventDefault(); break;
         default: break;
     }
 

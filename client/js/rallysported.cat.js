@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (05 November 2019 05:39:06 UTC)
+// VERSION: live (05 November 2019 06:24:10 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5750,8 +5750,8 @@ window.onkeydown = function(event)
     // prevent the browser from doing so.
     switch (event.key)
     {
-        case "tab":
-        case "spacebar": event.preventDefault(); break;
+        case "Tab":
+        case " ": event.preventDefault(); break;
         default: break;
     }
 
@@ -6199,10 +6199,10 @@ Rsed.scenes = Rsed.scenes || {};
                     Rsed.ui.inputState.set_key_down("b", false);
                 }
 
-                if (Rsed.ui.inputState.key_down("spacebar"))
+                if (Rsed.ui.inputState.key_down(" "))
                 {
                     Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens;
-                    Rsed.ui.inputState.set_key_down("spacebar", false);
+                    Rsed.ui.inputState.set_key_down(" ", false);
                 }
 
                 for (const brushSizeKey of ["1", "2", "3", "4", "5"])
