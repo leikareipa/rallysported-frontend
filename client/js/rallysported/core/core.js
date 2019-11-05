@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/core.js
+ * Most recent known filename: js/core/core.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
