@@ -25,13 +25,13 @@ const Rsed = {};
     {
         if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
 
-        alert("RallySportED error: " + errMessage);
+        console.warn("RallySportED error: " + errMessage);
         throw new Error("RallySportED error: " + errMessage);
     }
 
     Rsed.alert = (message = "")=>
     {
-        alert("RallySportED: " + message);
+        console.warn("RallySportED: " + message);
     }
 
     Rsed.log = (message = "")=>
