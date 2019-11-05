@@ -120,29 +120,51 @@ window.close_dropdowns = function()
     }
 
     RSED_DROPDOWN_ACTIVATED = false;
-    Rsed.ui_input_n.reset_mouse_hover_info();
+    Rsed.ui.inputState.reset_mouse_hover();
+
+    return;
 }
 
-// Disable the right-click browser menu, since we want to use the right mouse button for other things.
+// Right-click menu.
 window.oncontextmenu = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
-
-    if (RSED_DROPDOWN_ACTIVATED)
-    {
-        window.close_dropdowns();
-        return false;
-    }
-
-    if (!Rsed || !Rsed.core || (event.target.id !== Rsed.core.render_surface_id()))
+    if (!Rsed || !Rsed.core)
     {
         return;
     }
 
+    if (RSED_DROPDOWN_ACTIVATED)
+    {
+        window.close_dropdowns();
+        event.preventDefault();
+        return;
+    }
+
+    // Ignore right clicks that occur over the dropdown menu.
+    if (event.target === document.getElementById("prop-dropdown"))
+    {
+        event.preventDefault();
+        return;
+    }
+
+    // Only handle clicks that occur over RallySportED's canvas.
+    if (event.target.id !== Rsed.core.render_surface_id())
+    {
+        return;
+    }
+
+    // Props aren't allowed to be edited in any way in shared mode.
+    if (Rsed.shared_mode_n.enabled())
+    {
+        return;
+    }
+
+    event.preventDefault();
+
     // Display a right-click menu for changing the type of the prop under the cursor.
-    if (!Rsed.shared_mode_n.enabled() &&
-        (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
-        !Rsed.core.current_project().props.name(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+    if ( Rsed.ui.inputState.current_mouse_hover() &&
+        (Rsed.ui.inputState.current_mouse_hover().type === "prop") &&
+        !Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const mousePos = Rsed.ui.inputState.mouse_pos();
         const propDropdown = document.getElementById("prop-dropdown");
@@ -153,7 +175,7 @@ window.oncontextmenu = function(event)
         RSED_DROPDOWN_ACTIVATED = true;
     }
 
-    return false;
+    return;
 }
 
 // The program uses onmousedown for primary click processing, but onclick is used here
@@ -176,9 +198,9 @@ window.onmousedown = function(event)
     
     switch (event.button)
     {
-        case 0: Rsed.ui.inputState.set_mouse_button_down({left:true}); Rsed.ui_input_n.set_left_click(true); break;
-        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:true});Rsed.ui_input_n.set_middle_click(true); break;
-        case 2: Rsed.ui.inputState.set_mouse_button_down({right:true});Rsed.ui_input_n.set_right_click(true); break;
+        case 0: Rsed.ui.inputState.set_mouse_button_down({left:true}); break;
+        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:true}); break;
+        case 2: Rsed.ui.inputState.set_mouse_button_down({right:true}); break;
         default: break;
     }
 }
@@ -189,9 +211,9 @@ window.onmouseup = function(event)
 
     switch (event.button)
     {
-        case 0: Rsed.ui.inputState.set_mouse_button_down({left:false}); Rsed.ui_input_n.set_left_click(false); break;
-        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:false}); Rsed.ui_input_n.set_middle_click(false); break;
-        case 2: Rsed.ui.inputState.set_mouse_button_down({right:false}); Rsed.ui_input_n.set_right_click(false); break;
+        case 0: Rsed.ui.inputState.set_mouse_button_down({left:false}); break;
+        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:false}); break;
+        case 2: Rsed.ui.inputState.set_mouse_button_down({right:false}); break;
         default: break;
     }
 }
@@ -202,13 +224,6 @@ window.onmousemove = function(event)
 
     if (event.target.id !== Rsed.core.render_surface_id())
     {
-        /// Temp hack. Prevent mouse clicks over prop dropdown dialogs from falling through and
-        /// inadvertently editing the terrain.
-        if (Rsed.ui_input_n.mouse_hover_type() !== Rsed.ui_input_n.mousePickingType.prop)
-        {
-            Rsed.ui_input_n.reset_mouse_hover_info();
-        }
-
         return;
     }
 
@@ -218,9 +233,6 @@ window.onmousemove = function(event)
         const mouseY = (event.clientY - event.target.getBoundingClientRect().top);
 
         Rsed.ui.inputState.set_mouse_pos(mouseX, mouseY);
-
-        Rsed.ui_input_n.set_mouse_pos(Math.floor(mouseX * Rsed.core.scaling_multiplier()),
-                                      Math.floor(mouseY * Rsed.core.scaling_multiplier()));
     }
 
     return;
@@ -232,14 +244,14 @@ window.onkeydown = function(event)
 
     // For keys used by RallySportED to which the browser also coincidentally responds,
     // prevent the browser from doing so.
-    switch (event.keyCode)
+    switch (event.key)
     {
-        case "tab": case 9:
-        case "spacebar": case 32: event.preventDefault(); break;
+        case "tab":
+        case "spacebar": event.preventDefault(); break;
         default: break;
     }
 
-    if (!event.repeat) Rsed.ui.inputState.set_key_down(event.keyCode, true);
+    if (!event.repeat) Rsed.ui.inputState.set_key_down(event.key, true);
 
     return;
 }
@@ -248,8 +260,7 @@ window.onkeyup = function(event)
 {
     if (!Rsed || !Rsed.core) return;
 
-    Rsed.ui.inputState.set_key_down(event.keyCode, false);
-    Rsed.ui_input_n.update_key_status(event, false);
+    Rsed.ui.inputState.set_key_down(event.key, false);
 
     return;
 }

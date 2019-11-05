@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (03 November 2019 06:03:15 UTC)
+// VERSION: live (05 November 2019 03:03:38 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -32,6 +32,7 @@
 //	../client/js/rallysported/ui/input.js
 //	../client/js/rallysported/ui/window.js
 //	../client/js/rallysported/ui/input-state.js
+//	../client/js/rallysported/ui/mouse-picking-element.js
 //	../client/js/rallysported/scene/scene.js
 //	../client/js/rallysported/core/scenes.js
 //	../client/js/rallysported/core/core.js
@@ -1846,13 +1847,13 @@ const Rsed = {};
     {
         if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
 
-        alert("RallySportED error: " + errMessage);
+        console.warn("RallySportED error: " + errMessage);
         throw new Error("RallySportED error: " + errMessage);
     }
 
     Rsed.alert = (message = "")=>
     {
-        alert("RallySportED: " + message);
+        console.warn("RallySportED: " + message);
     }
 
     Rsed.log = (message = "")=>
@@ -2851,7 +2852,8 @@ Rsed.shared_mode_n = (function()
     {
         if (!publicInterface.enabled()) return;
 
-        if (Rsed.ui_input_n.are_editing_keys_pressed())
+        // Don't post edits while the user is committing more of them.
+        if (Rsed.ui.inputState.mouse_button_down())
         {
             setTimeout(poll_server, 500);
             return;
@@ -2987,8 +2989,10 @@ Rsed.world.mesh_builder = (function()
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
-                        if ((tileX === Rsed.ui_input_n.mouse_tile_hover_x()) &&
-                            ((tileZ - 1) === Rsed.ui_input_n.mouse_tile_hover_y()))
+                        if ( Rsed.ui.inputState.current_mouse_hover() &&
+                            (Rsed.ui.inputState.current_mouse_hover().type === "ground") &&
+                            (Rsed.ui.inputState.current_mouse_hover().groundTileX === tileX) &&
+                            (Rsed.ui.inputState.current_mouse_hover().groundTileY === (tileZ - 1)))
                         {
                             idx = Rsed.ui_brush_n.brush_pala_idx();
                         }
@@ -3019,8 +3023,11 @@ Rsed.world.mesh_builder = (function()
                                                                // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
                                                                // rasterization we'll write into the mouse-picking buffer, so we can later determine which
                                                                // quad the mouse cursor is hovering over.
-                                                               mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
-                                                                                                                    {tileX, tileZ: (tileZ - 1)}),
+                                                               mousePickId: Rsed.ui.mouse_picking_element("ground",
+                                                               {
+                                                                   groundTileX: tileX,
+                                                                   groundTileY: (tileZ - 1),
+                                                               }),
                                                            }
                                                        });
 
@@ -3045,8 +3052,10 @@ Rsed.world.mesh_builder = (function()
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
-                        if ((tileX === Rsed.ui_input_n.mouse_tile_hover_x()) &&
-                            ((tileZ - 1) === Rsed.ui_input_n.mouse_tile_hover_y()))
+                        if ( Rsed.ui.inputState.current_mouse_hover() &&
+                            (Rsed.ui.inputState.current_mouse_hover().type === "ground") &&
+                            (Rsed.ui.inputState.current_mouse_hover().groundTileX === tileX) &&
+                            (Rsed.ui.inputState.current_mouse_hover().groundTileY === (tileZ - 1)))
                         {
                             idx = Rsed.ui_brush_n.brush_pala_idx();
                         }
@@ -3173,11 +3182,11 @@ Rsed.world.mesh_builder = (function()
                                                 hasWireframe: args.wireframe,
                                                 auxiliary:
                                                 {
-                                                    mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
-                                                                                                        {
-                                                                                                            propIdx: propId,
-                                                                                                            propTrackId: idxOnTrack
-                                                                                                        }),
+                                                    mousePickId: Rsed.ui.mouse_picking_element("prop",
+                                                    {
+                                                        propId: propId,
+                                                        propTrackIdx: idxOnTrack
+                                                    }),
                                                 }
                                             });
 
@@ -4926,7 +4935,7 @@ Rsed.ui_view_n = (function()
                         
             currentView = view;
 
-            Rsed.ui_input_n.reset_mouse_hover_info();
+            Rsed.ui.inputState.reset_mouse_hover();
         }
 
         publicInterface.toggle_view = function(firstView = "", secondView = "")
@@ -5097,7 +5106,7 @@ Rsed.ui.draw = (function()
     // The pixel buffer that UI render commands will draw into.
     let pixelSurface = null;
 
-    // The mouse-picking pixel buffer tha UI render commands will write into.
+    // The mouse-picking pixel buffer that UI render commands will write into.
     let mousePickBuffer = null;
 
     // This will hold a pre-baked PALAT pane image, i.e. thumbnails for all the PALA textures,
@@ -5236,14 +5245,19 @@ Rsed.ui.draw = (function()
         // Draws the mouse cursor, and any indicators attached to it.
         mouse_cursor: function()
         {
-            if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.ui &&
-                Rsed.ui_input_n.mouse_hover_args().elementId === Rsed.ui_input_n.uiElement.palat_pane)
+            if ( Rsed.ui.inputState.current_mouse_hover() &&
+                (Rsed.ui.inputState.current_mouse_hover().type === "ui-element") &&
+                (Rsed.ui.inputState.current_mouse_hover().uiElementId === "palat-pane"))
             {
-                this.string("PALA:" + Rsed.ui_input_n.mouse_hover_args().x, Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
+                this.string(("PALA:" + Rsed.ui.inputState.current_mouse_hover().palaIdx),
+                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
+                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().y + 17));
             }
             else if (Rsed.ui_brush_n.brushSmoothens)
             {
-                this.string("SMOOTHING", Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
+                this.string("SMOOTHING",
+                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
+                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().y + 17));
             }
 
             return;
@@ -5260,35 +5274,47 @@ Rsed.ui.draw = (function()
 
         footer_info: function()
         {
-            const x = Rsed.ui_input_n.mouse_tile_hover_x();
-            const y = Rsed.ui_input_n.mouse_tile_hover_y();
+            const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 
-            let str = "HEIGHT:+000 PALA:000 X,Y:000,000";
-            switch (Rsed.ui_input_n.mouse_hover_type())
+            let str;
+
+            if (mouseHover)
             {
-                case Rsed.ui_input_n.mousePickingType.ground:
+                switch (mouseHover.type)
                 {
-                    const xStr = String(x).padStart(3, "0");
-                    const yStr = String(y).padStart(3, "0");
-                    const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
+                    case "ground":
+                    {
+                        const x = mouseHover.groundTileX;
+                        const y = mouseHover.groundTileY;
+
+                        const xStr = String(x).padStart(3, "0");
+                        const yStr = String(y).padStart(3, "0");
+
+                        const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
                                         String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
-                    const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
 
-                    str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
+                        const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
 
-                    break;
+                        str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
+
+                        break;
+                    }
+                    case "prop":
+                    {
+                        str = "PROP:" + Rsed.core.current_project().props.name(mouseHover.propId) +
+                              " IDX:" + mouseHover.propId + "(" + mouseHover.propTrackIdx + ")";
+
+                        break;
+                    }
+                    default: break;
                 }
-                case Rsed.ui_input_n.mousePickingType.prop:
-                {
-                    str = "PROP:" + Rsed.core.current_project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
-                            " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
-
-                    break;
-                }
-                default: break;
+            }
+            else
+            {
+                str = "HEIGHT:+000 PALA:000 X,Y:000,000";
             }
 
-            this.string(str, 0, Rsed.core.render_height() - Rsed.ui.font.font_height()-0);
+            this.string(str, 0, Rsed.core.render_height() - Rsed.ui.font.font_height());
 
             return;
         },
@@ -5313,8 +5339,8 @@ Rsed.ui.draw = (function()
 
         minimap: function()
         {
-            // The minimap image by iterating over the tilemap and grabbing a pixel off each corresponding
-            // PALA texture.
+            // Generate the minimap image by iterating over the tilemap and grabbing a pixel off each
+            // corresponding PALA texture.
             /// TODO: You can pre-generate the image rather than re-generating it each frame.
             const width = 64;
             const height = 32;
@@ -5337,12 +5363,13 @@ Rsed.ui.draw = (function()
                     if (x % (width - 1) === 0) color = "black";
 
                     image.push(color);
-                    mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
-                                                                            {
-                                                                                elementId: Rsed.ui_input_n.uiElement.minimap,
-                                                                                uiX: tileX,
-                                                                                uiY: tileZ
-                                                                            }));
+
+                    mousePick.push(Rsed.ui.mouse_picking_element("ui-element",
+                    {
+                        uiElementId: "minimap",
+                        x: tileX,
+                        y: tileZ
+                    }));
                 }
             }
 
@@ -5425,8 +5452,11 @@ Rsed.ui.draw = (function()
                                                             Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
 
                             palatPaneBuffer[bufferTexel] = Rsed.palette.color_at_idx(pala.indices[palaTexel]);
-                            palatPaneMousePick[bufferTexel] = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
-                                                                                                      {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
+                            palatPaneMousePick[bufferTexel] = Rsed.ui.mouse_picking_element("ui-element",
+                            {
+                                uiElementId: "palat-pane",
+                                palaIdx: palaIdx,
+                            });
                         }
                     }
                 }
@@ -5855,7 +5885,7 @@ Rsed.ui_input_n = (function()
 
         publicInterface.enact_inputs = function()
         {
-            enact_mouse_clicks();
+           // enact_mouse_clicks();
            // enact_key_presses();
 
             // Mouse position deltas shouldn't carry across frames, so now that we've enacted all inputs,
@@ -5883,7 +5913,7 @@ Rsed.ui_input_n = (function()
             {
                 reset_mouse_hover_info();
 
-                const mousePickValue = Rsed.core.mouse_pick_buffer_value_at(x, y);
+                const mousePickValue = Rsed.core.mouse_pick_buffer_at(x, y);
                 hoverPickType = this.get_mouse_picking_type(mousePickValue);
                 hoverArgs = this.get_mouse_picking_args(mousePickValue, hoverPickType);
 
@@ -6073,29 +6103,51 @@ window.close_dropdowns = function()
     }
 
     RSED_DROPDOWN_ACTIVATED = false;
-    Rsed.ui_input_n.reset_mouse_hover_info();
+    Rsed.ui.inputState.reset_mouse_hover();
+
+    return;
 }
 
-// Disable the right-click browser menu, since we want to use the right mouse button for other things.
+// Right-click menu.
 window.oncontextmenu = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
-
-    if (RSED_DROPDOWN_ACTIVATED)
-    {
-        window.close_dropdowns();
-        return false;
-    }
-
-    if (!Rsed || !Rsed.core || (event.target.id !== Rsed.core.render_surface_id()))
+    if (!Rsed || !Rsed.core)
     {
         return;
     }
 
+    if (RSED_DROPDOWN_ACTIVATED)
+    {
+        window.close_dropdowns();
+        event.preventDefault();
+        return;
+    }
+
+    // Ignore right clicks that occur over the dropdown menu.
+    if (event.target === document.getElementById("prop-dropdown"))
+    {
+        event.preventDefault();
+        return;
+    }
+
+    // Only handle clicks that occur over RallySportED's canvas.
+    if (event.target.id !== Rsed.core.render_surface_id())
+    {
+        return;
+    }
+
+    // Props aren't allowed to be edited in any way in shared mode.
+    if (Rsed.shared_mode_n.enabled())
+    {
+        return;
+    }
+
+    event.preventDefault();
+
     // Display a right-click menu for changing the type of the prop under the cursor.
-    if (!Rsed.shared_mode_n.enabled() &&
-        (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.prop) &&
-        !Rsed.core.current_project().props.name(Rsed.ui_input_n.mouse_hover_args().idx).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+    if ( Rsed.ui.inputState.current_mouse_hover() &&
+        (Rsed.ui.inputState.current_mouse_hover().type === "prop") &&
+        !Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
     {
         const mousePos = Rsed.ui.inputState.mouse_pos();
         const propDropdown = document.getElementById("prop-dropdown");
@@ -6106,7 +6158,7 @@ window.oncontextmenu = function(event)
         RSED_DROPDOWN_ACTIVATED = true;
     }
 
-    return false;
+    return;
 }
 
 // The program uses onmousedown for primary click processing, but onclick is used here
@@ -6129,9 +6181,9 @@ window.onmousedown = function(event)
     
     switch (event.button)
     {
-        case 0: Rsed.ui.inputState.set_mouse_button_down({left:true}); Rsed.ui_input_n.set_left_click(true); break;
-        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:true});Rsed.ui_input_n.set_middle_click(true); break;
-        case 2: Rsed.ui.inputState.set_mouse_button_down({right:true});Rsed.ui_input_n.set_right_click(true); break;
+        case 0: Rsed.ui.inputState.set_mouse_button_down({left:true}); break;
+        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:true}); break;
+        case 2: Rsed.ui.inputState.set_mouse_button_down({right:true}); break;
         default: break;
     }
 }
@@ -6142,9 +6194,9 @@ window.onmouseup = function(event)
 
     switch (event.button)
     {
-        case 0: Rsed.ui.inputState.set_mouse_button_down({left:false}); Rsed.ui_input_n.set_left_click(false); break;
-        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:false}); Rsed.ui_input_n.set_middle_click(false); break;
-        case 2: Rsed.ui.inputState.set_mouse_button_down({right:false}); Rsed.ui_input_n.set_right_click(false); break;
+        case 0: Rsed.ui.inputState.set_mouse_button_down({left:false}); break;
+        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:false}); break;
+        case 2: Rsed.ui.inputState.set_mouse_button_down({right:false}); break;
         default: break;
     }
 }
@@ -6155,13 +6207,6 @@ window.onmousemove = function(event)
 
     if (event.target.id !== Rsed.core.render_surface_id())
     {
-        /// Temp hack. Prevent mouse clicks over prop dropdown dialogs from falling through and
-        /// inadvertently editing the terrain.
-        if (Rsed.ui_input_n.mouse_hover_type() !== Rsed.ui_input_n.mousePickingType.prop)
-        {
-            Rsed.ui_input_n.reset_mouse_hover_info();
-        }
-
         return;
     }
 
@@ -6171,9 +6216,6 @@ window.onmousemove = function(event)
         const mouseY = (event.clientY - event.target.getBoundingClientRect().top);
 
         Rsed.ui.inputState.set_mouse_pos(mouseX, mouseY);
-
-        Rsed.ui_input_n.set_mouse_pos(Math.floor(mouseX * Rsed.core.scaling_multiplier()),
-                                      Math.floor(mouseY * Rsed.core.scaling_multiplier()));
     }
 
     return;
@@ -6185,14 +6227,14 @@ window.onkeydown = function(event)
 
     // For keys used by RallySportED to which the browser also coincidentally responds,
     // prevent the browser from doing so.
-    switch (event.keyCode)
+    switch (event.key)
     {
-        case "tab": case 9:
-        case "spacebar": case 32: event.preventDefault(); break;
+        case "tab":
+        case "spacebar": event.preventDefault(); break;
         default: break;
     }
 
-    if (!event.repeat) Rsed.ui.inputState.set_key_down(event.keyCode, true);
+    if (!event.repeat) Rsed.ui.inputState.set_key_down(event.key, true);
 
     return;
 }
@@ -6201,8 +6243,7 @@ window.onkeyup = function(event)
 {
     if (!Rsed || !Rsed.core) return;
 
-    Rsed.ui.inputState.set_key_down(event.keyCode, false);
-    Rsed.ui_input_n.update_key_status(event, false);
+    Rsed.ui.inputState.set_key_down(event.key, false);
 
     return;
 }
@@ -6263,21 +6304,30 @@ Rsed.ui.inputState = (function()
     // that the key codes are stored as lowercase characters, so e.g. 69 is stored as "e".
     const keyboardState = [];
 
-    // Booleans to indicate which mouse buttons are currently down; and values giving
-    // the mouse cursor's position relative to the RallySportED canvas.
     const mouseState =
     {
+        // Which of the mouse buttons are currently down.
         buttons:
         {
             left: false,
             mid: false,
             right: false,
         },
+
+        // Where inside the RallySportED canvas the mouse cursor is currently located.
         position:
         {
             x: 0,
             y: 0,
         },
+
+        // Which mouse-picking buffer element the cursor is currently hovering over.
+        hover: null,
+
+        // Which mouse-picking buffer element the cursor most recently clicked on.
+        // When the button is clicked, the grab is put into effect; and when the
+        // button is released, the grab is released also.
+        grab: null,
     };
 
     const publicInterface =
@@ -6287,13 +6337,22 @@ Rsed.ui.inputState = (function()
             return {...mouseState.position};
         },
 
-        // Mouse position scaled to the render resolution.
-        mouse_pos_scaled: function()
+        mouse_pos_scaled_to_render_resolution: function()
         {
-            return {
-                x: Math.floor(mouseState.position.x * Rsed.core.scaling_multiplier()),
-                y: Math.floor(mouseState.position.y * Rsed.core.scaling_multiplier()),
-            };
+            const scaledX = Math.floor(mouseState.position.x * Rsed.core.scaling_multiplier());
+            const scaledY = Math.floor(mouseState.position.y * Rsed.core.scaling_multiplier());
+
+            const clampedX = Math.max(0, Math.min((Rsed.core.render_width() - 1), scaledX));
+            const clampedY = Math.max(0, Math.min((Rsed.core.render_height() - 1), scaledY));
+
+            return {...mouseState.position, x:clampedX, y:clampedY};
+        },
+
+        mouse_button_down: function()
+        {
+            return (mouseState.buttons.left |
+                    mouseState.buttons.mid  |
+                    mouseState.buttons.right);
         },
 
         left_mouse_button_down: function()
@@ -6313,7 +6372,34 @@ Rsed.ui.inputState = (function()
 
         key_down: function(key)
         {
-            return keyboardState[key];
+            Rsed.throw_if_not_type("string", key);
+
+            return Boolean(keyboardState[key.toUpperCase()]);
+        },
+
+        current_mouse_hover: function()
+        {
+            return mouseState.hover;
+        },
+
+        current_mouse_grab: function()
+        {
+            return mouseState.grab;
+        },
+
+        reset_mouse_hover: function()
+        {
+            mouseState.hover = null;
+            mouseState.grab = null;
+
+            return;
+        },
+
+        reset_keys: function()
+        {
+            keyboardState.fill(false);
+
+            return;
         },
         
         set_key_down: function(keyCode, isDown = false)
@@ -6324,8 +6410,8 @@ Rsed.ui.inputState = (function()
             {
                 switch (typeof keyCode)
                 {
-                    case "string": return keyCode;
-                    case "number": return String.fromCharCode(keyCode).toLowerCase();
+                    case "string": return keyCode.toUpperCase();
+                    case "number": return String.fromCharCode(keyCode).toUpperCase();
                     default: Rsed.throw("Unknown variable type for key code."); return "unknown";
                 }
             })();
@@ -6342,6 +6428,12 @@ Rsed.ui.inputState = (function()
             mouseState.position.x = x;
             mouseState.position.y = y;
 
+            // Update the hover info.
+            {
+                const scaledPosition = this.mouse_pos_scaled_to_render_resolution();
+                mouseState.hover = Rsed.core.mouse_pick_buffer_at(scaledPosition.x, scaledPosition.y);
+            }
+
             return;
         },
 
@@ -6351,12 +6443,82 @@ Rsed.ui.inputState = (function()
 
             mouseState.buttons = {...mouseState.buttons, ...state};
 
+            if (!this.mouse_button_down())
+            {
+                mouseState.grab = null;
+            }
+            else if (!mouseState.grab)
+            {
+                mouseState.grab = mouseState.hover;
+            }
+
             return;
         },
     };
 
     return publicInterface;
 })();
+/*
+ * Most recent known filename: js/ui/mouse-picking.js
+ *
+ * 2019 Tarpeeksi Hyvae Soft /
+ * RallySportED-js
+ *
+ */
+
+"use strict";
+
+Rsed.ui.mouse_picking_element = function(type = "", args = {})
+{
+    Rsed.throw_if_not_type("string", type);
+    Rsed.throw_if_not_type("object", args);
+
+    // Verify that the arguments are correct.
+    switch (type)
+    {
+        // An element displayed on the user interface (e.g. the track minimap).
+        //
+        // Requires the following properties:
+        //
+        //   uiElementId: A string identifying this UI element.
+        //
+        case "ui-element":
+        {
+            Rsed.throw_if_not_type("string", args.uiElementId);
+            break;
+        }
+        
+        // A track-side 3d object.
+        //
+        // Requires the following properties:
+        //
+        //   propId: A value identifying the prop's type (e.g. tree, rock, house).
+        //   propTrackIdx: The prop's index among all props on the track.
+        //
+        case "prop":
+        {
+            Rsed.throw_if_not_type("number", args.propTrackIdx, args.propId);
+            break;
+        }
+
+        // A ground tile on the 3d track heightmap.
+        //
+        // Requires the following properties:
+        //
+        //   groundTileX: Ground tile index on the X axis (so e.g. 127 is the last tile on a 128-tile-wide track).
+        //   groundTileY: Ground tile index on the Y axis.
+        //     
+        case "ground":
+        {
+            Rsed.throw_if_not_type("number", args.groundTileX, args.groundTileY);
+            break;
+        }
+
+        default: Rsed.throw("Unrecognized mouse-picking type."); break;
+    }
+
+    return {type, ...args};
+}
 /*
  * Most recent known filename: js/scene/scene.js
  *
@@ -6371,14 +6533,16 @@ Rsed.ui.inputState = (function()
 // project. For instance, you might have a 3d scene, which shows the project's track as a
 // textured 3d mesh; and a tilemap scene, which displays the project's tilemap for the
 // user to edit.
-Rsed.scene = function(args = {draw_mesh, draw_ui, handle_input})
+Rsed.scene = function(args = {})
 {
+    Rsed.throw_if_not_type("object", args);
+    
     args =
     {
         ...{
             draw_mesh: ()=>{},
             draw_ui: ()=>{},
-            handle_input: ()=>{},
+            handle_user_interaction: ()=>{},
         },
         ...args
     };
@@ -6399,6 +6563,10 @@ Rsed.scene = function(args = {draw_mesh, draw_ui, handle_input})
  */
 
 "use strict";
+
+/// Temp hack. Lets us keep track of mouse position delta between frames; e.g. for
+/// dragging props.
+let prevMousePos = {x:0, y:0};
 
 // The different scenes through which the current project can be edited.
 Rsed.scenes = 
@@ -6457,7 +6625,7 @@ Rsed.scenes =
             return;
         },
 
-        handle_input: function()
+        handle_user_interaction: function()
         {
             // Handle keyboard input to move the camera.
             {
@@ -6517,36 +6685,128 @@ Rsed.scenes =
                     Rsed.ui.inputState.set_key_down("spacebar", false);
                 }
 
-                if (Rsed.ui.inputState.key_down("1"))
+                for (const brushSizeKey of ["1", "2", "3", "4", "5"])
                 {
-                    Rsed.ui_brush_n.set_brush_size(0);
-                    Rsed.ui.inputState.set_key_down("1", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("2"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(1);
-                    Rsed.ui.inputState.set_key_down("2", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("3"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(2);
-                    Rsed.ui.inputState.set_key_down("3", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("4"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(3);
-                    Rsed.ui.inputState.set_key_down("4", false);
-                }
-
-                if (Rsed.ui.inputState.key_down("5"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(8);
-                    Rsed.ui.inputState.set_key_down("5", false);
+                    if (Rsed.ui.inputState.key_down(brushSizeKey))
+                    {
+                        Rsed.ui_brush_n.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+                        Rsed.ui.inputState.set_key_down(brushSizeKey, false);
+                    }
                 }
             }
+
+            // Handle mouse input.
+            if (Rsed.ui.inputState.mouse_button_down())
+            {
+                const grab = Rsed.ui.inputState.current_mouse_grab();
+                const hover = Rsed.ui.inputState.current_mouse_hover();
+
+                if (!grab || !hover) return;
+
+                switch (grab.type)
+                {
+                    case "ground":
+                    {
+                        // Add a new prop.
+                        if ( Rsed.ui.inputState.key_down("shift") &&
+                             Rsed.ui.inputState.left_mouse_button_down() &&
+                            !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
+                        {
+                            Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
+                                                                           Rsed.core.current_project().props.id_for_name("tree"),
+                                                                           {
+                                                                               x: (hover.groundTileX * Rsed.constants.groundTileSize),
+                                                                               z: (hover.groundTileY * Rsed.constants.groundTileSize),
+                                                                           });
+
+                            Rsed.ui.inputState.reset_mouse_hover();
+
+                            break;
+                        }
+
+                        // Edit/paint the terrain.
+                        if (Rsed.ui.inputState.left_mouse_button_down() ||
+                            Rsed.ui.inputState.right_mouse_button_down())
+                        {
+                            const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : (Rsed.ui.inputState.right_mouse_button_down()? -2 : 0));
+                            
+                            Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changeHeight,
+                                                                   delta,
+                                                                   hover.groundTileX,
+                                                                   hover.groundTileY);
+                        }
+                        else if (Rsed.ui.inputState.mid_mouse_button_down())
+                        {
+                            Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala,
+                                                                   Rsed.ui_brush_n.brush_pala_idx(),
+                                                                   hover.groundTileX,
+                                                                   hover.groundTileY);
+                        }
+
+                        break;
+                    }
+                    case "prop":
+                    {
+                        // For now, shared mode doesn't support interacting with props.
+                        if (Rsed.shared_mode_n.enabled()) break;
+
+                        if (Rsed.ui.inputState.left_mouse_button_down())
+                        {
+                            // Remove the selected prop.
+                            if (Rsed.ui.inputState.key_down("shift"))
+                            {
+                                Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), hover.propTrackIdx);
+
+                                Rsed.ui.inputState.reset_mouse_hover();
+                            }
+                            // Drag the prop.
+                            else
+                            {
+                                // For now, don't allow moving the starting line (always prop #0).
+                                if (grab.propTrackIdx !== 0)
+                                {
+                                    const mousePosDelta =
+                                    {
+                                        x: (Rsed.ui.inputState.mouse_pos().x - prevMousePos.x),
+                                        y: (Rsed.ui.inputState.mouse_pos().y - prevMousePos.y),
+                                    }
+
+                                    Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
+                                                                           grab.propTrackIdx,
+                                                                           {
+                                                                               x: (mousePosDelta.x * 1.5),
+                                                                               z: (mousePosDelta.y * 2.5),
+                                                                           });
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                    case "ui-element":
+                    {
+                        switch (grabbedElement.uiElementId)
+                        {
+                            case "palat-pane":
+                            {
+                                if (Rsed.ui.inputState.left_mouse_button_down() ||
+                                    Rsed.ui.inputState.right_mouse_button_down())
+                                {
+                                    Rsed.ui_brush_n.set_brush_pala_idx(hover.palaIdx);
+                                }
+
+                                break;
+                            }
+                            default: Rsed.throw("Unknown UI element id for mouse picking."); break;
+                        }
+
+                        break;
+                    }
+                    default: break;
+                }
+            }
+
+            prevMousePos = Rsed.ui.inputState.mouse_pos();
         },
     }),
 
@@ -6582,9 +6842,13 @@ Rsed.scenes =
                         if (x % (width - 1) === 0) color = "gray";
 
                         image.push(color);
-                        mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
-                            {elementId:Rsed.ui_input_n.uiElement.large_minimap,
-                            uiX:tileX, uiY:tileZ}));
+
+                        mousePick.push(Rsed.ui.mouse_picking_element("ui-element",
+                        {
+                            uiElementId: "tilemap",
+                            x: tileX,
+                            y: tileZ,
+                        }));
                     }
                 }
 
@@ -6637,7 +6901,7 @@ Rsed.scenes =
             return;
         },
 
-        handle_input: function()
+        handle_user_interaction: function()
         {
             // Handle keyboard input for one-off events, where the key press is registered
             // only once (no repeat).
@@ -6654,34 +6918,58 @@ Rsed.scenes =
                     Rsed.ui.inputState.set_key_down("a", false);
                 }
 
-                if (Rsed.ui.inputState.key_down("1"))
+                for (const brushSizeKey of ["1", "2", "3", "4", "5"])
                 {
-                    Rsed.ui_brush_n.set_brush_size(0);
-                    Rsed.ui.inputState.set_key_down("1", false);
+                    if (Rsed.ui.inputState.key_down(brushSizeKey))
+                    {
+                        Rsed.ui_brush_n.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+                        Rsed.ui.inputState.set_key_down(brushSizeKey, false);
+                    }
                 }
+            }
 
-                if (Rsed.ui.inputState.key_down("2"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(1);
-                    Rsed.ui.inputState.set_key_down("2", false);
-                }
+            // Handle mouse input.
+            if (Rsed.ui.inputState.mouse_button_down())
+            {
+                const grab = Rsed.ui.inputState.current_mouse_grab();
+                const hover = Rsed.ui.inputState.current_mouse_hover();
 
-                if (Rsed.ui.inputState.key_down("3"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(2);
-                    Rsed.ui.inputState.set_key_down("3", false);
-                }
+                if (!grab || !hover) return;
 
-                if (Rsed.ui.inputState.key_down("4"))
+                switch (grab.type)
                 {
-                    Rsed.ui_brush_n.set_brush_size(3);
-                    Rsed.ui.inputState.set_key_down("4", false);
-                }
+                    case "ui-element":
+                    {
+                        switch (hover.uiElementId)
+                        {
+                            case "tilemap":
+                            {
+                                if (Rsed.ui.inputState.mid_mouse_button_down())
+                                {
+                                    Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala,
+                                                                           Rsed.ui_brush_n.brush_pala_idx(),
+                                                                           hover.x,
+                                                                           hover.y);
+                                }
 
-                if (Rsed.ui.inputState.key_down("5"))
-                {
-                    Rsed.ui_brush_n.set_brush_size(8);
-                    Rsed.ui.inputState.set_key_down("5", false);
+                                break;
+                            }
+                            case "palat-pane":
+                            {
+                                if (Rsed.ui.inputState.left_mouse_button_down() ||
+                                    Rsed.ui.inputState.right_mouse_button_down())
+                                {
+                                    Rsed.ui_brush_n.set_brush_pala_idx(hover.palaIdx);
+                                }
+
+                                break;
+                            }
+                            default: Rsed.throw("Unknown UI element id for mouse picking."); break;
+                        }
+
+                        break;
+                    }
+                    default: break;
                 }
             }
         },
@@ -6740,8 +7028,14 @@ Rsed.core = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop: function(name = "")
                 {
+                    if (!Rsed.ui.inputState.current_mouse_hover() ||
+                         Rsed.ui.inputState.current_mouse_hover().type !== "prop")
+                    {
+                        return;
+                    }
+
                     Rsed.core.current_project().props.change_prop_type(Rsed.core.current_project().track_id(),
-                                                                       Rsed.ui_input_n.mouse_hover_args().trackId,
+                                                                       Rsed.ui.inputState.current_mouse_hover().propTrackIdx,
                                                                        Rsed.core.current_project().props.id_for_name(name));
                     window.close_dropdowns();
 
@@ -6865,7 +7159,7 @@ Rsed.core = (function()
         render_surface_id: ()=>canvas.domElement.getAttribute("id"),
         fps_counter_enabled: ()=>fpsCounterEnabled,
         scaling_multiplier: ()=>canvas.scalingFactor,
-        mouse_pick_buffer_value_at: (x, y)=>canvas.mousePickingBuffer[x + y * canvas.width],
+        mouse_pick_buffer_at: (x, y)=>canvas.mousePickingBuffer[x + y * canvas.width],
     }
 
     return publicInterface;
@@ -6877,10 +7171,7 @@ Rsed.core = (function()
 
         programFPS = Math.round(1000 / (frameDeltaMs || 1));
 
-        // Poll and process user input.
-        Rsed.ui_input_n.enact_inputs();
-
-        scene.handle_input();
+        scene.handle_user_interaction();
 
         // Render the next frame.
         canvas.mousePickingBuffer.fill(null);
@@ -6897,7 +7188,7 @@ Rsed.core = (function()
         /// TODO: Doesn't need to be checked in shared mode, since it doesn't use JSZip for saving.
         if (!JSZip.support.blob)
         {
-            alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
+            Rsed.alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
         }
     }
 

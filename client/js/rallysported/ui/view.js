@@ -34,7 +34,7 @@ Rsed.ui_view_n = (function()
                         
             currentView = view;
 
-            Rsed.ui_input_n.reset_mouse_hover_info();
+            Rsed.ui.inputState.reset_mouse_hover();
         }
 
         publicInterface.toggle_view = function(firstView = "", secondView = "")

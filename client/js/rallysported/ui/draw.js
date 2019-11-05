@@ -14,7 +14,7 @@ Rsed.ui.draw = (function()
     // The pixel buffer that UI render commands will draw into.
     let pixelSurface = null;
 
-    // The mouse-picking pixel buffer tha UI render commands will write into.
+    // The mouse-picking pixel buffer that UI render commands will write into.
     let mousePickBuffer = null;
 
     // This will hold a pre-baked PALAT pane image, i.e. thumbnails for all the PALA textures,
@@ -153,14 +153,19 @@ Rsed.ui.draw = (function()
         // Draws the mouse cursor, and any indicators attached to it.
         mouse_cursor: function()
         {
-            if (Rsed.ui_input_n.mouse_hover_type() === Rsed.ui_input_n.mousePickingType.ui &&
-                Rsed.ui_input_n.mouse_hover_args().elementId === Rsed.ui_input_n.uiElement.palat_pane)
+            if ( Rsed.ui.inputState.current_mouse_hover() &&
+                (Rsed.ui.inputState.current_mouse_hover().type === "ui-element") &&
+                (Rsed.ui.inputState.current_mouse_hover().uiElementId === "palat-pane"))
             {
-                this.string("PALA:" + Rsed.ui_input_n.mouse_hover_args().x, Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
+                this.string(("PALA:" + Rsed.ui.inputState.current_mouse_hover().palaIdx),
+                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
+                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().y + 17));
             }
             else if (Rsed.ui_brush_n.brushSmoothens)
             {
-                this.string("SMOOTHING", Rsed.ui_input_n.mouse_pos_x() + 10, Rsed.ui_input_n.mouse_pos_y() + 17);
+                this.string("SMOOTHING",
+                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
+                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().y + 17));
             }
 
             return;
@@ -177,35 +182,47 @@ Rsed.ui.draw = (function()
 
         footer_info: function()
         {
-            const x = Rsed.ui_input_n.mouse_tile_hover_x();
-            const y = Rsed.ui_input_n.mouse_tile_hover_y();
+            const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 
-            let str = "HEIGHT:+000 PALA:000 X,Y:000,000";
-            switch (Rsed.ui_input_n.mouse_hover_type())
+            let str;
+
+            if (mouseHover)
             {
-                case Rsed.ui_input_n.mousePickingType.ground:
+                switch (mouseHover.type)
                 {
-                    const xStr = String(x).padStart(3, "0");
-                    const yStr = String(y).padStart(3, "0");
-                    const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
+                    case "ground":
+                    {
+                        const x = mouseHover.groundTileX;
+                        const y = mouseHover.groundTileY;
+
+                        const xStr = String(x).padStart(3, "0");
+                        const yStr = String(y).padStart(3, "0");
+
+                        const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
                                         String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
-                    const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
 
-                    str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
+                        const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
 
-                    break;
+                        str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
+
+                        break;
+                    }
+                    case "prop":
+                    {
+                        str = "PROP:" + Rsed.core.current_project().props.name(mouseHover.propId) +
+                              " IDX:" + mouseHover.propId + "(" + mouseHover.propTrackIdx + ")";
+
+                        break;
+                    }
+                    default: break;
                 }
-                case Rsed.ui_input_n.mousePickingType.prop:
-                {
-                    str = "PROP:" + Rsed.core.current_project().props.name(Rsed.ui_input_n.mouse_hover_args().idx) +
-                            " IDX:" + Rsed.ui_input_n.mouse_hover_args().idx + "(" + Rsed.ui_input_n.mouse_hover_args().trackId + ")";
-
-                    break;
-                }
-                default: break;
+            }
+            else
+            {
+                str = "HEIGHT:+000 PALA:000 X,Y:000,000";
             }
 
-            this.string(str, 0, Rsed.core.render_height() - Rsed.ui.font.font_height()-0);
+            this.string(str, 0, Rsed.core.render_height() - Rsed.ui.font.font_height());
 
             return;
         },
@@ -230,8 +247,8 @@ Rsed.ui.draw = (function()
 
         minimap: function()
         {
-            // The minimap image by iterating over the tilemap and grabbing a pixel off each corresponding
-            // PALA texture.
+            // Generate the minimap image by iterating over the tilemap and grabbing a pixel off each
+            // corresponding PALA texture.
             /// TODO: You can pre-generate the image rather than re-generating it each frame.
             const width = 64;
             const height = 32;
@@ -254,12 +271,13 @@ Rsed.ui.draw = (function()
                     if (x % (width - 1) === 0) color = "black";
 
                     image.push(color);
-                    mousePick.push(Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
-                                                                            {
-                                                                                elementId: Rsed.ui_input_n.uiElement.minimap,
-                                                                                uiX: tileX,
-                                                                                uiY: tileZ
-                                                                            }));
+
+                    mousePick.push(Rsed.ui.mouse_picking_element("ui-element",
+                    {
+                        uiElementId: "minimap",
+                        x: tileX,
+                        y: tileZ
+                    }));
                 }
             }
 
@@ -342,8 +360,11 @@ Rsed.ui.draw = (function()
                                                             Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
 
                             palatPaneBuffer[bufferTexel] = Rsed.palette.color_at_idx(pala.indices[palaTexel]);
-                            palatPaneMousePick[bufferTexel] = Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ui,
-                                                                                                      {elementId:Rsed.ui_input_n.uiElement.palat_pane, uiX:palaIdx, uiY:0});
+                            palatPaneMousePick[bufferTexel] = Rsed.ui.mouse_picking_element("ui-element",
+                            {
+                                uiElementId: "palat-pane",
+                                palaIdx: palaIdx,
+                            });
                         }
                     }
                 }

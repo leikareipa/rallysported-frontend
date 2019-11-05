@@ -45,8 +45,10 @@ Rsed.world.mesh_builder = (function()
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
-                        if ((tileX === Rsed.ui_input_n.mouse_tile_hover_x()) &&
-                            ((tileZ - 1) === Rsed.ui_input_n.mouse_tile_hover_y()))
+                        if ( Rsed.ui.inputState.current_mouse_hover() &&
+                            (Rsed.ui.inputState.current_mouse_hover().type === "ground") &&
+                            (Rsed.ui.inputState.current_mouse_hover().groundTileX === tileX) &&
+                            (Rsed.ui.inputState.current_mouse_hover().groundTileY === (tileZ - 1)))
                         {
                             idx = Rsed.ui_brush_n.brush_pala_idx();
                         }
@@ -77,8 +79,11 @@ Rsed.world.mesh_builder = (function()
                                                                // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
                                                                // rasterization we'll write into the mouse-picking buffer, so we can later determine which
                                                                // quad the mouse cursor is hovering over.
-                                                               mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.ground,
-                                                                                                                    {tileX, tileZ: (tileZ - 1)}),
+                                                               mousePickId: Rsed.ui.mouse_picking_element("ground",
+                                                               {
+                                                                   groundTileX: tileX,
+                                                                   groundTileY: (tileZ - 1),
+                                                               }),
                                                            }
                                                        });
 
@@ -103,8 +108,10 @@ Rsed.world.mesh_builder = (function()
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
-                        if ((tileX === Rsed.ui_input_n.mouse_tile_hover_x()) &&
-                            ((tileZ - 1) === Rsed.ui_input_n.mouse_tile_hover_y()))
+                        if ( Rsed.ui.inputState.current_mouse_hover() &&
+                            (Rsed.ui.inputState.current_mouse_hover().type === "ground") &&
+                            (Rsed.ui.inputState.current_mouse_hover().groundTileX === tileX) &&
+                            (Rsed.ui.inputState.current_mouse_hover().groundTileY === (tileZ - 1)))
                         {
                             idx = Rsed.ui_brush_n.brush_pala_idx();
                         }
@@ -231,11 +238,11 @@ Rsed.world.mesh_builder = (function()
                                                 hasWireframe: args.wireframe,
                                                 auxiliary:
                                                 {
-                                                    mousePickId: Rsed.ui_input_n.create_mouse_picking_id(Rsed.ui_input_n.mousePickingType.prop,
-                                                                                                        {
-                                                                                                            propIdx: propId,
-                                                                                                            propTrackId: idxOnTrack
-                                                                                                        }),
+                                                    mousePickId: Rsed.ui.mouse_picking_element("prop",
+                                                    {
+                                                        propId: propId,
+                                                        propTrackIdx: idxOnTrack
+                                                    }),
                                                 }
                                             });
 

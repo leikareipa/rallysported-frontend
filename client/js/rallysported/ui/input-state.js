@@ -16,21 +16,30 @@ Rsed.ui.inputState = (function()
     // that the key codes are stored as lowercase characters, so e.g. 69 is stored as "e".
     const keyboardState = [];
 
-    // Booleans to indicate which mouse buttons are currently down; and values giving
-    // the mouse cursor's position relative to the RallySportED canvas.
     const mouseState =
     {
+        // Which of the mouse buttons are currently down.
         buttons:
         {
             left: false,
             mid: false,
             right: false,
         },
+
+        // Where inside the RallySportED canvas the mouse cursor is currently located.
         position:
         {
             x: 0,
             y: 0,
         },
+
+        // Which mouse-picking buffer element the cursor is currently hovering over.
+        hover: null,
+
+        // Which mouse-picking buffer element the cursor most recently clicked on.
+        // When the button is clicked, the grab is put into effect; and when the
+        // button is released, the grab is released also.
+        grab: null,
     };
 
     const publicInterface =
@@ -48,7 +57,7 @@ Rsed.ui.inputState = (function()
             const clampedX = Math.max(0, Math.min((Rsed.core.render_width() - 1), scaledX));
             const clampedY = Math.max(0, Math.min((Rsed.core.render_height() - 1), scaledY));
 
-            return {clampedX, clampedY};
+            return {...mouseState.position, x:clampedX, y:clampedY};
         },
 
         mouse_button_down: function()
@@ -75,7 +84,34 @@ Rsed.ui.inputState = (function()
 
         key_down: function(key)
         {
-            return keyboardState[key];
+            Rsed.throw_if_not_type("string", key);
+
+            return Boolean(keyboardState[key.toUpperCase()]);
+        },
+
+        current_mouse_hover: function()
+        {
+            return mouseState.hover;
+        },
+
+        current_mouse_grab: function()
+        {
+            return mouseState.grab;
+        },
+
+        reset_mouse_hover: function()
+        {
+            mouseState.hover = null;
+            mouseState.grab = null;
+
+            return;
+        },
+
+        reset_keys: function()
+        {
+            keyboardState.fill(false);
+
+            return;
         },
         
         set_key_down: function(keyCode, isDown = false)
@@ -86,8 +122,8 @@ Rsed.ui.inputState = (function()
             {
                 switch (typeof keyCode)
                 {
-                    case "string": return keyCode;
-                    case "number": return String.fromCharCode(keyCode).toLowerCase();
+                    case "string": return keyCode.toUpperCase();
+                    case "number": return String.fromCharCode(keyCode).toUpperCase();
                     default: Rsed.throw("Unknown variable type for key code."); return "unknown";
                 }
             })();
@@ -104,6 +140,12 @@ Rsed.ui.inputState = (function()
             mouseState.position.x = x;
             mouseState.position.y = y;
 
+            // Update the hover info.
+            {
+                const scaledPosition = this.mouse_pos_scaled_to_render_resolution();
+                mouseState.hover = Rsed.core.mouse_pick_buffer_at(scaledPosition.x, scaledPosition.y);
+            }
+
             return;
         },
 
@@ -112,6 +154,15 @@ Rsed.ui.inputState = (function()
             Rsed.throw_if_not_type("object", state);
 
             mouseState.buttons = {...mouseState.buttons, ...state};
+
+            if (!this.mouse_button_down())
+            {
+                mouseState.grab = null;
+            }
+            else if (!mouseState.grab)
+            {
+                mouseState.grab = mouseState.hover;
+            }
 
             return;
         },

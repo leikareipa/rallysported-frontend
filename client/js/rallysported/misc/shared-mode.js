@@ -117,7 +117,8 @@ Rsed.shared_mode_n = (function()
     {
         if (!publicInterface.enabled()) return;
 
-        if (Rsed.ui_input_n.are_editing_keys_pressed())
+        // Don't post edits while the user is committing more of them.
+        if (Rsed.ui.inputState.mouse_button_down())
         {
             setTimeout(poll_server, 500);
             return;

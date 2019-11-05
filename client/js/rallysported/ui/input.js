@@ -381,7 +381,7 @@ Rsed.ui_input_n = (function()
 
         publicInterface.enact_inputs = function()
         {
-            enact_mouse_clicks();
+           // enact_mouse_clicks();
            // enact_key_presses();
 
             // Mouse position deltas shouldn't carry across frames, so now that we've enacted all inputs,
@@ -409,7 +409,7 @@ Rsed.ui_input_n = (function()
             {
                 reset_mouse_hover_info();
 
-                const mousePickValue = Rsed.core.mouse_pick_buffer_value_at(x, y);
+                const mousePickValue = Rsed.core.mouse_pick_buffer_at(x, y);
                 hoverPickType = this.get_mouse_picking_type(mousePickValue);
                 hoverArgs = this.get_mouse_picking_args(mousePickValue, hoverPickType);
 

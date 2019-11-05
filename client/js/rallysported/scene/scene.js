@@ -12,14 +12,16 @@
 // project. For instance, you might have a 3d scene, which shows the project's track as a
 // textured 3d mesh; and a tilemap scene, which displays the project's tilemap for the
 // user to edit.
-Rsed.scene = function(args = {draw_mesh, draw_ui, handle_input})
+Rsed.scene = function(args = {})
 {
+    Rsed.throw_if_not_type("object", args);
+    
     args =
     {
         ...{
             draw_mesh: ()=>{},
             draw_ui: ()=>{},
-            handle_input: ()=>{},
+            handle_user_interaction: ()=>{},
         },
         ...args
     };

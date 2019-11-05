@@ -51,8 +51,14 @@ Rsed.core = (function()
                 /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
                 activate_prop: function(name = "")
                 {
+                    if (!Rsed.ui.inputState.current_mouse_hover() ||
+                         Rsed.ui.inputState.current_mouse_hover().type !== "prop")
+                    {
+                        return;
+                    }
+
                     Rsed.core.current_project().props.change_prop_type(Rsed.core.current_project().track_id(),
-                                                                       Rsed.ui_input_n.mouse_hover_args().trackId,
+                                                                       Rsed.ui.inputState.current_mouse_hover().propTrackIdx,
                                                                        Rsed.core.current_project().props.id_for_name(name));
                     window.close_dropdowns();
 
@@ -176,7 +182,7 @@ Rsed.core = (function()
         render_surface_id: ()=>canvas.domElement.getAttribute("id"),
         fps_counter_enabled: ()=>fpsCounterEnabled,
         scaling_multiplier: ()=>canvas.scalingFactor,
-        mouse_pick_buffer_value_at: (x, y)=>canvas.mousePickingBuffer[x + y * canvas.width],
+        mouse_pick_buffer_at: (x, y)=>canvas.mousePickingBuffer[x + y * canvas.width],
     }
 
     return publicInterface;
@@ -188,10 +194,7 @@ Rsed.core = (function()
 
         programFPS = Math.round(1000 / (frameDeltaMs || 1));
 
-        // Poll and process user input.
-        Rsed.ui_input_n.enact_inputs();
-
-        scene.handle_input();
+        scene.handle_user_interaction();
 
         // Render the next frame.
         canvas.mousePickingBuffer.fill(null);
@@ -208,7 +211,7 @@ Rsed.core = (function()
         /// TODO: Doesn't need to be checked in shared mode, since it doesn't use JSZip for saving.
         if (!JSZip.support.blob)
         {
-            alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
+            Rsed.alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
         }
     }
 
