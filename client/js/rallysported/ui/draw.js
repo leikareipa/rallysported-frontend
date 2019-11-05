@@ -82,15 +82,9 @@ Rsed.ui.draw = (function()
                             (pixels.length > 0))
                         || Rsed.throw("Expected a valid array of pixels.");
 
-            Rsed.assert && ((width > 0) &&
+            Rsed.assert && ((width  > 0) &&
                             (height > 0))
                         || Rsed.throw("Expected a valid image resolution.");
-
-            Rsed.assert && ((x >= 0) &&
-                            (x < pixelSurface.width) &&
-                            (y >= 0) &&
-                            (y < pixelSurface.height))
-                        || Rsed.throw("Invalid screen coordinates for drawing a UI image.");
 
             for (let cy = 0; cy < height; cy++)
             {
@@ -103,9 +97,11 @@ Rsed.ui.draw = (function()
                     if ((x + cx) >= pixelSurface.width) break;
 
                     const pixel = pixels[cx + (flipped? (height - cy - 1) : cy) * width];
+
                     if (alpha && (pixel === 0)) continue;
 
                     const color = ((typeof pixel === "object")? pixel : Rsed.palette.color_at_idx(pixel));
+                    
                     put_pixel((x + cx), (y + cy), color.red, color.green, color.blue);
 
                     if (mousePick != null)
