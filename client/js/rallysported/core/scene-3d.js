@@ -246,7 +246,7 @@ Rsed.scenes = Rsed.scenes || {};
                     }
                     case "ui-element":
                     {
-                        switch (grabbedElement.uiElementId)
+                        switch (grab.uiElementId)
                         {
                             case "palat-pane":
                             {

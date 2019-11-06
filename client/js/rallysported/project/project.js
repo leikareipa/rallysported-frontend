@@ -147,22 +147,48 @@ Rsed.project = async function(projectArgs = {})
         },
 
         // Bundles the project's data files into a .zip, and has the browser initiate a 'download' of it.
-        save_to_disk: ()=>
+        save_to_disk: async()=>
         {
-            const filename = projectData.meta.baseName.toUpperCase();
+            const dstFilename = projectData.meta.baseName.toUpperCase();
 
-            Rsed.log("Saving project \"" + projectData.meta.displayName + "\" into " +
-                      filename + ".ZIP.");
+            Rsed.log(`Saving project "${projectData.meta.displayName}" into ${dstFilename}.ZIP.`);
 
-            const zip = new JSZip();
+            // In case something goes wrong and an error gets thrown in some function while saving,
+            // we want to catch it here rather than letting the entire app go down, so as to give
+            // the user a chance to re-try.
+            try
+            {
+                // The default HITABLE.TXT file (which holds Rally-Sport's top lap times) is stored
+                // locally in a zip file. We'll need to deflate its data into an array.
+                const hitable = await (async()=>
+                {
+                    const zipFile = await (new JSZip()).loadAsync(Rsed.project.hitableZip);
+                    const hitableFile = zipFile.files["HITABLE.TXT"];
 
-            zip.file(filename + "/" + filename + ".DTA", projectDataContainer.dataBuffer);
-            zip.file(filename + "/" + filename + ".$FT", updated_manifesto_string());
-            zip.file(filename + "/" + "HITABLE.TXT", Rsed.project.hitable);
+                    return (hitableFile? hitableFile.async("arraybuffer") : null);
+                })();
 
-            zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:2}})
-            .then((blob)=>saveAs(blob, (filename + ".ZIP")))
-            .catch((error)=>Rsed.throw("Error while saving: " + error + "."));
+                if (!hitable)
+                {
+                    throw "Cannot access HITABLE.TXT";
+                }
+
+                const dstZip = new JSZip();
+
+                dstZip.file(`${dstFilename}/${dstFilename}.DTA`, projectDataContainer.dataBuffer);
+                dstZip.file(`${dstFilename}/${dstFilename}.$FT`, updated_manifesto_string());
+                dstZip.file(`${dstFilename}/HITABLE.TXT`, hitable);
+
+                dstZip.generateAsync({type:"blob", compression:"DEFLATE", compressionOptions:{level:1}})
+                      .then((blob)=>saveAs(blob, (`${dstFilename}.ZIP`)))
+                      .catch((error)=>Rsed.throw(`Error while saving: ${error}.`));
+            }
+            catch (error)
+            {
+                Rsed.alert(`Failed to save the project: ${error}`);
+            }
+
+            return;
         }
     });
 
