@@ -3,8 +3,6 @@
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
- *
- * The UI font.
  * 
  */
 
@@ -16,9 +14,7 @@ Rsed.ui.font = (function()
     const charWidth = 8;
     const charHeight = 8;
 
-    const firstChar = ' ';
-    const lastChar = '_';
-
+    // Shorthands for colors.
     const X = "lightgray";
     const Z = 1;
     const W = "white";
@@ -27,8 +23,12 @@ Rsed.ui.font = (function()
     const A = "dimgray";
     const _ = "background";
 
+    // The sequential range of ASCII symbols represented in the font's character set.
+    const firstChar = ' ';
+    const lastChar = '_';
+
     const charset = 
-        [_,_,_,_,_,_,_,_, // Space
+       [_,_,_,_,_,_,_,_, // Space
         _,_,_,_,_,_,_,_,
         _,_,_,_,_,_,_,_,
         _,_,_,_,_,_,_,_,
@@ -118,7 +118,7 @@ Rsed.ui.font = (function()
         _,_,_,_,_,_,_,_,
         _,_,_,_,_,_,_,_,
 
-        _,_,_,_,_,_,_,_,  // *
+        _,_,_,_,_,_,_,_,
         _,X,_,X,_,_,_,_,
         _,_,X,_,_,_,_,_,
         _,X,_,X,_,_,_,_,
@@ -308,7 +308,7 @@ Rsed.ui.font = (function()
         _,_,_,_,_,_,_,_,
 
         _,_,_,_,_,_,_,_,
-        X,X,_,_,_,_,_,_, //
+        X,X,_,_,_,_,_,_, // ?
         _,_,X,_,_,_,_,_,
         _,X,_,_,_,_,_,_,
         _,_,_,_,_,_,_,_,
@@ -380,7 +380,7 @@ Rsed.ui.font = (function()
         _,_,_,_,_,_,_,_,
 
         _,_,_,_,_,_,_,_,
-        _,X,X,_,_,_,_,_, // G
+        _,X,X,_,_,_,_,_,
         X,_,_,_,_,_,_,_,
         X,_,X,X,_,_,_,_,
         X,_,_,X,_,_,_,_,
@@ -470,7 +470,7 @@ Rsed.ui.font = (function()
         _,_,_,_,_,_,_,_,
 
         _,_,_,_,_,_,_,_,
-        _,X,X,_,_,_,_,_, // Q
+        _,X,X,_,_,_,_,_,
         X,_,_,X,_,_,_,_,
         X,_,_,X,_,_,_,_,
         X,_,X,X,_,_,_,_,
@@ -586,7 +586,7 @@ Rsed.ui.font = (function()
         _,_,_,_,_,_,_,_,
         _,_,_,_,_,_,_,_,
 
-        _,R,R,R,R,_,_,_, // ^.
+        _,R,R,R,R,_,_,_, // ^
         _,_,_,R,R,_,_,_,
         _,_,R,_,R,_,_,_,
         _,R,_,_,R,_,_,_,
