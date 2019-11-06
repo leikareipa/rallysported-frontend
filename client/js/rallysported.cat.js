@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (05 November 2019 06:28:28 UTC)
+// VERSION: live (06 November 2019 04:26:13 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -26,7 +26,6 @@
 //	../client/js/rallysported/track/props.js
 //	../client/js/rallysported/ui/ui.js
 //	../client/js/rallysported/ui/font.js
-//	../client/js/rallysported/ui/view.js
 //	../client/js/rallysported/ui/brush.js
 //	../client/js/rallysported/ui/draw.js
 //	../client/js/rallysported/ui/window.js
@@ -2961,8 +2960,26 @@ Rsed.world.mesh_builder = (function()
         // Returns a renderable 3d mesh of the current project's track from the given viewing position
         // (in tile units). The mesh will be assigned such world coordinates that it'll be located
         // roughly in the middle of the canvas when rendered.
-        track_mesh: function(viewPos = {x:0,y:0,z:0})
+        track_mesh: function(args = {})
         {
+            Rsed.throw_if_not_type("object", args);
+
+            args =
+            {
+                ...// Default args.
+                {
+                    cameraPos:
+                    {
+                        x: 0,
+                        y: 0,
+                        z: 0,
+                    },
+                    includeProps: true,
+                    includeWireframe: false,
+                },
+                ...args,
+            };
+
             // The polygons that make up the track mesh.
             const trackPolygons = [];
 
@@ -2977,8 +2994,8 @@ Rsed.world.mesh_builder = (function()
                 for (let x = 0; x < Rsed.world.camera.view_width(); x++)
                 {
                     // Coordinates of the current ground tile.
-                    const tileX = (x + viewPos.x);
-                    const tileZ = (z + viewPos.z);
+                    const tileX = (x + args.cameraPos.x);
+                    const tileZ = (z + args.cameraPos.z);
 
                     // Coordinates in world units of the ground tile's top left vertex.
                     const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
@@ -3017,7 +3034,7 @@ Rsed.world.mesh_builder = (function()
                                                            texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
                                                            textureMapping: "ortho",
                                                            hasSolidFill: true,
-                                                           hasWireframe: Rsed.ui_view_n.show3dWireframe,
+                                                           hasWireframe: args.includeWireframe,
                                                            auxiliary:
                                                            {
                                                                // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
@@ -3041,8 +3058,8 @@ Rsed.world.mesh_builder = (function()
                 // them.
                 for (let x = 0; x < Rsed.world.camera.view_width(); x++)
                 {
-                    const tileX = (x + viewPos.x);
-                    const tileZ = (z + viewPos.z);
+                    const tileX = (x + args.cameraPos.x);
+                    const tileZ = (z + args.cameraPos.z);
 
                     const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
                     const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
@@ -3135,35 +3152,55 @@ Rsed.world.mesh_builder = (function()
             }
 
             // Add any track prop meshes that should be visible on the currently-drawn track.
-            const propLocations = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().track_id());
-            propLocations.forEach((pos, idx)=>
+            if (args.includeProps)
             {
-                if ((pos.x >= (Rsed.world.camera.pos_x() * Rsed.constants.groundTileSize)) &&
-                    (pos.x <= ((Rsed.world.camera.pos_x() + Rsed.world.camera.view_width()) * Rsed.constants.groundTileSize)) &&
-                    (pos.z >= (Rsed.world.camera.pos_z() * Rsed.constants.groundTileSize)) &&
-                    (pos.z <= ((Rsed.world.camera.pos_z() + Rsed.world.camera.view_height()) * Rsed.constants.groundTileSize)))
-                {
-                    const x = (pos.x + centerView.x - (viewPos.x * Rsed.constants.groundTileSize));
-                    const z = (centerView.z - pos.z + (viewPos.z * Rsed.constants.groundTileSize));
-                    const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
-                    const y = (groundHeight + pos.y);
+                const propLocations = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().track_id());
 
-                    trackPolygons.push(...this.prop_mesh(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
-                }
-            });
+                propLocations.forEach((pos, idx)=>
+                {
+                    if ((pos.x >= (Rsed.world.camera.pos_x() * Rsed.constants.groundTileSize)) &&
+                        (pos.x <= ((Rsed.world.camera.pos_x() + Rsed.world.camera.view_width()) * Rsed.constants.groundTileSize)) &&
+                        (pos.z >= (Rsed.world.camera.pos_z() * Rsed.constants.groundTileSize)) &&
+                        (pos.z <= ((Rsed.world.camera.pos_z() + Rsed.world.camera.view_height()) * Rsed.constants.groundTileSize)))
+                    {
+                        const x = (pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize));
+                        const z = (centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize));
+                        const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
+                        const y = (groundHeight + pos.y);
+
+                        trackPolygons.push(...this.prop_mesh(pos.propId, idx,
+                        {
+                            position:
+                            {
+                                x,
+                                y,
+                                z,
+                            },
+                            ...args,
+                        }));
+                    }
+                });
+            }
 
             return Rngon.mesh(trackPolygons);
         },
 
         // Returns a renderable 3d mesh of the given prop at the given position (in world units).
-        prop_mesh: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
+        prop_mesh: (propId = 0, idxOnTrack = 0, args = {})=>
         {
+            Rsed.throw_if_not_type("object", args);
+
             args =
             {
-                ...
+                ...// Default args.
                 {
-                    // Whether the renderer should draw a wireframe around this mesh.
-                    wireframe: false,
+                    position:
+                    {
+                        x: 0,
+                        y: 0,
+                        z: 0,
+                    },
+                    includeWireframe: false,
                 },
                 ...args
             };
@@ -3173,13 +3210,12 @@ Rsed.world.mesh_builder = (function()
 
             srcMesh.ngons.forEach(ngon=>
             {
-                const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + pos.x), (v.y + pos.y), (v.z + pos.z))),
+                const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x), (v.y + args.position.y), (v.z + args.position.z))),
                                             {
                                                 color: (ngon.fill.type === "texture"? Rsed.palette.color_at_idx(0) : Rsed.palette.color_at_idx(ngon.fill.idx)),
                                                 texture: (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx] : null),
                                                 textureMapping: "ortho",
-                                                hasSolidFill: true,
-                                                hasWireframe: args.wireframe,
+                                                hasWireframe: args.includeWireframe,
                                                 auxiliary:
                                                 {
                                                     mousePickId: Rsed.ui.mouse_picking_element("prop",
@@ -4900,60 +4936,6 @@ Rsed.ui.font = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/ui/view.js
- *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
- * 
- */
-
-"use strict";
-
-Rsed.ui_view_n = (function()
-{
-    const availableViews = Object.freeze(["3d", "3d-topdown", "2d-topdown"]);
-
-    let currentView = availableViews[0];
-
-    const publicInterface = {};
-    {
-        // Set to true to display the PALAT pane, i.e. a side window with thumbnails of all the
-        // available PALA textures.
-        publicInterface.showPalatPane = false;
-
-        // Set to true if the user wants 3d models (and the ground) to be displayed with a wireframe
-        // around each polygon.
-        publicInterface.show3dWireframe = true;
-
-        // Set to true if the user wants props to not be visible in the 3d view.
-        publicInterface.hideProps = false;
-
-        publicInterface.set_view = function(view = "")
-        {
-            Rsed.assert && (availableViews.includes(view))
-                        || Rsed.throw("Can't find the given view to set.");
-                        
-            currentView = view;
-
-            Rsed.ui.inputState.reset_mouse_hover();
-        }
-
-        publicInterface.toggle_view = function(firstView = "", secondView = "")
-        {
-            this.set_view(((currentView === firstView)? secondView : firstView))
-        }
-
-        publicInterface.current_view = function()
-        {
-            Rsed.assert && (availableViews.includes(currentView))
-                        || Rsed.throw("Holding an invalid view.");
-
-            return currentView.slice(0);
-        }
-    }
-    return publicInterface;
-})();
-/*
  * Most recent known filename: js/ui/brush.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
@@ -5985,6 +5967,24 @@ Rsed.ui.inputState = (function()
 
 "use strict";
 
+// Returns an object that can be assigned to an element in the mouse-picking buffer.
+//
+// The 'type' parameter determines the type of mouse-picking; while the 'args' object
+// will be appended as-is to the object returned - it will thus contain the custom
+// values that you want to include in this element of the mouse-picking buffer.
+//
+// The returned object takes the following form:
+//
+//   {
+//       type,
+//       ...args,
+//   }
+//
+// Although you could simply create this object in-place rather than by calling this
+// function, the function will additionally perform checks on the validity of the
+// object prior to returning it - like whether it contains at least the required
+// arguments.
+//
 Rsed.ui.mouse_picking_element = function(type = "", args = {})
 {
     Rsed.throw_if_not_type("string", type);
@@ -6087,6 +6087,16 @@ Rsed.scenes = Rsed.scenes || {};
     // Lets us keep track of mouse position delta between frames; e.g. for dragging props.
     let prevMousePos = {x:0, y:0};
 
+    // Whether to draw a wireframe around the scene's polygons.
+    let showWireframe = true;
+
+    // Whether to show the PALAT pane; i.e. a side panel that displays all the available
+    // PALA textures.
+    let showPalatPane = false;
+
+    // Whether to render props (track-side 3d objects - like trees, billboards, etc.).
+    let showProps = true;
+
     // RallySportED's main scene. Displays the project as a textured 3d mesh; and allows
     // the user to edit the heightmap and tilemap via mouse and keyboard interaction.
     Rsed.scenes["3d"] = Rsed.scene(
@@ -6099,7 +6109,7 @@ Rsed.scenes = Rsed.scenes || {};
             Rsed.ui.draw.minimap();
             Rsed.ui.draw.active_pala();
             Rsed.ui.draw.footer_info();
-            if (Rsed.ui_view_n.showPalatPane) Rsed.ui.draw.palat_pane();
+            if (showPalatPane) Rsed.ui.draw.palat_pane();
             if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 
@@ -6110,9 +6120,17 @@ Rsed.scenes = Rsed.scenes || {};
 
         draw_mesh: function(canvas)
         {
-            const trackMesh = Rsed.world.mesh_builder.track_mesh({x: Math.floor(Rsed.world.camera.pos_x()),
-                                                                    y: 0,
-                                                                    z: Math.floor(Rsed.world.camera.pos_z())});
+            const trackMesh = Rsed.world.mesh_builder.track_mesh(
+            {
+                cameraPos:
+                {
+                    x: Math.floor(Rsed.world.camera.pos_x()),
+                    y: 0,
+                    z: Math.floor(Rsed.world.camera.pos_z()),
+                },
+                includeProps: showProps,
+                includeWireframe: showWireframe,
+            });
 
             const renderInfo = Rngon.render(canvas.domElement.getAttribute("id"), [trackMesh],
             {
@@ -6167,13 +6185,13 @@ Rsed.scenes = Rsed.scenes || {};
 
                 if (Rsed.ui.inputState.key_down("w"))
                 {
-                    Rsed.ui_view_n.show3dWireframe = !Rsed.ui_view_n.show3dWireframe;
+                    showWireframe = !showWireframe;
                     Rsed.ui.inputState.set_key_down("w", false);
                 }
 
                 if (Rsed.ui.inputState.key_down("a"))
                 {
-                    Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane;
+                    showPalatPane = !showPalatPane;
                     Rsed.ui.inputState.set_key_down("a", false);
                 }
 
@@ -6191,7 +6209,7 @@ Rsed.scenes = Rsed.scenes || {};
 
                 if (Rsed.ui.inputState.key_down("b"))
                 {
-                    Rsed.ui_view_n.hideProps = !Rsed.ui_view_n.hideProps;
+                    showProps = !showProps;
                     Rsed.ui.inputState.set_key_down("b", false);
                 }
 
@@ -6338,170 +6356,176 @@ Rsed.scenes = Rsed.scenes || {};
 
 Rsed.scenes = Rsed.scenes || {};
 
-// A top-down view of the project's tilemap. The user can edit the tilemap via mouse
-// interaction.
-Rsed.scenes["tilemap"] = Rsed.scene(
 {
-    draw_ui: function(canvas)
+    // Whether to show the PALAT pane; i.e. a side panel that displays all the available
+    // PALA textures.
+    let showPalatPane = false;
+
+    // A top-down view of the project's tilemap. The user can edit the tilemap via mouse
+    // interaction.
+    Rsed.scenes["tilemap"] = Rsed.scene(
     {
-        Rsed.ui.draw.begin_drawing(canvas);
-
-        // Draw a large minimap of the track in the middle of the screen.
-        const width = Math.floor(Rsed.core.render_width() * 0.81);
-        const height = Math.floor(Rsed.core.render_height() * 0.72);
+        draw_ui: function(canvas)
         {
-            const xMul = (Rsed.core.current_project().maasto.width / width);
-            const zMul = (Rsed.core.current_project().maasto.width / height);
-            const image = [];   // An array of palette indices that forms the minimap image.
-            const mousePick = [];
+            Rsed.ui.draw.begin_drawing(canvas);
 
-            for (let z = 0; z < height; z++)
+            // Draw a large minimap of the track in the middle of the screen.
+            const width = Math.floor(Rsed.core.render_width() * 0.81);
+            const height = Math.floor(Rsed.core.render_height() * 0.72);
             {
-                for (let x = 0; x < width; x++)
+                const xMul = (Rsed.core.current_project().maasto.width / width);
+                const zMul = (Rsed.core.current_project().maasto.width / height);
+                const image = [];   // An array of palette indices that forms the minimap image.
+                const mousePick = [];
+
+                for (let z = 0; z < height; z++)
                 {
-                    const tileX = Math.floor(x * xMul);
-                    const tileZ = Math.floor(z * zMul);
-
-                    const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
-                    let color = ((pala == null)? 0 : pala.indices[1]);
-
-                    // Create an outline.
-                    if (z % (height - 1) === 0) color = "gray";
-                    if (x % (width - 1) === 0) color = "gray";
-
-                    image.push(color);
-
-                    mousePick.push(Rsed.ui.mouse_picking_element("ui-element",
+                    for (let x = 0; x < width; x++)
                     {
-                        uiElementId: "tilemap",
-                        x: tileX,
-                        y: tileZ,
-                    }));
-                }
-            }
+                        const tileX = Math.floor(x * xMul);
+                        const tileZ = Math.floor(z * zMul);
 
-            Rsed.ui.draw.image(image, mousePick, width, height, ((canvas.width / 2) - (width / 2)), ((canvas.height / 2) - (height / 2)), false);
-        }
+                        const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
+                        let color = ((pala == null)? 0 : pala.indices[1]);
 
-        Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
-                            ((canvas.width / 2) - (width / 2)),
-                            ((canvas.height / 2) - (height / 2)) - Rsed.ui.font.font_height());
+                        // Create an outline.
+                        if (z % (height - 1) === 0) color = "gray";
+                        if (x % (width - 1) === 0) color = "gray";
 
-        Rsed.ui.draw.watermark();
-        Rsed.ui.draw.active_pala();
-        if (Rsed.ui_view_n.showPalatPane) Rsed.ui.draw.palat_pane();
-        if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
-        Rsed.ui.draw.mouse_cursor();
+                        image.push(color);
 
-        Rsed.ui.draw.finish_drawing(canvas);
-
-        return;
-    },
-
-    draw_mesh: function(canvas)
-    {
-        // No mesh is used for this scene.
-        const emptyMesh = Rngon.mesh();
-
-        const renderInfo = Rngon.render(canvas.domElement.getAttribute("id"), [emptyMesh],
-        {
-            cameraPosition: Rngon.translation_vector(0, 0, 0),
-            cameraDirection: Rngon.rotation_vector(0, 0, 0),
-            scale: canvas.scalingFactor,
-            fov: 45,
-            nearPlane: 300,
-            farPlane: 10000,
-            clipToViewport: false,
-            depthSort: "none",
-        });
-
-        // If the rendering was resized since the previous frame...
-        if ((renderInfo.renderWidth !== canvas.width ||
-            (renderInfo.renderHeight !== canvas.height)))
-        {
-            canvas.width = renderInfo.renderWidth;
-            canvas.height = renderInfo.renderHeight;
-
-            // The PALAT pane needs to adjust to the new size of the canvas.
-            Rsed.ui.draw.generate_palat_pane();
-        }
-        
-        return;
-    },
-
-    handle_user_interaction: function()
-    {
-        // Handle keyboard input for one-off events, where the key press is registered
-        // only once (no repeat).
-        {
-            if (Rsed.ui.inputState.key_down("q"))
-            {
-                Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
-                Rsed.ui.inputState.set_key_down("q", false);
-            }
-
-            if (Rsed.ui.inputState.key_down("a"))
-            {
-                Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane;
-                Rsed.ui.inputState.set_key_down("a", false);
-            }
-
-            for (const brushSizeKey of ["1", "2", "3", "4", "5"])
-            {
-                if (Rsed.ui.inputState.key_down(brushSizeKey))
-                {
-                    Rsed.ui_brush_n.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
-                    Rsed.ui.inputState.set_key_down(brushSizeKey, false);
-                }
-            }
-        }
-
-        // Handle mouse input.
-        if (Rsed.ui.inputState.mouse_button_down())
-        {
-            const grab = Rsed.ui.inputState.current_mouse_grab();
-            const hover = Rsed.ui.inputState.current_mouse_hover();
-
-            if (!grab || !hover) return;
-
-            switch (grab.type)
-            {
-                case "ui-element":
-                {
-                    switch (hover.uiElementId)
-                    {
-                        case "tilemap":
+                        mousePick.push(Rsed.ui.mouse_picking_element("ui-element",
                         {
-                            if (Rsed.ui.inputState.mid_mouse_button_down())
-                            {
-                                Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala,
-                                                                        Rsed.ui_brush_n.brush_pala_idx(),
-                                                                        hover.x,
-                                                                        hover.y);
-                            }
-
-                            break;
-                        }
-                        case "palat-pane":
-                        {
-                            if (Rsed.ui.inputState.left_mouse_button_down() ||
-                                Rsed.ui.inputState.right_mouse_button_down())
-                            {
-                                Rsed.ui_brush_n.set_brush_pala_idx(hover.palaIdx);
-                            }
-
-                            break;
-                        }
-                        default: Rsed.throw("Unknown UI element id for mouse picking."); break;
+                            uiElementId: "tilemap",
+                            x: tileX,
+                            y: tileZ,
+                        }));
                     }
-
-                    break;
                 }
-                default: break;
+
+                Rsed.ui.draw.image(image, mousePick, width, height, ((canvas.width / 2) - (width / 2)), ((canvas.height / 2) - (height / 2)), false);
             }
-        }
-    },
-});
+
+            Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
+                                ((canvas.width / 2) - (width / 2)),
+                                ((canvas.height / 2) - (height / 2)) - Rsed.ui.font.font_height());
+
+            Rsed.ui.draw.watermark();
+            Rsed.ui.draw.active_pala();
+            if (showPalatPane) Rsed.ui.draw.palat_pane();
+            if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
+            Rsed.ui.draw.mouse_cursor();
+
+            Rsed.ui.draw.finish_drawing(canvas);
+
+            return;
+        },
+
+        draw_mesh: function(canvas)
+        {
+            // No mesh is used for this scene.
+            const emptyMesh = Rngon.mesh();
+
+            const renderInfo = Rngon.render(canvas.domElement.getAttribute("id"), [emptyMesh],
+            {
+                cameraPosition: Rngon.translation_vector(0, 0, 0),
+                cameraDirection: Rngon.rotation_vector(0, 0, 0),
+                scale: canvas.scalingFactor,
+                fov: 45,
+                nearPlane: 300,
+                farPlane: 10000,
+                clipToViewport: false,
+                depthSort: "none",
+            });
+
+            // If the rendering was resized since the previous frame...
+            if ((renderInfo.renderWidth !== canvas.width ||
+                (renderInfo.renderHeight !== canvas.height)))
+            {
+                canvas.width = renderInfo.renderWidth;
+                canvas.height = renderInfo.renderHeight;
+
+                // The PALAT pane needs to adjust to the new size of the canvas.
+                Rsed.ui.draw.generate_palat_pane();
+            }
+            
+            return;
+        },
+
+        handle_user_interaction: function()
+        {
+            // Handle keyboard input for one-off events, where the key press is registered
+            // only once (no repeat).
+            {
+                if (Rsed.ui.inputState.key_down("q"))
+                {
+                    Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
+                    Rsed.ui.inputState.set_key_down("q", false);
+                }
+
+                if (Rsed.ui.inputState.key_down("a"))
+                {
+                    showPalatPane = !showPalatPane;
+                    Rsed.ui.inputState.set_key_down("a", false);
+                }
+
+                for (const brushSizeKey of ["1", "2", "3", "4", "5"])
+                {
+                    if (Rsed.ui.inputState.key_down(brushSizeKey))
+                    {
+                        Rsed.ui_brush_n.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+                        Rsed.ui.inputState.set_key_down(brushSizeKey, false);
+                    }
+                }
+            }
+
+            // Handle mouse input.
+            if (Rsed.ui.inputState.mouse_button_down())
+            {
+                const grab = Rsed.ui.inputState.current_mouse_grab();
+                const hover = Rsed.ui.inputState.current_mouse_hover();
+
+                if (!grab || !hover) return;
+
+                switch (grab.type)
+                {
+                    case "ui-element":
+                    {
+                        switch (hover.uiElementId)
+                        {
+                            case "tilemap":
+                            {
+                                if (Rsed.ui.inputState.mid_mouse_button_down())
+                                {
+                                    Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala,
+                                                                            Rsed.ui_brush_n.brush_pala_idx(),
+                                                                            hover.x,
+                                                                            hover.y);
+                                }
+
+                                break;
+                            }
+                            case "palat-pane":
+                            {
+                                if (Rsed.ui.inputState.left_mouse_button_down() ||
+                                    Rsed.ui.inputState.right_mouse_button_down())
+                                {
+                                    Rsed.ui_brush_n.set_brush_pala_idx(hover.palaIdx);
+                                }
+
+                                break;
+                            }
+                            default: Rsed.throw("Unknown UI element id for mouse picking."); break;
+                        }
+
+                        break;
+                    }
+                    default: break;
+                }
+            }
+        },
+    });
+}
 /*
  * Most recent known filename: js/core/core.js
  *

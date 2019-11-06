@@ -14,6 +14,16 @@ Rsed.scenes = Rsed.scenes || {};
     // Lets us keep track of mouse position delta between frames; e.g. for dragging props.
     let prevMousePos = {x:0, y:0};
 
+    // Whether to draw a wireframe around the scene's polygons.
+    let showWireframe = true;
+
+    // Whether to show the PALAT pane; i.e. a side panel that displays all the available
+    // PALA textures.
+    let showPalatPane = false;
+
+    // Whether to render props (track-side 3d objects - like trees, billboards, etc.).
+    let showProps = true;
+
     // RallySportED's main scene. Displays the project as a textured 3d mesh; and allows
     // the user to edit the heightmap and tilemap via mouse and keyboard interaction.
     Rsed.scenes["3d"] = Rsed.scene(
@@ -26,7 +36,7 @@ Rsed.scenes = Rsed.scenes || {};
             Rsed.ui.draw.minimap();
             Rsed.ui.draw.active_pala();
             Rsed.ui.draw.footer_info();
-            if (Rsed.ui_view_n.showPalatPane) Rsed.ui.draw.palat_pane();
+            if (showPalatPane) Rsed.ui.draw.palat_pane();
             if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 
@@ -37,9 +47,17 @@ Rsed.scenes = Rsed.scenes || {};
 
         draw_mesh: function(canvas)
         {
-            const trackMesh = Rsed.world.mesh_builder.track_mesh({x: Math.floor(Rsed.world.camera.pos_x()),
-                                                                    y: 0,
-                                                                    z: Math.floor(Rsed.world.camera.pos_z())});
+            const trackMesh = Rsed.world.mesh_builder.track_mesh(
+            {
+                cameraPos:
+                {
+                    x: Math.floor(Rsed.world.camera.pos_x()),
+                    y: 0,
+                    z: Math.floor(Rsed.world.camera.pos_z()),
+                },
+                includeProps: showProps,
+                includeWireframe: showWireframe,
+            });
 
             const renderInfo = Rngon.render(canvas.domElement.getAttribute("id"), [trackMesh],
             {
@@ -94,13 +112,13 @@ Rsed.scenes = Rsed.scenes || {};
 
                 if (Rsed.ui.inputState.key_down("w"))
                 {
-                    Rsed.ui_view_n.show3dWireframe = !Rsed.ui_view_n.show3dWireframe;
+                    showWireframe = !showWireframe;
                     Rsed.ui.inputState.set_key_down("w", false);
                 }
 
                 if (Rsed.ui.inputState.key_down("a"))
                 {
-                    Rsed.ui_view_n.showPalatPane = !Rsed.ui_view_n.showPalatPane;
+                    showPalatPane = !showPalatPane;
                     Rsed.ui.inputState.set_key_down("a", false);
                 }
 
@@ -118,7 +136,7 @@ Rsed.scenes = Rsed.scenes || {};
 
                 if (Rsed.ui.inputState.key_down("b"))
                 {
-                    Rsed.ui_view_n.hideProps = !Rsed.ui_view_n.hideProps;
+                    showProps = !showProps;
                     Rsed.ui.inputState.set_key_down("b", false);
                 }
 

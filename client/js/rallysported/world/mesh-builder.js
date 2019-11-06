@@ -17,8 +17,26 @@ Rsed.world.mesh_builder = (function()
         // Returns a renderable 3d mesh of the current project's track from the given viewing position
         // (in tile units). The mesh will be assigned such world coordinates that it'll be located
         // roughly in the middle of the canvas when rendered.
-        track_mesh: function(viewPos = {x:0,y:0,z:0})
+        track_mesh: function(args = {})
         {
+            Rsed.throw_if_not_type("object", args);
+
+            args =
+            {
+                ...// Default args.
+                {
+                    cameraPos:
+                    {
+                        x: 0,
+                        y: 0,
+                        z: 0,
+                    },
+                    includeProps: true,
+                    includeWireframe: false,
+                },
+                ...args,
+            };
+
             // The polygons that make up the track mesh.
             const trackPolygons = [];
 
@@ -33,8 +51,8 @@ Rsed.world.mesh_builder = (function()
                 for (let x = 0; x < Rsed.world.camera.view_width(); x++)
                 {
                     // Coordinates of the current ground tile.
-                    const tileX = (x + viewPos.x);
-                    const tileZ = (z + viewPos.z);
+                    const tileX = (x + args.cameraPos.x);
+                    const tileZ = (z + args.cameraPos.z);
 
                     // Coordinates in world units of the ground tile's top left vertex.
                     const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
@@ -73,7 +91,7 @@ Rsed.world.mesh_builder = (function()
                                                            texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
                                                            textureMapping: "ortho",
                                                            hasSolidFill: true,
-                                                           hasWireframe: Rsed.ui_view_n.show3dWireframe,
+                                                           hasWireframe: args.includeWireframe,
                                                            auxiliary:
                                                            {
                                                                // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
@@ -97,8 +115,8 @@ Rsed.world.mesh_builder = (function()
                 // them.
                 for (let x = 0; x < Rsed.world.camera.view_width(); x++)
                 {
-                    const tileX = (x + viewPos.x);
-                    const tileZ = (z + viewPos.z);
+                    const tileX = (x + args.cameraPos.x);
+                    const tileZ = (z + args.cameraPos.z);
 
                     const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
                     const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
@@ -191,35 +209,55 @@ Rsed.world.mesh_builder = (function()
             }
 
             // Add any track prop meshes that should be visible on the currently-drawn track.
-            const propLocations = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().track_id());
-            propLocations.forEach((pos, idx)=>
+            if (args.includeProps)
             {
-                if ((pos.x >= (Rsed.world.camera.pos_x() * Rsed.constants.groundTileSize)) &&
-                    (pos.x <= ((Rsed.world.camera.pos_x() + Rsed.world.camera.view_width()) * Rsed.constants.groundTileSize)) &&
-                    (pos.z >= (Rsed.world.camera.pos_z() * Rsed.constants.groundTileSize)) &&
-                    (pos.z <= ((Rsed.world.camera.pos_z() + Rsed.world.camera.view_height()) * Rsed.constants.groundTileSize)))
-                {
-                    const x = (pos.x + centerView.x - (viewPos.x * Rsed.constants.groundTileSize));
-                    const z = (centerView.z - pos.z + (viewPos.z * Rsed.constants.groundTileSize));
-                    const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
-                    const y = (groundHeight + pos.y);
+                const propLocations = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().track_id());
 
-                    trackPolygons.push(...this.prop_mesh(pos.propId, idx, {x, y, z}, {wireframe: Rsed.ui_view_n.show3dWireframe}));
-                }
-            });
+                propLocations.forEach((pos, idx)=>
+                {
+                    if ((pos.x >= (Rsed.world.camera.pos_x() * Rsed.constants.groundTileSize)) &&
+                        (pos.x <= ((Rsed.world.camera.pos_x() + Rsed.world.camera.view_width()) * Rsed.constants.groundTileSize)) &&
+                        (pos.z >= (Rsed.world.camera.pos_z() * Rsed.constants.groundTileSize)) &&
+                        (pos.z <= ((Rsed.world.camera.pos_z() + Rsed.world.camera.view_height()) * Rsed.constants.groundTileSize)))
+                    {
+                        const x = (pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize));
+                        const z = (centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize));
+                        const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
+                        const y = (groundHeight + pos.y);
+
+                        trackPolygons.push(...this.prop_mesh(pos.propId, idx,
+                        {
+                            position:
+                            {
+                                x,
+                                y,
+                                z,
+                            },
+                            ...args,
+                        }));
+                    }
+                });
+            }
 
             return Rngon.mesh(trackPolygons);
         },
 
         // Returns a renderable 3d mesh of the given prop at the given position (in world units).
-        prop_mesh: (propId = 0, idxOnTrack = 0, pos = {x:0,y:0,z:0}, args = {})=>
+        prop_mesh: (propId = 0, idxOnTrack = 0, args = {})=>
         {
+            Rsed.throw_if_not_type("object", args);
+
             args =
             {
-                ...
+                ...// Default args.
                 {
-                    // Whether the renderer should draw a wireframe around this mesh.
-                    wireframe: false,
+                    position:
+                    {
+                        x: 0,
+                        y: 0,
+                        z: 0,
+                    },
+                    includeWireframe: false,
                 },
                 ...args
             };
@@ -229,13 +267,12 @@ Rsed.world.mesh_builder = (function()
 
             srcMesh.ngons.forEach(ngon=>
             {
-                const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + pos.x), (v.y + pos.y), (v.z + pos.z))),
+                const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x), (v.y + args.position.y), (v.z + args.position.z))),
                                             {
                                                 color: (ngon.fill.type === "texture"? Rsed.palette.color_at_idx(0) : Rsed.palette.color_at_idx(ngon.fill.idx)),
                                                 texture: (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx] : null),
                                                 textureMapping: "ortho",
-                                                hasSolidFill: true,
-                                                hasWireframe: args.wireframe,
+                                                hasWireframe: args.includeWireframe,
                                                 auxiliary:
                                                 {
                                                     mousePickId: Rsed.ui.mouse_picking_element("prop",
