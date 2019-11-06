@@ -8,6 +8,24 @@
 
 "use strict";
 
+// Returns an object that can be assigned to an element in the mouse-picking buffer.
+//
+// The 'type' parameter determines the type of mouse-picking; while the 'args' object
+// will be appended as-is to the object returned - it will thus contain the custom
+// values that you want to include in this element of the mouse-picking buffer.
+//
+// The returned object takes the following form:
+//
+//   {
+//       type,
+//       ...args,
+//   }
+//
+// Although you could simply create this object in-place rather than by calling this
+// function, the function will additionally perform checks on the validity of the
+// object prior to returning it - like whether it contains at least the required
+// arguments.
+//
 Rsed.ui.mouse_picking_element = function(type = "", args = {})
 {
     Rsed.throw_if_not_type("string", type);
