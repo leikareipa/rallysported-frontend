@@ -111,7 +111,10 @@ window.onload = function(event)
 
 window.close_dropdowns = function()
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
     const dropdowns = document.getElementsByClassName("dropdown_list");
     for (let i = 0; i < dropdowns.length; i++)
@@ -182,19 +185,38 @@ window.oncontextmenu = function(event)
 // to close any open dropdown lists.
 window.onclick = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
-    if (RSED_DROPDOWN_ACTIVATED &&
-        (event.target.id === Rsed.core.render_surface_id()))
+    // Only handle clicks that occur over RallySportED's canvas.
+    if (event.target.id !== Rsed.core.render_surface_id())
+    {
+        return;
+    }
+
+    if (RSED_DROPDOWN_ACTIVATED)
     {
         window.close_dropdowns();
-        return false;
+        return;
     }
+
+    return;
 }
 
 window.onmousedown = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
+
+    // Only handle clicks that occur over RallySportED's canvas.
+    if (event.target.id !== Rsed.core.render_surface_id())
+    {
+        return;
+    }
     
     switch (event.button)
     {
@@ -203,11 +225,22 @@ window.onmousedown = function(event)
         case 2: Rsed.ui.inputState.set_mouse_button_down({right:true}); break;
         default: break;
     }
+
+    return;
 }
 
 window.onmouseup = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
+
+    // Only handle clicks that occur over RallySportED's canvas.
+    if (event.target.id !== Rsed.core.render_surface_id())
+    {
+        return;
+    }
 
     switch (event.button)
     {
@@ -216,11 +249,16 @@ window.onmouseup = function(event)
         case 2: Rsed.ui.inputState.set_mouse_button_down({right:false}); break;
         default: break;
     }
+
+    return;
 }
 
 window.onmousemove = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
     if (event.target.id !== Rsed.core.render_surface_id())
     {
@@ -240,7 +278,10 @@ window.onmousemove = function(event)
 
 window.onkeydown = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
     // For keys used by RallySportED to which the browser also coincidentally responds,
     // prevent the browser from doing so.
@@ -258,7 +299,10 @@ window.onkeydown = function(event)
 
 window.onkeyup = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
     Rsed.ui.inputState.set_key_down(event.key, false);
 
@@ -270,7 +314,10 @@ window.onkeyup = function(event)
 // load up. If it's not, we'll ignore the drop.
 window.drop_handler = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
     // Don't let the browser handle the drop.
     event.preventDefault();
@@ -302,4 +349,6 @@ window.drop_handler = function(event)
     // track resource instead of specifying a server-side resource via the address bar.
     const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
     window.history.replaceState({}, document.title, basePath);
+
+    return;
 }
