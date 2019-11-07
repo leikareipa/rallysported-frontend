@@ -170,14 +170,14 @@ Rsed.scenes = Rsed.scenes || {};
                     {
                         // Add a new prop.
                         if ( Rsed.ui.inputState.key_down("shift") &&
-                                Rsed.ui.inputState.left_mouse_button_down() &&
+                             Rsed.ui.inputState.left_mouse_button_down() &&
                             !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
                         {
                             Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
-                                                                            Rsed.core.current_project().props.id_for_name("tree"),
-                                                                            {
-                                                                                x: (hover.groundTileX * Rsed.constants.groundTileSize),
-                                                                                z: (hover.groundTileY * Rsed.constants.groundTileSize),
+                                                                           Rsed.core.current_project().props.id_for_name("tree"),
+                                                                           {
+                                                                               x: (hover.groundTileX * Rsed.constants.groundTileSize),
+                                                                               z: (hover.groundTileY * Rsed.constants.groundTileSize),
                                                                             });
 
                             Rsed.ui.inputState.reset_mouse_hover();
@@ -192,16 +192,16 @@ Rsed.scenes = Rsed.scenes || {};
                             const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : (Rsed.ui.inputState.right_mouse_button_down()? -2 : 0));
                             
                             Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changeHeight,
-                                                                    delta,
-                                                                    hover.groundTileX,
-                                                                    hover.groundTileY);
+                                                                   delta,
+                                                                   hover.groundTileX,
+                                                                   hover.groundTileY);
                         }
                         else if (Rsed.ui.inputState.mid_mouse_button_down())
                         {
                             Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala,
-                                                                    Rsed.ui_brush_n.brush_pala_idx(),
-                                                                    hover.groundTileX,
-                                                                    hover.groundTileY);
+                                                                   Rsed.ui_brush_n.brush_pala_idx(),
+                                                                   hover.groundTileX,
+                                                                   hover.groundTileY);
                         }
 
                         break;
@@ -233,11 +233,11 @@ Rsed.scenes = Rsed.scenes || {};
                                     }
 
                                     Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
-                                                                            grab.propTrackIdx,
-                                                                            {
-                                                                                x: (mousePosDelta.x * 1.5),
-                                                                                z: (mousePosDelta.y * 2.5),
-                                                                            });
+                                                                           grab.propTrackIdx,
+                                                                           {
+                                                                               x: (mousePosDelta.x * 1.5),
+                                                                               z: (mousePosDelta.y * 2.5),
+                                                                           });
                                 }
                             }
                         }

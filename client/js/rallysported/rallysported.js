@@ -32,6 +32,7 @@ const Rsed = {};
     Rsed.alert = (message = "")=>
     {
         console.warn("RallySportED: " + message);
+        Rsed.popup_notification(message);
     }
 
     Rsed.log = (message = "")=>

@@ -335,7 +335,7 @@ Rsed.project = async function(projectArgs = {})
 
                 Rsed.assert && (dirs.length === 1)
                             || Rsed.throw("A project zip file must contain exactly one directory, under which the project's " +
-                                            ".DTA and .$FT files are found.");
+                                          ".DTA and .$FT files are found.");
 
                 projectDirName = dirs[0].name.slice(0, -1).toLowerCase();
 

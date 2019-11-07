@@ -275,12 +275,16 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             trackPropLocations[trackId].locations[propIdx].propId = newPropId;
         },
 
+        num_props_on_track: (trackId = 0)=>
+        {
+            return trackPropLocations[trackId].locations.length;
+        },
+
         add_location: (trackId = 0, newPropId = 0, location = {x:0,y:0,z:0})=>
         {
             if (trackPropLocations[trackId].locations.length >= Rsed.constants.maxPropCount)
             {
-                Rsed.alert("Can't add more props. This track already has " + trackPropLocations[trackId].locations.length +
-                           " of them, which is the maximum. You can remove some to make room for new ones.");
+                Rsed.alert("Maximum number of props already in use. Remove some to add more.");
                 return;
             }
 

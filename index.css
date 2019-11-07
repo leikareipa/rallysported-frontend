@@ -43,6 +43,34 @@ body
     margin: 0;
 }
 
+#popup-container
+{
+    width: 300px;
+    height: auto;
+    position: fixed;
+    bottom: 60px;
+    right: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+#popup-container > div
+{
+    width: 100%;
+    height: auto;
+    padding: 20px;
+    font-family: "Montserrat", sans-serif;
+    text-align: left;
+    margin-top: 4px;
+    border-radius: 20px;
+    border-top-left-radius: 2px;
+    border: 1px solid black;
+    line-height: 140%;
+    word-wrap: break-word;
+    color: black;
+    background-color: gold;
+}
+
 #html-ui
 {
     background-color: #101010;

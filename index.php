@@ -4,6 +4,7 @@
 		<meta name="viewport" content="width=device-width">
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" type="text/css" href="index.css">
+        <link rel="stylesheet" type="text/css" href="animations.css">
         <link href="https://fonts.googleapis.com/css?family=Catamaran|Permanent+Marker|Cabin|Montserrat" rel="stylesheet">
         <title>RallySportED (beta) by Tarpeeksi Hyvae Soft</title><?php include "stats.php"; ?>
     </head>
@@ -42,6 +43,8 @@
              ondrop="window.drop_handler(event);" ondragover="event.preventDefault();">
              <canvas id="render-canvas" class="canvas"></canvas>
         </div>
+
+        <div id="popup-container" class="popup-container"></div>
 
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
         <script src="./client/js/rallysported.cat.js" defer></script>

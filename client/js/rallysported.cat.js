@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (06 November 2019 16:40:19 UTC)
+// VERSION: live (07 November 2019 05:09:49 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -26,6 +26,7 @@
 //	../client/js/rallysported/track/palat.js
 //	../client/js/rallysported/track/props.js
 //	../client/js/rallysported/ui/ui.js
+//	../client/js/rallysported/ui/popup-notification.js
 //	../client/js/rallysported/ui/font.js
 //	../client/js/rallysported/ui/brush.js
 //	../client/js/rallysported/ui/draw.js
@@ -1854,6 +1855,7 @@ const Rsed = {};
     Rsed.alert = (message = "")=>
     {
         console.warn("RallySportED: " + message);
+        Rsed.popup_notification(message);
     }
 
     Rsed.log = (message = "")=>
@@ -2386,7 +2388,7 @@ Rsed.project = async function(projectArgs = {})
 
                 Rsed.assert && (dirs.length === 1)
                             || Rsed.throw("A project zip file must contain exactly one directory, under which the project's " +
-                                            ".DTA and .$FT files are found.");
+                                          ".DTA and .$FT files are found.");
 
                 projectDirName = dirs[0].name.slice(0, -1).toLowerCase();
 
@@ -4050,12 +4052,16 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             trackPropLocations[trackId].locations[propIdx].propId = newPropId;
         },
 
+        num_props_on_track: (trackId = 0)=>
+        {
+            return trackPropLocations[trackId].locations.length;
+        },
+
         add_location: (trackId = 0, newPropId = 0, location = {x:0,y:0,z:0})=>
         {
             if (trackPropLocations[trackId].locations.length >= Rsed.constants.maxPropCount)
             {
-                Rsed.alert("Can't add more props. This track already has " + trackPropLocations[trackId].locations.length +
-                           " of them, which is the maximum. You can remove some to make room for new ones.");
+                Rsed.alert("Maximum number of props already in use. Remove some to add more.");
                 return;
             }
 
@@ -4153,12 +4159,62 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
 
 Rsed.ui = {};
 /*
+ * Most recent known filename: js/ui/notification.js
+ *
+ * 2019 Tarpeeksi Hyvae Soft /
+ * RallySportED-js
+ *
+ */
+
+"use strict";
+
+// Opens a self-closing popup notification on RallySportED's page.
+Rsed.popup_notification = function(string = "", args = {})
+{
+    Rsed.throw_if_not_type("string", string);
+    Rsed.throw_if_not_type("object", args);
+
+    args =
+    {
+        ...
+        {
+            notificationType: "warning", // | "error"
+            timeoutMs: 5000,
+        },
+        ...args
+    }
+
+    // Create and add the notification DOM element.
+    const notificationElement = document.createElement("div");
+    {
+        notificationElement.classList.add("animation-flip");
+
+        notificationElement.appendChild(document.createTextNode(string));
+        document.getElementById("popup-container").appendChild(notificationElement);
+    }
+
+    const removalTimer = setTimeout(close_notification, args.timeoutMs);
+
+    const publicInterface =
+    {
+        close: close_notification,
+    };
+
+    return publicInterface;
+
+    function close_notification()
+    {
+        clearTimeout(removalTimer);
+        notificationElement.remove();
+
+        return;
+    }
+}
+/*
  * Most recent known filename: js/ui/font.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
- *
- * The UI font.
  * 
  */
 
@@ -4170,9 +4226,7 @@ Rsed.ui.font = (function()
     const charWidth = 8;
     const charHeight = 8;
 
-    const firstChar = ' ';
-    const lastChar = '_';
-
+    // Shorthands for colors.
     const X = "lightgray";
     const Z = 1;
     const W = "white";
@@ -4181,8 +4235,12 @@ Rsed.ui.font = (function()
     const A = "dimgray";
     const _ = "background";
 
+    // The sequential range of ASCII symbols represented in the font's character set.
+    const firstChar = ' ';
+    const lastChar = '_';
+
     const charset = 
-        [_,_,_,_,_,_,_,_, // Space
+       [_,_,_,_,_,_,_,_, // Space
         _,_,_,_,_,_,_,_,
         _,_,_,_,_,_,_,_,
         _,_,_,_,_,_,_,_,
@@ -4272,7 +4330,7 @@ Rsed.ui.font = (function()
         _,_,_,_,_,_,_,_,
         _,_,_,_,_,_,_,_,
 
-        _,_,_,_,_,_,_,_,  // *
+        _,_,_,_,_,_,_,_,
         _,X,_,X,_,_,_,_,
         _,_,X,_,_,_,_,_,
         _,X,_,X,_,_,_,_,
@@ -4462,7 +4520,7 @@ Rsed.ui.font = (function()
         _,_,_,_,_,_,_,_,
 
         _,_,_,_,_,_,_,_,
-        X,X,_,_,_,_,_,_, //
+        X,X,_,_,_,_,_,_, // ?
         _,_,X,_,_,_,_,_,
         _,X,_,_,_,_,_,_,
         _,_,_,_,_,_,_,_,
@@ -4534,7 +4592,7 @@ Rsed.ui.font = (function()
         _,_,_,_,_,_,_,_,
 
         _,_,_,_,_,_,_,_,
-        _,X,X,_,_,_,_,_, // G
+        _,X,X,_,_,_,_,_,
         X,_,_,_,_,_,_,_,
         X,_,X,X,_,_,_,_,
         X,_,_,X,_,_,_,_,
@@ -4624,7 +4682,7 @@ Rsed.ui.font = (function()
         _,_,_,_,_,_,_,_,
 
         _,_,_,_,_,_,_,_,
-        _,X,X,_,_,_,_,_, // Q
+        _,X,X,_,_,_,_,_,
         X,_,_,X,_,_,_,_,
         X,_,_,X,_,_,_,_,
         X,_,X,X,_,_,_,_,
@@ -4740,7 +4798,7 @@ Rsed.ui.font = (function()
         _,_,_,_,_,_,_,_,
         _,_,_,_,_,_,_,_,
 
-        _,R,R,R,R,_,_,_, // ^.
+        _,R,R,R,R,_,_,_, // ^
         _,_,_,R,R,_,_,_,
         _,_,R,_,R,_,_,_,
         _,R,_,_,R,_,_,_,
@@ -5446,7 +5504,10 @@ window.onload = function(event)
 
 window.close_dropdowns = function()
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
     const dropdowns = document.getElementsByClassName("dropdown_list");
     for (let i = 0; i < dropdowns.length; i++)
@@ -5517,19 +5578,38 @@ window.oncontextmenu = function(event)
 // to close any open dropdown lists.
 window.onclick = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
-    if (RSED_DROPDOWN_ACTIVATED &&
-        (event.target.id === Rsed.core.render_surface_id()))
+    // Only handle clicks that occur over RallySportED's canvas.
+    if (event.target.id !== Rsed.core.render_surface_id())
+    {
+        return;
+    }
+
+    if (RSED_DROPDOWN_ACTIVATED)
     {
         window.close_dropdowns();
-        return false;
+        return;
     }
+
+    return;
 }
 
 window.onmousedown = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
+
+    // Only handle clicks that occur over RallySportED's canvas.
+    if (event.target.id !== Rsed.core.render_surface_id())
+    {
+        return;
+    }
     
     switch (event.button)
     {
@@ -5538,11 +5618,22 @@ window.onmousedown = function(event)
         case 2: Rsed.ui.inputState.set_mouse_button_down({right:true}); break;
         default: break;
     }
+
+    return;
 }
 
 window.onmouseup = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
+
+    // Only handle clicks that occur over RallySportED's canvas.
+    if (event.target.id !== Rsed.core.render_surface_id())
+    {
+        return;
+    }
 
     switch (event.button)
     {
@@ -5551,11 +5642,16 @@ window.onmouseup = function(event)
         case 2: Rsed.ui.inputState.set_mouse_button_down({right:false}); break;
         default: break;
     }
+
+    return;
 }
 
 window.onmousemove = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
     if (event.target.id !== Rsed.core.render_surface_id())
     {
@@ -5575,7 +5671,10 @@ window.onmousemove = function(event)
 
 window.onkeydown = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
     // For keys used by RallySportED to which the browser also coincidentally responds,
     // prevent the browser from doing so.
@@ -5593,7 +5692,10 @@ window.onkeydown = function(event)
 
 window.onkeyup = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
     Rsed.ui.inputState.set_key_down(event.key, false);
 
@@ -5605,7 +5707,10 @@ window.onkeyup = function(event)
 // load up. If it's not, we'll ignore the drop.
 window.drop_handler = function(event)
 {
-    if (!Rsed || !Rsed.core) return;
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
 
     // Don't let the browser handle the drop.
     event.preventDefault();
@@ -5637,6 +5742,8 @@ window.drop_handler = function(event)
     // track resource instead of specifying a server-side resource via the address bar.
     const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
     window.history.replaceState({}, document.title, basePath);
+
+    return;
 }
 /*
  * Most recent known filename: js/ui/input-state.js
@@ -6096,14 +6203,14 @@ Rsed.scenes = Rsed.scenes || {};
                     {
                         // Add a new prop.
                         if ( Rsed.ui.inputState.key_down("shift") &&
-                                Rsed.ui.inputState.left_mouse_button_down() &&
+                             Rsed.ui.inputState.left_mouse_button_down() &&
                             !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
                         {
                             Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
-                                                                            Rsed.core.current_project().props.id_for_name("tree"),
-                                                                            {
-                                                                                x: (hover.groundTileX * Rsed.constants.groundTileSize),
-                                                                                z: (hover.groundTileY * Rsed.constants.groundTileSize),
+                                                                           Rsed.core.current_project().props.id_for_name("tree"),
+                                                                           {
+                                                                               x: (hover.groundTileX * Rsed.constants.groundTileSize),
+                                                                               z: (hover.groundTileY * Rsed.constants.groundTileSize),
                                                                             });
 
                             Rsed.ui.inputState.reset_mouse_hover();
@@ -6118,16 +6225,16 @@ Rsed.scenes = Rsed.scenes || {};
                             const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : (Rsed.ui.inputState.right_mouse_button_down()? -2 : 0));
                             
                             Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changeHeight,
-                                                                    delta,
-                                                                    hover.groundTileX,
-                                                                    hover.groundTileY);
+                                                                   delta,
+                                                                   hover.groundTileX,
+                                                                   hover.groundTileY);
                         }
                         else if (Rsed.ui.inputState.mid_mouse_button_down())
                         {
                             Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala,
-                                                                    Rsed.ui_brush_n.brush_pala_idx(),
-                                                                    hover.groundTileX,
-                                                                    hover.groundTileY);
+                                                                   Rsed.ui_brush_n.brush_pala_idx(),
+                                                                   hover.groundTileX,
+                                                                   hover.groundTileY);
                         }
 
                         break;
@@ -6159,11 +6266,11 @@ Rsed.scenes = Rsed.scenes || {};
                                     }
 
                                     Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
-                                                                            grab.propTrackIdx,
-                                                                            {
-                                                                                x: (mousePosDelta.x * 1.5),
-                                                                                z: (mousePosDelta.y * 2.5),
-                                                                            });
+                                                                           grab.propTrackIdx,
+                                                                           {
+                                                                               x: (mousePosDelta.x * 1.5),
+                                                                               z: (mousePosDelta.y * 2.5),
+                                                                           });
                                 }
                             }
                         }
