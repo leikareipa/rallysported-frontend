@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (07 November 2019 05:09:49 UTC)
+// VERSION: live (09 November 2019 17:58:36 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6195,12 +6195,14 @@ Rsed.scenes = Rsed.scenes || {};
                 const grab = Rsed.ui.inputState.current_mouse_grab();
                 const hover = Rsed.ui.inputState.current_mouse_hover();
 
-                if (!grab || !hover) return;
+                if (!grab) return;
 
                 switch (grab.type)
                 {
                     case "ground":
                     {
+                        if (!hover) break;
+
                         // Add a new prop.
                         if ( Rsed.ui.inputState.key_down("shift") &&
                              Rsed.ui.inputState.left_mouse_button_down() &&
@@ -6279,7 +6281,9 @@ Rsed.scenes = Rsed.scenes || {};
                     }
                     case "ui-element":
                     {
-                        switch (grab.uiElementId)
+                        if (!hover) break;
+                        
+                        switch (hover.uiElementId)
                         {
                             case "palat-pane":
                             {
@@ -6291,7 +6295,7 @@ Rsed.scenes = Rsed.scenes || {};
 
                                 break;
                             }
-                            default: Rsed.throw("Unknown UI element id for mouse picking."); break;
+                            default: break;
                         }
 
                         break;
