@@ -1,6 +1,4 @@
-`A note to the recruiter!` This was my second-ever project in JavaScript, and will by that nature contain some decisions of design and/or implementation that I might or would make differently today. That said, it's still a pretty cool and unique single-page app!
-
-`Note!` The master branch currently contains an on-going rewrite of sections of the codebase, and may be considered unstable for the time being. The rewrite begins with commit f6acac08822a17540407af8998b67537bbd154d0.
+**Note!** The master branch currently contains an on-going rewrite of sections of the codebase, and may be considered unstable for the time being. The rewrite begins with commit f6acac08822a17540407af8998b67537bbd154d0 (roughly speaking).
 
 # RallySportED-js
 A version of [RallySportED](https://github.com/leikareipa/rallysported/)'s track editor for browsers, written in JavaScript. You should find it capable of running in a modern browser on a desktop system. (Mobile support is on the cards but not yet available.)
