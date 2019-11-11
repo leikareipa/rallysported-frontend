@@ -125,8 +125,8 @@ Rsed.shared_mode_n = (function()
         }
 
         const newServerData = await send_local_caches_to_server({
-            maasto: Rsed.ui_brush_n.flush_brush_cache("maasto"),
-            varimaa: Rsed.ui_brush_n.flush_brush_cache("varimaa")
+            maasto: Rsed.ui.groundBrush.flush_brush_cache("maasto"),
+            varimaa: Rsed.ui.groundBrush.flush_brush_cache("varimaa")
         });
 
         apply_server_data_to_local_data(newServerData);

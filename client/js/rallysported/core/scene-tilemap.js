@@ -127,7 +127,7 @@ Rsed.scenes = Rsed.scenes || {};
                 {
                     if (Rsed.ui.inputState.key_down(brushSizeKey))
                     {
-                        Rsed.ui_brush_n.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+                        Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
                         Rsed.ui.inputState.set_key_down(brushSizeKey, false);
                     }
                 }
@@ -151,8 +151,8 @@ Rsed.scenes = Rsed.scenes || {};
                             {
                                 if (Rsed.ui.inputState.mid_mouse_button_down())
                                 {
-                                    Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala,
-                                                                            Rsed.ui_brush_n.brush_pala_idx(),
+                                    Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
+                                                                            Rsed.ui.groundBrush.brush_pala_idx(),
                                                                             hover.x,
                                                                             hover.y);
                                 }
@@ -164,7 +164,7 @@ Rsed.scenes = Rsed.scenes || {};
                                 if (Rsed.ui.inputState.left_mouse_button_down() ||
                                     Rsed.ui.inputState.right_mouse_button_down())
                                 {
-                                    Rsed.ui_brush_n.set_brush_pala_idx(hover.palaIdx);
+                                    Rsed.ui.groundBrush.set_brush_pala_idx(hover.palaIdx);
                                 }
 
                                 break;

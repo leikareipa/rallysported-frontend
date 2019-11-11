@@ -68,7 +68,7 @@ Rsed.world.mesh_builder = (function()
                             (Rsed.ui.inputState.current_mouse_hover().groundTileX === tileX) &&
                             (Rsed.ui.inputState.current_mouse_hover().groundTileY === (tileZ - 1)))
                         {
-                            idx = Rsed.ui_brush_n.brush_pala_idx();
+                            idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }
 
                         return idx;
@@ -131,7 +131,7 @@ Rsed.world.mesh_builder = (function()
                             (Rsed.ui.inputState.current_mouse_hover().groundTileX === tileX) &&
                             (Rsed.ui.inputState.current_mouse_hover().groundTileY === (tileZ - 1)))
                         {
-                            idx = Rsed.ui_brush_n.brush_pala_idx();
+                            idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }
 
                         return idx;

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (09 November 2019 17:58:36 UTC)
+// VERSION: live (11 November 2019 03:20:02 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -28,7 +28,7 @@
 //	../client/js/rallysported/ui/ui.js
 //	../client/js/rallysported/ui/popup-notification.js
 //	../client/js/rallysported/ui/font.js
-//	../client/js/rallysported/ui/brush.js
+//	../client/js/rallysported/ui/ground-brush.js
 //	../client/js/rallysported/ui/draw.js
 //	../client/js/rallysported/ui/window.js
 //	../client/js/rallysported/ui/input-state.js
@@ -2714,8 +2714,8 @@ Rsed.shared_mode_n = (function()
         }
 
         const newServerData = await send_local_caches_to_server({
-            maasto: Rsed.ui_brush_n.flush_brush_cache("maasto"),
-            varimaa: Rsed.ui_brush_n.flush_brush_cache("varimaa")
+            maasto: Rsed.ui.groundBrush.flush_brush_cache("maasto"),
+            varimaa: Rsed.ui.groundBrush.flush_brush_cache("varimaa")
         });
 
         apply_server_data_to_local_data(newServerData);
@@ -2866,7 +2866,7 @@ Rsed.world.mesh_builder = (function()
                             (Rsed.ui.inputState.current_mouse_hover().groundTileX === tileX) &&
                             (Rsed.ui.inputState.current_mouse_hover().groundTileY === (tileZ - 1)))
                         {
-                            idx = Rsed.ui_brush_n.brush_pala_idx();
+                            idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }
 
                         return idx;
@@ -2929,7 +2929,7 @@ Rsed.world.mesh_builder = (function()
                             (Rsed.ui.inputState.current_mouse_hover().groundTileX === tileX) &&
                             (Rsed.ui.inputState.current_mouse_hover().groundTileY === (tileZ - 1)))
                         {
-                            idx = Rsed.ui_brush_n.brush_pala_idx();
+                            idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }
 
                         return idx;
@@ -4847,7 +4847,7 @@ Rsed.ui.font = (function()
     return publicInterface;
 })();
 /*
- * Most recent known filename: js/ui/brush.js
+ * Most recent known filename: js/ui/ground-brush.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
@@ -4856,7 +4856,8 @@ Rsed.ui.font = (function()
 
 "use strict";
 
-Rsed.ui_brush_n = (function()
+// A brush used to edit the current project's heightmap and tilemap.
+Rsed.ui.groundBrush = (function()
 {
     // How large of a radius the brush paints with. A value of 0 means one tile.
     let brushSize = 0;
@@ -4883,15 +4884,19 @@ Rsed.ui_brush_n = (function()
         // Modify the terrain at the given x,y coordinates with the given brush action.
         publicInterface.apply_brush_to_terrain = function(brushAction = 0, value = 0, x = 0, y = 0)
         {
+            const targetProject = Rsed.core.current_project();
+
             for (let by = -brushSize; by <= brushSize; by++)
             {
                 const tileZ = (y + by);
-                if (tileZ < 0 || tileZ >= Rsed.core.current_project().maasto.width) continue;
+                
+                if ((tileZ < 0) || (tileZ >= targetProject.maasto.width)) continue;
 
                 for (let bx = -brushSize; bx <= brushSize; bx++)
                 {
                     const tileX = (x + bx);
-                    if (tileX < 0 || tileX >= Rsed.core.current_project().maasto.width) continue;
+
+                    if ((tileX < 0) || (tileX >= targetProject.maasto.width)) continue;
 
                     switch (brushAction)
                     {
@@ -4899,41 +4904,43 @@ Rsed.ui_brush_n = (function()
                         {
                             if (this.brushSmoothens)
                             {
-                                if (tileX < 1 || tileX >=  (Rsed.core.current_project().maasto.width - 1)) continue;
-                                if (tileZ < 1 || tileZ >= (Rsed.core.current_project().maasto.width - 1)) continue;
+                                if ((tileX < 1) || (tileX >= (targetProject.maasto.width - 1))) continue;
+                                if ((tileZ < 1) || (tileZ >= (targetProject.maasto.width - 1))) continue;
     
                                 let avgHeight = 0;
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX+1, tileZ);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX-1, tileZ);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX, tileZ+1);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX, tileZ-1);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX+1, tileZ+1);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX+1, tileZ-1);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX-1, tileZ+1);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX-1, tileZ-1);
+                                avgHeight += targetProject.maasto.tile_at(tileX+1, tileZ);
+                                avgHeight += targetProject.maasto.tile_at(tileX-1, tileZ);
+                                avgHeight += targetProject.maasto.tile_at(tileX,   tileZ+1);
+                                avgHeight += targetProject.maasto.tile_at(tileX,   tileZ-1);
+                                avgHeight += targetProject.maasto.tile_at(tileX+1, tileZ+1);
+                                avgHeight += targetProject.maasto.tile_at(tileX+1, tileZ-1);
+                                avgHeight += targetProject.maasto.tile_at(tileX-1, tileZ+1);
+                                avgHeight += targetProject.maasto.tile_at(tileX-1, tileZ-1);
                                 avgHeight /= 8;
                                     
-                                Rsed.core.current_project().maasto.set_tile_value_at(tileX, tileZ, Math.floor(((avgHeight + Rsed.core.current_project().maasto.tile_at(tileX, tileZ) * 7) / 8)));
+                                targetProject.maasto.set_tile_value_at(tileX, tileZ,
+                                                                       Math.floor(((avgHeight + targetProject.maasto.tile_at(tileX, tileZ) * 7) / 8)));
                             }
                             else
                             {
-                                Rsed.core.current_project().maasto.set_tile_value_at(tileX, tileZ, (Rsed.core.current_project().maasto.tile_at(tileX, tileZ) + value));
+                                targetProject.maasto.set_tile_value_at(tileX, tileZ,
+                                                                       (targetProject.maasto.tile_at(tileX, tileZ) + value));
                             }
 
                             if (Rsed.shared_mode_n.enabled())
                             {
-                                brushCache.maasto[tileX + tileZ * Rsed.core.current_project().maasto.width] = Rsed.core.current_project().maasto.tile_at(tileX, tileZ);
+                                brushCache.maasto[tileX + tileZ * targetProject.maasto.width] = targetProject.maasto.tile_at(tileX, tileZ);
                             }
 
                             break;
                         }
                         case this.brushAction.changePala:
                         {
-                            Rsed.core.current_project().varimaa.set_tile_value_at(tileX, tileZ, value);
+                            targetProject.varimaa.set_tile_value_at(tileX, tileZ, value);
 
                             if (Rsed.shared_mode_n.enabled())
                             {
-                                brushCache.varimaa[tileX + tileZ * Rsed.core.current_project().maasto.width] = Rsed.core.current_project().varimaa.tile_at(tileX, tileZ);
+                                brushCache.varimaa[tileX + tileZ * targetProject.maasto.width] = targetProject.varimaa.tile_at(tileX, tileZ);
                             }
 
                             break;
@@ -5142,7 +5149,7 @@ Rsed.ui.draw = (function()
                             (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
                             (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().y + 17));
             }
-            else if (Rsed.ui_brush_n.brushSmoothens)
+            else if (Rsed.ui.groundBrush.brushSmoothens)
             {
                 this.string("SMOOTHING",
                             (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
@@ -5293,13 +5300,13 @@ Rsed.ui.draw = (function()
 
         active_pala: function()
         {
-            const currentPala = Rsed.ui_brush_n.brush_pala_idx();
+            const currentPala = Rsed.ui.groundBrush.brush_pala_idx();
             const pala = Rsed.core.current_project().palat.texture[currentPala];
 
             if (pala != null)
             {
                 this.image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false, true);
-                this.string((Rsed.ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
+                this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
             }
 
             return;
@@ -6175,7 +6182,7 @@ Rsed.scenes = Rsed.scenes || {};
 
                 if (Rsed.ui.inputState.key_down(" "))
                 {
-                    Rsed.ui_brush_n.brushSmoothens = !Rsed.ui_brush_n.brushSmoothens;
+                    Rsed.ui.groundBrush.brushSmoothens = !Rsed.ui.groundBrush.brushSmoothens;
                     Rsed.ui.inputState.set_key_down(" ", false);
                 }
 
@@ -6183,7 +6190,7 @@ Rsed.scenes = Rsed.scenes || {};
                 {
                     if (Rsed.ui.inputState.key_down(brushSizeKey))
                     {
-                        Rsed.ui_brush_n.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+                        Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
                         Rsed.ui.inputState.set_key_down(brushSizeKey, false);
                     }
                 }
@@ -6226,15 +6233,15 @@ Rsed.scenes = Rsed.scenes || {};
                         {
                             const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : (Rsed.ui.inputState.right_mouse_button_down()? -2 : 0));
                             
-                            Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changeHeight,
+                            Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
                                                                    delta,
                                                                    hover.groundTileX,
                                                                    hover.groundTileY);
                         }
                         else if (Rsed.ui.inputState.mid_mouse_button_down())
                         {
-                            Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala,
-                                                                   Rsed.ui_brush_n.brush_pala_idx(),
+                            Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
+                                                                   Rsed.ui.groundBrush.brush_pala_idx(),
                                                                    hover.groundTileX,
                                                                    hover.groundTileY);
                         }
@@ -6290,7 +6297,7 @@ Rsed.scenes = Rsed.scenes || {};
                                 if (Rsed.ui.inputState.left_mouse_button_down() ||
                                     Rsed.ui.inputState.right_mouse_button_down())
                                 {
-                                    Rsed.ui_brush_n.set_brush_pala_idx(hover.palaIdx);
+                                    Rsed.ui.groundBrush.set_brush_pala_idx(hover.palaIdx);
                                 }
 
                                 break;
@@ -6437,7 +6444,7 @@ Rsed.scenes = Rsed.scenes || {};
                 {
                     if (Rsed.ui.inputState.key_down(brushSizeKey))
                     {
-                        Rsed.ui_brush_n.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+                        Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
                         Rsed.ui.inputState.set_key_down(brushSizeKey, false);
                     }
                 }
@@ -6461,8 +6468,8 @@ Rsed.scenes = Rsed.scenes || {};
                             {
                                 if (Rsed.ui.inputState.mid_mouse_button_down())
                                 {
-                                    Rsed.ui_brush_n.apply_brush_to_terrain(Rsed.ui_brush_n.brushAction.changePala,
-                                                                            Rsed.ui_brush_n.brush_pala_idx(),
+                                    Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
+                                                                            Rsed.ui.groundBrush.brush_pala_idx(),
                                                                             hover.x,
                                                                             hover.y);
                                 }
@@ -6474,7 +6481,7 @@ Rsed.scenes = Rsed.scenes || {};
                                 if (Rsed.ui.inputState.left_mouse_button_down() ||
                                     Rsed.ui.inputState.right_mouse_button_down())
                                 {
-                                    Rsed.ui_brush_n.set_brush_pala_idx(hover.palaIdx);
+                                    Rsed.ui.groundBrush.set_brush_pala_idx(hover.palaIdx);
                                 }
 
                                 break;

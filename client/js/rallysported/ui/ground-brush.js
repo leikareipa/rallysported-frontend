@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/ui/brush.js
+ * Most recent known filename: js/ui/ground-brush.js
  *
  * Tarpeeksi Hyvae Soft 2018 /
  * RallySportED-js
@@ -8,7 +8,8 @@
 
 "use strict";
 
-Rsed.ui_brush_n = (function()
+// A brush used to edit the current project's heightmap and tilemap.
+Rsed.ui.groundBrush = (function()
 {
     // How large of a radius the brush paints with. A value of 0 means one tile.
     let brushSize = 0;
@@ -35,15 +36,19 @@ Rsed.ui_brush_n = (function()
         // Modify the terrain at the given x,y coordinates with the given brush action.
         publicInterface.apply_brush_to_terrain = function(brushAction = 0, value = 0, x = 0, y = 0)
         {
+            const targetProject = Rsed.core.current_project();
+
             for (let by = -brushSize; by <= brushSize; by++)
             {
                 const tileZ = (y + by);
-                if (tileZ < 0 || tileZ >= Rsed.core.current_project().maasto.width) continue;
+                
+                if ((tileZ < 0) || (tileZ >= targetProject.maasto.width)) continue;
 
                 for (let bx = -brushSize; bx <= brushSize; bx++)
                 {
                     const tileX = (x + bx);
-                    if (tileX < 0 || tileX >= Rsed.core.current_project().maasto.width) continue;
+
+                    if ((tileX < 0) || (tileX >= targetProject.maasto.width)) continue;
 
                     switch (brushAction)
                     {
@@ -51,41 +56,43 @@ Rsed.ui_brush_n = (function()
                         {
                             if (this.brushSmoothens)
                             {
-                                if (tileX < 1 || tileX >=  (Rsed.core.current_project().maasto.width - 1)) continue;
-                                if (tileZ < 1 || tileZ >= (Rsed.core.current_project().maasto.width - 1)) continue;
+                                if ((tileX < 1) || (tileX >= (targetProject.maasto.width - 1))) continue;
+                                if ((tileZ < 1) || (tileZ >= (targetProject.maasto.width - 1))) continue;
     
                                 let avgHeight = 0;
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX+1, tileZ);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX-1, tileZ);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX, tileZ+1);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX, tileZ-1);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX+1, tileZ+1);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX+1, tileZ-1);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX-1, tileZ+1);
-                                avgHeight += Rsed.core.current_project().maasto.tile_at(tileX-1, tileZ-1);
+                                avgHeight += targetProject.maasto.tile_at(tileX+1, tileZ);
+                                avgHeight += targetProject.maasto.tile_at(tileX-1, tileZ);
+                                avgHeight += targetProject.maasto.tile_at(tileX,   tileZ+1);
+                                avgHeight += targetProject.maasto.tile_at(tileX,   tileZ-1);
+                                avgHeight += targetProject.maasto.tile_at(tileX+1, tileZ+1);
+                                avgHeight += targetProject.maasto.tile_at(tileX+1, tileZ-1);
+                                avgHeight += targetProject.maasto.tile_at(tileX-1, tileZ+1);
+                                avgHeight += targetProject.maasto.tile_at(tileX-1, tileZ-1);
                                 avgHeight /= 8;
                                     
-                                Rsed.core.current_project().maasto.set_tile_value_at(tileX, tileZ, Math.floor(((avgHeight + Rsed.core.current_project().maasto.tile_at(tileX, tileZ) * 7) / 8)));
+                                targetProject.maasto.set_tile_value_at(tileX, tileZ,
+                                                                       Math.floor(((avgHeight + targetProject.maasto.tile_at(tileX, tileZ) * 7) / 8)));
                             }
                             else
                             {
-                                Rsed.core.current_project().maasto.set_tile_value_at(tileX, tileZ, (Rsed.core.current_project().maasto.tile_at(tileX, tileZ) + value));
+                                targetProject.maasto.set_tile_value_at(tileX, tileZ,
+                                                                       (targetProject.maasto.tile_at(tileX, tileZ) + value));
                             }
 
                             if (Rsed.shared_mode_n.enabled())
                             {
-                                brushCache.maasto[tileX + tileZ * Rsed.core.current_project().maasto.width] = Rsed.core.current_project().maasto.tile_at(tileX, tileZ);
+                                brushCache.maasto[tileX + tileZ * targetProject.maasto.width] = targetProject.maasto.tile_at(tileX, tileZ);
                             }
 
                             break;
                         }
                         case this.brushAction.changePala:
                         {
-                            Rsed.core.current_project().varimaa.set_tile_value_at(tileX, tileZ, value);
+                            targetProject.varimaa.set_tile_value_at(tileX, tileZ, value);
 
                             if (Rsed.shared_mode_n.enabled())
                             {
-                                brushCache.varimaa[tileX + tileZ * Rsed.core.current_project().maasto.width] = Rsed.core.current_project().varimaa.tile_at(tileX, tileZ);
+                                brushCache.varimaa[tileX + tileZ * targetProject.maasto.width] = targetProject.varimaa.tile_at(tileX, tileZ);
                             }
 
                             break;

@@ -157,7 +157,7 @@ Rsed.ui.draw = (function()
                             (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
                             (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().y + 17));
             }
-            else if (Rsed.ui_brush_n.brushSmoothens)
+            else if (Rsed.ui.groundBrush.brushSmoothens)
             {
                 this.string("SMOOTHING",
                             (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
@@ -308,13 +308,13 @@ Rsed.ui.draw = (function()
 
         active_pala: function()
         {
-            const currentPala = Rsed.ui_brush_n.brush_pala_idx();
+            const currentPala = Rsed.ui.groundBrush.brush_pala_idx();
             const pala = Rsed.core.current_project().palat.texture[currentPala];
 
             if (pala != null)
             {
                 this.image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false, true);
-                this.string((Rsed.ui_brush_n.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
+                this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
             }
 
             return;
