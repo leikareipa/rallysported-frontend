@@ -82,28 +82,29 @@ Rsed.world.mesh_builder = (function()
                         const height3 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1), (tileZ - 1));
                         const height4 = centerView.y + Rsed.core.current_project().maasto.tile_at( tileX,      (tileZ - 1));
 
-                        const groundQuad = Rngon.ngon([Rngon.vertex( vertX, height1, vertZ, 0, 0),
+                        const groundQuad = Rngon.ngon([Rngon.vertex(vertX, height1, vertZ, 0, 0),
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), height2, vertZ, 1, 0),
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize), 1, 1),
-                                                       Rngon.vertex( vertX, height4, (vertZ + Rsed.constants.groundTileSize), 0, 1)],
-                                                       {
-                                                           color: Rngon.color_rgba(255, 255, 255),
-                                                           texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
-                                                           textureMapping: "ortho",
-                                                           hasSolidFill: true,
-                                                           hasWireframe: args.includeWireframe,
-                                                           auxiliary:
-                                                           {
-                                                               // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
-                                                               // rasterization we'll write into the mouse-picking buffer, so we can later determine which
-                                                               // quad the mouse cursor is hovering over.
-                                                               mousePickId: Rsed.ui.mouse_picking_element("ground",
-                                                               {
-                                                                   groundTileX: tileX,
-                                                                   groundTileY: (tileZ - 1),
-                                                               }),
-                                                           }
-                                                       });
+                                                       Rngon.vertex(vertX, height4, (vertZ + Rsed.constants.groundTileSize), 0, 1)],
+                        {
+                            color: Rngon.color_rgba(255, 255, 255),
+                            texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
+                            textureMapping: "ortho",
+                            uvWrapping: "clamp",
+                            hasSolidFill: true,
+                            hasWireframe: args.includeWireframe,
+                            auxiliary:
+                            {
+                                // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
+                                // rasterization we'll write into the mouse-picking buffer, so we can later determine which
+                                // quad the mouse cursor is hovering over.
+                                mousePickId: Rsed.ui.mouse_picking_element("ground",
+                                {
+                                    groundTileX: tileX,
+                                    groundTileY: (tileZ - 1),
+                                }),
+                            }
+                        });
 
                         trackPolygons.push(groundQuad);
                     }
@@ -170,17 +171,17 @@ Rsed.world.mesh_builder = (function()
                                                           Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight, vertZ, 1, 0),
                                                           Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight+Rsed.constants.groundTileSize, vertZ, 1, 1),
                                                           Rngon.vertex( vertX, baseHeight+Rsed.constants.groundTileSize, vertZ, 0, 1)],
-                                                          {
-                                                              color: Rngon.color_rgba(255, 255, 255),
-                                                              texture: texture,
-                                                              textureMapping: "ortho",
-                                                              hasSolidFill: true,
-                                                              hasWireframe: false,
-                                                              auxiliary:
-                                                              {
-                                                                  mousePickId: null,
-                                                              }
-                                                          });
+                        {
+                            color: Rngon.color_rgba(255, 255, 255),
+                            texture: texture,
+                            textureMapping: "ortho",
+                            hasSolidFill: true,
+                            hasWireframe: false,
+                            auxiliary:
+                            {
+                                mousePickId: null,
+                            }
+                        });
 
                         trackPolygons.push(billboardQuad);
                     }
@@ -191,17 +192,17 @@ Rsed.world.mesh_builder = (function()
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, vertZ, 1, 0),
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize), 1, 1),
                                                        Rngon.vertex( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize), 0, 1)],
-                                                       {
-                                                           color: Rngon.color_rgba(255, 255, 255),
-                                                           texture: Rsed.core.current_project().palat.texture[177],
-                                                           textureMapping: "ortho",
-                                                           hasSolidFill: true,
-                                                           hasWireframe: false,
-                                                           auxiliary:
-                                                           {
-                                                               mousePickId: null,
-                                                           }
-                                                       });
+                        {
+                            color: Rngon.color_rgba(255, 255, 255),
+                            texture: Rsed.core.current_project().palat.texture[177],
+                            textureMapping: "ortho",
+                            hasSolidFill: true,
+                            hasWireframe: false,
+                            auxiliary:
+                            {
+                                mousePickId: null,
+                            }
+                        });
 
                         trackPolygons.push(bridgeQuad);
                     }
@@ -268,20 +269,20 @@ Rsed.world.mesh_builder = (function()
             srcMesh.ngons.forEach(ngon=>
             {
                 const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x), (v.y + args.position.y), (v.z + args.position.z))),
-                                            {
-                                                color: (ngon.fill.type === "texture"? Rsed.palette.color_at_idx(0) : Rsed.palette.color_at_idx(ngon.fill.idx)),
-                                                texture: (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx] : null),
-                                                textureMapping: "ortho",
-                                                hasWireframe: args.includeWireframe,
-                                                auxiliary:
-                                                {
-                                                    mousePickId: Rsed.ui.mouse_picking_element("prop",
-                                                    {
-                                                        propId: propId,
-                                                        propTrackIdx: idxOnTrack
-                                                    }),
-                                                }
-                                            });
+                {
+                    color: (ngon.fill.type === "texture"? Rsed.palette.color_at_idx(0) : Rsed.palette.color_at_idx(ngon.fill.idx)),
+                    texture: (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx] : null),
+                    textureMapping: "ortho",
+                    hasWireframe: args.includeWireframe,
+                    auxiliary:
+                    {
+                        mousePickId: Rsed.ui.mouse_picking_element("prop",
+                        {
+                            propId: propId,
+                            propTrackIdx: idxOnTrack
+                        }),
+                    }
+                });
 
                 dstMesh.push(propNgon);
             });
