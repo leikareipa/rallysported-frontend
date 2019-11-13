@@ -124,6 +124,7 @@ window.close_dropdowns = function()
 
     RSED_DROPDOWN_ACTIVATED = false;
     Rsed.ui.inputState.reset_mouse_hover();
+    Rsed.ui.inputState.reset_mouse_buttons_state();
 
     return;
 }
@@ -136,6 +137,7 @@ window.oncontextmenu = function(event)
         return;
     }
 
+    // If the right-click menu was already open.
     if (RSED_DROPDOWN_ACTIVATED)
     {
         window.close_dropdowns();

@@ -107,6 +107,15 @@ Rsed.ui.inputState = (function()
             return;
         },
 
+        reset_mouse_buttons_state: function()
+        {
+            mouseState.buttons.left = false;
+            mouseState.buttons.mid = false;
+            mouseState.buttons.right = false;
+
+            return;
+        },
+
         reset_keys: function()
         {
             keyboardState.fill(false);

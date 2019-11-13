@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (13 November 2019 00:48:15 UTC)
+// VERSION: live (13 November 2019 01:06:47 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3144,7 +3144,7 @@ Rsed.world.camera = (function()
             // Prevent the camera from moving past the track boundaries.
             if (enforceBounds)
             {
-               position.x = Math.max(0, Math.min(position.x, Rsed.core.current_project().maasto.width - this.view_width()));
+                position.x = Math.max(0, Math.min(position.x, Rsed.core.current_project().maasto.width - this.view_width()));
                 position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height() + 1)));
             }
 
@@ -5550,6 +5550,7 @@ window.close_dropdowns = function()
 
     RSED_DROPDOWN_ACTIVATED = false;
     Rsed.ui.inputState.reset_mouse_hover();
+    Rsed.ui.inputState.reset_mouse_buttons_state();
 
     return;
 }
@@ -5562,6 +5563,7 @@ window.oncontextmenu = function(event)
         return;
     }
 
+    // If the right-click menu was already open.
     if (RSED_DROPDOWN_ACTIVATED)
     {
         window.close_dropdowns();
@@ -5883,6 +5885,15 @@ Rsed.ui.inputState = (function()
         {
             mouseState.hover = null;
             mouseState.grab = null;
+
+            return;
+        },
+
+        reset_mouse_buttons_state: function()
+        {
+            mouseState.buttons.left = false;
+            mouseState.buttons.mid = false;
+            mouseState.buttons.right = false;
 
             return;
         },
