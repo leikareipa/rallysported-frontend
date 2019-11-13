@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (13 November 2019 01:06:47 UTC)
+// VERSION: live (13 November 2019 05:24:27 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3148,26 +3148,33 @@ Rsed.world.camera = (function()
                 position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height() + 1)));
             }
 
-            // If the user is dragging a prop and the camera has moved, move the prop as well.
+            // If the camera moved...
             if ((position.x !== prevPos.x) ||
                 (position.y !== prevPos.y) ||
                 (position.z !== prevPos.z))
             {
-                const grab = Rsed.ui.inputState.current_mouse_grab();
+                // Force mouse hover to update, since there might now be a different tile under
+                // the cursor than there was before the camera moved.
+                Rsed.ui.inputState.set_mouse_pos(Rsed.ui.inputState.mouse_pos().x,
+                                                 Rsed.ui.inputState.mouse_pos().y);
 
-                if ( grab &&
-                    (grab.type === "prop") &&
-                    Rsed.ui.inputState.left_mouse_button_down())
+                // If the user is dragging a prop and the camera has moved, move the prop as well.
                 {
-                    // For now, don't allow moving the starting line (always prop #0).
-                    if (grab.propTrackIdx !== 0)
+                    const grab = Rsed.ui.inputState.current_mouse_grab();
+
+                    if (grab && (grab.type === "prop") &&
+                        Rsed.ui.inputState.left_mouse_button_down())
                     {
-                        Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
-                                                               grab.propTrackIdx,
-                                                               {
-                                                                   x: (deltaX * moveSpeed * Rsed.constants.groundTileSize),
-                                                                   z: (deltaZ * moveSpeed * Rsed.constants.groundTileSize),
-                                                               });
+                        // For now, don't allow moving the starting line (always prop #0).
+                        if (grab.propTrackIdx !== 0)
+                        {
+                            Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
+                                                                   grab.propTrackIdx,
+                                                                   {
+                                                                       x: (deltaX * moveSpeed * Rsed.constants.groundTileSize),
+                                                                       z: (deltaZ * moveSpeed * Rsed.constants.groundTileSize),
+                                                                   });
+                        }
                     }
                 }
             }
@@ -3194,7 +3201,8 @@ Rsed.world.camera = (function()
     publicInterface.reset_camera_position();
 
     return publicInterface;
-})();/*
+})();
+/*
  * Most recent known filename: js/visual/texture.js
  *
  * Tarpeeksi Hyvae Soft 2018 /

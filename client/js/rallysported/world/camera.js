@@ -40,26 +40,33 @@ Rsed.world.camera = (function()
                 position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height() + 1)));
             }
 
-            // If the user is dragging a prop and the camera has moved, move the prop as well.
+            // If the camera moved...
             if ((position.x !== prevPos.x) ||
                 (position.y !== prevPos.y) ||
                 (position.z !== prevPos.z))
             {
-                const grab = Rsed.ui.inputState.current_mouse_grab();
+                // Force mouse hover to update, since there might now be a different tile under
+                // the cursor than there was before the camera moved.
+                Rsed.ui.inputState.set_mouse_pos(Rsed.ui.inputState.mouse_pos().x,
+                                                 Rsed.ui.inputState.mouse_pos().y);
 
-                if ( grab &&
-                    (grab.type === "prop") &&
-                    Rsed.ui.inputState.left_mouse_button_down())
+                // If the user is dragging a prop and the camera has moved, move the prop as well.
                 {
-                    // For now, don't allow moving the starting line (always prop #0).
-                    if (grab.propTrackIdx !== 0)
+                    const grab = Rsed.ui.inputState.current_mouse_grab();
+
+                    if (grab && (grab.type === "prop") &&
+                        Rsed.ui.inputState.left_mouse_button_down())
                     {
-                        Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
-                                                               grab.propTrackIdx,
-                                                               {
-                                                                   x: (deltaX * moveSpeed * Rsed.constants.groundTileSize),
-                                                                   z: (deltaZ * moveSpeed * Rsed.constants.groundTileSize),
-                                                               });
+                        // For now, don't allow moving the starting line (always prop #0).
+                        if (grab.propTrackIdx !== 0)
+                        {
+                            Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
+                                                                   grab.propTrackIdx,
+                                                                   {
+                                                                       x: (deltaX * moveSpeed * Rsed.constants.groundTileSize),
+                                                                       z: (deltaZ * moveSpeed * Rsed.constants.groundTileSize),
+                                                                   });
+                        }
                     }
                 }
             }
