@@ -27,17 +27,44 @@ Rsed.world.camera = (function()
 
         publicInterface.move_camera = function(deltaX, deltaY, deltaZ, enforceBounds = true)
         {
+            const prevPos = {...position};
+
             position.x += (deltaX * moveSpeed);
             position.y += (deltaY * moveSpeed);
             position.z += (deltaZ * moveSpeed);
 
+            // Prevent the camera from moving past the track boundaries.
             if (enforceBounds)
             {
-                if (position.x < 0) position.x = 0;
-                if (position.z < 1) position.z = 1;
-                if (position.x > (Rsed.core.current_project().maasto.width - this.view_width())) position.x = (Rsed.core.current_project().maasto.width - this.view_width());
-                if (position.z > (Rsed.core.current_project().maasto.width - this.view_height()+1)) position.z = (Rsed.core.current_project().maasto.width - this.view_height()+1);
+                position.x = Math.max(0, Math.min(position.x, Rsed.core.current_project().maasto.width - this.view_width()));
+                position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height() + 1)));
             }
+
+            // If the user is dragging a prop and the camera has moved, move the prop as well.
+            if ((position.x !== prevPos.x) ||
+                (position.y !== prevPos.y) ||
+                (position.z !== prevPos.z))
+            {
+                const grab = Rsed.ui.inputState.current_mouse_grab();
+
+                if ( grab &&
+                    (grab.type === "prop") &&
+                    Rsed.ui.inputState.left_mouse_button_down())
+                {
+                    // For now, don't allow moving the starting line (always prop #0).
+                    if (grab.propTrackIdx !== 0)
+                    {
+                        Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
+                                                               grab.propTrackIdx,
+                                                               {
+                                                                   x: (deltaX * moveSpeed * Rsed.constants.groundTileSize),
+                                                                   z: (deltaZ * moveSpeed * Rsed.constants.groundTileSize),
+                                                               });
+                    }
+                }
+            }
+
+            return;
         }
 
         publicInterface.rotate_camera = function(rotX, rotY, rotZ)
