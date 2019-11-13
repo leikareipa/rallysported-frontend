@@ -112,6 +112,13 @@ Rsed.core = (function()
     Rsed.assert && (canvas.domElement != null)
                 || Rsed.throw("Failed to find a canvas element to render into.");
 
+    canvas.domElement.onmouseleave = function(event)
+    {
+        Rsed.ui.inputState.reset_mouse_buttons_state();
+
+        return;
+    }
+
     const publicInterface =
     {
         // Starts up RallySportED with the given project to edit.

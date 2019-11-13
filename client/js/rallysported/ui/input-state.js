@@ -62,9 +62,9 @@ Rsed.ui.inputState = (function()
 
         mouse_button_down: function()
         {
-            return (mouseState.buttons.left |
-                    mouseState.buttons.mid  |
-                    mouseState.buttons.right);
+            return (this.left_mouse_button_down() |
+                    this.mid_mouse_button_down() |
+                    this.right_mouse_button_down());
         },
 
         left_mouse_button_down: function()

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (13 November 2019 05:24:27 UTC)
+// VERSION: live (13 November 2019 06:43:51 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5852,9 +5852,9 @@ Rsed.ui.inputState = (function()
 
         mouse_button_down: function()
         {
-            return (mouseState.buttons.left |
-                    mouseState.buttons.mid  |
-                    mouseState.buttons.right);
+            return (this.left_mouse_button_down() |
+                    this.mid_mouse_button_down() |
+                    this.right_mouse_button_down());
         },
 
         left_mouse_button_down: function()
@@ -6655,6 +6655,13 @@ Rsed.core = (function()
 
     Rsed.assert && (canvas.domElement != null)
                 || Rsed.throw("Failed to find a canvas element to render into.");
+
+    canvas.domElement.onmouseleave = function(event)
+    {
+        Rsed.ui.inputState.reset_mouse_buttons_state();
+
+        return;
+    }
 
     const publicInterface =
     {
