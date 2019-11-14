@@ -32,6 +32,13 @@ Rsed.popup_notification = function(string = "", args = {})
     {
         popupElement.classList.add("animation-flip");
 
+        switch (args.notificationType)
+        {
+            case "warning": popupElement.style.backgroundColor = "gold"; break;
+            case "error": popupElement.style.backgroundColor = "hotpink"; break;
+            default: Rsed.throw(`Unknown notification type "${args.notificationType}".`); break;
+        }
+
         popupElement.appendChild(document.createTextNode(string));
         document.getElementById("popup-container").appendChild(popupElement);
     }

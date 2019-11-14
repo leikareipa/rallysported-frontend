@@ -25,7 +25,8 @@ const Rsed = {};
     {
         if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
 
-        console.warn("RallySportED error: " + errMessage);
+        Rsed.popup_notification(`Error: ${errMessage}`, {notificationType:"error", timeoutMs:0});
+        console.error("RallySportED error: " + errMessage);
         throw new Error("RallySportED error: " + errMessage);
     }
 

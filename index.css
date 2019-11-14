@@ -68,7 +68,7 @@ body
     line-height: 140%;
     word-wrap: break-word;
     color: black;
-    background-color: gold;
+    /* Background color will be set in code.*/
 }
 
 #html-ui

@@ -50,7 +50,7 @@ window.onload = function(event)
             // Give the input a sanity check.
             if (!(/^[0-9a-z]+$/.test(params.get("shared"))))
             {
-                Rsed.throw("Invalid track identifier detected. Can't continue.");
+                Rsed.throw("Invalid track identifier.");
                 return;
             }
 
@@ -67,7 +67,7 @@ window.onload = function(event)
             // Give the input a sanity check.
             if (!(/^[0-9a-z]+$/.test(params.get("track"))))
             {
-                Rsed.throw("Invalid track identifier detected. Can't continue.");
+                Rsed.throw("Invalid track identifier.");
                 return;
             }
 
@@ -82,7 +82,7 @@ window.onload = function(event)
             // Give the input a sanity check.
             if (!(/^[1-8]+$/.test(params.get("original"))))
             {
-                Rsed.throw("Invalid track identifier detected. Can't continue.");
+                Rsed.throw("Invalid track identifier.");
                 return;
             }
 

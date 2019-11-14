@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 November 2019 17:11:04 UTC)
+// VERSION: live (14 November 2019 18:59:48 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -1846,7 +1846,8 @@ const Rsed = {};
     {
         if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
 
-        console.warn("RallySportED error: " + errMessage);
+        Rsed.popup_notification(`Error: ${errMessage}`, {notificationType:"error", timeoutMs:0});
+        console.error("RallySportED error: " + errMessage);
         throw new Error("RallySportED error: " + errMessage);
     }
 
@@ -4260,6 +4261,13 @@ Rsed.popup_notification = function(string = "", args = {})
     {
         popupElement.classList.add("animation-flip");
 
+        switch (args.notificationType)
+        {
+            case "warning": popupElement.style.backgroundColor = "gold"; break;
+            case "error": popupElement.style.backgroundColor = "hotpink"; break;
+            default: Rsed.throw(`Unknown notification type "${args.notificationType}".`); break;
+        }
+
         popupElement.appendChild(document.createTextNode(string));
         document.getElementById("popup-container").appendChild(popupElement);
     }
@@ -5521,7 +5529,7 @@ window.onload = function(event)
             // Give the input a sanity check.
             if (!(/^[0-9a-z]+$/.test(params.get("shared"))))
             {
-                Rsed.throw("Invalid track identifier detected. Can't continue.");
+                Rsed.throw("Invalid track identifier.");
                 return;
             }
 
@@ -5538,7 +5546,7 @@ window.onload = function(event)
             // Give the input a sanity check.
             if (!(/^[0-9a-z]+$/.test(params.get("track"))))
             {
-                Rsed.throw("Invalid track identifier detected. Can't continue.");
+                Rsed.throw("Invalid track identifier.");
                 return;
             }
 
@@ -5553,7 +5561,7 @@ window.onload = function(event)
             // Give the input a sanity check.
             if (!(/^[1-8]+$/.test(params.get("original"))))
             {
-                Rsed.throw("Invalid track identifier detected. Can't continue.");
+                Rsed.throw("Invalid track identifier.");
                 return;
             }
 
