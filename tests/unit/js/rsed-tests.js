@@ -8,6 +8,8 @@
 
 "use strict";
 
+Rsed.unitTestRun = true;
+
 // The unit tester expects assertion failures to throw and only throw
 // (not also pop up window.alert()s or the like).
 Rsed.throw = (explanation = "(no reason given)")=>

@@ -54,11 +54,11 @@ Rsed.ui.inputState = (function()
 
         mouse_pos_scaled_to_render_resolution: function()
         {
-            const scaledX = Math.floor(mouseState.position.x * Rsed.core.scaling_multiplier());
-            const scaledY = Math.floor(mouseState.position.y * Rsed.core.scaling_multiplier());
+            const scaledX = Math.floor(mouseState.position.x * (Rsed.core? Rsed.core.scaling_multiplier() : 1));
+            const scaledY = Math.floor(mouseState.position.y * (Rsed.core? Rsed.core.scaling_multiplier() : 1));
 
-            const clampedX = Math.max(0, Math.min((Rsed.core.render_width() - 1), scaledX));
-            const clampedY = Math.max(0, Math.min((Rsed.core.render_height() - 1), scaledY));
+            const clampedX = Math.max(0, Math.min(((Rsed.core? Rsed.core.render_width() : 1) - 1), scaledX));
+            const clampedY = Math.max(0, Math.min(((Rsed.core? Rsed.core.render_height() : 1) - 1), scaledY));
 
             return {...mouseState.position, x:clampedX, y:clampedY};
         },
@@ -184,7 +184,7 @@ Rsed.ui.inputState = (function()
             // Update the hover info.
             {
                 const scaledPosition = this.mouse_pos_scaled_to_render_resolution();
-                mouseState.hover = Rsed.core.mouse_pick_buffer_at(scaledPosition.x, scaledPosition.y);
+                mouseState.hover = (Rsed.core? Rsed.core.mouse_pick_buffer_at(scaledPosition.x, scaledPosition.y) : null);
             }
 
             return;

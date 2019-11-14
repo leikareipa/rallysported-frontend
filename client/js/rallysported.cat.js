@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 November 2019 22:01:29 UTC)
+// VERSION: live (14 November 2019 22:26:36 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5584,6 +5584,12 @@ window.onload = function(event)
         }
     }
 
+    // The app doesn't need to be run if we're just testing its units.
+    if (Rsed.unitTestRun)
+    {
+        return;
+    }
+
     if (Rsed && Rsed.core)
     {
         Rsed.core.run(rsedStartupArgs);
@@ -5934,11 +5940,11 @@ Rsed.ui.inputState = (function()
 
         mouse_pos_scaled_to_render_resolution: function()
         {
-            const scaledX = Math.floor(mouseState.position.x * Rsed.core.scaling_multiplier());
-            const scaledY = Math.floor(mouseState.position.y * Rsed.core.scaling_multiplier());
+            const scaledX = Math.floor(mouseState.position.x * (Rsed.core? Rsed.core.scaling_multiplier() : 1));
+            const scaledY = Math.floor(mouseState.position.y * (Rsed.core? Rsed.core.scaling_multiplier() : 1));
 
-            const clampedX = Math.max(0, Math.min((Rsed.core.render_width() - 1), scaledX));
-            const clampedY = Math.max(0, Math.min((Rsed.core.render_height() - 1), scaledY));
+            const clampedX = Math.max(0, Math.min(((Rsed.core? Rsed.core.render_width() : 1) - 1), scaledX));
+            const clampedY = Math.max(0, Math.min(((Rsed.core? Rsed.core.render_height() : 1) - 1), scaledY));
 
             return {...mouseState.position, x:clampedX, y:clampedY};
         },
@@ -6064,7 +6070,7 @@ Rsed.ui.inputState = (function()
             // Update the hover info.
             {
                 const scaledPosition = this.mouse_pos_scaled_to_render_resolution();
-                mouseState.hover = Rsed.core.mouse_pick_buffer_at(scaledPosition.x, scaledPosition.y);
+                mouseState.hover = (Rsed.core? Rsed.core.mouse_pick_buffer_at(scaledPosition.x, scaledPosition.y) : null);
             }
 
             return;

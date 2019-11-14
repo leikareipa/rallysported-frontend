@@ -97,6 +97,12 @@ window.onload = function(event)
         }
     }
 
+    // The app doesn't need to be run if we're just testing its units.
+    if (Rsed.unitTestRun)
+    {
+        return;
+    }
+
     if (Rsed && Rsed.core)
     {
         Rsed.core.run(rsedStartupArgs);
