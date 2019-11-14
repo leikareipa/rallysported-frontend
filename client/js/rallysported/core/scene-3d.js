@@ -79,6 +79,8 @@ Rsed.scenes = Rsed.scenes || {};
                 canvas.width = renderInfo.renderWidth;
                 canvas.height = renderInfo.renderHeight;
 
+                window.close_dropdowns();
+
                 // The PALAT pane needs to adjust to the new size of the canvas.
                 Rsed.ui.draw.generate_palat_pane();
             }

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 November 2019 21:53:41 UTC)
+// VERSION: live (14 November 2019 22:01:29 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3162,6 +3162,8 @@ Rsed.world.camera = (function()
                 (position.y !== prevPos.y) ||
                 (position.z !== prevPos.z))
             {
+                window.close_dropdowns();
+                
                 // Force mouse hover to update, since there might now be a different tile under
                 // the cursor than there was before the camera moved.
                 Rsed.ui.inputState.set_mouse_pos(Rsed.ui.inputState.mouse_pos().x,
@@ -6284,6 +6286,8 @@ Rsed.scenes = Rsed.scenes || {};
                 canvas.width = renderInfo.renderWidth;
                 canvas.height = renderInfo.renderHeight;
 
+                window.close_dropdowns();
+
                 // The PALAT pane needs to adjust to the new size of the canvas.
                 Rsed.ui.draw.generate_palat_pane();
             }
@@ -6619,6 +6623,8 @@ Rsed.scenes = Rsed.scenes || {};
             {
                 canvas.width = renderInfo.renderWidth;
                 canvas.height = renderInfo.renderHeight;
+
+                window.close_dropdowns();
 
                 // The PALAT pane needs to adjust to the new size of the canvas.
                 Rsed.ui.draw.generate_palat_pane();

@@ -50,6 +50,8 @@ Rsed.world.camera = (function()
                 (position.y !== prevPos.y) ||
                 (position.z !== prevPos.z))
             {
+                window.close_dropdowns();
+                
                 // Force mouse hover to update, since there might now be a different tile under
                 // the cursor than there was before the camera moved.
                 Rsed.ui.inputState.set_mouse_pos(Rsed.ui.inputState.mouse_pos().x,
