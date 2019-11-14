@@ -44,7 +44,7 @@ Rsed.world.mesh_builder = (function()
             // Note that we adjust Z to account for vertical camera zooming.
             const centerView = {x: -1088,
                                 y: (-680 + args.cameraPos.y),
-                                z: (2612 - (Rsed.world.camera.rotation().x / 8) + (Rsed.constants.groundTileSize * 3.5))};
+                                z: (2800 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 
             for (let z = 0; z < Rsed.world.camera.view_height(); z++)
             {
