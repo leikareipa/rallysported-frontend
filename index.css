@@ -43,7 +43,7 @@ body
     margin: 0;
 }
 
-#popup-container
+#popup-notification-container
 {
     width: 300px;
     height: auto;
@@ -54,14 +54,14 @@ body
     flex-direction: column;
 }
 
-#popup-container > div
+#popup-notification-container > div
 {
     width: 100%;
     height: auto;
     padding: 20px;
     font-family: "Montserrat", sans-serif;
     text-align: left;
-    margin-top: 4px;
+    margin-top: 8px;
     border-radius: 20px;
     border-top-left-radius: 2px;
     border: 1px solid black;
@@ -69,6 +69,14 @@ body
     word-wrap: break-word;
     color: black;
     /* Background color will be set in code.*/
+}
+
+#popup-notification-container > div:not(:last-child)
+{
+    width: 97%;
+    padding: 17px;
+    margin-left: 15px;
+    font-size: 90%;
 }
 
 #html-ui

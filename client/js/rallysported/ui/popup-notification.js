@@ -40,7 +40,7 @@ Rsed.popup_notification = function(string = "", args = {})
         }
 
         popupElement.appendChild(document.createTextNode(string));
-        document.getElementById("popup-container").appendChild(popupElement);
+        document.getElementById("popup-notification-container").appendChild(popupElement);
     }
 
     const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));

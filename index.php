@@ -44,7 +44,7 @@
              <canvas id="render-canvas" class="canvas"></canvas>
         </div>
 
-        <div id="popup-container" class="popup-container"></div>
+        <div id="popup-notification-container"></div>
 
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
         <script src="./client/js/rallysported.cat.js" defer></script>

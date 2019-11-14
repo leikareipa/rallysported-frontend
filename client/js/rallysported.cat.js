@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 November 2019 19:03:13 UTC)
+// VERSION: live (14 November 2019 19:43:44 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4269,7 +4269,7 @@ Rsed.popup_notification = function(string = "", args = {})
         }
 
         popupElement.appendChild(document.createTextNode(string));
-        document.getElementById("popup-container").appendChild(popupElement);
+        document.getElementById("popup-notification-container").appendChild(popupElement);
     }
 
     const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
