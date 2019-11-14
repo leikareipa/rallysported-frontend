@@ -45,9 +45,9 @@ if (!chdir($projectFolder . $_GET["projectId"] . "/"))
         exit(failure("Server-side IO failure."));
     }
 
-    if (!isset($projectData["meta"]["baseName"]))
+    if (!isset($projectData["meta"]["internalName"]))
     {
-        $projectData["meta"]["baseName"] = str_shuffle("unnamed");
+        $projectData["meta"]["internalName"] = str_shuffle("unnamed");
     }
 
     $projectData["container"] = base64_encode($projectData["container"]);

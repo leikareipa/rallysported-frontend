@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 November 2019 18:59:48 UTC)
+// VERSION: live (14 November 2019 19:03:13 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2080,12 +2080,12 @@ Rsed.project = async function(projectArgs = {})
     Rsed.assert && ((typeof projectData.container !== "undefined") &&
                     (typeof projectData.manifesto !== "undefined") &&
                     (typeof projectData.meta !== "undefined") &&
-                    (typeof projectData.meta.baseName !== "undefined") &&
+                    (typeof projectData.meta.internalName !== "undefined") &&
                     (typeof projectData.meta.displayName !== "undefined"))
                 || Rsed.throw("Missing required project data.");
 
     Rsed.assert && is_valid_project_base_name()
-                || Rsed.throw("Invalid project base name \"" + projectData.meta.baseName + "\".");
+                || Rsed.throw("Invalid project base name \"" + projectData.meta.internalName + "\".");
 
     Rsed.assert && ((projectData.meta.width > 0) &&
                     (projectData.meta.height > 0) &&
@@ -2175,7 +2175,7 @@ Rsed.project = async function(projectArgs = {})
     const publicInterface = Object.freeze(
     {
         name: projectData.meta.displayName,
-        internalName: projectData.meta.baseName,
+        internalName: projectData.meta.internalName,
         maasto,
         varimaa,
         palat,
@@ -2202,7 +2202,7 @@ Rsed.project = async function(projectArgs = {})
         // Bundles the project's data files into a .zip, and has the browser initiate a 'download' of it.
         save_to_disk: async()=>
         {
-            const dstFilename = projectData.meta.baseName.toUpperCase();
+            const dstFilename = projectData.meta.internalName.toUpperCase();
 
             Rsed.log(`Saving project "${projectData.meta.displayName}" into ${dstFilename}.ZIP.`);
 
@@ -2246,7 +2246,7 @@ Rsed.project = async function(projectArgs = {})
     });
 
     Rsed.log("\"" + projectData.meta.displayName + "\" is a valid RallySportED project. " +
-              "Its base name is \"" + projectData.meta.baseName + "\".");
+              "Its internal name is \"" + projectData.meta.internalName + "\".");
     
     return publicInterface;
 
@@ -2325,10 +2325,10 @@ Rsed.project = async function(projectArgs = {})
         // The base filename must be between 1 and 8 characters long, and the string must consist
         // of ASCII A-Z characters only.
         return ((typeof projectData.meta !== "undefined") &&
-                (typeof projectData.meta.baseName !== "undefined") &&
-                (projectData.meta.baseName.length >= 1) &&
-                (projectData.meta.baseName.length <= 8) &&
-                /^[a-z]+$/.test(projectData.meta.baseName));
+                (typeof projectData.meta.internalName !== "undefined") &&
+                (projectData.meta.internalName.length >= 1) &&
+                (projectData.meta.internalName.length <= 8) &&
+                /^[a-z]+$/.test(projectData.meta.internalName));
     }
 
     // Returns the data (container file, manifesto file, and certain metadata) of the
@@ -2442,7 +2442,7 @@ Rsed.project = async function(projectArgs = {})
                 projectData.meta =
                 {
                     displayName: projectDirName,
-                    baseName: projectDirName,
+                    internalName: projectDirName,
                     width: trackSideLen,
                     height: trackSideLen,
                 };
