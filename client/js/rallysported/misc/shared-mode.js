@@ -14,7 +14,7 @@
 
 "use strict";
 
-Rsed.shared_mode_n = (function()
+Rsed.shared_mode = (function()
 {
     // A string that uniquely identifies us as a participant in the shared editing. We'll
     // need to provide this id any time we GET or POST data to the server.

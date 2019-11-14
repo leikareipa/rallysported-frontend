@@ -79,7 +79,7 @@ Rsed.ui.groundBrush = (function()
                                                                        (targetProject.maasto.tile_at(tileX, tileZ) + value));
                             }
 
-                            if (Rsed.shared_mode_n.enabled())
+                            if (Rsed.shared_mode.enabled())
                             {
                                 brushCache.maasto[tileX + tileZ * targetProject.maasto.width] = targetProject.maasto.tile_at(tileX, tileZ);
                             }
@@ -90,7 +90,7 @@ Rsed.ui.groundBrush = (function()
                         {
                             targetProject.varimaa.set_tile_value_at(tileX, tileZ, value);
 
-                            if (Rsed.shared_mode_n.enabled())
+                            if (Rsed.shared_mode.enabled())
                             {
                                 brushCache.varimaa[tileX + tileZ * targetProject.maasto.width] = targetProject.varimaa.tile_at(tileX, tileZ);
                             }

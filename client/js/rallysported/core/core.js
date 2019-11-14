@@ -230,11 +230,11 @@ Rsed.core = (function()
             
         if (args.editMode === "shared")
         {
-            await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.project.dataIdentifier);
+            await Rsed.shared_mode.register_as_participant_in_project(args.project.dataIdentifier);
         }
         else
         {
-            Rsed.shared_mode_n.unregister_current_registration();
+            Rsed.shared_mode.unregister_current_registration();
         }
 
         project = await Rsed.project(args.project);
@@ -249,9 +249,9 @@ Rsed.core = (function()
         /// TODO. This needs to be implemented in a better way and/or somewhere
         /// else - ideally so you don't have to manually start the poll loop;
         /// so you don't risk starting it twice or whatever.
-        if (Rsed.shared_mode_n.enabled())
+        if (Rsed.shared_mode.enabled())
         {
-            Rsed.shared_mode_n.start_polling_server();
+            Rsed.shared_mode.start_polling_server();
         }
     }
 })();

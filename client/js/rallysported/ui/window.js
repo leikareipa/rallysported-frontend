@@ -159,7 +159,7 @@ window.oncontextmenu = function(event)
     }
 
     // Props aren't allowed to be edited in any way in shared mode.
-    if (Rsed.shared_mode_n.enabled())
+    if (Rsed.shared_mode.enabled())
     {
         return;
     }

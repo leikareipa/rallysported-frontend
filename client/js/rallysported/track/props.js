@@ -176,7 +176,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         move: (trackId = 0, propIdx = 0, delta = {x:0,y:0,z:0})=>
         {
             // For now, shared mode doesn't support moving props.
-            if (Rsed.shared_mode_n.enabled()) return;
+            if (Rsed.shared_mode.enabled()) return;
 
             Rsed.assert && ((trackId >= 0) &&
                             (trackId <= 7))

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 November 2019 16:03:35 UTC)
+// VERSION: live (14 November 2019 16:23:53 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2601,7 +2601,7 @@ Rsed.constants = Object.freeze(
 
 "use strict";
 
-Rsed.shared_mode_n = (function()
+Rsed.shared_mode = (function()
 {
     // A string that uniquely identifies us as a participant in the shared editing. We'll
     // need to provide this id any time we GET or POST data to the server.
@@ -4019,7 +4019,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         move: (trackId = 0, propIdx = 0, delta = {x:0,y:0,z:0})=>
         {
             // For now, shared mode doesn't support moving props.
-            if (Rsed.shared_mode_n.enabled()) return;
+            if (Rsed.shared_mode.enabled()) return;
 
             Rsed.assert && ((trackId >= 0) &&
                             (trackId <= 7))
@@ -4996,7 +4996,7 @@ Rsed.ui.groundBrush = (function()
                                                                        (targetProject.maasto.tile_at(tileX, tileZ) + value));
                             }
 
-                            if (Rsed.shared_mode_n.enabled())
+                            if (Rsed.shared_mode.enabled())
                             {
                                 brushCache.maasto[tileX + tileZ * targetProject.maasto.width] = targetProject.maasto.tile_at(tileX, tileZ);
                             }
@@ -5007,7 +5007,7 @@ Rsed.ui.groundBrush = (function()
                         {
                             targetProject.varimaa.set_tile_value_at(tileX, tileZ, value);
 
-                            if (Rsed.shared_mode_n.enabled())
+                            if (Rsed.shared_mode.enabled())
                             {
                                 brushCache.varimaa[tileX + tileZ * targetProject.maasto.width] = targetProject.varimaa.tile_at(tileX, tileZ);
                             }
@@ -5628,7 +5628,7 @@ window.oncontextmenu = function(event)
     }
 
     // Props aren't allowed to be edited in any way in shared mode.
-    if (Rsed.shared_mode_n.enabled())
+    if (Rsed.shared_mode.enabled())
     {
         return;
     }
@@ -6344,7 +6344,7 @@ Rsed.scenes = Rsed.scenes || {};
                             // Add a new prop.
                             if ( Rsed.ui.inputState.key_down("shift") &&
                                  Rsed.ui.inputState.left_mouse_button_down() &&
-                                !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
+                                !Rsed.shared_mode.enabled()) // For now, shared mode doesn't support interacting with props.
                             {
                                 Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
                                                                                Rsed.core.current_project().props.id_for_name("tree"),
@@ -6382,7 +6382,7 @@ Rsed.scenes = Rsed.scenes || {};
                         case "prop":
                         {
                             // For now, shared mode doesn't support interacting with props.
-                            if (Rsed.shared_mode_n.enabled()) break;
+                            if (Rsed.shared_mode.enabled()) break;
 
                             if (Rsed.ui.inputState.left_mouse_button_down())
                             {
@@ -6868,11 +6868,11 @@ Rsed.core = (function()
             
         if (args.editMode === "shared")
         {
-            await Rsed.shared_mode_n.register_as_participant_in_project(args.project.dataIdentifier);
+            await Rsed.shared_mode.register_as_participant_in_project(args.project.dataIdentifier);
         }
         else
         {
-            Rsed.shared_mode_n.unregister_current_registration();
+            Rsed.shared_mode.unregister_current_registration();
         }
 
         project = await Rsed.project(args.project);
@@ -6887,9 +6887,9 @@ Rsed.core = (function()
         /// TODO. This needs to be implemented in a better way and/or somewhere
         /// else - ideally so you don't have to manually start the poll loop;
         /// so you don't risk starting it twice or whatever.
-        if (Rsed.shared_mode_n.enabled())
+        if (Rsed.shared_mode.enabled())
         {
-            Rsed.shared_mode_n.start_polling_server();
+            Rsed.shared_mode.start_polling_server();
         }
     }
 })();

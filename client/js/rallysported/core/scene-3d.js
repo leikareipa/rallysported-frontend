@@ -174,7 +174,7 @@ Rsed.scenes = Rsed.scenes || {};
                             // Add a new prop.
                             if ( Rsed.ui.inputState.key_down("shift") &&
                                  Rsed.ui.inputState.left_mouse_button_down() &&
-                                !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
+                                !Rsed.shared_mode.enabled()) // For now, shared mode doesn't support interacting with props.
                             {
                                 Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
                                                                                Rsed.core.current_project().props.id_for_name("tree"),
@@ -212,7 +212,7 @@ Rsed.scenes = Rsed.scenes || {};
                         case "prop":
                         {
                             // For now, shared mode doesn't support interacting with props.
-                            if (Rsed.shared_mode_n.enabled()) break;
+                            if (Rsed.shared_mode.enabled()) break;
 
                             if (Rsed.ui.inputState.left_mouse_button_down())
                             {
