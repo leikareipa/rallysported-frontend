@@ -214,6 +214,12 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             /// be substituted.
             if (propNames[trackPropLocations[trackId].locations[propIdx].propId].name.startsWith("finish"))
             {
+                Rsed.popup_notification("The finish line cannot be removed.");
+
+                // Prevent the same input from registering again next frame, before
+                // the user has had time to release the mouse button.
+                Rsed.ui.inputState.reset_mouse_buttons_state();
+
                 return;
             }
 

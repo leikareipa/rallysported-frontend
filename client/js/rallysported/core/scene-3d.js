@@ -247,7 +247,17 @@ Rsed.scenes = Rsed.scenes || {};
                                 else
                                 {
                                     // For now, don't allow moving the starting line (always prop #0).
-                                    if (grab.propTrackIdx !== 0)
+                                    if (grab.propTrackIdx === 0)
+                                    {
+                                        Rsed.popup_notification("The finish line cannot be moved.");
+        
+                                        // Prevent the same input from registering again next frame, before
+                                        // the user has had time to release the mouse button.
+                                        Rsed.ui.inputState.reset_mouse_buttons_state();
+        
+                                        break;
+                                    }
+                                    else
                                     {
                                         const mousePosDelta =
                                         {

@@ -174,10 +174,21 @@ window.oncontextmenu = function(event)
         return;
     }
 
+    /// Temp hack. The finish line is an immutable prop, so disallow changing it.
+    if (Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish"))
+    {
+        Rsed.popup_notification("The finish line cannot be edited.");
+
+        // Prevent the same input from registering again next frame, before
+        // the user has had time to release the mouse button.
+        Rsed.ui.inputState.reset_mouse_buttons_state();
+
+        return;
+    }
+
     // Display a right-click menu for changing the type of the prop under the cursor.
     if ( Rsed.ui.inputState.current_mouse_hover() &&
-        (Rsed.ui.inputState.current_mouse_hover().type === "prop") &&
-        !Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+        (Rsed.ui.inputState.current_mouse_hover().type === "prop")) 
     {
         const mousePos = Rsed.ui.inputState.mouse_pos();
         const propDropdown = document.getElementById("prop-dropdown");

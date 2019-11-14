@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 November 2019 21:05:57 UTC)
+// VERSION: live (14 November 2019 21:53:41 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4060,6 +4060,12 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             /// be substituted.
             if (propNames[trackPropLocations[trackId].locations[propIdx].propId].name.startsWith("finish"))
             {
+                Rsed.popup_notification("The finish line cannot be removed.");
+
+                // Prevent the same input from registering again next frame, before
+                // the user has had time to release the mouse button.
+                Rsed.ui.inputState.reset_mouse_buttons_state();
+
                 return;
             }
 
@@ -5653,10 +5659,21 @@ window.oncontextmenu = function(event)
         return;
     }
 
+    /// Temp hack. The finish line is an immutable prop, so disallow changing it.
+    if (Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish"))
+    {
+        Rsed.popup_notification("The finish line cannot be edited.");
+
+        // Prevent the same input from registering again next frame, before
+        // the user has had time to release the mouse button.
+        Rsed.ui.inputState.reset_mouse_buttons_state();
+
+        return;
+    }
+
     // Display a right-click menu for changing the type of the prop under the cursor.
     if ( Rsed.ui.inputState.current_mouse_hover() &&
-        (Rsed.ui.inputState.current_mouse_hover().type === "prop") &&
-        !Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish")) /// Temp hack. Disallow changing any prop's type to a finish line, which is a special item.
+        (Rsed.ui.inputState.current_mouse_hover().type === "prop")) 
     {
         const mousePos = Rsed.ui.inputState.mouse_pos();
         const propDropdown = document.getElementById("prop-dropdown");
@@ -6435,7 +6452,17 @@ Rsed.scenes = Rsed.scenes || {};
                                 else
                                 {
                                     // For now, don't allow moving the starting line (always prop #0).
-                                    if (grab.propTrackIdx !== 0)
+                                    if (grab.propTrackIdx === 0)
+                                    {
+                                        Rsed.popup_notification("The finish line cannot be moved.");
+        
+                                        // Prevent the same input from registering again next frame, before
+                                        // the user has had time to release the mouse button.
+                                        Rsed.ui.inputState.reset_mouse_buttons_state();
+        
+                                        break;
+                                    }
+                                    else
                                     {
                                         const mousePosDelta =
                                         {
