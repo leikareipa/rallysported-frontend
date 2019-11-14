@@ -22,13 +22,13 @@ window.onload = function(event)
     // be modified by the user via address parameters, which we parse for in the code below.
     const rsedStartupArgs =
     {
-        // Whether edits to the project happen locally on the client or are broadcast onto the
-        // server for other participants to see. Server-side editing is only available for
-        // projects that have been created on the server specifically for shared editing.
-        editMode: "local", // | "shared"
-
         project:
         {
+            // Whether edits to the project happen locally on the client or are broadcast onto
+            // the server for other participants to see. Server-side editing is only available
+            // for projects that have been created on the server specifically for shared editing.
+            editMode: "local", // | "shared"
+
             // Whether the project's initial data files will be found on the server or on
             // the client. If on the client, an additional property, .dataAsJSON, is expected
             // to provide these data as a JSON string.
@@ -54,7 +54,7 @@ window.onload = function(event)
                 return;
             }
 
-            rsedStartupArgs.editMode = "shared";
+            rsedStartupArgs.project.editMode = "shared";
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = params.get("shared");
 
@@ -71,7 +71,7 @@ window.onload = function(event)
                 return;
             }
 
-            rsedStartupArgs.editMode = "local";
+            rsedStartupArgs.project.editMode = "local";
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = params.get("track");
         }
@@ -91,7 +91,7 @@ window.onload = function(event)
                             (trackId <= 8))
                         || Rsed.throw("The given track id is out of bounds.");
 
-            rsedStartupArgs.editMode = "local";
+            rsedStartupArgs.project.editMode = "local";
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
         }
@@ -129,7 +129,7 @@ window.close_dropdowns = function()
     return;
 }
 
-// Right-click menu.
+// Right-click menu for track props.
 window.oncontextmenu = function(event)
 {
     if (!Rsed || !Rsed.core)
@@ -158,13 +158,20 @@ window.oncontextmenu = function(event)
         return;
     }
 
+    // Only handle clicks that occur over props.
+    if (Rsed.ui.inputState.current_mouse_hover().type !== "prop")
+    {
+        event.preventDefault();
+        return;
+    }
+
+    event.preventDefault();
+
     // Props aren't allowed to be edited in any way in shared mode.
     if (Rsed.shared_mode.enabled())
     {
         return;
     }
-
-    event.preventDefault();
 
     // Display a right-click menu for changing the type of the prop under the cursor.
     if ( Rsed.ui.inputState.current_mouse_hover() &&
@@ -357,9 +364,9 @@ window.drop_handler = function(event)
     // Launch RallySportED with project data from the given zip file.
     Rsed.core.run(
     {
-        editMode: "local",
         project:
         {
+            editMode: "local",
             dataLocality: "client",
             dataIdentifier: zipFile,
         }

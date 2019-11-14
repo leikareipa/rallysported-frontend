@@ -125,7 +125,7 @@ Rsed.core = (function()
         run: async function(startupArgs = {})
         {
             Rsed.assert && ((typeof startupArgs.project.dataLocality !== "undefined") &&
-                            (typeof startupArgs.editMode !== "undefined"))
+                            (typeof startupArgs.project.editMode !== "undefined"))
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
 
             isRunning = false;
@@ -224,11 +224,11 @@ Rsed.core = (function()
 
     async function load_project(args = {})
     {
-        Rsed.assert && ((typeof args.editMode !== "undefined") &&
+        Rsed.assert && ((typeof args.project.editMode !== "undefined") &&
                         (typeof args.project.dataIdentifier !== "undefined"))
                     || Rsed.throw("Missing required arguments for loading a project.");
             
-        if (args.editMode === "shared")
+        if (args.project.editMode === "shared")
         {
             await Rsed.shared_mode.register_as_participant_in_project(args.project.dataIdentifier);
         }

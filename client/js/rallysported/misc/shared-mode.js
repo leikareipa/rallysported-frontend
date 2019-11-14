@@ -48,7 +48,7 @@ Rsed.shared_mode = (function()
             varimaa: cacheToDataArray(localCaches["varimaa"]),
         };
 
-        return fetch(("server/shared-editing/post.php?projectName=" + Rsed.core.current_project().name +
+        return fetch(("server/shared-editing/post.php?projectName=" + Rsed.core.current_project().internalName +
                                                     "&participantId=" + participantId),
                 {
                     method: "POST",

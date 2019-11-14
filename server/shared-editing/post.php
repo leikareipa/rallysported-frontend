@@ -58,7 +58,7 @@ if (!preg_match('/^[a-z0-9]+$/', $_GET["participantId"]))
     exit(failure("Malformed participant id."));
 }
 
-if (!chdir("./assets/tracks/shared/" . $_GET["projectName"] . "/"))
+if (!chdir("../assets/tracks/shared/" . $_GET["projectName"] . "/"))
 {
     exit(failure("Invalid project name."));
 }
@@ -120,7 +120,7 @@ $knownBinaryResourceTypes = ["maasto", "varimaa"];
             exit(failure("Failed to access project metainfo"));
         }
 
-        $trackSize = ($projectMetainfo["trackWidth"] * $projectMetainfo["trackHeight"]);
+        $trackSize = ($projectMetainfo["width"] * $projectMetainfo["height"]);
 
         // Convert the data into a raw binary format, and save it.
         foreach ($knownBinaryResourceTypes as $resourceType)

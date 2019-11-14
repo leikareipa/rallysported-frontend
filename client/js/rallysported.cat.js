@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 November 2019 16:23:53 UTC)
+// VERSION: live (14 November 2019 17:11:04 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2174,6 +2174,7 @@ Rsed.project = async function(projectArgs = {})
     const publicInterface = Object.freeze(
     {
         name: projectData.meta.displayName,
+        internalName: projectData.meta.baseName,
         maasto,
         varimaa,
         palat,
@@ -2459,7 +2460,8 @@ Rsed.project = async function(projectArgs = {})
             Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
                         || Rsed.throw("Missing required parameters for loading a project.");
 
-            return fetch("server/get-project-data.php?projectId=" + projectArgs.dataIdentifier)
+            return fetch("server/get-project-data.php?projectId=" + projectArgs.dataIdentifier +
+                                                    "&editMode=" + projectArgs.editMode)
                    .then(response=>
                    {
                        if (!response.ok)
@@ -2635,7 +2637,7 @@ Rsed.shared_mode = (function()
             varimaa: cacheToDataArray(localCaches["varimaa"]),
         };
 
-        return fetch(("server/shared-editing/post.php?projectName=" + Rsed.core.current_project().name +
+        return fetch(("server/shared-editing/post.php?projectName=" + Rsed.core.current_project().internalName +
                                                     "&participantId=" + participantId),
                 {
                     method: "POST",
@@ -5491,13 +5493,13 @@ window.onload = function(event)
     // be modified by the user via address parameters, which we parse for in the code below.
     const rsedStartupArgs =
     {
-        // Whether edits to the project happen locally on the client or are broadcast onto the
-        // server for other participants to see. Server-side editing is only available for
-        // projects that have been created on the server specifically for shared editing.
-        editMode: "local", // | "shared"
-
         project:
         {
+            // Whether edits to the project happen locally on the client or are broadcast onto
+            // the server for other participants to see. Server-side editing is only available
+            // for projects that have been created on the server specifically for shared editing.
+            editMode: "local", // | "shared"
+
             // Whether the project's initial data files will be found on the server or on
             // the client. If on the client, an additional property, .dataAsJSON, is expected
             // to provide these data as a JSON string.
@@ -5523,7 +5525,7 @@ window.onload = function(event)
                 return;
             }
 
-            rsedStartupArgs.editMode = "shared";
+            rsedStartupArgs.project.editMode = "shared";
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = params.get("shared");
 
@@ -5540,7 +5542,7 @@ window.onload = function(event)
                 return;
             }
 
-            rsedStartupArgs.editMode = "local";
+            rsedStartupArgs.project.editMode = "local";
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = params.get("track");
         }
@@ -5560,7 +5562,7 @@ window.onload = function(event)
                             (trackId <= 8))
                         || Rsed.throw("The given track id is out of bounds.");
 
-            rsedStartupArgs.editMode = "local";
+            rsedStartupArgs.project.editMode = "local";
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
         }
@@ -5598,7 +5600,7 @@ window.close_dropdowns = function()
     return;
 }
 
-// Right-click menu.
+// Right-click menu for track props.
 window.oncontextmenu = function(event)
 {
     if (!Rsed || !Rsed.core)
@@ -5627,13 +5629,20 @@ window.oncontextmenu = function(event)
         return;
     }
 
+    // Only handle clicks that occur over props.
+    if (Rsed.ui.inputState.current_mouse_hover().type !== "prop")
+    {
+        event.preventDefault();
+        return;
+    }
+
+    event.preventDefault();
+
     // Props aren't allowed to be edited in any way in shared mode.
     if (Rsed.shared_mode.enabled())
     {
         return;
     }
-
-    event.preventDefault();
 
     // Display a right-click menu for changing the type of the prop under the cursor.
     if ( Rsed.ui.inputState.current_mouse_hover() &&
@@ -5826,9 +5835,9 @@ window.drop_handler = function(event)
     // Launch RallySportED with project data from the given zip file.
     Rsed.core.run(
     {
-        editMode: "local",
         project:
         {
+            editMode: "local",
             dataLocality: "client",
             dataIdentifier: zipFile,
         }
@@ -6342,10 +6351,21 @@ Rsed.scenes = Rsed.scenes || {};
                             if (!hover) break;
 
                             // Add a new prop.
-                            if ( Rsed.ui.inputState.key_down("shift") &&
-                                 Rsed.ui.inputState.left_mouse_button_down() &&
-                                !Rsed.shared_mode.enabled()) // For now, shared mode doesn't support interacting with props.
+                            if (Rsed.ui.inputState.key_down("shift") &&
+                                Rsed.ui.inputState.left_mouse_button_down()) 
                             {
+                                // For now, shared mode doesn't support interacting with props.
+                                if (Rsed.shared_mode.enabled())
+                                {
+                                    Rsed.popup_notification("Props cannot be added in shared mode.");
+
+                                    // Prevent the same input from registering again next frame, before
+                                    // the user has had time to release the mouse button.
+                                    Rsed.ui.inputState.reset_mouse_buttons_state();
+
+                                    break;
+                                }
+
                                 Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
                                                                                Rsed.core.current_project().props.id_for_name("tree"),
                                                                                {
@@ -6382,7 +6402,16 @@ Rsed.scenes = Rsed.scenes || {};
                         case "prop":
                         {
                             // For now, shared mode doesn't support interacting with props.
-                            if (Rsed.shared_mode.enabled()) break;
+                            if (Rsed.shared_mode.enabled())
+                            {
+                                Rsed.popup_notification("Props cannot be edited in shared mode.");
+
+                                // Prevent the same input from registering again next frame, before
+                                // the user has had time to release the mouse button.
+                                Rsed.ui.inputState.reset_mouse_buttons_state();
+
+                                break;
+                            }
 
                             if (Rsed.ui.inputState.left_mouse_button_down())
                             {
@@ -6763,7 +6792,7 @@ Rsed.core = (function()
         run: async function(startupArgs = {})
         {
             Rsed.assert && ((typeof startupArgs.project.dataLocality !== "undefined") &&
-                            (typeof startupArgs.editMode !== "undefined"))
+                            (typeof startupArgs.project.editMode !== "undefined"))
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
 
             isRunning = false;
@@ -6862,11 +6891,11 @@ Rsed.core = (function()
 
     async function load_project(args = {})
     {
-        Rsed.assert && ((typeof args.editMode !== "undefined") &&
+        Rsed.assert && ((typeof args.project.editMode !== "undefined") &&
                         (typeof args.project.dataIdentifier !== "undefined"))
                     || Rsed.throw("Missing required arguments for loading a project.");
             
-        if (args.editMode === "shared")
+        if (args.project.editMode === "shared")
         {
             await Rsed.shared_mode.register_as_participant_in_project(args.project.dataIdentifier);
         }

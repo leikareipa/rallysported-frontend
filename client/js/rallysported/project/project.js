@@ -123,6 +123,7 @@ Rsed.project = async function(projectArgs = {})
     const publicInterface = Object.freeze(
     {
         name: projectData.meta.displayName,
+        internalName: projectData.meta.baseName,
         maasto,
         varimaa,
         palat,
@@ -408,7 +409,8 @@ Rsed.project = async function(projectArgs = {})
             Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
                         || Rsed.throw("Missing required parameters for loading a project.");
 
-            return fetch("server/get-project-data.php?projectId=" + projectArgs.dataIdentifier)
+            return fetch("server/get-project-data.php?projectId=" + projectArgs.dataIdentifier +
+                                                    "&editMode=" + projectArgs.editMode)
                    .then(response=>
                    {
                        if (!response.ok)

@@ -8,9 +8,17 @@
  * 
  */
 
-if (!isset($_GET["projectId"]))
+// Verify input parameters.
 {
-    exit(failure("Missing required parameters."));
+    if (!isset($_GET["projectId"]))
+    {
+        exit(failure("Missing required parameter 'projectId'."));
+    }
+
+    if (!isset($_GET["editMode"]))
+    {
+        exit(failure("Missing required parameter 'editMode'."));
+    }
 }
 
 // Sanitize the project identifier.
@@ -21,7 +29,9 @@ if (!preg_match('/^[0-9a-z]+$/', $_GET["projectId"]) ||
 }
 
 // Enter the directory containing the project's data
-if (!chdir("./assets/tracks/local/" . $_GET["projectId"] . "/"))
+$projectFolder = (($_GET["editMode"] === "shared")? "./assets/tracks/shared/"
+                                                  : "./assets/tracks/local/");
+if (!chdir($projectFolder . $_GET["projectId"] . "/"))
 {
     exit(failure("A project by the given id does not exist on the server."));
 }
