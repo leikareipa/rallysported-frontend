@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 November 2019 05:04:17 UTC)
+// VERSION: live (14 November 2019 16:03:35 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4250,28 +4250,31 @@ Rsed.popup_notification = function(string = "", args = {})
         ...args
     }
 
-    // Create and add the notification DOM element.
-    const notificationElement = document.createElement("div");
-    {
-        notificationElement.classList.add("animation-flip");
+    Rsed.throw_if_not_type("number", args.timeoutMs);
+    Rsed.throw_if_not_type("string", args.notificationType);
 
-        notificationElement.appendChild(document.createTextNode(string));
-        document.getElementById("popup-container").appendChild(notificationElement);
+    // Create and add the notification DOM element.
+    const popupElement = document.createElement("div");
+    {
+        popupElement.classList.add("animation-flip");
+
+        popupElement.appendChild(document.createTextNode(string));
+        document.getElementById("popup-container").appendChild(popupElement);
     }
 
-    const removalTimer = setTimeout(close_notification, args.timeoutMs);
+    const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
 
     const publicInterface =
     {
-        close: close_notification,
+        close: close_popup,
     };
 
     return publicInterface;
 
-    function close_notification()
+    function close_popup()
     {
         clearTimeout(removalTimer);
-        notificationElement.remove();
+        popupElement.remove();
 
         return;
     }
@@ -6865,7 +6868,7 @@ Rsed.core = (function()
             
         if (args.editMode === "shared")
         {
-            await Rsed.shared_mode_n.register_as_participant_in_project(startupArgs.project.dataIdentifier);
+            await Rsed.shared_mode_n.register_as_participant_in_project(args.project.dataIdentifier);
         }
         else
         {

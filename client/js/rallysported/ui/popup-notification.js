@@ -24,28 +24,31 @@ Rsed.popup_notification = function(string = "", args = {})
         ...args
     }
 
-    // Create and add the notification DOM element.
-    const notificationElement = document.createElement("div");
-    {
-        notificationElement.classList.add("animation-flip");
+    Rsed.throw_if_not_type("number", args.timeoutMs);
+    Rsed.throw_if_not_type("string", args.notificationType);
 
-        notificationElement.appendChild(document.createTextNode(string));
-        document.getElementById("popup-container").appendChild(notificationElement);
+    // Create and add the notification DOM element.
+    const popupElement = document.createElement("div");
+    {
+        popupElement.classList.add("animation-flip");
+
+        popupElement.appendChild(document.createTextNode(string));
+        document.getElementById("popup-container").appendChild(popupElement);
     }
 
-    const removalTimer = setTimeout(close_notification, args.timeoutMs);
+    const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
 
     const publicInterface =
     {
-        close: close_notification,
+        close: close_popup,
     };
 
     return publicInterface;
 
-    function close_notification()
+    function close_popup()
     {
         clearTimeout(removalTimer);
-        notificationElement.remove();
+        popupElement.remove();
 
         return;
     }
