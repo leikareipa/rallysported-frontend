@@ -30,12 +30,11 @@
                 <a href="./userguide/" target="_blank" rel="noopener">user guide</a> &#9656;
             </div>
 
-            <div id="prop-dropdown" class="dropdown_list">
-                <div style="background-color: rgb(224, 224, 224);
-                            color: black;
-                            padding-bottom: 10px;
-                            padding-top: 10px;">set prop type</div>
-                <div v-for="prop in propList" v-on:click="activate_prop(prop.propName)">{{prop.propName}}</div>
+            <div id="prop-dropdown" class="dropdown-menu">
+                <div class="header">Set prop type</div>
+                <div class="item"
+                     v-for="prop in propList"
+                     v-on:click="activate_prop(prop.propName)">{{prop.propName}}</div>
             </div>
         </div>
 

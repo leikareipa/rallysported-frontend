@@ -116,7 +116,7 @@ window.close_dropdowns = function()
         return;
     }
 
-    const dropdowns = document.getElementsByClassName("dropdown_list");
+    const dropdowns = document.getElementsByClassName("dropdown-menu");
     for (let i = 0; i < dropdowns.length; i++)
     {
         if (dropdowns[i].classList.contains("show")) dropdowns[i].classList.toggle("show");
@@ -159,7 +159,8 @@ window.oncontextmenu = function(event)
     }
 
     // Only handle clicks that occur over props.
-    if (Rsed.ui.inputState.current_mouse_hover().type !== "prop")
+    if (!Rsed.ui.inputState.current_mouse_hover() ||
+        Rsed.ui.inputState.current_mouse_hover().type !== "prop")
     {
         event.preventDefault();
         return;
@@ -181,7 +182,7 @@ window.oncontextmenu = function(event)
         const mousePos = Rsed.ui.inputState.mouse_pos();
         const propDropdown = document.getElementById("prop-dropdown");
 
-        propDropdown.style.transform = "translate(" + (mousePos.x - 40) + "px, " + (mousePos.y - 0) + "px)";
+        propDropdown.style.transform = `translate(${mousePos.x}px, ${mousePos.y + 90}px)`;
         propDropdown.classList.toggle("show");
 
         RSED_DROPDOWN_ACTIVATED = true;
