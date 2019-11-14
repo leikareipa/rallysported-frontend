@@ -26,6 +26,9 @@ Rsed.ui.inputState = (function()
             right: false,
         },
 
+        // Wheel scroll.
+        wheel: 0,
+
         // Where inside the RallySportED canvas the mouse cursor is currently located.
         position:
         {
@@ -119,6 +122,35 @@ Rsed.ui.inputState = (function()
         reset_keys: function()
         {
             keyboardState.fill(false);
+
+            return;
+        },
+
+        reset_wheel_scroll: function()
+        {
+            mouseState.wheel = 0;
+
+            return;
+        },
+
+        mouse_wheel_scroll: function()
+        {
+            return mouseState.wheel;
+        },
+
+        set_wheel_scroll: function(delta)
+        {
+            Rsed.throw_if_not_type("number", delta);
+
+            // Note: For now, we require that the Shift key be pressed down for mouse
+            // scroll to be registered. This is done so that the scroll wheel can be
+            // used normally to scroll the contents of the viewport when the Shift is
+            // not pressed, and when it is, the viewport is assumed to not scroll and
+            // so we can instead act on the scroll in RallySportED.
+            if (this.key_down("shift"))
+            {
+                mouseState.wheel += delta;
+            }
 
             return;
         },

@@ -183,6 +183,24 @@ window.oncontextmenu = function(event)
     return;
 }
 
+window.onwheel = function(event)
+{
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
+
+    // Only handle wheel events that occur over RallySportED's canvas.
+    if (event.target.id !== Rsed.core.render_surface_id())
+    {
+        return;
+    }
+
+    Rsed.ui.inputState.set_wheel_scroll(event.deltaY);
+
+    return;
+}
+
 // The program uses onmousedown for primary click processing, but onclick is used here
 // to close any open dropdown lists.
 window.onclick = function(event)

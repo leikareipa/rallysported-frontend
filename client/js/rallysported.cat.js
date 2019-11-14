@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (13 November 2019 06:43:51 UTC)
+// VERSION: live (14 November 2019 05:04:17 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2837,9 +2837,10 @@ Rsed.world.mesh_builder = (function()
             const trackPolygons = [];
 
             // We'll shift the track mesh by these values (world units) to center the mesh on screen.
+            // Note that we adjust Z to account for vertical camera zooming.
             const centerView = {x: -1088,
-                                y: -680,
-                                z: 2612};
+                                y: (-680 + args.cameraPos.y),
+                                z: (2612 - (Rsed.world.camera.rotation().x / 8) + (Rsed.constants.groundTileSize * 3.5))};
 
             for (let z = 0; z < Rsed.world.camera.view_height(); z++)
             {
@@ -3121,6 +3122,11 @@ Rsed.world.camera = (function()
     // The camera's position, in tile units.
     const position = {x:0, y:0, z:0};
 
+    // The camera's rotation, in degrees.
+    const rotation = {x:21, y:0, z:0};
+
+    let verticalZoom = 0;
+
     const moveSpeed = 0.4;
 
     const publicInterface = {};
@@ -3182,9 +3188,35 @@ Rsed.world.camera = (function()
             return;
         }
 
-        publicInterface.rotate_camera = function(rotX, rotY, rotZ)
+        publicInterface.rotate_camera = function(xDelta, yDelta, zDelta)
         {
-            Rsed.throw("This function has not yet been prepared for use.");
+            Rsed.throw_if_not_type("number", xDelta, yDelta, zDelta);
+
+            rotation.x = xDelta;
+            rotation.y += yDelta;
+            rotation.z += zDelta;
+
+            return;
+        }
+
+        // Moves the camera up/down while tilting it up/down, so that at its highest
+        // point, the camera is pointed directly down, and at its lowest point toward
+        // the horizon.
+        publicInterface.zoom_vertically = function(delta)
+        {
+            Rsed.throw_if_not_type("number", delta);
+
+            verticalZoom = Math.max(0, Math.min(265, (verticalZoom + delta)));
+
+            position.y = (-verticalZoom * 7);
+            rotation.x = (21 + (verticalZoom / 4));
+
+            return;
+        },
+
+        publicInterface.rotation = function()
+        {
+            return Rngon.rotation_vector(rotation.x, rotation.y, rotation.z);
         }
 
         publicInterface.pos_x = function() { return position.x; }
@@ -5617,6 +5649,24 @@ window.oncontextmenu = function(event)
     return;
 }
 
+window.onwheel = function(event)
+{
+    if (!Rsed || !Rsed.core)
+    {
+        return;
+    }
+
+    // Only handle wheel events that occur over RallySportED's canvas.
+    if (event.target.id !== Rsed.core.render_surface_id())
+    {
+        return;
+    }
+
+    Rsed.ui.inputState.set_wheel_scroll(event.deltaY);
+
+    return;
+}
+
 // The program uses onmousedown for primary click processing, but onclick is used here
 // to close any open dropdown lists.
 window.onclick = function(event)
@@ -5816,6 +5866,9 @@ Rsed.ui.inputState = (function()
             right: false,
         },
 
+        // Wheel scroll.
+        wheel: 0,
+
         // Where inside the RallySportED canvas the mouse cursor is currently located.
         position:
         {
@@ -5909,6 +5962,35 @@ Rsed.ui.inputState = (function()
         reset_keys: function()
         {
             keyboardState.fill(false);
+
+            return;
+        },
+
+        reset_wheel_scroll: function()
+        {
+            mouseState.wheel = 0;
+
+            return;
+        },
+
+        mouse_wheel_scroll: function()
+        {
+            return mouseState.wheel;
+        },
+
+        set_wheel_scroll: function(delta)
+        {
+            Rsed.throw_if_not_type("number", delta);
+
+            // Note: For now, we require that the Shift key be pressed down for mouse
+            // scroll to be registered. This is done so that the scroll wheel can be
+            // used normally to scroll the contents of the viewport when the Shift is
+            // not pressed, and when it is, the viewport is assumed to not scroll and
+            // so we can instead act on the scroll in RallySportED.
+            if (this.key_down("shift"))
+            {
+                mouseState.wheel += delta;
+            }
 
             return;
         },
@@ -6137,7 +6219,7 @@ Rsed.scenes = Rsed.scenes || {};
                 cameraPos:
                 {
                     x: Math.floor(Rsed.world.camera.pos_x()),
-                    y: 0,
+                    y: Math.floor(Rsed.world.camera.pos_y()),
                     z: Math.floor(Rsed.world.camera.pos_z()),
                 },
                 includeProps: showProps,
@@ -6147,7 +6229,7 @@ Rsed.scenes = Rsed.scenes || {};
             const renderInfo = Rngon.render(canvas.domElement.getAttribute("id"), [trackMesh],
             {
                 cameraPosition: Rngon.translation_vector(0, 0, 0),
-                cameraDirection: Rngon.rotation_vector(21, 0, 0),
+                cameraDirection: Rsed.world.camera.rotation(),
                 scale: canvas.scalingFactor,
                 fov: 45,
                 nearPlane: 300,
@@ -6242,117 +6324,126 @@ Rsed.scenes = Rsed.scenes || {};
             }
 
             // Handle mouse input.
-            if (Rsed.ui.inputState.mouse_button_down())
             {
-                const grab = Rsed.ui.inputState.current_mouse_grab();
-                const hover = Rsed.ui.inputState.current_mouse_hover();
-
-                if (!grab) return;
-
-                switch (grab.type)
+                if (Rsed.ui.inputState.mouse_button_down())
                 {
-                    case "ground":
+                    const grab = Rsed.ui.inputState.current_mouse_grab();
+                    const hover = Rsed.ui.inputState.current_mouse_hover();
+
+                    if (!grab) return;
+
+                    switch (grab.type)
                     {
-                        if (!hover) break;
-
-                        // Add a new prop.
-                        if ( Rsed.ui.inputState.key_down("shift") &&
-                             Rsed.ui.inputState.left_mouse_button_down() &&
-                            !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
+                        case "ground":
                         {
-                            Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
-                                                                           Rsed.core.current_project().props.id_for_name("tree"),
-                                                                           {
-                                                                               x: (hover.groundTileX * Rsed.constants.groundTileSize),
-                                                                               z: (hover.groundTileY * Rsed.constants.groundTileSize),
-                                                                            });
+                            if (!hover) break;
 
-                            Rsed.ui.inputState.reset_mouse_hover();
-
-                            break;
-                        }
-
-                        // Edit/paint the terrain.
-                        if (Rsed.ui.inputState.left_mouse_button_down() ||
-                            Rsed.ui.inputState.right_mouse_button_down())
-                        {
-                            const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : (Rsed.ui.inputState.right_mouse_button_down()? -2 : 0));
-                            
-                            Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
-                                                                   delta,
-                                                                   hover.groundTileX,
-                                                                   hover.groundTileY);
-                        }
-                        else if (Rsed.ui.inputState.mid_mouse_button_down())
-                        {
-                            Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
-                                                                   Rsed.ui.groundBrush.brush_pala_idx(),
-                                                                   hover.groundTileX,
-                                                                   hover.groundTileY);
-                        }
-
-                        break;
-                    }
-                    case "prop":
-                    {
-                        // For now, shared mode doesn't support interacting with props.
-                        if (Rsed.shared_mode_n.enabled()) break;
-
-                        if (Rsed.ui.inputState.left_mouse_button_down())
-                        {
-                            // Remove the selected prop.
-                            if (Rsed.ui.inputState.key_down("shift"))
+                            // Add a new prop.
+                            if ( Rsed.ui.inputState.key_down("shift") &&
+                                 Rsed.ui.inputState.left_mouse_button_down() &&
+                                !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
                             {
-                                Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), hover.propTrackIdx);
+                                Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
+                                                                               Rsed.core.current_project().props.id_for_name("tree"),
+                                                                               {
+                                                                                   x: (hover.groundTileX * Rsed.constants.groundTileSize),
+                                                                                   z: (hover.groundTileY * Rsed.constants.groundTileSize),
+                                                                               });
 
                                 Rsed.ui.inputState.reset_mouse_hover();
-                            }
-                            // Drag the prop.
-                            else
-                            {
-                                // For now, don't allow moving the starting line (always prop #0).
-                                if (grab.propTrackIdx !== 0)
-                                {
-                                    const mousePosDelta =
-                                    {
-                                        x: (Rsed.ui.inputState.mouse_pos().x - prevMousePos.x),
-                                        y: (Rsed.ui.inputState.mouse_pos().y - prevMousePos.y),
-                                    }
-
-                                    Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
-                                                                           grab.propTrackIdx,
-                                                                           {
-                                                                               x: (mousePosDelta.x * 1.5),
-                                                                               z: (mousePosDelta.y * 2.5),
-                                                                           });
-                                }
-                            }
-                        }
-
-                        break;
-                    }
-                    case "ui-element":
-                    {
-                        if (!hover) break;
-                        
-                        switch (hover.uiElementId)
-                        {
-                            case "palat-pane":
-                            {
-                                if (Rsed.ui.inputState.left_mouse_button_down() ||
-                                    Rsed.ui.inputState.right_mouse_button_down())
-                                {
-                                    Rsed.ui.groundBrush.set_brush_pala_idx(hover.palaIdx);
-                                }
 
                                 break;
                             }
-                            default: break;
-                        }
 
-                        break;
+                            // Edit/paint the terrain.
+                            if (Rsed.ui.inputState.left_mouse_button_down() ||
+                                Rsed.ui.inputState.right_mouse_button_down())
+                            {
+                                const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : (Rsed.ui.inputState.right_mouse_button_down()? -2 : 0));
+                                
+                                Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
+                                                                           delta,
+                                                                           hover.groundTileX,
+                                                                           hover.groundTileY);
+                            }
+                            else if (Rsed.ui.inputState.mid_mouse_button_down())
+                            {
+                                Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
+                                                                           Rsed.ui.groundBrush.brush_pala_idx(),
+                                                                           hover.groundTileX,
+                                                                           hover.groundTileY);
+                            }
+
+                            break;
+                        }
+                        case "prop":
+                        {
+                            // For now, shared mode doesn't support interacting with props.
+                            if (Rsed.shared_mode_n.enabled()) break;
+
+                            if (Rsed.ui.inputState.left_mouse_button_down())
+                            {
+                                // Remove the selected prop.
+                                if (Rsed.ui.inputState.key_down("shift"))
+                                {
+                                    Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), hover.propTrackIdx);
+
+                                    Rsed.ui.inputState.reset_mouse_hover();
+                                }
+                                // Drag the prop.
+                                else
+                                {
+                                    // For now, don't allow moving the starting line (always prop #0).
+                                    if (grab.propTrackIdx !== 0)
+                                    {
+                                        const mousePosDelta =
+                                        {
+                                            x: (Rsed.ui.inputState.mouse_pos().x - prevMousePos.x),
+                                            y: (Rsed.ui.inputState.mouse_pos().y - prevMousePos.y),
+                                        }
+
+                                        Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
+                                                                               grab.propTrackIdx,
+                                                                               {
+                                                                                   x: (mousePosDelta.x * 1.5),
+                                                                                   z: (mousePosDelta.y * 2.5),
+                                                                               });
+                                    }
+                                }
+                            }
+
+                            break;
+                        }
+                        case "ui-element":
+                        {
+                            if (!hover) break;
+                            
+                            switch (hover.uiElementId)
+                            {
+                                case "palat-pane":
+                                {
+                                    if (Rsed.ui.inputState.left_mouse_button_down() ||
+                                        Rsed.ui.inputState.right_mouse_button_down())
+                                    {
+                                        Rsed.ui.groundBrush.set_brush_pala_idx(hover.palaIdx);
+                                    }
+
+                                    break;
+                                }
+                                default: break;
+                            }
+
+                            break;
+                        }
+                        default: break;
                     }
-                    default: break;
+                }
+
+                if (Rsed.ui.inputState.mouse_wheel_scroll())
+                {
+                    Rsed.world.camera.zoom_vertically(-Rsed.ui.inputState.mouse_wheel_scroll() / 2);
+
+                    Rsed.ui.inputState.reset_wheel_scroll();
                 }
             }
 

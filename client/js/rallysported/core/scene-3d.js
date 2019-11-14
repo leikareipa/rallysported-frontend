@@ -52,7 +52,7 @@ Rsed.scenes = Rsed.scenes || {};
                 cameraPos:
                 {
                     x: Math.floor(Rsed.world.camera.pos_x()),
-                    y: 0,
+                    y: Math.floor(Rsed.world.camera.pos_y()),
                     z: Math.floor(Rsed.world.camera.pos_z()),
                 },
                 includeProps: showProps,
@@ -62,7 +62,7 @@ Rsed.scenes = Rsed.scenes || {};
             const renderInfo = Rngon.render(canvas.domElement.getAttribute("id"), [trackMesh],
             {
                 cameraPosition: Rngon.translation_vector(0, 0, 0),
-                cameraDirection: Rngon.rotation_vector(21, 0, 0),
+                cameraDirection: Rsed.world.camera.rotation(),
                 scale: canvas.scalingFactor,
                 fov: 45,
                 nearPlane: 300,
@@ -157,117 +157,126 @@ Rsed.scenes = Rsed.scenes || {};
             }
 
             // Handle mouse input.
-            if (Rsed.ui.inputState.mouse_button_down())
             {
-                const grab = Rsed.ui.inputState.current_mouse_grab();
-                const hover = Rsed.ui.inputState.current_mouse_hover();
-
-                if (!grab) return;
-
-                switch (grab.type)
+                if (Rsed.ui.inputState.mouse_button_down())
                 {
-                    case "ground":
+                    const grab = Rsed.ui.inputState.current_mouse_grab();
+                    const hover = Rsed.ui.inputState.current_mouse_hover();
+
+                    if (!grab) return;
+
+                    switch (grab.type)
                     {
-                        if (!hover) break;
-
-                        // Add a new prop.
-                        if ( Rsed.ui.inputState.key_down("shift") &&
-                             Rsed.ui.inputState.left_mouse_button_down() &&
-                            !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
+                        case "ground":
                         {
-                            Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
-                                                                           Rsed.core.current_project().props.id_for_name("tree"),
-                                                                           {
-                                                                               x: (hover.groundTileX * Rsed.constants.groundTileSize),
-                                                                               z: (hover.groundTileY * Rsed.constants.groundTileSize),
-                                                                            });
+                            if (!hover) break;
 
-                            Rsed.ui.inputState.reset_mouse_hover();
-
-                            break;
-                        }
-
-                        // Edit/paint the terrain.
-                        if (Rsed.ui.inputState.left_mouse_button_down() ||
-                            Rsed.ui.inputState.right_mouse_button_down())
-                        {
-                            const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : (Rsed.ui.inputState.right_mouse_button_down()? -2 : 0));
-                            
-                            Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
-                                                                   delta,
-                                                                   hover.groundTileX,
-                                                                   hover.groundTileY);
-                        }
-                        else if (Rsed.ui.inputState.mid_mouse_button_down())
-                        {
-                            Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
-                                                                   Rsed.ui.groundBrush.brush_pala_idx(),
-                                                                   hover.groundTileX,
-                                                                   hover.groundTileY);
-                        }
-
-                        break;
-                    }
-                    case "prop":
-                    {
-                        // For now, shared mode doesn't support interacting with props.
-                        if (Rsed.shared_mode_n.enabled()) break;
-
-                        if (Rsed.ui.inputState.left_mouse_button_down())
-                        {
-                            // Remove the selected prop.
-                            if (Rsed.ui.inputState.key_down("shift"))
+                            // Add a new prop.
+                            if ( Rsed.ui.inputState.key_down("shift") &&
+                                 Rsed.ui.inputState.left_mouse_button_down() &&
+                                !Rsed.shared_mode_n.enabled()) // For now, shared mode doesn't support interacting with props.
                             {
-                                Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), hover.propTrackIdx);
+                                Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
+                                                                               Rsed.core.current_project().props.id_for_name("tree"),
+                                                                               {
+                                                                                   x: (hover.groundTileX * Rsed.constants.groundTileSize),
+                                                                                   z: (hover.groundTileY * Rsed.constants.groundTileSize),
+                                                                               });
 
                                 Rsed.ui.inputState.reset_mouse_hover();
-                            }
-                            // Drag the prop.
-                            else
-                            {
-                                // For now, don't allow moving the starting line (always prop #0).
-                                if (grab.propTrackIdx !== 0)
-                                {
-                                    const mousePosDelta =
-                                    {
-                                        x: (Rsed.ui.inputState.mouse_pos().x - prevMousePos.x),
-                                        y: (Rsed.ui.inputState.mouse_pos().y - prevMousePos.y),
-                                    }
-
-                                    Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
-                                                                           grab.propTrackIdx,
-                                                                           {
-                                                                               x: (mousePosDelta.x * 1.5),
-                                                                               z: (mousePosDelta.y * 2.5),
-                                                                           });
-                                }
-                            }
-                        }
-
-                        break;
-                    }
-                    case "ui-element":
-                    {
-                        if (!hover) break;
-                        
-                        switch (hover.uiElementId)
-                        {
-                            case "palat-pane":
-                            {
-                                if (Rsed.ui.inputState.left_mouse_button_down() ||
-                                    Rsed.ui.inputState.right_mouse_button_down())
-                                {
-                                    Rsed.ui.groundBrush.set_brush_pala_idx(hover.palaIdx);
-                                }
 
                                 break;
                             }
-                            default: break;
-                        }
 
-                        break;
+                            // Edit/paint the terrain.
+                            if (Rsed.ui.inputState.left_mouse_button_down() ||
+                                Rsed.ui.inputState.right_mouse_button_down())
+                            {
+                                const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : (Rsed.ui.inputState.right_mouse_button_down()? -2 : 0));
+                                
+                                Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
+                                                                           delta,
+                                                                           hover.groundTileX,
+                                                                           hover.groundTileY);
+                            }
+                            else if (Rsed.ui.inputState.mid_mouse_button_down())
+                            {
+                                Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
+                                                                           Rsed.ui.groundBrush.brush_pala_idx(),
+                                                                           hover.groundTileX,
+                                                                           hover.groundTileY);
+                            }
+
+                            break;
+                        }
+                        case "prop":
+                        {
+                            // For now, shared mode doesn't support interacting with props.
+                            if (Rsed.shared_mode_n.enabled()) break;
+
+                            if (Rsed.ui.inputState.left_mouse_button_down())
+                            {
+                                // Remove the selected prop.
+                                if (Rsed.ui.inputState.key_down("shift"))
+                                {
+                                    Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), hover.propTrackIdx);
+
+                                    Rsed.ui.inputState.reset_mouse_hover();
+                                }
+                                // Drag the prop.
+                                else
+                                {
+                                    // For now, don't allow moving the starting line (always prop #0).
+                                    if (grab.propTrackIdx !== 0)
+                                    {
+                                        const mousePosDelta =
+                                        {
+                                            x: (Rsed.ui.inputState.mouse_pos().x - prevMousePos.x),
+                                            y: (Rsed.ui.inputState.mouse_pos().y - prevMousePos.y),
+                                        }
+
+                                        Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
+                                                                               grab.propTrackIdx,
+                                                                               {
+                                                                                   x: (mousePosDelta.x * 1.5),
+                                                                                   z: (mousePosDelta.y * 2.5),
+                                                                               });
+                                    }
+                                }
+                            }
+
+                            break;
+                        }
+                        case "ui-element":
+                        {
+                            if (!hover) break;
+                            
+                            switch (hover.uiElementId)
+                            {
+                                case "palat-pane":
+                                {
+                                    if (Rsed.ui.inputState.left_mouse_button_down() ||
+                                        Rsed.ui.inputState.right_mouse_button_down())
+                                    {
+                                        Rsed.ui.groundBrush.set_brush_pala_idx(hover.palaIdx);
+                                    }
+
+                                    break;
+                                }
+                                default: break;
+                            }
+
+                            break;
+                        }
+                        default: break;
                     }
-                    default: break;
+                }
+
+                if (Rsed.ui.inputState.mouse_wheel_scroll())
+                {
+                    Rsed.world.camera.zoom_vertically(-Rsed.ui.inputState.mouse_wheel_scroll() / 2);
+
+                    Rsed.ui.inputState.reset_wheel_scroll();
                 }
             }
 

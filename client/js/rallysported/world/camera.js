@@ -13,6 +13,11 @@ Rsed.world.camera = (function()
     // The camera's position, in tile units.
     const position = {x:0, y:0, z:0};
 
+    // The camera's rotation, in degrees.
+    const rotation = {x:21, y:0, z:0};
+
+    let verticalZoom = 0;
+
     const moveSpeed = 0.4;
 
     const publicInterface = {};
@@ -74,9 +79,35 @@ Rsed.world.camera = (function()
             return;
         }
 
-        publicInterface.rotate_camera = function(rotX, rotY, rotZ)
+        publicInterface.rotate_camera = function(xDelta, yDelta, zDelta)
         {
-            Rsed.throw("This function has not yet been prepared for use.");
+            Rsed.throw_if_not_type("number", xDelta, yDelta, zDelta);
+
+            rotation.x = xDelta;
+            rotation.y += yDelta;
+            rotation.z += zDelta;
+
+            return;
+        }
+
+        // Moves the camera up/down while tilting it up/down, so that at its highest
+        // point, the camera is pointed directly down, and at its lowest point toward
+        // the horizon.
+        publicInterface.zoom_vertically = function(delta)
+        {
+            Rsed.throw_if_not_type("number", delta);
+
+            verticalZoom = Math.max(0, Math.min(265, (verticalZoom + delta)));
+
+            position.y = (-verticalZoom * 7);
+            rotation.x = (21 + (verticalZoom / 4));
+
+            return;
+        },
+
+        publicInterface.rotation = function()
+        {
+            return Rngon.rotation_vector(rotation.x, rotation.y, rotation.z);
         }
 
         publicInterface.pos_x = function() { return position.x; }
