@@ -53,6 +53,9 @@ Rsed.apply_manifesto = function(targetProject)
             const minRSEDLoaderVersion = Number(args[2]);
 
             targetProject.set_track_id(trackId);
+
+            Rsed.palette.set_palette(trackId === 4? 1 :
+                                     trackId === 7? 3 : 0);
         }
 
         // Command: ROAD. Sets up the game's driving physics for various kinds of road surfaces.
@@ -132,11 +135,11 @@ Rsed.apply_manifesto = function(targetProject)
                         || Rsed.throw("Invalid number of arguments to manifesto command 10. Expected 4 but received " + args.length + ".");
 
             const targetPaletteIdx = Math.floor(Number(args[0]));
-            const r = Math.floor(Number(args[1] * 4));
-            const g = Math.floor(Number(args[2] * 4));
-            const b = Math.floor(Number(args[3] * 4));
+            const red = Math.floor(Number(args[1] * 4));
+            const green = Math.floor(Number(args[2] * 4));
+            const blue = Math.floor(Number(args[3] * 4));
             
-            Rsed.palette.set_color(targetPaletteIdx, {r, g, b});
+            Rsed.palette.set_color(targetPaletteIdx, {red, green, blue});
         }
 
         // Command: STOP. Stops parsing the manifesto file.
