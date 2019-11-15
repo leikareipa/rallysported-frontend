@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 November 2019 00:17:16 UTC)
+// VERSION: live (15 November 2019 01:07:31 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3166,8 +3166,7 @@ Rsed.world.camera = (function()
                 
                 // Force mouse hover to update, since there might now be a different tile under
                 // the cursor than there was before the camera moved.
-                Rsed.ui.inputState.set_mouse_pos(Rsed.ui.inputState.mouse_pos().x,
-                                                 Rsed.ui.inputState.mouse_pos().y);
+                Rsed.ui.inputState.update_mouse_hover();
 
                 // If the user is dragging a prop and the camera has moved, move the prop as well.
                 {
@@ -5992,6 +5991,14 @@ Rsed.ui.inputState = (function()
             return mouseState.grab;
         },
 
+        // Force the current mouse hover information to update.
+        update_mouse_hover: function()
+        {
+            this.set_mouse_pos(this.mouse_pos().x, this.mouse_pos().y);
+
+            return;
+        },
+
         reset_mouse_hover: function()
         {
             mouseState.hover = null;
@@ -6241,6 +6248,11 @@ Rsed.scenes = Rsed.scenes || {};
     // Whether to render props (track-side 3d objects - like trees, billboards, etc.).
     let showProps = true;
 
+    /// Temp hack. Lets the renderer know that we want it to update mouse hover information
+    /// once the next frame has finished rendering. This is used e.g. to keep proper track
+    /// mouse hover when various UI elements are toggled on/off.
+    let updateMouseHoverOnFrameFinish = false;
+
     // RallySportED's main scene. Displays the project as a textured 3d mesh; and allows
     // the user to edit the heightmap and tilemap via mouse and keyboard interaction.
     Rsed.scenes["3d"] = Rsed.scene(
@@ -6258,6 +6270,15 @@ Rsed.scenes = Rsed.scenes || {};
             Rsed.ui.draw.mouse_cursor();
 
             Rsed.ui.draw.finish_drawing(canvas);
+
+            // Note: We assume that UI drawing is the last step in rendering the current
+            // frame; and thus that once the UI rendering has finished, the frame is finished
+            // also.
+            if (updateMouseHoverOnFrameFinish)
+            {
+                Rsed.ui.inputState.update_mouse_hover();
+                updateMouseHoverOnFrameFinish = false;
+            }
 
             return;
         },
@@ -6339,6 +6360,10 @@ Rsed.scenes = Rsed.scenes || {};
                 {
                     showPalatPane = !showPalatPane;
                     Rsed.ui.inputState.set_key_down("a", false);
+
+                    // Prevent a mouse click from acting on the ground behind the pane when the pane
+                    // is brought up, and on the pane when the pane has been removed.
+                    updateMouseHoverOnFrameFinish = true;
                 }
 
                 if (Rsed.ui.inputState.key_down("l"))
@@ -6550,6 +6575,11 @@ Rsed.scenes = Rsed.scenes || {};
     // PALA textures.
     let showPalatPane = false;
 
+    /// Temp hack. Lets the renderer know that we want it to update mouse hover information
+    /// once the next frame has finished rendering. This is used e.g. to keep proper track
+    /// mouse hover when various UI elements are toggled on/off.
+    let updateMouseHoverOnFrameFinish = false;
+
     // A top-down view of the project's tilemap. The user can edit the tilemap via mouse
     // interaction.
     Rsed.scenes["tilemap"] = Rsed.scene(
@@ -6607,6 +6637,15 @@ Rsed.scenes = Rsed.scenes || {};
 
             Rsed.ui.draw.finish_drawing(canvas);
 
+            // Note: We assume that UI drawing is the last step in rendering the current
+            // frame; and thus that once the UI rendering has finished, the frame is finished
+            // also.
+            if (updateMouseHoverOnFrameFinish)
+            {
+                Rsed.ui.inputState.update_mouse_hover();
+                updateMouseHoverOnFrameFinish = false;
+            }
+
             return;
         },
 
@@ -6658,6 +6697,10 @@ Rsed.scenes = Rsed.scenes || {};
                 {
                     showPalatPane = !showPalatPane;
                     Rsed.ui.inputState.set_key_down("a", false);
+
+                    // Prevent a mouse click from acting on the ground behind the pane when the pane
+                    // is brought up, and on the pane when the pane has been removed.
+                    updateMouseHoverOnFrameFinish = true;
                 }
 
                 for (const brushSizeKey of ["1", "2", "3", "4", "5"])

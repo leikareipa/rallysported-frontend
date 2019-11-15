@@ -54,8 +54,7 @@ Rsed.world.camera = (function()
                 
                 // Force mouse hover to update, since there might now be a different tile under
                 // the cursor than there was before the camera moved.
-                Rsed.ui.inputState.set_mouse_pos(Rsed.ui.inputState.mouse_pos().x,
-                                                 Rsed.ui.inputState.mouse_pos().y);
+                Rsed.ui.inputState.update_mouse_hover();
 
                 // If the user is dragging a prop and the camera has moved, move the prop as well.
                 {

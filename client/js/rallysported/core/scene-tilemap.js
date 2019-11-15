@@ -15,6 +15,11 @@ Rsed.scenes = Rsed.scenes || {};
     // PALA textures.
     let showPalatPane = false;
 
+    /// Temp hack. Lets the renderer know that we want it to update mouse hover information
+    /// once the next frame has finished rendering. This is used e.g. to keep proper track
+    /// mouse hover when various UI elements are toggled on/off.
+    let updateMouseHoverOnFrameFinish = false;
+
     // A top-down view of the project's tilemap. The user can edit the tilemap via mouse
     // interaction.
     Rsed.scenes["tilemap"] = Rsed.scene(
@@ -72,6 +77,15 @@ Rsed.scenes = Rsed.scenes || {};
 
             Rsed.ui.draw.finish_drawing(canvas);
 
+            // Note: We assume that UI drawing is the last step in rendering the current
+            // frame; and thus that once the UI rendering has finished, the frame is finished
+            // also.
+            if (updateMouseHoverOnFrameFinish)
+            {
+                Rsed.ui.inputState.update_mouse_hover();
+                updateMouseHoverOnFrameFinish = false;
+            }
+
             return;
         },
 
@@ -123,6 +137,10 @@ Rsed.scenes = Rsed.scenes || {};
                 {
                     showPalatPane = !showPalatPane;
                     Rsed.ui.inputState.set_key_down("a", false);
+
+                    // Prevent a mouse click from acting on the ground behind the pane when the pane
+                    // is brought up, and on the pane when the pane has been removed.
+                    updateMouseHoverOnFrameFinish = true;
                 }
 
                 for (const brushSizeKey of ["1", "2", "3", "4", "5"])

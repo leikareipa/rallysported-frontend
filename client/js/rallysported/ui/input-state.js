@@ -102,6 +102,14 @@ Rsed.ui.inputState = (function()
             return mouseState.grab;
         },
 
+        // Force the current mouse hover information to update.
+        update_mouse_hover: function()
+        {
+            this.set_mouse_pos(this.mouse_pos().x, this.mouse_pos().y);
+
+            return;
+        },
+
         reset_mouse_hover: function()
         {
             mouseState.hover = null;
