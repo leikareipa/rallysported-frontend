@@ -127,6 +127,17 @@ Rsed.ui.inputState = (function()
             return;
         },
 
+        reset_modifier_keys_state: function()
+        {
+            this.set_key_down("shift", false);
+            this.set_key_down("control", false);
+            this.set_key_down("alt", false);
+            this.set_key_down("altgraph", false);
+            this.set_key_down("tab", false);
+
+            return;
+        },
+
         reset_keys: function()
         {
             keyboardState.fill(false);

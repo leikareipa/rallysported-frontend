@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 November 2019 07:20:00 UTC)
+// VERSION: live (15 November 2019 17:39:57 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6028,6 +6028,17 @@ Rsed.ui.inputState = (function()
             return;
         },
 
+        reset_modifier_keys_state: function()
+        {
+            this.set_key_down("shift", false);
+            this.set_key_down("control", false);
+            this.set_key_down("alt", false);
+            this.set_key_down("altgraph", false);
+            this.set_key_down("tab", false);
+
+            return;
+        },
+
         reset_keys: function()
         {
             keyboardState.fill(false);
@@ -6895,7 +6906,10 @@ Rsed.core = (function()
 
     canvas.domElement.onmouseleave = function(event)
     {
+        // A bit of a kludge to prevent certain inputs from sticking if released while a non-
+        // RallySportED element has focus.
         Rsed.ui.inputState.reset_mouse_buttons_state();
+        Rsed.ui.inputState.reset_modifier_keys_state();
 
         return;
     }

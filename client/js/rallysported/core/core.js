@@ -114,7 +114,10 @@ Rsed.core = (function()
 
     canvas.domElement.onmouseleave = function(event)
     {
+        // A bit of a kludge to prevent certain inputs from sticking if released while a non-
+        // RallySportED element has focus.
         Rsed.ui.inputState.reset_mouse_buttons_state();
+        Rsed.ui.inputState.reset_modifier_keys_state();
 
         return;
     }
