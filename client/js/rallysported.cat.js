@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 November 2019 00:00:50 UTC)
+// VERSION: live (15 November 2019 00:17:16 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3162,7 +3162,7 @@ Rsed.world.camera = (function()
                 (position.y !== prevPos.y) ||
                 (position.z !== prevPos.z))
             {
-                window.close_dropdowns();
+                window.close_dropdowns(false);
                 
                 // Force mouse hover to update, since there might now be a different tile under
                 // the cursor than there was before the camera moved.
@@ -3197,7 +3197,7 @@ Rsed.world.camera = (function()
         {
             Rsed.throw_if_not_type("number", xDelta, yDelta, zDelta);
 
-            rotation.x = xDelta;
+            rotation.x += xDelta;
             rotation.y += yDelta;
             rotation.z += zDelta;
 
@@ -5602,7 +5602,7 @@ window.onload = function(event)
     return;
 }
 
-window.close_dropdowns = function()
+window.close_dropdowns = function(resetInputState = true)
 {
     if (!Rsed || !Rsed.core)
     {
@@ -5616,8 +5616,12 @@ window.close_dropdowns = function()
     }
 
     RSED_DROPDOWN_ACTIVATED = false;
-    Rsed.ui.inputState.reset_mouse_hover();
-    Rsed.ui.inputState.reset_mouse_buttons_state();
+
+    if (resetInputState)
+    {
+        Rsed.ui.inputState.reset_mouse_hover();
+        Rsed.ui.inputState.reset_mouse_buttons_state();
+    }
 
     return;
 }

@@ -115,7 +115,7 @@ window.onload = function(event)
     return;
 }
 
-window.close_dropdowns = function()
+window.close_dropdowns = function(resetInputState = true)
 {
     if (!Rsed || !Rsed.core)
     {
@@ -129,8 +129,12 @@ window.close_dropdowns = function()
     }
 
     RSED_DROPDOWN_ACTIVATED = false;
-    Rsed.ui.inputState.reset_mouse_hover();
-    Rsed.ui.inputState.reset_mouse_buttons_state();
+
+    if (resetInputState)
+    {
+        Rsed.ui.inputState.reset_mouse_hover();
+        Rsed.ui.inputState.reset_mouse_buttons_state();
+    }
 
     return;
 }

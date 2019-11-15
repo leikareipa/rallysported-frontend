@@ -50,7 +50,7 @@ Rsed.world.camera = (function()
                 (position.y !== prevPos.y) ||
                 (position.z !== prevPos.z))
             {
-                window.close_dropdowns();
+                window.close_dropdowns(false);
                 
                 // Force mouse hover to update, since there might now be a different tile under
                 // the cursor than there was before the camera moved.
@@ -85,7 +85,7 @@ Rsed.world.camera = (function()
         {
             Rsed.throw_if_not_type("number", xDelta, yDelta, zDelta);
 
-            rotation.x = xDelta;
+            rotation.x += xDelta;
             rotation.y += yDelta;
             rotation.z += zDelta;
 
