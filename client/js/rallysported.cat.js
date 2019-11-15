@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 November 2019 17:39:57 UTC)
+// VERSION: live (15 November 2019 18:51:22 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2857,6 +2857,9 @@ Rsed.world.mesh_builder = (function()
                                 y: (-680 + args.cameraPos.y),
                                 z: (2800 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 
+            const grab = Rsed.ui.inputState.current_mouse_grab();
+            const hover = Rsed.ui.inputState.current_mouse_hover();
+
             for (let z = 0; z < Rsed.world.camera.view_height(); z++)
             {
                 // Add the ground tiles.
@@ -2875,10 +2878,11 @@ Rsed.world.mesh_builder = (function()
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
-                        if ( Rsed.ui.inputState.current_mouse_hover() &&
-                            (Rsed.ui.inputState.current_mouse_hover().type === "ground") &&
-                            (Rsed.ui.inputState.current_mouse_hover().groundTileX === tileX) &&
-                            (Rsed.ui.inputState.current_mouse_hover().groundTileY === (tileZ - 1)))
+                        if ((!grab || grab.type !== "prop") &&
+                             hover &&
+                            (hover.type === "ground") &&
+                            (hover.groundTileX === tileX) &&
+                            (hover.groundTileY === (tileZ - 1)))
                         {
                             idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }
@@ -2939,10 +2943,11 @@ Rsed.world.mesh_builder = (function()
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
-                        if ( Rsed.ui.inputState.current_mouse_hover() &&
-                            (Rsed.ui.inputState.current_mouse_hover().type === "ground") &&
-                            (Rsed.ui.inputState.current_mouse_hover().groundTileX === tileX) &&
-                            (Rsed.ui.inputState.current_mouse_hover().groundTileY === (tileZ - 1)))
+                        if ((!grab || grab.type !== "prop") &&
+                             hover &&
+                            (hover.type === "ground") &&
+                            (hover.groundTileX === tileX) &&
+                            (hover.groundTileY === (tileZ - 1)))
                         {
                             idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }
