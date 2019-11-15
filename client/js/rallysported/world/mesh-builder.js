@@ -42,7 +42,7 @@ Rsed.world.mesh_builder = (function()
 
             // We'll shift the track mesh by these values (world units) to center the mesh on screen.
             // Note that we adjust Z to account for vertical camera zooming.
-            const centerView = {x: -1088,
+            const centerView = {x: -((Rsed.world.camera.view_width() / 2) * Rsed.constants.groundTileSize),
                                 y: (-680 + args.cameraPos.y),
                                 z: (2800 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 

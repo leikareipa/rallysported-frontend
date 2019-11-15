@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 November 2019 23:45:10 UTC)
+// VERSION: live (15 November 2019 00:00:50 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2841,7 +2841,7 @@ Rsed.world.mesh_builder = (function()
 
             // We'll shift the track mesh by these values (world units) to center the mesh on screen.
             // Note that we adjust Z to account for vertical camera zooming.
-            const centerView = {x: -1088,
+            const centerView = {x: -((Rsed.world.camera.view_width() / 2) * Rsed.constants.groundTileSize),
                                 y: (-680 + args.cameraPos.y),
                                 z: (2800 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 
@@ -3231,7 +3231,7 @@ Rsed.world.camera = (function()
         publicInterface.movement_speed = function() { return moveSpeed; }
 
         // How many tiles horizontally and vertically should be visible on screen with this camera.
-        publicInterface.view_width = function() { return 17; }
+        publicInterface.view_width = function() { return 20; }
         publicInterface.view_height = function() { return 17; }
     }
 

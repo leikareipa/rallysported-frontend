@@ -119,7 +119,7 @@ Rsed.world.camera = (function()
         publicInterface.movement_speed = function() { return moveSpeed; }
 
         // How many tiles horizontally and vertically should be visible on screen with this camera.
-        publicInterface.view_width = function() { return 17; }
+        publicInterface.view_width = function() { return 20; }
         publicInterface.view_height = function() { return 17; }
     }
 
