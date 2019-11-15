@@ -29,16 +29,20 @@ Rsed.project = async function(projectArgs = {})
                     (typeof projectData.manifesto !== "undefined") &&
                     (typeof projectData.meta !== "undefined") &&
                     (typeof projectData.meta.internalName !== "undefined") &&
-                    (typeof projectData.meta.displayName !== "undefined"))
+                    (typeof projectData.meta.displayName !== "undefined") &&
+                    (typeof projectData.meta.checkpoints !== "undefined"))
                 || Rsed.throw("Missing required project data.");
 
     Rsed.assert && is_valid_project_base_name()
-                || Rsed.throw("Invalid project base name \"" + projectData.meta.internalName + "\".");
+                || Rsed.throw(`Invalid project base name "${projectData.meta.internalName}".`);
 
     Rsed.assert && ((projectData.meta.width > 0) &&
                     (projectData.meta.height > 0) &&
                     (projectData.meta.width === projectData.meta.height))
                 || Rsed.throw("Invalid track dimensions for a project.");
+
+    Rsed.assert && (projectData.meta.checkpoints.length >= 1)
+                || Rsed.throw("Invalid number of track checkpoints.");
 
     // Provides the (Base64-decoded) data of the container file; and metadata about the file,
     // like the sizes and byte offsets of the individual asset data segments inside the file.
@@ -124,6 +128,11 @@ Rsed.project = async function(projectArgs = {})
     {
         name: projectData.meta.displayName,
         internalName: projectData.meta.internalName,
+        checkpoint:
+        {
+            x: projectData.meta.checkpoints[0][0],
+            y: projectData.meta.checkpoints[0][1],
+        },
         maasto,
         varimaa,
         palat,

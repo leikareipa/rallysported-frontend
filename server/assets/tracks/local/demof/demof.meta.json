@@ -2,5 +2,6 @@
 	"internalName":"demof",
 	"displayName":"You asked it...",
     "width":64,
-    "height":64
+    "height":64,
+    "checkpoints":[[10,48]]
 }

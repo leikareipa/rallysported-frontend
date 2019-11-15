@@ -2,5 +2,6 @@
 	"internalName":"demoa",
 	"displayName":"Nurtsi-cruising",
     "width":64,
-    "height":64
+    "height":64,
+    "checkpoints":[[46,6]]
 }

@@ -34,6 +34,7 @@ Rsed.scenes = Rsed.scenes || {};
             {
                 const xMul = (Rsed.core.current_project().maasto.width / width);
                 const zMul = (Rsed.core.current_project().maasto.width / height);
+                const checkpoint = Rsed.core.current_project().checkpoint;
                 const image = [];   // An array of palette indices that forms the minimap image.
                 const mousePick = [];
 
@@ -46,6 +47,12 @@ Rsed.scenes = Rsed.scenes || {};
 
                         const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
                         let color = ((pala == null)? 0 : pala.indices[1]);
+
+                        if ((tileX === checkpoint.x) &&
+                            (tileZ === checkpoint.y))
+                        {
+                            color = "white";
+                        }
 
                         // Create an outline.
                         if (z % (height - 1) === 0) color = "gray";

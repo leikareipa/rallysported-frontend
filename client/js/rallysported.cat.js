@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 November 2019 01:07:31 UTC)
+// VERSION: live (15 November 2019 02:17:32 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2081,16 +2081,20 @@ Rsed.project = async function(projectArgs = {})
                     (typeof projectData.manifesto !== "undefined") &&
                     (typeof projectData.meta !== "undefined") &&
                     (typeof projectData.meta.internalName !== "undefined") &&
-                    (typeof projectData.meta.displayName !== "undefined"))
+                    (typeof projectData.meta.displayName !== "undefined") &&
+                    (typeof projectData.meta.checkpoints !== "undefined"))
                 || Rsed.throw("Missing required project data.");
 
     Rsed.assert && is_valid_project_base_name()
-                || Rsed.throw("Invalid project base name \"" + projectData.meta.internalName + "\".");
+                || Rsed.throw(`Invalid project base name "${projectData.meta.internalName}".`);
 
     Rsed.assert && ((projectData.meta.width > 0) &&
                     (projectData.meta.height > 0) &&
                     (projectData.meta.width === projectData.meta.height))
                 || Rsed.throw("Invalid track dimensions for a project.");
+
+    Rsed.assert && (projectData.meta.checkpoints.length >= 1)
+                || Rsed.throw("Invalid number of track checkpoints.");
 
     // Provides the (Base64-decoded) data of the container file; and metadata about the file,
     // like the sizes and byte offsets of the individual asset data segments inside the file.
@@ -2176,6 +2180,11 @@ Rsed.project = async function(projectArgs = {})
     {
         name: projectData.meta.displayName,
         internalName: projectData.meta.internalName,
+        checkpoint:
+        {
+            x: projectData.meta.checkpoints[0][0],
+            y: projectData.meta.checkpoints[0][1],
+        },
         maasto,
         varimaa,
         palat,
@@ -6594,6 +6603,7 @@ Rsed.scenes = Rsed.scenes || {};
             {
                 const xMul = (Rsed.core.current_project().maasto.width / width);
                 const zMul = (Rsed.core.current_project().maasto.width / height);
+                const checkpoint = Rsed.core.current_project().checkpoint;
                 const image = [];   // An array of palette indices that forms the minimap image.
                 const mousePick = [];
 
@@ -6606,6 +6616,12 @@ Rsed.scenes = Rsed.scenes || {};
 
                         const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
                         let color = ((pala == null)? 0 : pala.indices[1]);
+
+                        if ((tileX === checkpoint.x) &&
+                            (tileZ === checkpoint.y))
+                        {
+                            color = "white";
+                        }
 
                         // Create an outline.
                         if (z % (height - 1) === 0) color = "gray";

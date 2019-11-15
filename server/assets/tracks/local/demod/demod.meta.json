@@ -2,5 +2,6 @@
 	"internalName":"demod",
 	"displayName":"Yleisö-ek",
     "width":128,
-    "height":128
+    "height":128,
+    "checkpoints":[[86,98]]
 }

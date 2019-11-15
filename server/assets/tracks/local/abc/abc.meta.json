@@ -2,5 +2,6 @@
 	"internalName":"hakkuu",
 	"displayName":"Hakkuu",
     "width":64,
-    "height":64
+    "height":64,
+    "checkpoints":[[0,0]]
 }

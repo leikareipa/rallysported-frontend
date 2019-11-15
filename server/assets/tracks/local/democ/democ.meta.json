@@ -2,5 +2,6 @@
 	"internalName":"democ",
 	"displayName":"Ralli-cross",
     "width":64,
-    "height":64
+    "height":64,
+    "checkpoints":[[50,6]]
 }
