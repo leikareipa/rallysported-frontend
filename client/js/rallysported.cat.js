@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 November 2019 00:22:55 UTC)
+// VERSION: live (16 November 2019 00:35:46 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5274,39 +5274,34 @@ Rsed.ui.draw = (function()
         footer_info: function()
         {
             const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+            const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
 
             let str;
 
-            if (mouseHover)
+            if ((mouseHover && (mouseHover.type === "prop")) ||
+                (mouseGrab && (mouseGrab.type === "prop")))
             {
-                switch (mouseHover.type)
-                {
-                    case "ground":
-                    {
-                        const x = mouseHover.groundTileX;
-                        const y = mouseHover.groundTileY;
+                // Prefer mouseGrab over mouseHover, as the prop follows the cursor lazily while
+                // dragging, so hover might be over the background.
+                const mouse = (mouseGrab || mouseHover);
 
-                        const xStr = String(x).padStart(3, "0");
-                        const yStr = String(y).padStart(3, "0");
+                str = "PROP:" + Rsed.core.current_project().props.name(mouse.propId) +
+                      " IDX:" + mouse.propId + "(" + mouse.propTrackIdx + ")";
+            }
+            else if (mouseHover && (mouseHover.type === "ground"))
+            {
+                const x = mouseHover.groundTileX;
+                const y = mouseHover.groundTileY;
 
-                        const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
-                                        String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
+                const xStr = String(x).padStart(3, "0");
+                const yStr = String(y).padStart(3, "0");
 
-                        const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
+                const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
+                                   String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
 
-                        str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
+                const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
 
-                        break;
-                    }
-                    case "prop":
-                    {
-                        str = "PROP:" + Rsed.core.current_project().props.name(mouseHover.propId) +
-                              " IDX:" + mouseHover.propId + "(" + mouseHover.propTrackIdx + ")";
-
-                        break;
-                    }
-                    default: break;
-                }
+                str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
             }
             else
             {
