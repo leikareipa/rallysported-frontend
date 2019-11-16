@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 November 2019 18:51:22 UTC)
+// VERSION: live (16 November 2019 00:22:55 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3247,7 +3247,7 @@ Rsed.world.camera = (function()
         publicInterface.movement_speed = function() { return moveSpeed; }
 
         // How many tiles horizontally and vertically should be visible on screen with this camera.
-        publicInterface.view_width = function() { return 20; }
+        publicInterface.view_width = function() { return 17; }
         publicInterface.view_height = function() { return 17; }
     }
 
