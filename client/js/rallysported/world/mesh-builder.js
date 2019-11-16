@@ -48,6 +48,7 @@ Rsed.world.mesh_builder = (function()
 
             const grab = Rsed.ui.inputState.current_mouse_grab();
             const hover = Rsed.ui.inputState.current_mouse_hover();
+            const tabPressed = Rsed.ui.inputState.key_down("tab");
 
             for (let z = 0; z < Rsed.world.camera.view_height(); z++)
             {
@@ -66,10 +67,8 @@ Rsed.world.mesh_builder = (function()
                     {
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
-                        // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
-                        if ((!grab || grab.type !== "prop") &&
-                             hover &&
-                            (hover.type === "ground") &&
+                        if ( tabPressed &&
+                            (hover && (hover.type === "ground")) &&
                             (hover.groundTileX === tileX) &&
                             (hover.groundTileY === (tileZ - 1)))
                         {
@@ -131,10 +130,8 @@ Rsed.world.mesh_builder = (function()
                     {
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
-                        // If the mouse cursor is hovering over this tile, mark it with the brush's PALA.
-                        if ((!grab || grab.type !== "prop") &&
-                             hover &&
-                            (hover.type === "ground") &&
+                        if ( tabPressed &&
+                            (hover && (hover.type === "ground")) &&
                             (hover.groundTileX === tileX) &&
                             (hover.groundTileY === (tileZ - 1)))
                         {
