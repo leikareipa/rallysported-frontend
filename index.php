@@ -4,6 +4,7 @@
 		<meta name="viewport" content="width=device-width">
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" type="text/css" href="index.css">
+        <link rel="stylesheet" type="text/css" href="index-responsive.css">
         <link rel="stylesheet" type="text/css" href="animations.css">
         <link href="https://fonts.googleapis.com/css?family=Catamaran|Permanent+Marker|Cabin|Montserrat" rel="stylesheet">
         <title>RallySportED-js (beta.5) by Tarpeeksi Hyvae Soft</title><?php include "stats.php"; ?>
