@@ -27,21 +27,10 @@ Rsed.popup_notification = function(string = "", args = {})
     Rsed.throw_if_not_type("number", args.timeoutMs);
     Rsed.throw_if_not_type("string", args.notificationType);
 
-    // Create and add the notification DOM element.
     const popupElement = document.createElement("div");
-    {
-        popupElement.classList.add("animation-flip");
-
-        switch (args.notificationType)
-        {
-            case "warning": popupElement.style.backgroundColor = "gold"; break;
-            case "error": popupElement.style.backgroundColor = "hotpink"; break;
-            default: Rsed.throw(`Unknown notification type "${args.notificationType}".`); break;
-        }
-
-        popupElement.appendChild(document.createTextNode(string));
-        document.getElementById("popup-notification-container").appendChild(popupElement);
-    }
+    popupElement.classList.add("popup-notification", "animation-flip", args.notificationType);
+    popupElement.appendChild(document.createTextNode(string));
+    document.getElementById("popup-notification-container").appendChild(popupElement);
 
     const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
 

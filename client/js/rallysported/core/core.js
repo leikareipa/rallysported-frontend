@@ -217,11 +217,14 @@ Rsed.core = (function()
     // Test various browser compatibility factors, and give the user messages of warning where appropriate.
     function verify_browser_compatibility()
     {
-        // We expect to export projects with JSZip using blobs.
-        /// TODO: Doesn't need to be checked in shared mode, since it doesn't use JSZip for saving.
+        // RallySportED-js projects are exported (saved) via JSZip using Blobs.
         if (!JSZip.support.blob)
         {
-            Rsed.alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
+            Rsed.popup_notification("This browser does not support the \"Save to disk\" feature!",
+            {
+                notificationType: "error",
+                timeoutMs: 10000,
+            })
         }
     }
 

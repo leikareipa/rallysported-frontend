@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 November 2019 00:42:53 UTC)
+// VERSION: live (20 November 2019 19:20:06 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4277,21 +4277,10 @@ Rsed.popup_notification = function(string = "", args = {})
     Rsed.throw_if_not_type("number", args.timeoutMs);
     Rsed.throw_if_not_type("string", args.notificationType);
 
-    // Create and add the notification DOM element.
     const popupElement = document.createElement("div");
-    {
-        popupElement.classList.add("animation-flip");
-
-        switch (args.notificationType)
-        {
-            case "warning": popupElement.style.backgroundColor = "gold"; break;
-            case "error": popupElement.style.backgroundColor = "hotpink"; break;
-            default: Rsed.throw(`Unknown notification type "${args.notificationType}".`); break;
-        }
-
-        popupElement.appendChild(document.createTextNode(string));
-        document.getElementById("popup-notification-container").appendChild(popupElement);
-    }
+    popupElement.classList.add("popup-notification", "animation-flip", args.notificationType);
+    popupElement.appendChild(document.createTextNode(string));
+    document.getElementById("popup-notification-container").appendChild(popupElement);
 
     const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
 
@@ -7006,11 +6995,14 @@ Rsed.core = (function()
     // Test various browser compatibility factors, and give the user messages of warning where appropriate.
     function verify_browser_compatibility()
     {
-        // We expect to export projects with JSZip using blobs.
-        /// TODO: Doesn't need to be checked in shared mode, since it doesn't use JSZip for saving.
+        // RallySportED-js projects are exported (saved) via JSZip using Blobs.
         if (!JSZip.support.blob)
         {
-            Rsed.alert("NOTE: This browser doesn't support saving RallySportED projects. Any changes you make to a track in this session will be lost.");
+            Rsed.popup_notification("This browser does not support the \"Save to disk\" feature!",
+            {
+                notificationType: "error",
+                timeoutMs: 10000,
+            })
         }
     }
 

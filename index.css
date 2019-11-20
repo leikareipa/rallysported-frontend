@@ -43,42 +43,6 @@ body
     margin: 0;
 }
 
-#popup-notification-container
-{
-    width: 300px;
-    height: auto;
-    position: fixed;
-    bottom: 60px;
-    right: 200px;
-    display: flex;
-    flex-direction: column;
-}
-
-#popup-notification-container > div
-{
-    width: 100%;
-    height: auto;
-    padding: 20px;
-    font-family: "Montserrat", sans-serif;
-    text-align: left;
-    margin-top: 8px;
-    border-radius: 20px;
-    border-top-left-radius: 2px;
-    border: 1px solid black;
-    line-height: 140%;
-    word-wrap: break-word;
-    color: black;
-    /* Background color will be set in code.*/
-}
-
-#popup-notification-container > div:not(:last-child)
-{
-    width: 97%;
-    padding: 17px;
-    margin-left: 15px;
-    font-size: 90%;
-}
-
 #html-ui
 {
     background-color: #101010;
@@ -197,6 +161,55 @@ body
 .dropdown-menu.show
 {
     display: block;
+}
+
+#popup-notification-container
+{
+    width: 300px;
+    height: auto;
+    position: fixed;
+    bottom: 60px;
+    right: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+#popup-notification-container > .popup-notification:not(:last-child)
+{
+    width: 97%;
+    padding: 17px;
+    margin-left: 15px;
+    font-size: 90%;
+}
+
+#popup-notification-container .popup-notification
+{
+    width: 100%;
+    height: auto;
+    padding: 20px;
+    font-family: "Montserrat", sans-serif;
+    text-align: left;
+    margin-top: 8px;
+    border-radius: 20px;
+    border-top-left-radius: 2px;
+    border: 1px solid black;
+    line-height: 140%;
+    word-wrap: break-word;
+    color: black;
+    background-color: gold;
+}
+
+#popup-notification-container .popup-notification.warning
+{
+    color: black;
+    background-color: gold;
+}
+
+#popup-notification-container .popup-notification.error
+{
+    background-color: black;
+    border: 1px dashed white;
+    color: white;
 }
 
 [v-cloak]
