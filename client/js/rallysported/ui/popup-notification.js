@@ -19,7 +19,7 @@ Rsed.popup_notification = function(string = "", args = {})
         ...
         {
             notificationType: "warning", // | "error"
-            timeoutMs: 5000,
+            timeoutMs: 6000,
         },
         ...args
     }

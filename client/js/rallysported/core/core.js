@@ -224,7 +224,13 @@ Rsed.core = (function()
             {
                 notificationType: "error",
                 timeoutMs: 10000,
-            })
+            });
+        }
+
+        // A crude test for whether the user's device might not have mouse/keyboard available.
+        if (/android|mobi/i.test(navigator.userAgent))
+        {
+            Rsed.popup_notification("On mobile? Be aware that a mouse and keyboard are required for this app!");
         }
     }
 
