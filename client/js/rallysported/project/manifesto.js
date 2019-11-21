@@ -53,6 +53,8 @@ Rsed.apply_manifesto = function(targetProject)
             const minRSEDLoaderVersion = Number(args[2]);
 
             targetProject.set_track_id(trackId);
+            targetProject.set_palat_id(palatId);
+            targetProject.set_required_loader_version(minRSEDLoaderVersion);
 
             Rsed.palette.set_palette(trackId === 4? 1 :
                                      trackId === 7? 3 : 0);

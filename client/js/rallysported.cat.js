@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 November 2019 21:40:01 UTC)
+// VERSION: live (21 November 2019 04:31:21 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -1956,6 +1956,8 @@ Rsed.apply_manifesto = function(targetProject)
             const minRSEDLoaderVersion = Number(args[2]);
 
             targetProject.set_track_id(trackId);
+            targetProject.set_palat_id(palatId);
+            targetProject.set_required_loader_version(minRSEDLoaderVersion);
 
             Rsed.palette.set_palette(trackId === 4? 1 :
                                      trackId === 7? 3 : 0);
@@ -2075,6 +2077,12 @@ Rsed.project = async function(projectArgs = {})
     // Which of the eight tracks in Rally-Sport's demo version this project is for.
     let trackId = null;
 
+    // Which of Rally-Sport's two PALAT files this track uses.
+    let palatId = null;
+
+    // Which RallySportED loader is required to load this track.
+    let loaderVersion = null;
+
     // Load the project's data. After this, projectData.container is expected to hold the
     // contents of the .DTA file as a Base64-encoded string; and projectData.manifesto the
     // contents of the .$FT file as a plain string.
@@ -2193,6 +2201,9 @@ Rsed.project = async function(projectArgs = {})
         palat,
         props,
         manifesto,
+        trackId,
+        palatId,
+        loaderVersion,
 
         track_id: ()=>
         {
@@ -2209,6 +2220,20 @@ Rsed.project = async function(projectArgs = {})
                         || Rsed.throw("Track id out of bounds.");
 
             trackId = id;
+        },
+
+        set_palat_id: (id)=>
+        {
+            Rsed.assert && ((id >= 0) &&
+                            (id <= 1))
+                        || Rsed.throw("PALAT id out of bounds.");
+
+            palatId = id;
+        },
+
+        set_required_loader_version: (version)=>
+        {
+            loaderVersion = version;
         },
 
         // Bundles the project's data files into a .zip, and has the browser initiate a 'download' of it.
@@ -2267,19 +2292,24 @@ Rsed.project = async function(projectArgs = {})
     // since the project was loaded in. The original manifesto string is not changed.
     function updated_manifesto_string()
     {
+        const requiredLoaderVersion = 5;
         const manifesto = projectData.manifesto.split("\n").filter(line=>line.trim().length);
-        let updatedManifesto = "";
+        
+        // We'll append the new manifesto string here.
+        let updatedManifesto = `0 ${trackId + 1} ${palatId} ${requiredLoaderVersion}\n`;
 
         // Any manifesto commands we won't update will be copied verbatim into the updated
         // version.
         for (let i = 0; i < (manifesto.length - 1); i++)
         {
-            const command = manifesto[i].split(" ").shift();
+            const command = Number(manifesto[i].split(" ").shift());
 
             switch (command)
             {
                 // These are the commands we want to update, so we don't copy them.
+                case 0:
                 case 2:
+                case 3:
                 case 4:
                 case 5: break;
 
@@ -2289,18 +2319,17 @@ Rsed.project = async function(projectArgs = {})
         }
 
         // Update the various commands according to the current values of their related data.
-        {
+        { 
             const trackProps = props.locations_of_props_on_track(trackId);
 
             // Command #2 for the number of props.
             {
                 updatedManifesto += ("2 " + trackProps.length + "\n");
             }
-            
-            // Command #5 to set props' locations on the track (except for the finish line, which
-            // we assume is the first prop on the list).
+
+            // Command #3 to create and position the track's props.
             {
-                for (let i = 1; i < trackProps.length; i++)
+                for (let i = 0; i < trackProps.length; i++)
                 {
                     const globalX = Math.floor((trackProps[i].x / Rsed.constants.groundTileSize) / 2);
                     const globalZ = Math.floor((trackProps[i].z / Rsed.constants.groundTileSize) / 2);
@@ -2308,15 +2337,7 @@ Rsed.project = async function(projectArgs = {})
                     const localX = Math.floor((((trackProps[i].x / Rsed.constants.groundTileSize) / 2) - globalX) * 256);
                     const localZ = Math.floor((((trackProps[i].z / Rsed.constants.groundTileSize) / 2) - globalZ) * 256);
 
-                    updatedManifesto += ("5 " + (i + 1) + " " + globalX + " " + globalZ + " " + localX + " " + localZ + "\n");
-                }
-            }
-
-            // Command #4 to set props' types.
-            {
-                for (let i = 1; i < trackProps.length; i++)
-                {
-                    updatedManifesto += ("4 " + (i + 1) + " " + (trackProps[i].propId + 1) + "\n");
+                    updatedManifesto += `3 ${trackProps[i].propId + 1} ${globalX} ${globalZ} ${localX} ${localZ}\n`;
                 }
             }
         }
