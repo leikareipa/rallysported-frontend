@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (21 November 2019 04:31:21 UTC)
+// VERSION: live (24 November 2019 06:44:50 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -73,7 +73,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (12 November 2019 20:53:38 UTC)
+// VERSION: live (23 November 2019 07:17:52 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1021,16 +1021,16 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                 const add_edge = (vert1, vert2, isLeftEdge, )=>
                 {
-                    const startY = Math.min((renderHeight - 1), Math.max(0, Math.round(vert1.y)));
-                    const endY = Math.min((renderHeight - 1), Math.max(0, Math.round(vert2.y)));
+                    const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
+                    const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
                     
                     // Ignore horizontal edges.
                     if ((endY - startY) === 0) return;
 
                     const edgeHeight = (endY - startY);
 
-                    const startX = Math.min((renderWidth - 1), Math.max(0, Math.round(vert1.x)));
-                    const endX = Math.min((renderWidth - 1), Math.max(0, Math.ceil(vert2.x)));
+                    const startX = Math.min(renderWidth, Math.max(0, Math.round(vert1.x)));
+                    const endX = Math.min(renderWidth, Math.max(0, Math.ceil(vert2.x)));
                     const deltaX = ((endX - startX) / edgeHeight);
 
                     const startDepth = vert1.z;
@@ -1091,8 +1091,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 // Rasterize the n-gon in horizontal pixel spans over its height.
                 for (let y = ngonStartY; y < ngonEndY; y++)
                 {
-                    const spanStartX = Math.min((renderWidth - 1), Math.max(0, Math.round(leftEdge.startX)));
-                    const spanEndX = Math.min((renderWidth - 1), Math.max(0, Math.round(rightEdge.startX)));
+                    const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
+                    const spanEndX = Math.min(renderWidth, Math.max(0, Math.round(rightEdge.startX)));
                     const spanWidth = ((spanEndX - spanStartX) + 1);
 
                     if (spanWidth > 0)
@@ -1762,7 +1762,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
     canvasElement.setAttribute("height", screenHeight);
 
     const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), nearPlane, farPlane);
-    const screenSpaceMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
+    const screenSpaceMatrix = Rngon.matrix44.ortho((screenWidth + 1), (screenHeight + 1));
 
     const renderContext = canvasElement.getContext("2d");
 
@@ -3566,27 +3566,27 @@ Rsed.palette = (function()
         },
 
         // Change the color at the given palette index in the current active palette.
-        set_color: (paletteIdx = 0, newColor = {red:0,green:0,blue:0})=>
+        set_color: (colorIdx = 0, newColor = {red:0,green:0,blue:0})=>
         {
-            Rsed.assert && ((paletteIdx >= 0) &&
-                            (paletteIdx < rallySportPalettes.length))
-                        || Rsed.throw("Trying to access a palette index out of bounds.");
+            Rsed.assert && ((colorIdx >= 0) &&
+                            (colorIdx < 32))
+                        || Rsed.throw(`Trying to access a palette color out of bounds (#${colorIdx}).`);
 
             newColor =
             {
                 ...
                 {
-                    red: activePalette[paletteIdx].red,
-                    green: activePalette[paletteIdx].green,
-                    blue: activePalette[paletteIdx].blue,
+                    red: activePalette[colorIdx].red,
+                    green: activePalette[colorIdx].green,
+                    blue: activePalette[colorIdx].blue,
                 },
                 ...newColor,
             }
 
-            activePalette[paletteIdx].red = newColor.red;
-            activePalette[paletteIdx].green = newColor.green;
-            activePalette[paletteIdx].blue = newColor.blue;
-            activePalette[paletteIdx].alpha = ((paletteIdx === 0)? 0 : 255);
+            activePalette[colorIdx].red = newColor.red;
+            activePalette[colorIdx].green = newColor.green;
+            activePalette[colorIdx].blue = newColor.blue;
+            activePalette[colorIdx].alpha = ((colorIdx === 0)? 0 : 255);
         },
     };
 

@@ -209,27 +209,27 @@ Rsed.palette = (function()
         },
 
         // Change the color at the given palette index in the current active palette.
-        set_color: (paletteIdx = 0, newColor = {red:0,green:0,blue:0})=>
+        set_color: (colorIdx = 0, newColor = {red:0,green:0,blue:0})=>
         {
-            Rsed.assert && ((paletteIdx >= 0) &&
-                            (paletteIdx < rallySportPalettes.length))
-                        || Rsed.throw("Trying to access a palette index out of bounds.");
+            Rsed.assert && ((colorIdx >= 0) &&
+                            (colorIdx < 32))
+                        || Rsed.throw(`Trying to access a palette color out of bounds (#${colorIdx}).`);
 
             newColor =
             {
                 ...
                 {
-                    red: activePalette[paletteIdx].red,
-                    green: activePalette[paletteIdx].green,
-                    blue: activePalette[paletteIdx].blue,
+                    red: activePalette[colorIdx].red,
+                    green: activePalette[colorIdx].green,
+                    blue: activePalette[colorIdx].blue,
                 },
                 ...newColor,
             }
 
-            activePalette[paletteIdx].red = newColor.red;
-            activePalette[paletteIdx].green = newColor.green;
-            activePalette[paletteIdx].blue = newColor.blue;
-            activePalette[paletteIdx].alpha = ((paletteIdx === 0)? 0 : 255);
+            activePalette[colorIdx].red = newColor.red;
+            activePalette[colorIdx].green = newColor.green;
+            activePalette[colorIdx].blue = newColor.blue;
+            activePalette[colorIdx].alpha = ((colorIdx === 0)? 0 : 255);
         },
     };
 
