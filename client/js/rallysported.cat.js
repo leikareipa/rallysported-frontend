@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (24 November 2019 07:37:08 UTC)
+// VERSION: live (24 November 2019 17:03:17 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -7046,7 +7046,10 @@ Rsed.core = (function()
         // A crude test for whether the user's device might not have mouse/keyboard available.
         if (/android|mobi/i.test(navigator.userAgent))
         {
-            Rsed.popup_notification("On mobile? Be aware that a mouse and keyboard are required for this app!");
+            Rsed.popup_notification("Mobile user? Note that this app requires a mouse and keyboard!",
+            {
+                timeoutMs: 7000,
+            });
         }
     }
 
