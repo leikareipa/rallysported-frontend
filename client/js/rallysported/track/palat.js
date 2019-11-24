@@ -29,15 +29,13 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                     (palaHeight > 0))
                 || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
 
-    const pixels = Array.from(data, (colorIdx)=>Rsed.palette.color_at_idx(colorIdx));
+    const palatPixels = Array.from(data, (colorIdx)=>Rsed.palette.color_at_idx(colorIdx, false));
+    const palatPixelsWithAlpha = Array.from(data, (colorIdx)=>Rsed.palette.color_at_idx(colorIdx, true));
 
     const palaSize = (palaWidth * palaHeight);
 
     // Pre-compute the individual PALA textures.
-    const prebakedPalaTextures = new Array(256).fill().map((pala, idx)=>
-    {
-        return generate_texture(idx);
-    });
+    const prebakedPalaTextures = new Array(256).fill().map((pala, idx)=>generate_texture(idx));
 
     const publicInterface = Object.freeze(
     {
@@ -73,12 +71,18 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
             });
         }
 
+        // Billboard PALAs will have alpha-testing enabled (so color index 0 is see-through),
+        // while other PALAs will not.
+        const isBillboardPala = ((palaId == 176) ||
+                                 (palaId == 177) ||
+                                ((palaId >= 208) && (palaId <= 239)));
+
         return Rsed.texture(
         {
             ...args,
             width: palaWidth,
             height: palaHeight,
-            pixels: pixels.slice(dataIdx, (dataIdx + palaSize)),
+            pixels: (isBillboardPala? palatPixelsWithAlpha : palatPixels).slice(dataIdx, (dataIdx + palaSize)),
             indices: data.slice(dataIdx, (dataIdx + palaSize)),
             flipped: "no",
         });

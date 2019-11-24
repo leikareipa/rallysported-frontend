@@ -10,6 +10,9 @@
 
 Rsed.palette = (function()
 {
+    // How many colors there are in a single palette.
+    const numColorsInPalette = 32;
+
     // The four hard-coded palettes in Rally-Sport's demo. These should not be changed
     // during run-time.
     const rallySportPalettes = [
@@ -154,6 +157,7 @@ Rsed.palette = (function()
     // color for a particular palette index, or to change the color at a particular index,
     // this is the palette we'll use.
     const activePalette = (new Array(256)).fill().map(e=>({red:127,green:127,blue:127,alpha:255,unitRange:{red:1, green:1, blue:1, alpha:1}}));
+    const activePaletteWithAlpha = (new Array(256)).fill().map(e=>({red:127,green:127,blue:127,alpha:255,unitRange:{red:1, green:1, blue:1, alpha:1}}));
 
     const publicInterface =
     {
@@ -164,7 +168,7 @@ Rsed.palette = (function()
         // red, green, and blue channels as properties. Aside from the UI colors, the object
         // will be returned by reference to an index in the palette, so any changes to the
         // palette afterwards will be reflected in colors returned previously.
-        color_at_idx: (colorIdx = 0)=>
+        color_at_idx: (colorIdx = 0, useAlpha = false)=>
         {
             // Named UI colors.
             switch (colorIdx)
@@ -188,8 +192,7 @@ Rsed.palette = (function()
                 default: break;
             }
 
-            // In Rally-Sport, the first color in a palette is always transparent.
-            return activePalette[colorIdx];
+            return (useAlpha? activePaletteWithAlpha : activePalette)[colorIdx];
         },
 
         // Assign one of the four Rally-Sport palettes as the current active one.
@@ -201,10 +204,15 @@ Rsed.palette = (function()
 
             rallySportPalettes[paletteIdx].forEach((color, idx)=>
             {
+                activePaletteWithAlpha[idx].red = color.red;
+                activePaletteWithAlpha[idx].green = color.green;
+                activePaletteWithAlpha[idx].blue = color.blue;
+                activePaletteWithAlpha[idx].alpha = ((idx === 0)? 0 : 255);
+
                 activePalette[idx].red = color.red;
                 activePalette[idx].green = color.green;
                 activePalette[idx].blue = color.blue;
-                activePalette[idx].alpha = ((idx === 0)? 0 : 255);
+                activePalette[idx].alpha = 255;
             });
         },
 
@@ -212,7 +220,7 @@ Rsed.palette = (function()
         set_color: (colorIdx = 0, newColor = {red:0,green:0,blue:0})=>
         {
             Rsed.assert && ((colorIdx >= 0) &&
-                            (colorIdx < 32))
+                            (colorIdx < numColorsInPalette))
                         || Rsed.throw(`Trying to access a palette color out of bounds (#${colorIdx}).`);
 
             newColor =
@@ -226,10 +234,15 @@ Rsed.palette = (function()
                 ...newColor,
             }
 
+            activePaletteWithAlpha[colorIdx].red = newColor.red;
+            activePaletteWithAlpha[colorIdx].green = newColor.green;
+            activePaletteWithAlpha[colorIdx].blue = newColor.blue;
+            activePaletteWithAlpha[colorIdx].alpha = ((colorIdx === 0)? 0 : 255);
+
             activePalette[colorIdx].red = newColor.red;
             activePalette[colorIdx].green = newColor.green;
             activePalette[colorIdx].blue = newColor.blue;
-            activePalette[colorIdx].alpha = ((colorIdx === 0)? 0 : 255);
+            activePalette[colorIdx].alpha = 255;
         },
     };
 

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (24 November 2019 06:44:50 UTC)
+// VERSION: live (24 November 2019 07:37:08 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3367,6 +3367,9 @@ Rsed.texture = function(args = {})
 
 Rsed.palette = (function()
 {
+    // How many colors there are in a single palette.
+    const numColorsInPalette = 32;
+
     // The four hard-coded palettes in Rally-Sport's demo. These should not be changed
     // during run-time.
     const rallySportPalettes = [
@@ -3511,6 +3514,7 @@ Rsed.palette = (function()
     // color for a particular palette index, or to change the color at a particular index,
     // this is the palette we'll use.
     const activePalette = (new Array(256)).fill().map(e=>({red:127,green:127,blue:127,alpha:255,unitRange:{red:1, green:1, blue:1, alpha:1}}));
+    const activePaletteWithAlpha = (new Array(256)).fill().map(e=>({red:127,green:127,blue:127,alpha:255,unitRange:{red:1, green:1, blue:1, alpha:1}}));
 
     const publicInterface =
     {
@@ -3521,7 +3525,7 @@ Rsed.palette = (function()
         // red, green, and blue channels as properties. Aside from the UI colors, the object
         // will be returned by reference to an index in the palette, so any changes to the
         // palette afterwards will be reflected in colors returned previously.
-        color_at_idx: (colorIdx = 0)=>
+        color_at_idx: (colorIdx = 0, useAlpha = false)=>
         {
             // Named UI colors.
             switch (colorIdx)
@@ -3545,8 +3549,7 @@ Rsed.palette = (function()
                 default: break;
             }
 
-            // In Rally-Sport, the first color in a palette is always transparent.
-            return activePalette[colorIdx];
+            return (useAlpha? activePaletteWithAlpha : activePalette)[colorIdx];
         },
 
         // Assign one of the four Rally-Sport palettes as the current active one.
@@ -3558,10 +3561,15 @@ Rsed.palette = (function()
 
             rallySportPalettes[paletteIdx].forEach((color, idx)=>
             {
+                activePaletteWithAlpha[idx].red = color.red;
+                activePaletteWithAlpha[idx].green = color.green;
+                activePaletteWithAlpha[idx].blue = color.blue;
+                activePaletteWithAlpha[idx].alpha = ((idx === 0)? 0 : 255);
+
                 activePalette[idx].red = color.red;
                 activePalette[idx].green = color.green;
                 activePalette[idx].blue = color.blue;
-                activePalette[idx].alpha = ((idx === 0)? 0 : 255);
+                activePalette[idx].alpha = 255;
             });
         },
 
@@ -3569,7 +3577,7 @@ Rsed.palette = (function()
         set_color: (colorIdx = 0, newColor = {red:0,green:0,blue:0})=>
         {
             Rsed.assert && ((colorIdx >= 0) &&
-                            (colorIdx < 32))
+                            (colorIdx < numColorsInPalette))
                         || Rsed.throw(`Trying to access a palette color out of bounds (#${colorIdx}).`);
 
             newColor =
@@ -3583,10 +3591,15 @@ Rsed.palette = (function()
                 ...newColor,
             }
 
+            activePaletteWithAlpha[colorIdx].red = newColor.red;
+            activePaletteWithAlpha[colorIdx].green = newColor.green;
+            activePaletteWithAlpha[colorIdx].blue = newColor.blue;
+            activePaletteWithAlpha[colorIdx].alpha = ((colorIdx === 0)? 0 : 255);
+
             activePalette[colorIdx].red = newColor.red;
             activePalette[colorIdx].green = newColor.green;
             activePalette[colorIdx].blue = newColor.blue;
-            activePalette[colorIdx].alpha = ((colorIdx === 0)? 0 : 255);
+            activePalette[colorIdx].alpha = 255;
         },
     };
 
@@ -3823,15 +3836,13 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                     (palaHeight > 0))
                 || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
 
-    const pixels = Array.from(data, (colorIdx)=>Rsed.palette.color_at_idx(colorIdx));
+    const palatPixels = Array.from(data, (colorIdx)=>Rsed.palette.color_at_idx(colorIdx, false));
+    const palatPixelsWithAlpha = Array.from(data, (colorIdx)=>Rsed.palette.color_at_idx(colorIdx, true));
 
     const palaSize = (palaWidth * palaHeight);
 
     // Pre-compute the individual PALA textures.
-    const prebakedPalaTextures = new Array(256).fill().map((pala, idx)=>
-    {
-        return generate_texture(idx);
-    });
+    const prebakedPalaTextures = new Array(256).fill().map((pala, idx)=>generate_texture(idx));
 
     const publicInterface = Object.freeze(
     {
@@ -3867,12 +3878,18 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
             });
         }
 
+        // Billboard PALAs will have alpha-testing enabled (so color index 0 is see-through),
+        // while other PALAs will not.
+        const isBillboardPala = ((palaId == 176) ||
+                                 (palaId == 177) ||
+                                ((palaId >= 208) && (palaId <= 239)));
+
         return Rsed.texture(
         {
             ...args,
             width: palaWidth,
             height: palaHeight,
-            pixels: pixels.slice(dataIdx, (dataIdx + palaSize)),
+            pixels: (isBillboardPala? palatPixelsWithAlpha : palatPixels).slice(dataIdx, (dataIdx + palaSize)),
             indices: data.slice(dataIdx, (dataIdx + palaSize)),
             flipped: "no",
         });
@@ -3939,7 +3956,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 const dataIdx = ((textureRects[idx].rect.topLeft.x + x) + (textureRects[idx].rect.topLeft.y + y) * textureAtlasWidth);
 
                 indices.push(textureAtlas[dataIdx]);
-                pixels.push(Rsed.palette.color_at_idx(textureAtlas[dataIdx]));
+                pixels.push(Rsed.palette.color_at_idx(textureAtlas[dataIdx], true));
             }
         }
 
