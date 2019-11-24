@@ -2,6 +2,5 @@
 	"internalName":"demoh",
 	"displayName":"Short and easy",
     "width":64,
-    "height":64,
-    "checkpoints":[[56,60]]
+    "height":64
 }

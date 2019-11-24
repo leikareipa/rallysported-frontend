@@ -2,6 +2,5 @@
 	"internalName":"demog",
 	"displayName":"Bumps and jumps",
     "width":128,
-    "height":128,
-    "checkpoints":[[114,118]]
+    "height":128
 }

@@ -26,6 +26,13 @@ Rsed.project = async function(projectArgs = {})
     // Which RallySportED loader is required to load this track.
     let loaderVersion = null;
 
+    // Rally-Sport uses checkpoints - invisible markers at given x,y tile positions on the
+    // track - to keep track of whether the player's car has raced a valid lap. In other
+    // words, the car must pass through all of the track's checkpoints in order for the lap
+    // to count. The demo version of Rally-Sport - which is what RallySportED targets - makes
+    // use of only one checkpoint per track (in addition to the finish line).
+    const trackCheckpoints = [];
+
     // Load the project's data. After this, projectData.container is expected to hold the
     // contents of the .DTA file as a Base64-encoded string; and projectData.manifesto the
     // contents of the .$FT file as a plain string.
@@ -35,8 +42,7 @@ Rsed.project = async function(projectArgs = {})
                     (typeof projectData.manifesto !== "undefined") &&
                     (typeof projectData.meta !== "undefined") &&
                     (typeof projectData.meta.internalName !== "undefined") &&
-                    (typeof projectData.meta.displayName !== "undefined") &&
-                    (typeof projectData.meta.checkpoints !== "undefined"))
+                    (typeof projectData.meta.displayName !== "undefined"))
                 || Rsed.throw("Missing required project data.");
 
     Rsed.assert && is_valid_project_base_name()
@@ -46,9 +52,6 @@ Rsed.project = async function(projectArgs = {})
                     (projectData.meta.height > 0) &&
                     (projectData.meta.width === projectData.meta.height))
                 || Rsed.throw("Invalid track dimensions for a project.");
-
-    Rsed.assert && (projectData.meta.checkpoints.length >= 1)
-                || Rsed.throw("Invalid number of track checkpoints.");
 
     // Provides the (Base64-decoded) data of the container file; and metadata about the file,
     // like the sizes and byte offsets of the individual asset data segments inside the file.
@@ -134,11 +137,7 @@ Rsed.project = async function(projectArgs = {})
     {
         name: projectData.meta.displayName,
         internalName: projectData.meta.internalName,
-        checkpoint:
-        {
-            x: projectData.meta.checkpoints[0][0],
-            y: projectData.meta.checkpoints[0][1],
-        },
+        checkpoint: ()=>(trackCheckpoints[0] || {x:0,y:0}),
         maasto,
         varimaa,
         palat,
@@ -163,6 +162,22 @@ Rsed.project = async function(projectArgs = {})
                         || Rsed.throw("Track id out of bounds.");
 
             trackId = id;
+
+            // Mark the appropriate track checkpoint.
+            switch (trackId)
+            {
+                case 0: trackCheckpoints.push({x:46,y:6}); break;
+                case 1: trackCheckpoints.push({x:56,y:14}); break;
+                case 2: trackCheckpoints.push({x:50,y:6}); break;
+                case 3: trackCheckpoints.push({x:86,y:98}); break;
+                case 4: trackCheckpoints.push({x:60,y:106}); break;
+                case 5: trackCheckpoints.push({x:10,y:48}); break;
+                case 6: trackCheckpoints.push({x:114,y:118}); break;
+                case 7: trackCheckpoints.push({x:56,y:60}); break;
+                default: Rsed.throw(`Unknown track id (${trackId}).`);
+            }
+
+            return;
         },
 
         set_palat_id: (id)=>

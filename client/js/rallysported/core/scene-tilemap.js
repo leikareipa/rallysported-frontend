@@ -34,7 +34,7 @@ Rsed.scenes = Rsed.scenes || {};
             {
                 const xMul = (Rsed.core.current_project().maasto.width / width);
                 const zMul = (Rsed.core.current_project().maasto.width / height);
-                const checkpoint = Rsed.core.current_project().checkpoint;
+                const checkpoint = Rsed.core.current_project().checkpoint();
                 const image = [];   // An array of palette indices that forms the minimap image.
                 const mousePick = [];
 
