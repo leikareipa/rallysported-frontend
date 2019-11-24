@@ -55,9 +55,6 @@ Rsed.apply_manifesto = function(targetProject)
             targetProject.set_track_id(trackId);
             targetProject.set_palat_id(palatId);
             targetProject.set_required_loader_version(minRSEDLoaderVersion);
-
-            Rsed.palette.set_palette(trackId === 4? 1 :
-                                     trackId === 7? 3 : 0);
         }
 
         // Command: ROAD. Sets up the game's driving physics for various kinds of road surfaces.

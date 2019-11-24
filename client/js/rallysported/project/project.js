@@ -163,18 +163,25 @@ Rsed.project = async function(projectArgs = {})
 
             trackId = id;
 
-            // Mark the appropriate track checkpoint.
-            switch (trackId)
+            // Certain properties in Rally-Sport are hard-coded for each track, and which RallySportED
+            // also doesn't let the user edit; so let's hard-code those properties for RallySportED,
+            // as well.
             {
-                case 0: trackCheckpoints.push({x:46,y:6}); break;
-                case 1: trackCheckpoints.push({x:56,y:14}); break;
-                case 2: trackCheckpoints.push({x:50,y:6}); break;
-                case 3: trackCheckpoints.push({x:86,y:98}); break;
-                case 4: trackCheckpoints.push({x:60,y:106}); break;
-                case 5: trackCheckpoints.push({x:10,y:48}); break;
-                case 6: trackCheckpoints.push({x:114,y:118}); break;
-                case 7: trackCheckpoints.push({x:56,y:60}); break;
-                default: Rsed.throw(`Unknown track id (${trackId}).`);
+                switch (trackId)
+                {
+                    case 0: trackCheckpoints.push({x:46,y:6}); break;
+                    case 1: trackCheckpoints.push({x:56,y:14}); break;
+                    case 2: trackCheckpoints.push({x:50,y:6}); break;
+                    case 3: trackCheckpoints.push({x:86,y:98}); break;
+                    case 4: trackCheckpoints.push({x:60,y:106}); break;
+                    case 5: trackCheckpoints.push({x:10,y:48}); break;
+                    case 6: trackCheckpoints.push({x:114,y:118}); break;
+                    case 7: trackCheckpoints.push({x:56,y:60}); break;
+                    default: Rsed.throw(`Unknown track id (${trackId}).`);
+                }
+
+                Rsed.palette.set_palette((trackId === 4)? 1 :
+                                         (trackId === 7)? 3 : 0);
             }
 
             return;
