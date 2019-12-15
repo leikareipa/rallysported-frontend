@@ -45,32 +45,37 @@ Rsed.world.camera = (function()
                 position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height() + 1)));
             }
 
+            const posDelta =
+            {
+                x: (Math.floor(position.x) - Math.floor(prevPos.x)),
+                y: (Math.floor(position.y) - Math.floor(prevPos.y)),
+                z: (Math.floor(position.z) - Math.floor(prevPos.z)),
+            }
+
             // If the camera moved...
-            if ((position.x !== prevPos.x) ||
-                (position.y !== prevPos.y) ||
-                (position.z !== prevPos.z))
+            if (posDelta.x || posDelta.y || posDelta.z)
             {
                 window.close_dropdowns(false);
                 
                 // Force mouse hover to update, since there might now be a different tile under
-                // the cursor than there was before the camera moved.
+                // the cursor.
                 Rsed.ui.inputState.update_mouse_hover();
 
-                // If the user is dragging a prop and the camera has moved, move the prop as well.
+                // If the user is grabbing onto a prop while the camera moves, move the prop as well.
                 {
                     const grab = Rsed.ui.inputState.current_mouse_grab();
 
                     if (grab && (grab.type === "prop") &&
                         Rsed.ui.inputState.left_mouse_button_down())
                     {
-                        // For now, don't allow moving the starting line (always prop #0).
+                        // Note: the starting line (always prop #0) is not user-editable.
                         if (grab.propTrackIdx !== 0)
                         {
                             Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
                                                                    grab.propTrackIdx,
                                                                    {
-                                                                       x: (deltaX * moveSpeed * Rsed.constants.groundTileSize),
-                                                                       z: (deltaZ * moveSpeed * Rsed.constants.groundTileSize),
+                                                                       x: (posDelta.x * Rsed.constants.groundTileSize),
+                                                                       z: (posDelta.z * Rsed.constants.groundTileSize),
                                                                    });
                         }
                     }
