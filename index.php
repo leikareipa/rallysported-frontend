@@ -7,7 +7,7 @@
         <link rel="stylesheet" type="text/css" href="index-responsive.css">
         <link rel="stylesheet" type="text/css" href="animations.css">
         <link href="https://fonts.googleapis.com/css?family=Catamaran|Permanent+Marker|Cabin|Montserrat" rel="stylesheet">
-        <title>RallySportED-js (beta.5) by Tarpeeksi Hyvae Soft</title><?php include "stats.php"; ?>
+        <title>RallySportED-js (web-beta.5) by Tarpeeksi Hyvae Soft</title><?php include "stats.php"; ?>
     </head>
     <body>
         <div id="html-ui" v-if="uiVisible" v-cloak>
