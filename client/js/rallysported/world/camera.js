@@ -32,7 +32,7 @@ Rsed.world.camera = (function()
 
         publicInterface.move_camera = function(deltaX, deltaY, deltaZ, enforceBounds = true)
         {
-            const prevPos = {...position};
+            const prevPos = this.position_floored();
 
             position.x += (deltaX * moveSpeed);
             position.y += (deltaY * moveSpeed);
@@ -45,11 +45,12 @@ Rsed.world.camera = (function()
                 position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height() + 1)));
             }
 
+            const newPos = this.position_floored();
             const posDelta =
             {
-                x: (Math.floor(position.x) - Math.floor(prevPos.x)),
-                y: (Math.floor(position.y) - Math.floor(prevPos.y)),
-                z: (Math.floor(position.z) - Math.floor(prevPos.z)),
+                x: (newPos.x - prevPos.x),
+                y: (newPos.y - prevPos.y),
+                z: (newPos.z - prevPos.z),
             }
 
             // If the camera moved...
@@ -116,9 +117,23 @@ Rsed.world.camera = (function()
             return Rngon.rotation_vector(rotation.x, rotation.y, rotation.z);
         }
 
-        publicInterface.pos_x = function() { return position.x; }
-        publicInterface.pos_y = function() { return position.y; }
-        publicInterface.pos_z = function() { return position.z; }
+        publicInterface.position_floored = function()
+        {
+            return {
+                x: Math.floor(position.x),
+                y: Math.floor(position.y),
+                z: Math.floor(position.z),
+            }
+        }
+
+        publicInterface.position = function()
+        {
+            return {
+                x: position.x,
+                y: position.y,
+                z: position.z,
+            }
+        }
 
         publicInterface.movement_speed = function() { return moveSpeed; }
 

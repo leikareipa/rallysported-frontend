@@ -63,12 +63,7 @@ Rsed.scenes = Rsed.scenes || {};
         {
             const trackMesh = Rsed.world.mesh_builder.track_mesh(
             {
-                cameraPos:
-                {
-                    x: Math.floor(Rsed.world.camera.pos_x()),
-                    y: Math.floor(Rsed.world.camera.pos_y()),
-                    z: Math.floor(Rsed.world.camera.pos_z()),
-                },
+                cameraPos: Rsed.world.camera.position_floored(),
                 includeProps: showProps,
                 includeWireframe: showWireframe,
             });

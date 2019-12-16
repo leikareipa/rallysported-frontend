@@ -219,10 +219,10 @@ Rsed.world.mesh_builder = (function()
 
                 propLocations.forEach((pos, idx)=>
                 {
-                    if ((pos.x >= (Rsed.world.camera.pos_x() * Rsed.constants.groundTileSize)) &&
-                        (pos.x <= ((Rsed.world.camera.pos_x() + Rsed.world.camera.view_width()) * Rsed.constants.groundTileSize)) &&
-                        (pos.z >= (Rsed.world.camera.pos_z() * Rsed.constants.groundTileSize)) &&
-                        (pos.z <= ((Rsed.world.camera.pos_z() + Rsed.world.camera.view_height()) * Rsed.constants.groundTileSize)))
+                    if ((pos.x >= (args.cameraPos.x * Rsed.constants.groundTileSize)) &&
+                        (pos.x <= ((args.cameraPos.x + Rsed.world.camera.view_width()) * Rsed.constants.groundTileSize)) &&
+                        (pos.z >= (args.cameraPos.z * Rsed.constants.groundTileSize)) &&
+                        (pos.z <= ((args.cameraPos.z + Rsed.world.camera.view_height()) * Rsed.constants.groundTileSize)))
                     {
                         const x = (pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize));
                         const z = (centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize));

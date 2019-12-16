@@ -293,8 +293,9 @@ Rsed.ui.draw = (function()
                     }
                 }
 
-                const camX = (Rsed.world.camera.pos_x() / xMul);
-                const camZ = (Rsed.world.camera.pos_z() / yMul);
+                const cameraPos = Rsed.world.camera.position_floored();
+                const camX = (cameraPos.x / xMul);
+                const camZ = (cameraPos.z / yMul);
                 this.image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 3 + camZ, true);
             }
 
