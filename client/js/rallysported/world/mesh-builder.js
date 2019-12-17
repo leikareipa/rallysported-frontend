@@ -31,7 +31,7 @@ Rsed.world.mesh_builder = (function()
                         y: 0,
                         z: 0,
                     },
-                    includeProps: true,
+                    solidProps: true, // Whether to draw props with solid colors(/textures) or with just a wireframe.
                     includeWireframe: false,
                 },
                 ...args,
@@ -213,35 +213,31 @@ Rsed.world.mesh_builder = (function()
             }
 
             // Add any track prop meshes that should be visible on the currently-drawn track.
-            if (args.includeProps)
+            const propLocations = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().track_id());
+            propLocations.forEach((pos, idx)=>
             {
-                const propLocations = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().track_id());
-
-                propLocations.forEach((pos, idx)=>
+                if ((pos.x >= (args.cameraPos.x * Rsed.constants.groundTileSize)) &&
+                    (pos.x <= ((args.cameraPos.x + Rsed.world.camera.view_width()) * Rsed.constants.groundTileSize)) &&
+                    (pos.z >= (args.cameraPos.z * Rsed.constants.groundTileSize)) &&
+                    (pos.z <= ((args.cameraPos.z + Rsed.world.camera.view_height()) * Rsed.constants.groundTileSize)))
                 {
-                    if ((pos.x >= (args.cameraPos.x * Rsed.constants.groundTileSize)) &&
-                        (pos.x <= ((args.cameraPos.x + Rsed.world.camera.view_width()) * Rsed.constants.groundTileSize)) &&
-                        (pos.z >= (args.cameraPos.z * Rsed.constants.groundTileSize)) &&
-                        (pos.z <= ((args.cameraPos.z + Rsed.world.camera.view_height()) * Rsed.constants.groundTileSize)))
-                    {
-                        const x = (pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize));
-                        const z = (centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize));
-                        const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
-                        const y = (groundHeight + pos.y);
+                    const x = (pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize));
+                    const z = (centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize));
+                    const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
+                    const y = (groundHeight + pos.y);
 
-                        trackPolygons.push(...this.prop_mesh(pos.propId, idx,
+                    trackPolygons.push(...this.prop_mesh(pos.propId, idx,
+                    {
+                        position:
                         {
-                            position:
-                            {
-                                x,
-                                y,
-                                z,
-                            },
-                            ...args,
-                        }));
-                    }
-                });
-            }
+                            x,
+                            y,
+                            z,
+                        },
+                        ...args,
+                    }));
+                }
+            });
 
             return Rngon.mesh(trackPolygons);
         },
@@ -261,6 +257,7 @@ Rsed.world.mesh_builder = (function()
                         y: 0,
                         z: 0,
                     },
+                    solidProps: true,
                     includeWireframe: false,
                 },
                 ...args
@@ -273,10 +270,15 @@ Rsed.world.mesh_builder = (function()
             {
                 const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x), (v.y + args.position.y), (v.z + args.position.z))),
                 {
-                    color: (ngon.fill.type === "texture"? Rsed.palette.color_at_idx(0) : Rsed.palette.color_at_idx(ngon.fill.idx)),
-                    texture: (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx] : null),
+                    color: (args.solidProps? (ngon.fill.type === "texture"? Rsed.palette.color_at_idx(0)
+                                                                          : Rsed.palette.color_at_idx(ngon.fill.idx))
+                                           : Rsed.palette.color_at_idx(0, true)),
+                    texture: (args.solidProps? (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx]
+                                                                            : null)
+                                             : null),
                     textureMapping: "ortho",
-                    hasWireframe: args.includeWireframe,
+                    wireframeColor: Rsed.palette.color_at_idx(args.solidProps? "black" : "lightgray"),
+                    hasWireframe: (args.solidProps? args.includeWireframe : true),
                     auxiliary:
                     {
                         mousePickId: Rsed.ui.mouse_picking_element("prop",
