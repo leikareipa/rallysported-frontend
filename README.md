@@ -12,7 +12,6 @@ Alternately, you can check out [this](https://tarpeeksihyvaesoft.com/rallysporte
 - Written in modern, vanilla JavaScript - with a bit of Vue for the UI
 
 ![](images/screenshots/beta.3/yleisoek.png)
-![](images/screenshots/beta.3/hakkuu-yla.png)
 
 # End-user's guide
 You can find a handy end-user's guide at https://tarpeeksihyvaesoft.com/rallysported/userguide/.
@@ -101,8 +100,8 @@ The metadata file has the following contents:
 
 ```json
 {
-	"internalName": "name",
-	"displayName": "Name",
+    "internalName": "name",
+    "displayName": "Name without limitations",
     "width": 128,
     "height": 128
 }
