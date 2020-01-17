@@ -1,74 +1,132 @@
-**Note!** The master branch currently contains an on-going rewrite of sections of the codebase, and may be considered unstable for the time being. The rewrite begins with commit f6acac08822a17540407af8998b67537bbd154d0 (roughly speaking).
-
 # RallySportED-js
-A version of [RallySportED](https://github.com/leikareipa/rallysported/)'s track editor for browsers, written in JavaScript. You should find it capable of running in a modern browser on a desktop system. (Mobile support is on the cards but not yet available.)
+A version of [RallySportED](https://github.com/leikareipa/rallysported/)'s track editor for browsers, written in JavaScript.
 
-You can find more information about RallySportED in general, including more technically-oriented documentation, in [RallySportED's umbrella repo](https://github.com/leikareipa/rallysported/).
+A live page running RallySportED-js is available [here](https://tarpeeksihyvaesoft.com/rallysported/). It loads up a track in your browser for local editing.
 
-A live page running RallySportED-js is available [here](http://tarpeeksihyvaesoft.com/rallysported/) - it loads up a track in your browser for local editing. Alternately, you can check out [this version](http://tarpeeksihyvaesoft.com/rallysported/?shared=xcrbdyb), which demonstrates shared editing - changes you make to the track are dynamically sent to the server and broadcast to others viewing the page, and vice versa. (Note that the shared version is publically available but generally uncurated. I encourage users' creativity, but can't guarantee that the content they produce is at all times appropriate for all occasions.)
+Alternately, you can check out [this](https://tarpeeksihyvaesoft.com/rallysported/?shared=xcrbdyb), which demonstrates shared editing. Changes you make to the track will be sent to the server and broadcast to others viewing the page. The network latency is about six seconds.
 
-### Features!
-- Edit Rally-Sport's tracks in your browser!
-- Alter the heightmap, paint the ground, move and place 3d objects
-- Real-time shared editing via the internet
-- Software-rendered 3d graphics with chunky pixels, just like in Rally-Sport
-- Written in vanilla JavaScript (with a bit of Vue sprinkled in for the UI)
+### Features in RallySportED-js
+- Create and edit tracks for Rally-Sport in your browser!
+- Optional multi-user shared editing via the internet
+- Genuine olden-style software-rendered 3d graphics
+- Written in modern, vanilla JavaScript - with a bit of Vue for the UI
 
 ![](images/screenshots/beta.3/yleisoek.png)
 ![](images/screenshots/beta.3/hakkuu-yla.png)
 
-# Technical matters
+# End-user's guide
+You can find a handy end-user's guide at https://tarpeeksihyvaesoft.com/rallysported/userguide/.
+
+The guide walks you through the steps to create a custom track, and shows you how to get the track running in Rally-Sport.
+
+## Setting up RallySportED-js on a server
+To set up a copy of RallySportED-js on your own server, simply copy over the following items:
+
+- [index.php](index.php)
+- [index.css](index.css)
+- [index-responsive.css](index-responsive.css)
+- [animations.css](animations.css)
+- The [server/](server/) directory
+- The [client/](client/) directory (from [client/js/](client/js/), only [rallysported.cat.js](client/js/rallysported.cat.js) is needed)
+
+You can now run RallySportED-js in your browser by navigating to the root of where these files were placed, assuming your server then serves the index.php file as per usual.
+
+By default, RallySportED-js will load Rally-Sport's track #4 as stored in RallySportED's project format under `server/assets/tracks/local/demod/`. You can see the end-user's guide for more information about accessing different tracks, and the [Technical details](#technical-details) section of this document for the specifics of RallySportED's project files.
+
+# Technical details
+Rally-Sport stores most of its asset data in fairly straightforward binary files; and RallySportED-js provides structured means to edit these data.
+
+For instance, the following asset files are involved with the game's first track, "Nurtsi cruising":
+
+| File         | Contains                                                 |
+|--------------|----------------------------------------------------------|
+| MAASTO.001   | The track's heightmap.                                   |
+| VARIMAA.001  | The track's tilemap (texture indices for the PALAT file).|
+| KIERROS1.DTA | The racing line for the track's CPU opponent.            |
+| PALAT.001    | A texture atlas referred to by the track's tilemap.      |
+| TEXT1.DTA    | A texture atlas for track-side 3d objects (trees, etc.). |
+| ANIMS.DTA    | A texture atlas for animations (tire smoke, etc.).       |
+
+In addition, a small amount of data is hard-coded into the RALLYE.EXE executable; for instance, the locations of track-side 3d objects.
+
+RallySportED-js provides a 3d view that combines the data from a given track's MAASTO and VARIMAA files - as well as some of the hard-coded data from RALLYE.EXE - to allow the user to modify the track's appearance and surface features.
+
+For more in-depth information about Rally-Sport's data formats, see [RallySportED's technical documentation](https://github.com/leikareipa/rallysported/tree/master/docs).
+
+## What's a RallySportED project?
+Tracks created with RallySportED are called *projects*. A project holds the data of exactly one Rally-Sport track, in a format specific to RallySportED.
+
+A project called "Suorundi", for example, would consist of the following files (the files of a project are always placed inside a folder named after the project):
+
+| File                  | Contains                                                                        |
+|-----------------------|---------------------------------------------------------------------------------|
+| SUORUNDI/SUORUNDI.DTA | All of the track's Rally-Sport data concatenated into one file. |
+| SUORUNDI/SUORUNDI.$FT | Parameters for loading the project's track into Rally-Sport.    |
+
+RallySportED-js adds an extra file not present in other versions of RallySportED:
+
+| File                  | Contains                                                                        |
+|-----------------------|---------------------------------------------------------------------------------|
+| SUORUNDI/SUORUNDI.META.JSON | Server-side metadata about the track. |
+
+### The container file
+
+The container (.DTA) file contains all of the track's data (MAASTO, VARIMAA, KIERROS, etc.) concatenated into one file.
+
+The container file has the following byte layout:
+
+| Header     | File segment           |
+|------------|------------------------|
+| 32-bit *n* | 8-bit * *n*: `MAASTO`  |
+| 32-bit *n* | 8-bit * *n*: `VARIMAA` |
+| 32-bit *n* | 8-bit * *n*: `PALAT`   |
+| 32-bit *n* | 8-bit * *n*: `ANIMS`   |
+| 32-bit *n* | 8-bit * *n*: `TEXT`    |
+| 32-bit *n* | 8-bit * *n*: `KIERROS` |
+
+Although not required to do so, the container file (more specifically, the KIERROS file inside it) will usually end with the 8-byte value 0xFFFFFFFF.
+
+### The manifesto file
+
+Since each track in Rally-Sport relies on some hard-coded parameters that are not stored in external asset files, loading custom-made track requires modifying the Rally-Sport executable.
+
+To achieve this, RallySportED uses a loader program. The loader takes instructions from the manifesto (.$FT) file on how to modify the game's hard-coded parameters so that the track is loaded in properly.
+
+*(Coming: A table of the manifesto file commands.)*
+
+### The metadata file
+RallySportED-js's server-side metadata file (.META.JSON) is a helper file for server-side code, providing convenient information about the track not readily available in the project's other files.
+
+The metadata file has the following contents:
+
+```json
+{
+	"internalName": "name",
+	"displayName": "Name",
+    "width": 128,
+    "height": 128
+}
+```
+
+The `internalName` property defines the name by which the project is identified by RallySportED. The name is limited to ASCII and can be at most eight characters long. When you import or export a project to/from RallySportED-js, this is the name that will be used.
+
+The `displayName` property provides a name by which the project is referred in RallySportED-js's user-facing UI. This string is not limited to ASCII and can be of any reasonable length; but it will not be exported when you save the project to disk (`internalName` will be used, instead).
+
+The `width` and `height` properties tell how many tiles per side the track has. Note that these properties do not define the track's dimensions but only describe them.
+
+## The client and the server
 *(Coming.)*
 
-## Rally-Sport
-Rally-Sport is a racing game released by Jukka Jäkälä in 1996 for DOS-based computers; featuring fun, tongue-in-cheek rallying in fully 3d environments. Its original website is available [via archive.org](https://web.archive.org/web/19970805142345/http://www.cs.tut.fi/~k140734/Rally-Sport/index.html).
+## The software 3d renderer
+RallySportED-js uses the [retro n-gon renderer](https://www.github.com/leikareipa/retro-ngon/) to reproduce the original look of Rally-Sport in the 3d track editor.
 
-Although no official modding tools were released for the game, many of its assets are stored in straightforward binary formats, making them readily moddable. Further technical information about Rally-Sport's assets and their data formats are available under the [docs/](https://github.com/leikareipa/rallysported/tree/master/docs) folder in [RallySportED's umbrella repo](https://github.com/leikareipa/rallysported/).
-
-## RallySportED
-*(Coming.)*
-
-### Projects
-Tracks created with RallySportED are called *projects*; each project holding the data of one modded track.
-
-For example, given a project entitled "Suorundi", it would consists of the following two files:
-
-- Suorundi.dta
-- Suorundi.$ft
-
-The `dta` file (also called the project's `container`) holds the various modded Rally-Sport assets that make up the project's track - like the heightmap, tilemap, and textures.
-
-The `$ft` file (also called the project's `manifesto`) is a plain ASCII file giving additional directives to RallySportED on how to modify certain hard-coded parameters in Rally-Sport for the purposes of the project's track - such as to adjust the colors of the palette that Rally-Sport uses to render the track.
-
-#### The project's container file
-The container file gets its name from the fact that it consists of a number of discrete asset files. The following individual asset files are contained in a project's .dta file:
-
-| Asset     | Description                                            |
-| --------- | ------------------------------------------------------ |
-| `Maasto`  | The track's heightmap.                                 |
-| `Varimaa` | The track's tilemap.                                   |
-| `Palat`   | The tilemap's texture atlas (~256 16-by-16 textures).  |
-| `Anims`   | Animation frames (of things like fire and tire smoke). |
-| `Text`    | Textures of track-side props (3d objects, like trees). |
-| `Kierros` | The racing line of the track's AI.                     |
-
-The asset names derive directly from the names of the corresponding data files in Rally-Sport. To learn more about the internals of Rally-Sport's asset files, see [RallySportED's documentation on Rally-Sport's data formats](https://github.com/leikareipa/rallysported/blob/master/docs/rs-formats.txt).
-
-The assets are laid out in the container file in a straightforward manner. The first four bytes of the container give as a little-endian 32-bit unsigned integer the byte size *n* of the `Maasto` data. The following *n* bytes are the `Maasto` data. The next four bytes give as a 32-bit unsigned integer the byte size *n* of the `Varimaa` data, and the following *n* bytes are the `Varimaa` data. This pattern repeats in the order given in the table, above; such that `Maasto` is the first contained asset and `Kierros` is the last. There is no data compression or the like - the individual assets are stored 1:1 with Rally-Sport's formats.
-
-#### The project's manifesto file
-*(Coming.)*
-
-### Renderer
-RallySportED-js uses the [retro n-gon renderer](https://www.github.com/leikareipa/retro-ngon/) to faithfully reproduce the look of Rally-Sport in the editor.
-
-The retro n-gon renderer - forked from RallySportED-js's original renderer, developed into a standalone renderer, then backported into RallySportED-js - is a custom software 3d engine capable of natively rendering Rally-Sport's *n*-sided polygons into a HTML5 canvas.
+The retro n-gon renderer - forked from RallySportED-js's original renderer, developed into a standalone renderer, then backported into RallySportED-js - is a custom software 3d engine capable of natively rendering Rally-Sport's *n*-sided polygons onto a HTML5 canvas.
 
 Below is a 3d model of a rock from the game as rendered in RallySportED-js. Its mesh consists of four- and five-sided polygons that were rasterized directly without intervening triangulation.
 
 ![rock.png](images/screenshots/misc/rock.png)
 
-The renderer also reproduces Rally-Sport's somewhat quirky style of texture-mapping, where texture coordinates are derived at render-time from the screen-space coordinates of the polygon's vertices; resulting in noticeable warping of the texture dependent on e.g. the viewing angle.
+The renderer also reproduces Rally-Sport's somewhat quirky style of texture-mapping, where texture coordinates are derived from the screen-space coordinates of the polygon's vertices; resulting in noticeable warping of the texture dependent on e.g. the viewing angle.
 
 Below is a series of images of a texture-mapped polygon demonstrating the texture-warping effect. The upper-right vertex of the polygon is successively raised, resulting in progressively increasing warping of the texture.
 
@@ -77,43 +135,18 @@ Below is a series of images of a texture-mapped polygon demonstrating the textur
 ![texture-3.png](images/screenshots/misc/texture-3.png)
 ![texture-4.png](images/screenshots/misc/texture-4.png)
 
-To explain why this happens, consider that the texture's *v* coordinate is derived from the polygon's height in screen space, such that *v* equals 0 at the highest vertex and 1 at the lowest vertex; and the *u* coordinate from the length of each horizontal pixel span of the polygon on-screen, such that *u* equals 0 at the left end of the span and 1 at the right end.
-
-As a result, in the right-most image above, nearly half of the texture is mapped onto the raised triangular region at the top of the polygon, and becomes more and more squished horizontally toward the polygon's peak, where the horizontal pixels spans are ever shorter.
-
-### Client and server
-*(Coming.)*
-
-## The codebase
-*(Coming.)*
-
-# How to use
-### User's guide
-You can find the RallySportED-js  user's guide by following the _User guide_ link at the top of the editor's page.
-
-The guide will walk you through the basics of getting started with RallySportED-js, making a new track from scratch, and playing the tracks in Rally-Sport. 
-
-### Setting up on a server
-To set up RallySportED-js on a server, simply copy over the following items:
-- [index.php](index.php)
-- [index.css](index.css)
-- The [server/](server/) directory
-- The [client/](client/) directory
-    - From [client/js/](client/js/), only [client/js/rallysported.cat.js](client/js/rallysported.cat.js) is required
-
-You can use the address parameter `track` to instruct RallySportED-js on which track to load up. For instance, `?track=abc` will load the sample track `abc` from [server/assets/tracks/local/abc](server/assets/tracks/local/abc). (Other parameters are also available; these will be documented in the near future.)
+To see why this happens, consider that the texture's *v* coordinate is derived from the polygon's height in screen space so that *v* equals 0 at the highest vertex and 1 at the lowest vertex; and the *u* coordinate from the length of each horizontal pixel span of the polygon on-screen so that *u* equals 0 at the left end of the span and 1 at the right end.
 
 # Project status
 RallySportED-js is currently in beta, with development occurring in sporadic increments.
 
-You can check out the [to-do list](#to-do) to get a rough idea of what's to come for the project in the nearest future.
+## System requirements
+A mouse and keyboard are required to operate the RallySportED-js UI. Although there are plans to implement a mobile-friendly UI, no schedule exists for it at this time.
 
-### System requirements
-**User interface.** At present, a mouse and keyboard are required to operate the RallySportED-js user interface. There are plans to implement a mobile-friendly UI, but no concrete schedule exists for it at this time.
+Since RallySportED-js uses a software 3d renderer, it requires a bit of processing power from the host CPU. No specific figures have yet been established, but a reasonable desktop CPU released in the last five years or so should do the job.
 
-**Processing power.** RallySportED-js uses a software 3d renderer, so it requires a little bit of processing power from the host CPU. No specific figures have yet been established, but a reasonable desktop CPU released in the last five years or so should be up to the job. GPU performance is less important.
-
-**Browser compatibility.** Below are rough estimates of the required browser versions to run a given version of RallySportED-js. Browsers marked with "No" are not compatible at all.
+## Browser compatibility
+Below are rough estimates of the required browser versions to run a given version of RallySportED-js. Browsers marked with "No" are not compatible at all.
 
 <table>
     <tr>
@@ -148,8 +181,8 @@ You can check out the [to-do list](#to-do) to get a rough idea of what's to come
         <td align="center">64</td>
         <td align="center">48</td>
         <td align="center">51</td>
-        <td align="center">11?</td>
-        <td align="center">15?</td>
+        <td align="center">11</td>
+        <td align="center">15</td>
         <td align="center">No</td>
     </tr>
     <tr>
@@ -157,29 +190,11 @@ You can check out the [to-do list](#to-do) to get a rough idea of what's to come
         <td align="center">46</td>
         <td align="center">27</td>
         <td align="center">37</td>
-        <td align="center">8?</td>
-        <td align="center">12?</td>
+        <td align="center">8</td>
+        <td align="center">12</td>
         <td align="center">No</td>
     </tr>
 </table>
-
-### Known issues
-- [ ] Middle mouse button clicks, used to paint the terrain, may intermittently stop being registered
-- [ ] The paint view may be slow to draw, as it's sloppily implemented
-- [ ] There are occasional rendering glitches in the 3d view
-- [ ] The house prop has bad texturing
-- [ ] Keyboard keys can stick if released while the app doesn't have focus
-- [ ] The camera moves in units of tiles rather than pixels, so scrolling can be jerky
-
-### To-do
-- [ ] Edit textures
-- [ ] A user interface that works on mobile
-- [ ] Highlight prop locations in the paint view
-- [ ] Have the height of water tiles reflect how the game displays them
-- [ ] Non-FPS-sensitive terrain editing
-- [ ] Move the camera by clicking on the minimap
-- [ ] Terrain shading
-- [ ] An indicator rectangle in the texture pane around the texture that's currently selected
 
 # Authors and credits
 The principal author of RallySportED-js is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](http://www.tarpeeksihyvaesoft.com)).
@@ -188,4 +203,4 @@ RallySportED-js makes use of [JSZip](https://stuk.github.io/jszip/) and [FileSav
 
 The implementation of the Bresenham line algo in [js/rallysported/render/line-draw.js](js/rallysported/render/line-draw.js) has been adapted, with changes, from the one given by [Phrogz](https://stackoverflow.com/users/405017/phrogz) on [Stack Overflow](https://stackoverflow.com/a/4672319).
 
-The browser icons used in the Browser compatibility section, above, come from [alrra](https://github.com/alrra)'s [Browser Logos](https://github.com/alrra/browser-logos) repository.
+The browser icons used in the [Browser compatibility](#browser-compatibility) section come from [alrra](https://github.com/alrra)'s [Browser Logos](https://github.com/alrra/browser-logos) repository.
