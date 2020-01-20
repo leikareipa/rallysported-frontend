@@ -1,5 +1,4 @@
 stats.php
-/server/assets/tracks/shared/
-/server/assets/tracks/local/
+/rallysported-js/server/assets/tracks/shared/
 /misc/
 *.inc

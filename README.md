@@ -19,16 +19,12 @@ You can find a handy end-user's guide at https://tarpeeksihyvaesoft.com/rallyspo
 The guide walks you through the steps to create a custom track, and shows you how to get the track running in Rally-Sport.
 
 ## Setting up RallySportED-js on a server
-To set up a copy of RallySportED-js on your own server, simply copy over the following items:
+To set up a copy of RallySportED-js on your own server, simply copy over the files from the [rallysported-js/](rallysported-js/) directory.
 
-- [index.php](index.php)
-- [index.css](index.css)
-- [index-responsive.css](index-responsive.css)
-- [animations.css](animations.css)
-- The [server/](server/) directory
-- The [client/](client/) directory (from [client/js/](client/js/), only [rallysported.cat.js](client/js/rallysported.cat.js) is needed)
+- The destination folder on your server does not need to be named rallysported-js - only the directory structure inside it must reflect the contents of [rallysported-js/](rallysported-js/).
+- From [rallysported-js/client/js/](rallysported-js/client/js/), you only need to copy [rallysported.cat.js](rallysported-js/client/js/rallysported.cat.js), which is a concatenation of the source files under that directory (built using [build-client-distributable.sh](build-client-distributable.sh)).
 
-You can now run RallySportED-js in your browser by navigating to the root of where these files were placed, assuming your server then serves the index.php file as per usual.
+You should now be able to run RallySportED-js in your browser by navigating to where you placed the files on your server - assuming the server then serves the [rallysported-js/index.php](rallysported-js/index.php) file as per usual.
 
 By default, RallySportED-js will load Rally-Sport's track #4 as stored in RallySportED's project format under `server/assets/tracks/local/demod/`. You can see the end-user's guide for more information about accessing different tracks, and the [Technical details](#technical-details) section of this document for the specifics of RallySportED's project files.
 

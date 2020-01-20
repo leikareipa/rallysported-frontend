@@ -1,42 +1,42 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (17 December 2019 01:35:59 UTC)
+// VERSION: live (20 January 2020 16:06:41 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
 // INCLUDES: { The retro n-gon renderer (c) 2019 Tarpeeksi Hyvae Soft }
 // FILES:
-//	../client/js/jszip/jszip.min.js
-//	../client/js/filesaver/FileSaver.min.js
-//	../client/js/retro-ngon/rngon.cat.js
-//	../client/js/rallysported/rallysported.js
-//	../client/js/rallysported/project/manifesto.js
-//	../client/js/rallysported/project/project.js
-//	../client/js/rallysported/project/hitable.js
-//	../client/js/rallysported/misc/constants.js
-//	../client/js/rallysported/misc/shared-mode.js
-//	../client/js/rallysported/world/world.js
-//	../client/js/rallysported/world/mesh-builder.js
-//	../client/js/rallysported/world/camera.js
-//	../client/js/rallysported/visual/texture.js
-//	../client/js/rallysported/visual/palette.js
-//	../client/js/rallysported/track/varimaa.js
-//	../client/js/rallysported/track/maasto.js
-//	../client/js/rallysported/track/palat.js
-//	../client/js/rallysported/track/props.js
-//	../client/js/rallysported/ui/ui.js
-//	../client/js/rallysported/ui/popup-notification.js
-//	../client/js/rallysported/ui/font.js
-//	../client/js/rallysported/ui/ground-brush.js
-//	../client/js/rallysported/ui/draw.js
-//	../client/js/rallysported/ui/window.js
-//	../client/js/rallysported/ui/input-state.js
-//	../client/js/rallysported/ui/mouse-picking-element.js
-//	../client/js/rallysported/scene/scene.js
-//	../client/js/rallysported/core/scene-3d.js
-//	../client/js/rallysported/core/scene-tilemap.js
-//	../client/js/rallysported/core/core.js
+//	./rallysported-js/client/js/jszip/jszip.min.js
+//	./rallysported-js/client/js/filesaver/FileSaver.min.js
+//	./rallysported-js/client/js/retro-ngon/rngon.cat.js
+//	./rallysported-js/client/js/rallysported/rallysported.js
+//	./rallysported-js/client/js/rallysported/project/manifesto.js
+//	./rallysported-js/client/js/rallysported/project/project.js
+//	./rallysported-js/client/js/rallysported/project/hitable.js
+//	./rallysported-js/client/js/rallysported/misc/constants.js
+//	./rallysported-js/client/js/rallysported/misc/shared-mode.js
+//	./rallysported-js/client/js/rallysported/world/world.js
+//	./rallysported-js/client/js/rallysported/world/mesh-builder.js
+//	./rallysported-js/client/js/rallysported/world/camera.js
+//	./rallysported-js/client/js/rallysported/visual/texture.js
+//	./rallysported-js/client/js/rallysported/visual/palette.js
+//	./rallysported-js/client/js/rallysported/track/varimaa.js
+//	./rallysported-js/client/js/rallysported/track/maasto.js
+//	./rallysported-js/client/js/rallysported/track/palat.js
+//	./rallysported-js/client/js/rallysported/track/props.js
+//	./rallysported-js/client/js/rallysported/ui/ui.js
+//	./rallysported-js/client/js/rallysported/ui/popup-notification.js
+//	./rallysported-js/client/js/rallysported/ui/font.js
+//	./rallysported-js/client/js/rallysported/ui/ground-brush.js
+//	./rallysported-js/client/js/rallysported/ui/draw.js
+//	./rallysported-js/client/js/rallysported/ui/window.js
+//	./rallysported-js/client/js/rallysported/ui/input-state.js
+//	./rallysported-js/client/js/rallysported/ui/mouse-picking-element.js
+//	./rallysported-js/client/js/rallysported/scene/scene.js
+//	./rallysported-js/client/js/rallysported/core/scene-3d.js
+//	./rallysported-js/client/js/rallysported/core/scene-tilemap.js
+//	./rallysported-js/client/js/rallysported/core/core.js
 /////////////////////////////////////////////////
 
 /*!
@@ -2882,7 +2882,7 @@ Rsed.world.mesh_builder = (function()
                         y: 0,
                         z: 0,
                     },
-                    solidProps: true,
+                    solidProps: true, // Whether to draw props with solid colors(/textures) or with just a wireframe.
                     includeWireframe: false,
                 },
                 ...args,
