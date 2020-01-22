@@ -9,7 +9,7 @@
 "use strict";
 
 // Opens a self-closing popup notification on RallySportED's page.
-Rsed.popup_notification = function(string = "", args = {})
+Rsed.ui.popup_notification = function(string = "", args = {})
 {
     Rsed.throw_if_not_type("string", string);
     Rsed.throw_if_not_type("object", args);

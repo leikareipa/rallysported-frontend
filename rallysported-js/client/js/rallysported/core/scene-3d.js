@@ -193,7 +193,7 @@ Rsed.scenes = Rsed.scenes || {};
                                 // For now, shared mode doesn't support interacting with props.
                                 if (Rsed.shared_mode.enabled())
                                 {
-                                    Rsed.popup_notification("Props cannot be added in shared mode.");
+                                    Rsed.ui.popup_notification("Props cannot be added in shared mode.");
 
                                     // Prevent the same input from registering again next frame, before
                                     // the user has had time to release the mouse button.
@@ -240,7 +240,7 @@ Rsed.scenes = Rsed.scenes || {};
                             // For now, shared mode doesn't support interacting with props.
                             if (Rsed.shared_mode.enabled())
                             {
-                                Rsed.popup_notification("Props cannot be edited in shared mode.");
+                                Rsed.ui.popup_notification("Props cannot be edited in shared mode.");
 
                                 // Prevent the same input from registering again next frame, before
                                 // the user has had time to release the mouse button.
@@ -264,7 +264,7 @@ Rsed.scenes = Rsed.scenes || {};
                                     // For now, don't allow moving the starting line (always prop #0).
                                     if (grab.propTrackIdx === 0)
                                     {
-                                        Rsed.popup_notification("The finish line cannot be moved.");
+                                        Rsed.ui.popup_notification("The finish line cannot be moved.");
         
                                         // Prevent the same input from registering again next frame, before
                                         // the user has had time to release the mouse button.

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 January 2020 16:06:41 UTC)
+// VERSION: live (22 January 2020 15:06:18 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -1846,7 +1846,7 @@ const Rsed = {};
     {
         if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
 
-        Rsed.popup_notification(`Error: ${errMessage}`, {notificationType:"error", timeoutMs:0});
+        Rsed.ui.popup_notification(`Error: ${errMessage}`, {notificationType:"error", timeoutMs:0});
         console.error("RallySportED error: " + errMessage);
         throw new Error("RallySportED error: " + errMessage);
     }
@@ -1854,7 +1854,7 @@ const Rsed = {};
     Rsed.alert = (message = "")=>
     {
         console.warn("RallySportED: " + message);
-        Rsed.popup_notification(message);
+        Rsed.ui.popup_notification(message);
     }
 
     Rsed.log = (message = "")=>
@@ -4154,7 +4154,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             /// be substituted.
             if (propNames[trackPropLocations[trackId].locations[propIdx].propId].name.startsWith("finish"))
             {
-                Rsed.popup_notification("The finish line cannot be removed.");
+                Rsed.ui.popup_notification("The finish line cannot be removed.");
 
                 // Prevent the same input from registering again next frame, before
                 // the user has had time to release the mouse button.
@@ -4338,7 +4338,7 @@ Rsed.ui = {};
 "use strict";
 
 // Opens a self-closing popup notification on RallySportED's page.
-Rsed.popup_notification = function(string = "", args = {})
+Rsed.ui.popup_notification = function(string = "", args = {})
 {
     Rsed.throw_if_not_type("string", string);
     Rsed.throw_if_not_type("object", args);
@@ -5751,7 +5751,7 @@ window.oncontextmenu = function(event)
     /// Temp hack. The finish line is an immutable prop, so disallow changing it.
     if (Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish"))
     {
-        Rsed.popup_notification("The finish line cannot be edited.");
+        Rsed.ui.popup_notification("The finish line cannot be edited.");
 
         // Prevent the same input from registering again next frame, before
         // the user has had time to release the mouse button.
@@ -6506,7 +6506,7 @@ Rsed.scenes = Rsed.scenes || {};
                                 // For now, shared mode doesn't support interacting with props.
                                 if (Rsed.shared_mode.enabled())
                                 {
-                                    Rsed.popup_notification("Props cannot be added in shared mode.");
+                                    Rsed.ui.popup_notification("Props cannot be added in shared mode.");
 
                                     // Prevent the same input from registering again next frame, before
                                     // the user has had time to release the mouse button.
@@ -6553,7 +6553,7 @@ Rsed.scenes = Rsed.scenes || {};
                             // For now, shared mode doesn't support interacting with props.
                             if (Rsed.shared_mode.enabled())
                             {
-                                Rsed.popup_notification("Props cannot be edited in shared mode.");
+                                Rsed.ui.popup_notification("Props cannot be edited in shared mode.");
 
                                 // Prevent the same input from registering again next frame, before
                                 // the user has had time to release the mouse button.
@@ -6577,7 +6577,7 @@ Rsed.scenes = Rsed.scenes || {};
                                     // For now, don't allow moving the starting line (always prop #0).
                                     if (grab.propTrackIdx === 0)
                                     {
-                                        Rsed.popup_notification("The finish line cannot be moved.");
+                                        Rsed.ui.popup_notification("The finish line cannot be moved.");
         
                                         // Prevent the same input from registering again next frame, before
                                         // the user has had time to release the mouse button.
@@ -7073,7 +7073,7 @@ Rsed.core = (function()
         // RallySportED-js projects are exported (saved) via JSZip using Blobs.
         if (!JSZip.support.blob)
         {
-            Rsed.popup_notification("This browser does not support the \"Save to disk\" feature!",
+            Rsed.ui.popup_notification("This browser does not support the \"Save to disk\" feature!",
             {
                 notificationType: "error",
                 timeoutMs: 10000,
@@ -7083,7 +7083,7 @@ Rsed.core = (function()
         // A crude test for whether the user's device might not have mouse/keyboard available.
         if (/android|mobi/i.test(navigator.userAgent))
         {
-            Rsed.popup_notification("Mobile user? Note that this app requires a mouse and keyboard!",
+            Rsed.ui.popup_notification("Mobile user? Note that this app requires a mouse and keyboard!",
             {
                 timeoutMs: 7000,
             });

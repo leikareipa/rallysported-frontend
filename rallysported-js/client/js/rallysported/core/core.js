@@ -220,7 +220,7 @@ Rsed.core = (function()
         // RallySportED-js projects are exported (saved) via JSZip using Blobs.
         if (!JSZip.support.blob)
         {
-            Rsed.popup_notification("This browser does not support the \"Save to disk\" feature!",
+            Rsed.ui.popup_notification("This browser does not support the \"Save to disk\" feature!",
             {
                 notificationType: "error",
                 timeoutMs: 10000,
@@ -230,7 +230,7 @@ Rsed.core = (function()
         // A crude test for whether the user's device might not have mouse/keyboard available.
         if (/android|mobi/i.test(navigator.userAgent))
         {
-            Rsed.popup_notification("Mobile user? Note that this app requires a mouse and keyboard!",
+            Rsed.ui.popup_notification("Mobile user? Note that this app requires a mouse and keyboard!",
             {
                 timeoutMs: 7000,
             });

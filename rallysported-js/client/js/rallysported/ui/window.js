@@ -187,7 +187,7 @@ window.oncontextmenu = function(event)
     /// Temp hack. The finish line is an immutable prop, so disallow changing it.
     if (Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish"))
     {
-        Rsed.popup_notification("The finish line cannot be edited.");
+        Rsed.ui.popup_notification("The finish line cannot be edited.");
 
         // Prevent the same input from registering again next frame, before
         // the user has had time to release the mouse button.

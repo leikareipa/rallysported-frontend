@@ -25,7 +25,7 @@ const Rsed = {};
     {
         if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
 
-        Rsed.popup_notification(`Error: ${errMessage}`, {notificationType:"error", timeoutMs:0});
+        Rsed.ui.popup_notification(`Error: ${errMessage}`, {notificationType:"error", timeoutMs:0});
         console.error("RallySportED error: " + errMessage);
         throw new Error("RallySportED error: " + errMessage);
     }
@@ -33,7 +33,7 @@ const Rsed = {};
     Rsed.alert = (message = "")=>
     {
         console.warn("RallySportED: " + message);
-        Rsed.popup_notification(message);
+        Rsed.ui.popup_notification(message);
     }
 
     Rsed.log = (message = "")=>
