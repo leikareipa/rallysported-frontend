@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (22 January 2020 15:06:18 UTC)
+// VERSION: live (25 January 2020 01:01:16 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -15,7 +15,6 @@
 //	./rallysported-js/client/js/rallysported/project/project.js
 //	./rallysported-js/client/js/rallysported/project/hitable.js
 //	./rallysported-js/client/js/rallysported/misc/constants.js
-//	./rallysported-js/client/js/rallysported/misc/shared-mode.js
 //	./rallysported-js/client/js/rallysported/world/world.js
 //	./rallysported-js/client/js/rallysported/world/mesh-builder.js
 //	./rallysported-js/client/js/rallysported/world/camera.js
@@ -2641,204 +2640,6 @@ Rsed.constants = Object.freeze(
     paletteSize: 32,
 });
 /*
- * Most recent known filename: js/misc/shared-mode.js
- *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
- * 
- * Implements client-side communication with RallySportED-js's shared-mode server.
- * 
- * The central function is server_io(), which orchestrates the communication.
- * But before communication can take place, register_as_participant() should be
- * called to establish ourselves as a participant on the server.
- *
- */
-
-"use strict";
-
-Rsed.shared_mode = (function()
-{
-    // A string that uniquely identifies us as a participant in the shared editing. We'll
-    // need to provide this id any time we GET or POST data to the server.
-    let participantId = null;
-
-    // The number of milliseconds to wait between polling the server with/for data.
-    const serverPollingInterval = 6000;
-
-    // POSTs our most recent edits to the server for other participants to see. Will throw
-    // on errors.
-    function send_local_caches_to_server(localCaches = {})
-    {
-        localCaches =
-        {
-            ...{
-                maasto:[],
-                varimaa:[]
-            },
-            ...localCaches
-        }
-
-        function cacheToDataArray(cache)
-        {
-            return ((dataArray = [])=>{ cache.forEach((v, idx)=>{ if (v != null) dataArray.push(idx, v); }); return dataArray; })();
-        };
-        
-        const postData =
-        {
-            participantId,
-            maasto: cacheToDataArray(localCaches["maasto"]),
-            varimaa: cacheToDataArray(localCaches["varimaa"]),
-        };
-
-        return fetch(("server/shared-editing/post.php?projectName=" + Rsed.core.current_project().internalName +
-                                                    "&participantId=" + participantId),
-                {
-                    method: "POST",
-                    cache: "no-store",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(postData)
-                })
-                .then(response=>
-                {
-                    if (!response.ok)
-                    {
-                        throw "A POST request to the server failed.";
-                    }
-    
-                    return response.json();
-                })
-                .then(ticket=>
-                {
-                    if (!ticket.valid ||
-                        (typeof ticket.data === "undefined"))
-                    {
-                        throw ("The server sent a POST ticket marked invalid. It said: " + ticket.message);
-                    }
-
-                    return ticket.data;
-                })
-                .catch(error=>{ Rsed.throw(error); });
-    }
-
-    // Takes in an object holding edit data we've received from the server made by other
-    // participants, and applies those data to our local data (like our MAASTO heightmap
-    // and VARIMAA tilemap).
-    function apply_server_data_to_local_data(serverData)
-    {
-        if (!serverData) return;
-
-        const resources =
-        {
-            "maasto": Rsed.core.current_project().maasto.set_tile_value_at,
-            "varimaa": Rsed.core.current_project().varimaa.set_tile_value_at,
-        };
-
-        for (const [resourceName, dataCallback] of Object.entries(resources))
-        {
-            if (Array.isArray(serverData[resourceName]))
-            {
-                for (let i = 0; i < serverData[resourceName].length; i += 2)
-                {
-                    dataCallback(...idx_to_xy(serverData[resourceName][i]), serverData[resourceName][i+1]);
-                }
-            }
-        }
-
-        // Converts a 1d array index into a 2d x,y coordinate pair.
-        function idx_to_xy(idx)
-        {
-            return [(idx % Rsed.core.current_project().maasto.width),
-                    Math.floor(idx / Rsed.core.current_project().maasto.width)];
-        }
-    }
-
-    // Sends the server a POST request containing the local edits we've made since the last
-    // time we contacted the server in this manner. Will receive back from the server any
-    // edits made by the other participants in the shared editing.
-    async function server_io(participantId = "")
-    {
-        if (!publicInterface.enabled()) return;
-
-        // Don't post edits while the user is committing more of them.
-        if (Rsed.ui.inputState.mouse_button_down())
-        {
-            setTimeout(poll_server, 500);
-            return;
-        }
-
-        const newServerData = await send_local_caches_to_server({
-            maasto: Rsed.ui.groundBrush.flush_brush_cache("maasto"),
-            varimaa: Rsed.ui.groundBrush.flush_brush_cache("varimaa")
-        });
-
-        apply_server_data_to_local_data(newServerData);
-
-        // Loop.
-        setTimeout(poll_server, serverPollingInterval);
-
-        function poll_server() { server_io(participantId); };
-    }
-
-    const publicInterface = {};
-    {
-        // Returns null if shared mode is disabled; our participant id otherwise (which will be a
-        // truthy value).
-        publicInterface.enabled = function() { return participantId; };
-
-        // Start two-way communication with the shared-mode server.
-        publicInterface.start_polling_server = function()
-        {
-            Rsed.assert && (publicInterface.enabled())
-                        || Rsed.throw("Was asked to start polling the shared-mode server before having registered as a participant in it.");
-
-            server_io(participantId);
-
-            return;
-        }
-
-        // Asks the server to register us as a participant in the shared editing. Being a participant
-        // means we can have our edits broadcast to the server and to receive edits from the server made
-        // by other participants. If an error occurs while registering, the client side will be terminated.
-        publicInterface.register_as_participant_in_project = function(projectName = "")
-        {
-            // If we were already registered as a participant, unregister that previous registration, first.
-            if (publicInterface.enabled()) publicInterface.unregister_current_registration();
-
-            return fetch(("server/shared-editing/register.php?projectName=" + projectName), {cache: "no-store"})
-                    .then(response=>
-                    {
-                        if (!response.ok)
-                        {
-                            throw "A POST request to the server failed.";
-                        }
-
-                        return response.json();
-                    })
-                    .then(ticket=>
-                    {
-                        if (!ticket.valid || (typeof ticket.participantId === "undefined"))
-                        {
-                            throw "Failed to register as a new participant in the shared editing.";
-                        }
-
-                        participantId = ticket.participantId;
-                    })
-                    .catch(error=>{ Rsed.throw("Error while registering as a participant in shared editing: " + error); });
-        };
-
-        // Tell the server that we no longer want to participate in the shared editing. Our edits
-        // will no longer be broadcast to the server, and we don't receive other participants'
-        // edits from the server.
-        publicInterface.unregister_current_registration = function()
-        {
-            participantId = null;
-
-            /// TODO. Maybe flush the latest local changes to the server, etc.
-        }
-    };
-    return publicInterface;
-})();
-/*
  * Most recent known filename: js/world/world.js
  *
  * Tarpeeksi Hyvae Soft 2019 /
@@ -4115,9 +3916,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         // Moves the propIdx'th prop on the given track by the given delta.
         move: (trackId = 0, propIdx = 0, delta = {x:0,y:0,z:0})=>
         {
-            // For now, shared mode doesn't support moving props.
-            if (Rsed.shared_mode.enabled()) return;
-
             Rsed.assert && ((trackId >= 0) &&
                             (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
@@ -5033,15 +4831,6 @@ Rsed.ui.groundBrush = (function()
     // Which PALA texture the brush paints with, currently.
     let brushPalaIdx = 3;
 
-    // When shared editing is enabled, we'll accumulate all brush strokes into caches,
-    // which we'll then upload to the server the next time we poll it; after which
-    // the caches are emptied and filled up again as we make new edits.
-    const brushCache = Object.freeze(
-    {
-        maasto:[],
-        varimaa:[]
-    });
-
     const publicInterface = {};
     {
         // Set to true to have the brush smoothen the terrain heightmap.
@@ -5095,21 +4884,11 @@ Rsed.ui.groundBrush = (function()
                                                                        (targetProject.maasto.tile_at(tileX, tileZ) + value));
                             }
 
-                            if (Rsed.shared_mode.enabled())
-                            {
-                                brushCache.maasto[tileX + tileZ * targetProject.maasto.width] = targetProject.maasto.tile_at(tileX, tileZ);
-                            }
-
                             break;
                         }
                         case this.brushAction.changePala:
                         {
                             targetProject.varimaa.set_tile_value_at(tileX, tileZ, value);
-
-                            if (Rsed.shared_mode.enabled())
-                            {
-                                brushCache.varimaa[tileX + tileZ * targetProject.maasto.width] = targetProject.varimaa.tile_at(tileX, tileZ);
-                            }
 
                             break;
                         }
@@ -5143,17 +4922,6 @@ Rsed.ui.groundBrush = (function()
         publicInterface.brush_pala_idx = function()
         {
             return brushPalaIdx;
-        }
-
-        // Empties out the given brush cache; returning a copy of the contents of the
-        // cache prior to its emptying.
-        publicInterface.flush_brush_cache = function(which = "")
-        {
-            return ((cache)=>
-            {
-                brushCache[which].length = 0;
-                return cache;
-            })(brushCache[which].slice());
         }
     }
     return publicInterface;
@@ -5588,11 +5356,6 @@ window.onload = function(event)
     {
         project:
         {
-            // Whether edits to the project happen locally on the client or are broadcast onto
-            // the server for other participants to see. Server-side editing is only available
-            // for projects that have been created on the server specifically for shared editing.
-            editMode: "local", // | "shared"
-
             // Whether the project's initial data files will be found on the server or on
             // the client. If on the client, an additional property, .dataAsJSON, is expected
             // to provide these data as a JSON string.
@@ -5609,24 +5372,7 @@ window.onload = function(event)
     {
         const params = new URLSearchParams(window.location.search);
 
-        if (params.has("shared"))
-        {
-            // Give the input a sanity check.
-            if (!(/^[0-9a-z]+$/.test(params.get("shared"))))
-            {
-                Rsed.throw("Invalid track identifier.");
-                return;
-            }
-
-            rsedStartupArgs.project.editMode = "shared";
-            rsedStartupArgs.project.dataLocality = "server";
-            rsedStartupArgs.project.dataIdentifier = params.get("shared");
-
-            // Sanitize input.
-            /// TODO.
-        }
-        // Server-side custom tracks. These have an id string that identifies the track.
-        else if (params.has("track"))
+        if (params.has("track"))
         {
             // Give the input a sanity check.
             if (!(/^[0-9a-z]+$/.test(params.get("track"))))
@@ -5635,7 +5381,6 @@ window.onload = function(event)
                 return;
             }
 
-            rsedStartupArgs.project.editMode = "local";
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = params.get("track");
         }
@@ -5655,7 +5400,6 @@ window.onload = function(event)
                             (trackId <= 8))
                         || Rsed.throw("The given track id is out of bounds.");
 
-            rsedStartupArgs.project.editMode = "local";
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
         }
@@ -5741,12 +5485,6 @@ window.oncontextmenu = function(event)
     }
 
     event.preventDefault();
-
-    // Props aren't allowed to be edited in any way in shared mode.
-    if (Rsed.shared_mode.enabled())
-    {
-        return;
-    }
 
     /// Temp hack. The finish line is an immutable prop, so disallow changing it.
     if (Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish"))
@@ -6503,18 +6241,6 @@ Rsed.scenes = Rsed.scenes || {};
                             if (Rsed.ui.inputState.key_down("shift") &&
                                 Rsed.ui.inputState.left_mouse_button_down()) 
                             {
-                                // For now, shared mode doesn't support interacting with props.
-                                if (Rsed.shared_mode.enabled())
-                                {
-                                    Rsed.ui.popup_notification("Props cannot be added in shared mode.");
-
-                                    // Prevent the same input from registering again next frame, before
-                                    // the user has had time to release the mouse button.
-                                    Rsed.ui.inputState.reset_mouse_buttons_state();
-
-                                    break;
-                                }
-
                                 Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
                                                                                Rsed.core.current_project().props.id_for_name("tree"),
                                                                                {
@@ -6550,18 +6276,6 @@ Rsed.scenes = Rsed.scenes || {};
                         }
                         case "prop":
                         {
-                            // For now, shared mode doesn't support interacting with props.
-                            if (Rsed.shared_mode.enabled())
-                            {
-                                Rsed.ui.popup_notification("Props cannot be edited in shared mode.");
-
-                                // Prevent the same input from registering again next frame, before
-                                // the user has had time to release the mouse button.
-                                Rsed.ui.inputState.reset_mouse_buttons_state();
-
-                                break;
-                            }
-
                             if (Rsed.ui.inputState.left_mouse_button_down())
                             {
                                 // Remove the selected prop.
@@ -6980,8 +6694,7 @@ Rsed.core = (function()
         // Starts up RallySportED with the given project to edit.
         run: async function(startupArgs = {})
         {
-            Rsed.assert && ((typeof startupArgs.project.dataLocality !== "undefined") &&
-                            (typeof startupArgs.project.editMode !== "undefined"))
+            Rsed.assert && (typeof startupArgs.project.dataLocality !== "undefined")
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
 
             isRunning = false;
@@ -7092,31 +6805,13 @@ Rsed.core = (function()
 
     async function load_project(args = {})
     {
-        Rsed.assert && ((typeof args.project.editMode !== "undefined") &&
-                        (typeof args.project.dataIdentifier !== "undefined"))
+        Rsed.assert && (typeof args.project.dataIdentifier !== "undefined")
                     || Rsed.throw("Missing required arguments for loading a project.");
             
-        if (args.project.editMode === "shared")
-        {
-            await Rsed.shared_mode.register_as_participant_in_project(args.project.dataIdentifier);
-        }
-        else
-        {
-            Rsed.shared_mode.unregister_current_registration();
-        }
-
         Rsed.world.camera.reset_camera_position();
 
         project = await Rsed.project(args.project);
 
         Rsed.apply_manifesto(project);
-
-        /// TODO. This needs to be implemented in a better way and/or somewhere
-        /// else - ideally so you don't have to manually start the poll loop;
-        /// so you don't risk starting it twice or whatever.
-        if (Rsed.shared_mode.enabled())
-        {
-            Rsed.shared_mode.start_polling_server();
-        }
     }
 })();

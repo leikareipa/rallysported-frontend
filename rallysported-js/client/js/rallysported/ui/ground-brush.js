@@ -17,15 +17,6 @@ Rsed.ui.groundBrush = (function()
     // Which PALA texture the brush paints with, currently.
     let brushPalaIdx = 3;
 
-    // When shared editing is enabled, we'll accumulate all brush strokes into caches,
-    // which we'll then upload to the server the next time we poll it; after which
-    // the caches are emptied and filled up again as we make new edits.
-    const brushCache = Object.freeze(
-    {
-        maasto:[],
-        varimaa:[]
-    });
-
     const publicInterface = {};
     {
         // Set to true to have the brush smoothen the terrain heightmap.
@@ -79,21 +70,11 @@ Rsed.ui.groundBrush = (function()
                                                                        (targetProject.maasto.tile_at(tileX, tileZ) + value));
                             }
 
-                            if (Rsed.shared_mode.enabled())
-                            {
-                                brushCache.maasto[tileX + tileZ * targetProject.maasto.width] = targetProject.maasto.tile_at(tileX, tileZ);
-                            }
-
                             break;
                         }
                         case this.brushAction.changePala:
                         {
                             targetProject.varimaa.set_tile_value_at(tileX, tileZ, value);
-
-                            if (Rsed.shared_mode.enabled())
-                            {
-                                brushCache.varimaa[tileX + tileZ * targetProject.maasto.width] = targetProject.varimaa.tile_at(tileX, tileZ);
-                            }
 
                             break;
                         }
@@ -127,17 +108,6 @@ Rsed.ui.groundBrush = (function()
         publicInterface.brush_pala_idx = function()
         {
             return brushPalaIdx;
-        }
-
-        // Empties out the given brush cache; returning a copy of the contents of the
-        // cache prior to its emptying.
-        publicInterface.flush_brush_cache = function(which = "")
-        {
-            return ((cache)=>
-            {
-                brushCache[which].length = 0;
-                return cache;
-            })(brushCache[which].slice());
         }
     }
     return publicInterface;

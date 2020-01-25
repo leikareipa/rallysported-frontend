@@ -24,11 +24,6 @@ window.onload = function(event)
     {
         project:
         {
-            // Whether edits to the project happen locally on the client or are broadcast onto
-            // the server for other participants to see. Server-side editing is only available
-            // for projects that have been created on the server specifically for shared editing.
-            editMode: "local", // | "shared"
-
             // Whether the project's initial data files will be found on the server or on
             // the client. If on the client, an additional property, .dataAsJSON, is expected
             // to provide these data as a JSON string.
@@ -45,24 +40,7 @@ window.onload = function(event)
     {
         const params = new URLSearchParams(window.location.search);
 
-        if (params.has("shared"))
-        {
-            // Give the input a sanity check.
-            if (!(/^[0-9a-z]+$/.test(params.get("shared"))))
-            {
-                Rsed.throw("Invalid track identifier.");
-                return;
-            }
-
-            rsedStartupArgs.project.editMode = "shared";
-            rsedStartupArgs.project.dataLocality = "server";
-            rsedStartupArgs.project.dataIdentifier = params.get("shared");
-
-            // Sanitize input.
-            /// TODO.
-        }
-        // Server-side custom tracks. These have an id string that identifies the track.
-        else if (params.has("track"))
+        if (params.has("track"))
         {
             // Give the input a sanity check.
             if (!(/^[0-9a-z]+$/.test(params.get("track"))))
@@ -71,7 +49,6 @@ window.onload = function(event)
                 return;
             }
 
-            rsedStartupArgs.project.editMode = "local";
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = params.get("track");
         }
@@ -91,7 +68,6 @@ window.onload = function(event)
                             (trackId <= 8))
                         || Rsed.throw("The given track id is out of bounds.");
 
-            rsedStartupArgs.project.editMode = "local";
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
         }
@@ -177,12 +153,6 @@ window.oncontextmenu = function(event)
     }
 
     event.preventDefault();
-
-    // Props aren't allowed to be edited in any way in shared mode.
-    if (Rsed.shared_mode.enabled())
-    {
-        return;
-    }
 
     /// Temp hack. The finish line is an immutable prop, so disallow changing it.
     if (Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish"))

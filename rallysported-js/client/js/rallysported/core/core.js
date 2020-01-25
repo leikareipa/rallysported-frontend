@@ -127,8 +127,7 @@ Rsed.core = (function()
         // Starts up RallySportED with the given project to edit.
         run: async function(startupArgs = {})
         {
-            Rsed.assert && ((typeof startupArgs.project.dataLocality !== "undefined") &&
-                            (typeof startupArgs.project.editMode !== "undefined"))
+            Rsed.assert && (typeof startupArgs.project.dataLocality !== "undefined")
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
 
             isRunning = false;
@@ -239,31 +238,13 @@ Rsed.core = (function()
 
     async function load_project(args = {})
     {
-        Rsed.assert && ((typeof args.project.editMode !== "undefined") &&
-                        (typeof args.project.dataIdentifier !== "undefined"))
+        Rsed.assert && (typeof args.project.dataIdentifier !== "undefined")
                     || Rsed.throw("Missing required arguments for loading a project.");
             
-        if (args.project.editMode === "shared")
-        {
-            await Rsed.shared_mode.register_as_participant_in_project(args.project.dataIdentifier);
-        }
-        else
-        {
-            Rsed.shared_mode.unregister_current_registration();
-        }
-
         Rsed.world.camera.reset_camera_position();
 
         project = await Rsed.project(args.project);
 
         Rsed.apply_manifesto(project);
-
-        /// TODO. This needs to be implemented in a better way and/or somewhere
-        /// else - ideally so you don't have to manually start the poll loop;
-        /// so you don't risk starting it twice or whatever.
-        if (Rsed.shared_mode.enabled())
-        {
-            Rsed.shared_mode.start_polling_server();
-        }
     }
 })();

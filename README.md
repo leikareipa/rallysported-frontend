@@ -3,11 +3,8 @@ A version of [RallySportED](https://github.com/leikareipa/rallysported/)'s track
 
 A live page running RallySportED-js is available [here](https://tarpeeksihyvaesoft.com/rallysported/). It loads up a track in your browser for local editing.
 
-Alternately, you can check out [this](https://tarpeeksihyvaesoft.com/rallysported/?shared=xcrbdyb), which demonstrates shared editing. Changes you make to the track will be sent to the server and broadcast to others viewing the page. The network latency is about six seconds.
-
 ### Features in RallySportED-js
 - Create and edit tracks for Rally-Sport in your browser!
-- Optional multi-user shared editing via the internet
 - Genuine olden-style software-rendered 3d graphics
 - Written in modern, vanilla JavaScript - with a bit of Vue for the UI
 

@@ -190,18 +190,6 @@ Rsed.scenes = Rsed.scenes || {};
                             if (Rsed.ui.inputState.key_down("shift") &&
                                 Rsed.ui.inputState.left_mouse_button_down()) 
                             {
-                                // For now, shared mode doesn't support interacting with props.
-                                if (Rsed.shared_mode.enabled())
-                                {
-                                    Rsed.ui.popup_notification("Props cannot be added in shared mode.");
-
-                                    // Prevent the same input from registering again next frame, before
-                                    // the user has had time to release the mouse button.
-                                    Rsed.ui.inputState.reset_mouse_buttons_state();
-
-                                    break;
-                                }
-
                                 Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
                                                                                Rsed.core.current_project().props.id_for_name("tree"),
                                                                                {
@@ -237,18 +225,6 @@ Rsed.scenes = Rsed.scenes || {};
                         }
                         case "prop":
                         {
-                            // For now, shared mode doesn't support interacting with props.
-                            if (Rsed.shared_mode.enabled())
-                            {
-                                Rsed.ui.popup_notification("Props cannot be edited in shared mode.");
-
-                                // Prevent the same input from registering again next frame, before
-                                // the user has had time to release the mouse button.
-                                Rsed.ui.inputState.reset_mouse_buttons_state();
-
-                                break;
-                            }
-
                             if (Rsed.ui.inputState.left_mouse_button_down())
                             {
                                 // Remove the selected prop.
