@@ -125,7 +125,7 @@ Rsed.core = (function()
     const publicInterface =
     {
         // Starts up RallySportED with the given project to edit.
-        run: async function(startupArgs = {})
+        start: async function(startupArgs = {})
         {
             Rsed.assert && (typeof startupArgs.project.dataLocality !== "undefined")
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
