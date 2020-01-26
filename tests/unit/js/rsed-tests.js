@@ -40,7 +40,7 @@ const unitTestResults = unit_tests("RallySportED-js", ()=>
     {
         const pixels = [{red:255, green:0, blue:123}, {red:0, green:111, blue:222}];
         const indices = [0, 4];
-        const texture = Rsed.texture(
+        const texture = Rsed.visual.texture(
         {
             width: 2,
             height: 1,
@@ -58,21 +58,21 @@ const unitTestResults = unit_tests("RallySportED-js", ()=>
                      ()=>(texture.flipped === "no")]);
 
         // Invalid/missing values.
-        expect_fail([()=>{Rsed.texture(
+        expect_fail([()=>{Rsed.visual.texture(
                           {
                               width: 3, // Should be 2.
                               height: 1,
                               pixels,
                               indices,
                           })},
-                     ()=>{Rsed.texture(
+                     ()=>{Rsed.visual.texture(
                           {
                               width: 2,
                               height: 1,
                               indices,
                               // No pixel array provided.
                           })},
-                     ()=>{Rsed.texture(
+                     ()=>{Rsed.visual.texture(
                           {
                               width: 2,
                               // No width provided.

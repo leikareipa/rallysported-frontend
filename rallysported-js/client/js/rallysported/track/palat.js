@@ -61,7 +61,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
         if ((dataIdx < 0) ||
             ((dataIdx + palaSize) >= data.byteLength))
         {
-            return Rsed.texture(
+            return Rsed.visual.texture(
             {
                 ...args,
                 width: 1,
@@ -77,7 +77,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                                  (palaId == 177) ||
                                 ((palaId >= 208) && (palaId <= 239)));
 
-        return Rsed.texture(
+        return Rsed.visual.texture(
         {
             ...args,
             width: palaWidth,

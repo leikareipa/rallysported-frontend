@@ -61,7 +61,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             }
         }
 
-        return Rsed.texture(
+        return Rsed.visual.texture(
         {
             width,
             height,

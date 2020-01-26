@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 12:55:35 UTC)
+// VERSION: live (26 January 2020 12:57:12 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3137,7 +3137,7 @@ Rsed.visual = Rsed.visual || {};
 // Implements a 32-bit texture whose output interface is compatible with the retro n-gon
 // renderer's texture_rgba() object (so that n-gons can be textured with the object from
 // this function and rendered with the retro n-gon renderer).
-Rsed.texture = function(args = {})
+Rsed.visual.texture = function(args = {})
 { 
     args =
     {
@@ -3768,7 +3768,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
         if ((dataIdx < 0) ||
             ((dataIdx + palaSize) >= data.byteLength))
         {
-            return Rsed.texture(
+            return Rsed.visual.texture(
             {
                 ...args,
                 width: 1,
@@ -3784,7 +3784,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                                  (palaId == 177) ||
                                 ((palaId >= 208) && (palaId <= 239)));
 
-        return Rsed.texture(
+        return Rsed.visual.texture(
         {
             ...args,
             width: palaWidth,
@@ -3860,7 +3860,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             }
         }
 
-        return Rsed.texture(
+        return Rsed.visual.texture(
         {
             width,
             height,
