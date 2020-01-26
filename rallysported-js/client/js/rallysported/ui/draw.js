@@ -278,8 +278,8 @@ Rsed.ui.draw = (function()
             if (image && xMul && yMul)
             {
                 const frame = [];
-                const frameWidth = Math.round((Rsed.world.camera.view_width() / xMul));
-                const frameHeight = Math.floor((Rsed.world.camera.view_height() / yMul));
+                const frameWidth = Math.round((Rsed.world.camera.view_width / xMul));
+                const frameHeight = Math.floor((Rsed.world.camera.view_height / yMul));
                 
                 for (let y = 0; y < frameHeight; y++)
                 {

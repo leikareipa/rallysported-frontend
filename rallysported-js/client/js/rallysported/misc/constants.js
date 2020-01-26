@@ -10,7 +10,7 @@
 
 Rsed.constants = Object.freeze(
 {
-    // The resolution of a PALA texture.
+    // The resolution, in pixels, of a PALA texture.
     palaWidth: 16,
     palaHeight: 16,
 

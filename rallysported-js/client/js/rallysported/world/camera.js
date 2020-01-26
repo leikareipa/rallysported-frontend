@@ -20,17 +20,17 @@ Rsed.world.camera = (function()
 
     const moveSpeed = 0.4;
 
-    const publicInterface = {};
+    const publicInterface =
     {
         // Restore the camera's default position.
-        publicInterface.reset_camera_position = function()
+        reset_camera_position: function()
         {
             position.x = 15;
             position.y = 0;
             position.z = 13;
-        }
+        },
 
-        publicInterface.move_camera = function(deltaX, deltaY, deltaZ, enforceBounds = true)
+        move_camera: function(deltaX, deltaY, deltaZ, enforceBounds = true)
         {
             const prevPos = this.position_floored();
 
@@ -41,8 +41,8 @@ Rsed.world.camera = (function()
             // Prevent the camera from moving past the track boundaries.
             if (enforceBounds)
             {
-                position.x = Math.max(0, Math.min(position.x, Rsed.core.current_project().maasto.width - this.view_width()));
-                position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height() + 1)));
+                position.x = Math.max(0, Math.min(position.x, Rsed.core.current_project().maasto.width - this.view_width));
+                position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height + 1)));
             }
 
             const newPos = this.position_floored();
@@ -84,9 +84,9 @@ Rsed.world.camera = (function()
             }
 
             return;
-        }
+        },
 
-        publicInterface.rotate_camera = function(xDelta, yDelta, zDelta)
+        rotate_camera: function(xDelta, yDelta, zDelta)
         {
             Rsed.throw_if_not_type("number", xDelta, yDelta, zDelta);
 
@@ -95,12 +95,12 @@ Rsed.world.camera = (function()
             rotation.z += zDelta;
 
             return;
-        }
+        },
 
         // Moves the camera up/down while tilting it up/down, so that at its highest
         // point, the camera is pointed directly down, and at its lowest point toward
         // the horizon.
-        publicInterface.zoom_vertically = function(delta)
+        zoom_vertically: function(delta)
         {
             Rsed.throw_if_not_type("number", delta);
 
@@ -112,35 +112,36 @@ Rsed.world.camera = (function()
             return;
         },
 
-        publicInterface.rotation = function()
+        rotation: function()
         {
             return Rngon.rotation_vector(rotation.x, rotation.y, rotation.z);
-        }
+        },
 
-        publicInterface.position_floored = function()
+        position_floored: function()
         {
             return {
                 x: Math.floor(position.x),
                 y: Math.floor(position.y),
                 z: Math.floor(position.z),
             }
-        }
+        },
 
-        publicInterface.position = function()
+        position: function()
         {
             return {
                 x: position.x,
                 y: position.y,
                 z: position.z,
             }
-        }
+        },
 
-        publicInterface.movement_speed = function() { return moveSpeed; }
+        movement_speed: moveSpeed,
 
-        // How many tiles horizontally and vertically should be visible on screen with this camera.
-        publicInterface.view_width = function() { return 17; }
-        publicInterface.view_height = function() { return 17; }
-    }
+        // How many track ground tiles, horizontally and vertically, should be
+        // visible on screen when using this camera.
+        view_width: 17,
+        view_height: 17,
+    };
 
     publicInterface.reset_camera_position();
 

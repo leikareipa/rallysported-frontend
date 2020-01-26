@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 16:40:21 UTC)
+// VERSION: live (26 January 2020 19:04:17 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2655,7 +2655,7 @@ Rsed.project.hitableZip = new Uint8Array(
 
 Rsed.constants = Object.freeze(
 {
-    // The resolution of a PALA texture.
+    // The resolution, in pixels, of a PALA texture.
     palaWidth: 16,
     palaHeight: 16,
 
@@ -2736,7 +2736,7 @@ Rsed.world.meshBuilder = (function()
 
             // We'll shift the track mesh by these values (world units) to center the mesh on screen.
             // Note that we adjust Z to account for vertical camera zooming.
-            const centerView = {x: -((Rsed.world.camera.view_width() / 2) * Rsed.constants.groundTileSize),
+            const centerView = {x: -((Rsed.world.camera.view_width / 2) * Rsed.constants.groundTileSize),
                                 y: (-680 + args.cameraPos.y),
                                 z: (2800 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 
@@ -2744,10 +2744,10 @@ Rsed.world.meshBuilder = (function()
             const hover = Rsed.ui.inputState.current_mouse_hover();
             const tabPressed = Rsed.ui.inputState.key_down("tab");
 
-            for (let z = 0; z < Rsed.world.camera.view_height(); z++)
+            for (let z = 0; z < Rsed.world.camera.view_height; z++)
             {
                 // Add the ground tiles.
-                for (let x = 0; x < Rsed.world.camera.view_width(); x++)
+                for (let x = 0; x < Rsed.world.camera.view_width; x++)
                 {
                     // Coordinates of the current ground tile.
                     const tileX = (x + args.cameraPos.x);
@@ -2812,7 +2812,7 @@ Rsed.world.meshBuilder = (function()
                 // the ground tiles so that the n-gons are properly sorted by depth for rendering.
                 // Otherwise, billboard/bridge tiles can become obscured by ground tiles behind
                 // them.
-                for (let x = 0; x < Rsed.world.camera.view_width(); x++)
+                for (let x = 0; x < Rsed.world.camera.view_width; x++)
                 {
                     const tileX = (x + args.cameraPos.x);
                     const tileZ = (z + args.cameraPos.z);
@@ -2911,9 +2911,9 @@ Rsed.world.meshBuilder = (function()
             propLocations.forEach((pos, idx)=>
             {
                 if ((pos.x >= (args.cameraPos.x * Rsed.constants.groundTileSize)) &&
-                    (pos.x <= ((args.cameraPos.x + Rsed.world.camera.view_width()) * Rsed.constants.groundTileSize)) &&
+                    (pos.x <= ((args.cameraPos.x + Rsed.world.camera.view_width) * Rsed.constants.groundTileSize)) &&
                     (pos.z >= (args.cameraPos.z * Rsed.constants.groundTileSize)) &&
-                    (pos.z <= ((args.cameraPos.z + Rsed.world.camera.view_height()) * Rsed.constants.groundTileSize)))
+                    (pos.z <= ((args.cameraPos.z + Rsed.world.camera.view_height) * Rsed.constants.groundTileSize)))
                 {
                     const x = (pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize));
                     const z = (centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize));
@@ -3031,17 +3031,17 @@ Rsed.world.camera = (function()
 
     const moveSpeed = 0.4;
 
-    const publicInterface = {};
+    const publicInterface =
     {
         // Restore the camera's default position.
-        publicInterface.reset_camera_position = function()
+        reset_camera_position: function()
         {
             position.x = 15;
             position.y = 0;
             position.z = 13;
-        }
+        },
 
-        publicInterface.move_camera = function(deltaX, deltaY, deltaZ, enforceBounds = true)
+        move_camera: function(deltaX, deltaY, deltaZ, enforceBounds = true)
         {
             const prevPos = this.position_floored();
 
@@ -3052,8 +3052,8 @@ Rsed.world.camera = (function()
             // Prevent the camera from moving past the track boundaries.
             if (enforceBounds)
             {
-                position.x = Math.max(0, Math.min(position.x, Rsed.core.current_project().maasto.width - this.view_width()));
-                position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height() + 1)));
+                position.x = Math.max(0, Math.min(position.x, Rsed.core.current_project().maasto.width - this.view_width));
+                position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height + 1)));
             }
 
             const newPos = this.position_floored();
@@ -3095,9 +3095,9 @@ Rsed.world.camera = (function()
             }
 
             return;
-        }
+        },
 
-        publicInterface.rotate_camera = function(xDelta, yDelta, zDelta)
+        rotate_camera: function(xDelta, yDelta, zDelta)
         {
             Rsed.throw_if_not_type("number", xDelta, yDelta, zDelta);
 
@@ -3106,12 +3106,12 @@ Rsed.world.camera = (function()
             rotation.z += zDelta;
 
             return;
-        }
+        },
 
         // Moves the camera up/down while tilting it up/down, so that at its highest
         // point, the camera is pointed directly down, and at its lowest point toward
         // the horizon.
-        publicInterface.zoom_vertically = function(delta)
+        zoom_vertically: function(delta)
         {
             Rsed.throw_if_not_type("number", delta);
 
@@ -3123,35 +3123,36 @@ Rsed.world.camera = (function()
             return;
         },
 
-        publicInterface.rotation = function()
+        rotation: function()
         {
             return Rngon.rotation_vector(rotation.x, rotation.y, rotation.z);
-        }
+        },
 
-        publicInterface.position_floored = function()
+        position_floored: function()
         {
             return {
                 x: Math.floor(position.x),
                 y: Math.floor(position.y),
                 z: Math.floor(position.z),
             }
-        }
+        },
 
-        publicInterface.position = function()
+        position: function()
         {
             return {
                 x: position.x,
                 y: position.y,
                 z: position.z,
             }
-        }
+        },
 
-        publicInterface.movement_speed = function() { return moveSpeed; }
+        movement_speed: moveSpeed,
 
-        // How many tiles horizontally and vertically should be visible on screen with this camera.
-        publicInterface.view_width = function() { return 17; }
-        publicInterface.view_height = function() { return 17; }
-    }
+        // How many track ground tiles, horizontally and vertically, should be
+        // visible on screen when using this camera.
+        view_width: 17,
+        view_height: 17,
+    };
 
     publicInterface.reset_camera_position();
 
@@ -5378,8 +5379,8 @@ Rsed.ui.draw = (function()
             if (image && xMul && yMul)
             {
                 const frame = [];
-                const frameWidth = Math.round((Rsed.world.camera.view_width() / xMul));
-                const frameHeight = Math.floor((Rsed.world.camera.view_height() / yMul));
+                const frameWidth = Math.round((Rsed.world.camera.view_width / xMul));
+                const frameHeight = Math.floor((Rsed.world.camera.view_height / yMul));
                 
                 for (let y = 0; y < frameHeight; y++)
                 {

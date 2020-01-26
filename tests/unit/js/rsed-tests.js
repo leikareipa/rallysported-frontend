@@ -25,9 +25,9 @@ const unitTestResults = unit_tests("RallySportED-js", ()=>
             const camPos = Rsed.world.camera.position();
 
             Rsed.world.camera.move_camera(11, 12, 13, false);
-            expect_true([()=>((camPos.x + 11 * Rsed.world.camera.movement_speed()) === Rsed.world.camera.position().x),
-                         ()=>((camPos.y + 12 * Rsed.world.camera.movement_speed()) === Rsed.world.camera.position().y),
-                         ()=>((camPos.z + 13 * Rsed.world.camera.movement_speed()) === Rsed.world.camera.position().z)]);
+            expect_true([()=>((camPos.x + 11 * Rsed.world.camera.movement_speed) === Rsed.world.camera.position().x),
+                         ()=>((camPos.y + 12 * Rsed.world.camera.movement_speed) === Rsed.world.camera.position().y),
+                         ()=>((camPos.z + 13 * Rsed.world.camera.movement_speed) === Rsed.world.camera.position().z)]);
 
             Rsed.world.camera.reset_camera_position();
             expect_true([()=>(Rsed.world.camera.position().x === camPos.x),
