@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 12:57:12 UTC)
+// VERSION: live (26 January 2020 13:01:13 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2192,7 +2192,7 @@ Rsed.project = async function(projectArgs = {})
     {
         name: projectData.meta.displayName,
         internalName: projectData.meta.internalName,
-        checkpoint: ()=>(trackCheckpoints[0] || {x:0,y:0}),
+        track_checkpoint: ()=>(trackCheckpoints[0] || {x:0,y:0}),
         maasto,
         varimaa,
         palat,
@@ -6530,7 +6530,7 @@ Rsed.scenes["tilemap"] = (function()
             {
                 const xMul = (Rsed.core.current_project().maasto.width / tilemapWidth);
                 const zMul = (Rsed.core.current_project().maasto.width / tilemapHeight);
-                const checkpoint = Rsed.core.current_project().checkpoint();
+                const checkpoint = Rsed.core.current_project().track_checkpoint();
                 const tilemap = new Array(tilemapWidth * tilemapHeight); // Palette indices that form the tilemap image.
                 const mousePick = new Array(tilemapWidth * tilemapHeight);
 

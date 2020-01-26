@@ -137,7 +137,7 @@ Rsed.project = async function(projectArgs = {})
     {
         name: projectData.meta.displayName,
         internalName: projectData.meta.internalName,
-        checkpoint: ()=>(trackCheckpoints[0] || {x:0,y:0}),
+        track_checkpoint: ()=>(trackCheckpoints[0] || {x:0,y:0}),
         maasto,
         varimaa,
         palat,

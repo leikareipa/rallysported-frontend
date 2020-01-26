@@ -41,7 +41,7 @@ Rsed.scenes["tilemap"] = (function()
             {
                 const xMul = (Rsed.core.current_project().maasto.width / tilemapWidth);
                 const zMul = (Rsed.core.current_project().maasto.width / tilemapHeight);
-                const checkpoint = Rsed.core.current_project().checkpoint();
+                const checkpoint = Rsed.core.current_project().track_checkpoint();
                 const tilemap = new Array(tilemapWidth * tilemapHeight); // Palette indices that form the tilemap image.
                 const mousePick = new Array(tilemapWidth * tilemapHeight);
 
