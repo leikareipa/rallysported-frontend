@@ -26,6 +26,8 @@ Rsed.project = async function(projectArgs = {})
     // Which RallySportED loader is required to load this track.
     let loaderVersion = null;
 
+    const isPlaceholder = false;
+
     // Rally-Sport uses checkpoints - invisible markers at given x,y tile positions on the
     // track - to keep track of whether the player's car has raced a valid lap. In other
     // words, the car must pass through all of the track's checkpoints in order for the lap
@@ -133,6 +135,11 @@ Rsed.project = async function(projectArgs = {})
 
     const manifesto = projectData.manifesto;
 
+    apply_manifesto();
+
+    Rsed.log("\"" + projectData.meta.displayName + "\" is a valid RallySportED project. " +
+             "Its internal name is \"" + projectData.meta.internalName + "\".");
+
     const publicInterface = Object.freeze(
     {
         name: projectData.meta.displayName,
@@ -153,52 +160,6 @@ Rsed.project = async function(projectArgs = {})
                         || Rsed.throw("Attempting to access a project's track id before it has been set.");
 
             return trackId;
-        },
-
-        set_track_id: (id)=>
-        {
-            Rsed.assert && ((id >= 0) &&
-                            (id <= 7))
-                        || Rsed.throw("Track id out of bounds.");
-
-            trackId = id;
-
-            // Certain properties in Rally-Sport are hard-coded for each track, and which RallySportED
-            // also doesn't let the user edit; so let's hard-code those properties for RallySportED,
-            // as well.
-            {
-                switch (trackId)
-                {
-                    case 0: trackCheckpoints.push({x:46,y:6}); break;
-                    case 1: trackCheckpoints.push({x:56,y:14}); break;
-                    case 2: trackCheckpoints.push({x:50,y:6}); break;
-                    case 3: trackCheckpoints.push({x:86,y:98}); break;
-                    case 4: trackCheckpoints.push({x:60,y:106}); break;
-                    case 5: trackCheckpoints.push({x:10,y:48}); break;
-                    case 6: trackCheckpoints.push({x:114,y:118}); break;
-                    case 7: trackCheckpoints.push({x:56,y:60}); break;
-                    default: Rsed.throw(`Unknown track id (${trackId}).`);
-                }
-
-                Rsed.visual.palette.set_palette((trackId === 4)? 1 :
-                                         (trackId === 7)? 3 : 0);
-            }
-
-            return;
-        },
-
-        set_palat_id: (id)=>
-        {
-            Rsed.assert && ((id >= 0) &&
-                            (id <= 1))
-                        || Rsed.throw("PALAT id out of bounds.");
-
-            palatId = id;
-        },
-
-        set_required_loader_version: (version)=>
-        {
-            loaderVersion = version;
         },
 
         // Bundles the project's data files into a .zip, and has the browser initiate a 'download' of it.
@@ -246,9 +207,6 @@ Rsed.project = async function(projectArgs = {})
             return;
         }
     });
-
-    Rsed.log("\"" + projectData.meta.displayName + "\" is a valid RallySportED project. " +
-              "Its internal name is \"" + projectData.meta.internalName + "\".");
     
     return publicInterface;
 
@@ -517,9 +475,186 @@ Rsed.project = async function(projectArgs = {})
                    .catch(error=>{ Rsed.throw(error); });
         }
     }
+
+    function apply_manifesto()
+    {
+        Rsed.assert && (!isPlaceholder)
+                    || Rsed.throw("Can't apply manifestos to placeholder projects.");
+
+        const commands = manifesto.split("\n").filter(line=>line.trim().length);
+
+        Rsed.assert && (commands.length >= 2)
+                    || Rsed.throw("Invalid number of lines in the manifesto.");
+
+        Rsed.assert && (commands[0].startsWith("0 "))
+                    || Rsed.throw("Expected the manifesto to begin with the command 0, but it doesn't.");
+
+        Rsed.assert && (commands[commands.length-1].startsWith("99"))
+                    || Rsed.throw("Expected the manifesto to end with the command 99, but it doesn't.");
+
+        commands.forEach(command=>
+        {
+            apply_command(command);
+        });
+
+        return;
+
+        function apply_command(commandLine)
+        {
+            const params = commandLine.split(" ");
+            const command = Number(params.shift());
+
+            eval("apply_" + command)(params);
+
+            // Command: REQUIRE. Specifies which of the eight tracks in Rally-Sport's demo the project
+            // is forked from.
+            function apply_0(args = [])
+            {
+                Rsed.assert && (args.length === 3)
+                            || Rsed.throw("Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
+
+                set_track_id(Math.floor(Number(args[0]) - 1));
+                set_palat_id(palatId = Math.floor(Number(args[1])));
+                set_required_loader_version(Number(args[2]));
+            }
+
+            // Command: ROAD. Sets up the game's driving physics for various kinds of road surfaces.
+            function apply_1(args = [])
+            {
+                Rsed.assert && (args.length === 1)
+                            || Rsed.throw("Invalid number of arguments to manifesto command 1. Expected 1 but received " + args.length + ".");
+            }
+
+            // Command: NUM_OBJS. Sets the number of props (in addition to the starting line) on the track.
+            function apply_2(args = [])
+            {
+                Rsed.assert && (args.length === 1)
+                            || Rsed.throw("Invalid number of arguments to manifesto command 2. Expected 1 but received " + args.length + ".");
+
+                const numObjs = Math.floor(Number(args[0]));
+
+                props.set_count(trackId, numObjs);
+            }
+
+            // Command: ADD_OBJ. Adds a new prop to the track.
+            function apply_3(args = [])
+            {
+                Rsed.assert && (args.length === 5)
+                            || Rsed.throw("Invalid number of arguments to manifesto command 3. Expected 5 but received " + args.length + ".");
+
+                const propId = Math.floor(Number(args[0]) - 1);
+                const x = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
+                const z = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
+
+                props.add_location(trackId, propId, {x, z});
+            }
+
+            // Command: CHANGE_OBJ_TYPE. Changes the type of the given prop.
+            function apply_4(args = [])
+            {
+                Rsed.assert && (args.length === 2)
+                            || Rsed.throw("Invalid number of arguments to manifesto command 4. Expected 2 but received " + args.length + ".");
+
+                const targetPropIdx = Math.floor(Number(args[0]) - 1);
+                const newPropId = Math.floor(Number(args[1]) - 1);
+
+                props.change_prop_type(trackId, targetPropIdx, newPropId);
+            }
+
+            // Command: MOVE_OBJ. Moves the position of the given prop.
+            function apply_5(args = [])
+            {
+                Rsed.assert && (args.length === 5)
+                            || Rsed.throw("Invalid number of arguments to manifesto command 5. Expected 5 but received " + args.length + ".");
+
+                const targetPropIdx = Math.floor(Number(args[0]) - 1);
+                const x = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
+                const z = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
+
+                props.set_prop_location(trackId, targetPropIdx, {x, z});
+            }
+
+            // Command: MOVE_STARTING_POS. Moves the starting line. Note that this doesn't move the
+            // starting line prop, but the starting position of the player's car. So we can ignore
+            // it in the editor.
+            function apply_6(args = [])
+            {
+                Rsed.assert && (args.length === 4)
+                            || Rsed.throw("Invalid number of arguments to manifesto command 6. Expected 4 but received " + args.length + ".");
+            }
+
+            // Command: CHANGE_PALETTE_ENTRY. Changes the given palette index to the given r,g,b values.
+            function apply_10(args = [])
+            {
+                Rsed.assert && (args.length === 4)
+                            || Rsed.throw("Invalid number of arguments to manifesto command 10. Expected 4 but received " + args.length + ".");
+
+                const targetPaletteIdx = Math.floor(Number(args[0]));
+                const red = Math.floor(Number(args[1] * 4));
+                const green = Math.floor(Number(args[2] * 4));
+                const blue = Math.floor(Number(args[3] * 4));
+                
+                Rsed.visual.palette.set_color(targetPaletteIdx, {red, green, blue});
+            }
+
+            // Command: STOP. Stops parsing the manifesto file.
+            function apply_99(args = [])
+            {
+                Rsed.assert && (args.length === 0)
+                            || Rsed.throw("Invalid number of arguments to manifesto command 99. Expected no arguments but received " + args.length + ".");
+            }
+        }
+    }
+
+    function set_track_id(id)
+    {
+        Rsed.assert && ((id >= 0) &&
+                        (id <= 7))
+                    || Rsed.throw("Track id out of bounds.");
+
+        trackId = id;
+
+        // Certain properties in Rally-Sport are hard-coded for each track, and which RallySportED
+        // also doesn't let the user edit; so let's hard-code those properties for RallySportED,
+        // as well.
+        {
+            switch (trackId)
+            {
+                case 0: trackCheckpoints.push({x:46,y:6}); break;
+                case 1: trackCheckpoints.push({x:56,y:14}); break;
+                case 2: trackCheckpoints.push({x:50,y:6}); break;
+                case 3: trackCheckpoints.push({x:86,y:98}); break;
+                case 4: trackCheckpoints.push({x:60,y:106}); break;
+                case 5: trackCheckpoints.push({x:10,y:48}); break;
+                case 6: trackCheckpoints.push({x:114,y:118}); break;
+                case 7: trackCheckpoints.push({x:56,y:60}); break;
+                default: Rsed.throw(`Unknown track id (${trackId}).`);
+            }
+
+            Rsed.visual.palette.set_palette((trackId === 4)? 1 :
+                                            (trackId === 7)? 3 : 0);
+        }
+
+        return;
+    }
+
+    function set_palat_id(id)
+    {
+        Rsed.assert && ((id >= 0) &&
+                        (id <= 1))
+                    || Rsed.throw("PALAT id out of bounds.");
+
+        palatId = id;
+    }
+
+    function set_required_loader_version(version)
+    {
+        loaderVersion = version;
+    }
 }
 
-// An empty project that lets the renderer etc. spin.
+// An empty project that lets the renderer etc. spin even when there's no
+// actual project data loaded.
 Rsed.project.placeholder =
 {
     isPlaceholder: true,

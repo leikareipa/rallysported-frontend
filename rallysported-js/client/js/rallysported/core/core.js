@@ -167,7 +167,5 @@ Rsed.core = (function()
         Rsed.world.camera.reset_camera_position();
 
         project = await Rsed.project(args.project);
-
-        Rsed.apply_manifesto(project);
     }
 })();
