@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 15:47:27 UTC)
+// VERSION: live (26 January 2020 16:40:21 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5544,8 +5544,14 @@ window.onload = function(event)
     {
         const params = new URLSearchParams(window.location.search);
 
-        // The user can use the "track" parameter to specify which track to load.
-        if (params.has("track"))
+        // The user can use the "track" parameter to specify which track to load. Otherwise,
+        // we'll load one of the Rally-Sport demo tracks.
+        if (!params.has("track"))
+        {
+            params.append("track", "demod");
+            window.location.search = params.toString();
+        }
+        else
         {
             const trackID = params.get("track");
 

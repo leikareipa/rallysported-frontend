@@ -40,8 +40,14 @@ window.onload = function(event)
     {
         const params = new URLSearchParams(window.location.search);
 
-        // The user can use the "track" parameter to specify which track to load.
-        if (params.has("track"))
+        // The user can use the "track" parameter to specify which track to load. Otherwise,
+        // we'll load one of the Rally-Sport demo tracks.
+        if (!params.has("track"))
+        {
+            params.append("track", "demod");
+            window.location.search = params.toString();
+        }
+        else
         {
             const trackID = params.get("track");
 
