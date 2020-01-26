@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 19:06:46 UTC)
+// VERSION: live (26 January 2020 20:31:34 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6799,6 +6799,21 @@ Rsed.core = (function()
     // The scene we're currently displaying to the user.
     let currentScene = Rsed.scenes["3d"];
 
+    // Rudimentary (and not necessarily accurate) information about the browser in which
+    // the app is running.
+    const browserInfo = (()=>
+    {
+        return {
+            isMobile: Boolean(/android|mobi/i.test(navigator.userAgent)),
+            browserName: (/Chrome/i.test(navigator.userAgent)? "Chrome" :
+                          /CriOS/i.test(navigator.userAgent)? "Chrome" :
+                          /Opera/i.test(navigator.userAgent)? "Opera" :
+                          /Firefox/i.test(navigator.userAgent)? "Firefox" :
+                          /Safari/i.test(navigator.userAgent)? "Safari" :
+                          null),
+        };
+    })();
+
     // Whether to display an FPS counter to the user.
     const fpsCounterEnabled = (()=>
     {
@@ -6808,6 +6823,11 @@ Rsed.core = (function()
 
     const publicInterface =
     {
+        is_running: ()=>coreIsRunning,
+        renderer_fps: ()=>programFPS,
+        fps_counter_enabled: ()=>fpsCounterEnabled,
+        browser_info: ()=>browserInfo,
+
         // Starts up RallySportED with the given project to edit.
         start: async function(args = {})
         {
@@ -6869,10 +6889,6 @@ Rsed.core = (function()
 
             return;
         },
-        
-        is_running: ()=>coreIsRunning,
-        renderer_fps: ()=>programFPS,
-        fps_counter_enabled: ()=>fpsCounterEnabled,
     }
 
     return publicInterface;
@@ -6900,7 +6916,7 @@ Rsed.core = (function()
         // RallySportED-js projects are exported (saved) via JSZip using Blobs.
         if (!JSZip.support.blob)
         {
-            Rsed.ui.popup_notification("This browser does not support the \"Save to disk\" feature!",
+            Rsed.ui.popup_notification("This browser does not support saving projects to disk!",
             {
                 notificationType: "error",
                 timeoutMs: 10000,
@@ -6908,7 +6924,7 @@ Rsed.core = (function()
         }
 
         // A crude test for whether the user's device might not have mouse/keyboard available.
-        if (/android|mobi/i.test(navigator.userAgent))
+        if (browserInfo.isMobile)
         {
             Rsed.ui.popup_notification("Mobile user? Note that this app requires a mouse and keyboard!",
             {
