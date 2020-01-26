@@ -8,6 +8,8 @@
 
 "use strict";
 
+Rsed.visual = Rsed.visual || {};
+
 Rsed.palette = (function()
 {
     // How many colors there are in a single palette.

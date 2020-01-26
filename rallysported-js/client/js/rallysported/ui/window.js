@@ -24,26 +24,25 @@ window.onload = function(event)
     {
         project:
         {
-            // Whether the project's initial data files will be found on the server or on
-            // the client. If on the client, an additional property, .dataAsJSON, is expected
-            // to provide these data as a JSON string.
+            // Whether the project's data files will be loaded from Rally-Sport Content's
+            // server or provided by the client (e.g. via file drag onto the browser).
             dataLocality: "server", // | "client"
 
             // A property uniquely identifying this project's data. For server-side projects,
-            // this will be a string, and for client-side data a file reference.
+            // this will be a Rally-Sport Content track resource ID, and for client-side data
+            // a file reference.
             dataIdentifier: "demod",
         }
     };
     
-    // Parse any parameters the user supplied on the address line. Generally speaking, these
-    // will direct which track's assets RallySportED should load up when it starts.
+    // Parse any parameters the user supplied on the address line.
     {
         const params = new URLSearchParams(window.location.search);
 
         if (params.has("track"))
         {
             // Give the input a sanity check.
-            if (!(/^[0-9a-z]+$/.test(params.get("track"))))
+            if (!(/^[0-9a-zA-Z-]+$/.test(params.get("track"))))
             {
                 Rsed.throw("Invalid track identifier.");
                 return;
@@ -52,41 +51,12 @@ window.onload = function(event)
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = params.get("track");
         }
-        // Server side original tracks from Rally-Sport's demo. These take a value in the range 1..8,
-        // corresponding to the eight tracks in the demo.
-        else if (params.has("original"))
-        {
-            // Give the input a sanity check.
-            if (!(/^[1-8]+$/.test(params.get("original"))))
-            {
-                Rsed.throw("Invalid track identifier.");
-                return;
-            }
-
-            const trackId = parseInt(params.get("original"), 10);
-            Rsed.assert && ((trackId >= 1) &&
-                            (trackId <= 8))
-                        || Rsed.throw("The given track id is out of bounds.");
-
-            rsedStartupArgs.project.dataLocality = "server";
-            rsedStartupArgs.project.dataIdentifier = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
-        }
     }
 
     // The app doesn't need to be run if we're just testing its units.
-    if (Rsed.unitTestRun)
-    {
-        return;
-    }
-
-    if (Rsed && Rsed.core)
-    {
-        Rsed.core.run(rsedStartupArgs);
-    }
-    else
-    {
-        Rsed.throw("Failed to launch RallySportED.");
-    }
+    if (Rsed.unitTestRun) return;
+    else if (Rsed && Rsed.core) Rsed.core.start(rsedStartupArgs);
+    else Rsed.throw("Failed to launch RallySportED.");
 
     return;
 }
@@ -139,7 +109,7 @@ window.oncontextmenu = function(event)
     }
 
     // Only handle clicks that occur over RallySportED's canvas.
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -190,7 +160,7 @@ window.onwheel = function(event)
     }
 
     // Only handle wheel events that occur over RallySportED's canvas.
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -210,7 +180,7 @@ window.onclick = function(event)
     }
 
     // Only handle clicks that occur over RallySportED's canvas.
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -232,7 +202,7 @@ window.onmousedown = function(event)
     }
 
     // Only handle clicks that occur over RallySportED's canvas.
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -256,7 +226,7 @@ window.onmouseup = function(event)
     }
 
     // Only handle clicks that occur over RallySportED's canvas.
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -279,7 +249,7 @@ window.onmousemove = function(event)
         return;
     }
 
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -353,8 +323,7 @@ window.drop_handler = function(event)
         return;
     }
 
-    // Launch RallySportED with project data from the given zip file.
-    Rsed.core.run(
+    Rsed.core.start(
     {
         project:
         {

@@ -213,7 +213,7 @@ Rsed.ui.draw = (function()
                 str = "HEIGHT:+000 PALA:000 X,Y:000,000";
             }
 
-            this.string(str, 0, Rsed.core.render_height() - Rsed.ui.font.font_height());
+            this.string(str, 0, Rsed.visual.canvas.height - Rsed.ui.font.font_height());
 
             return;
         },
@@ -330,7 +330,7 @@ Rsed.ui.draw = (function()
 
             // Recompute the pane's dimensions based on the current display size.
             /// FIXME: Leaves unnecessary empty rows for some resolutions.
-            numPalatPaneRows = (Math.floor(Rsed.core.render_height() / 8) - 1);
+            numPalatPaneRows = (Math.floor(Rsed.visual.canvas.height / 8) - 1);
             numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
             palatPaneWidth = ((numPalatPaneCols * (palaWidth / 2)) + 1);
             palatPaneHeight = ((numPalatPaneRows * (palaHeight / 2)) + 1);

@@ -29,8 +29,8 @@ Rsed.scenes = Rsed.scenes || {};
             Rsed.ui.draw.begin_drawing(canvas);
 
             // Draw a large minimap of the track in the middle of the screen.
-            const width = Math.floor(Rsed.core.render_width() * 0.81);
-            const height = Math.floor(Rsed.core.render_height() * 0.72);
+            const width = Math.floor(Rsed.visual.canvas.width * 0.81);
+            const height = Math.floor(Rsed.visual.canvas.height * 0.72);
             {
                 const xMul = (Rsed.core.current_project().maasto.width / width);
                 const zMul = (Rsed.core.current_project().maasto.width / height);

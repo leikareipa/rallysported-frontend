@@ -30,32 +30,6 @@ Rsed.core = (function()
         return (params.has("showFramerate") && (Number(params.get("showFramerate")) === 1));
     })();
 
-    // The canvas we'll render into.
-    const canvas =
-    {
-        width: 0,
-        height: 0,
-        scalingFactor: 0.25,
-        domElement: document.getElementById("render-canvas"),
-        
-        // An array where each element corresponds to a rendered pixel on the canvas and contains
-        // a 32-bit value identifying the source n-gon.
-        mousePickingBuffer: [],
-    };
-
-    Rsed.assert && (canvas.domElement != null)
-                || Rsed.throw("Failed to find a canvas element to render into.");
-
-    canvas.domElement.onmouseleave = function(event)
-    {
-        // A bit of a kludge to prevent certain inputs from sticking if released while a non-
-        // RallySportED element has focus.
-        Rsed.ui.inputState.reset_mouse_buttons_state();
-        Rsed.ui.inputState.reset_modifier_keys_state();
-
-        return;
-    }
-
     const publicInterface =
     {
         // Starts up RallySportED with the given project to edit.
@@ -119,13 +93,8 @@ Rsed.core = (function()
         },
         
         is_running: ()=>isRunning,
-        render_width: ()=>canvas.width,
-        render_height: ()=>canvas.height,
         renderer_fps: ()=>programFPS,
-        render_surface_id: ()=>canvas.domElement.getAttribute("id"),
         fps_counter_enabled: ()=>fpsCounterEnabled,
-        scaling_multiplier: ()=>canvas.scalingFactor,
-        mouse_pick_buffer_at: (x, y)=>canvas.mousePickingBuffer[x + y * canvas.width],
     }
 
     return publicInterface;
@@ -140,9 +109,9 @@ Rsed.core = (function()
         scene.handle_user_interaction();
 
         // Render the next frame.
-        canvas.mousePickingBuffer.fill(null);
-        scene.draw_mesh(canvas);
-        scene.draw_ui(canvas);
+        Rsed.visual.canvas.mousePickingBuffer.fill(null);
+        scene.draw_mesh(Rsed.visual.canvas);
+        scene.draw_ui(Rsed.visual.canvas);
 
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
     }

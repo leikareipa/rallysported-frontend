@@ -8,6 +8,8 @@
 
 "use strict";
 
+Rsed.visual = Rsed.visual || {};
+
 // Implements a 32-bit texture whose output interface is compatible with the retro n-gon
 // renderer's texture_rgba() object (so that n-gons can be textured with the object from
 // this function and rendered with the retro n-gon renderer).

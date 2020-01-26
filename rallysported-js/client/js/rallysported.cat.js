@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (25 January 2020 01:01:16 UTC)
+// VERSION: live (26 January 2020 01:30:40 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -20,11 +20,13 @@
 //	./rallysported-js/client/js/rallysported/world/camera.js
 //	./rallysported-js/client/js/rallysported/visual/texture.js
 //	./rallysported-js/client/js/rallysported/visual/palette.js
+//	./rallysported-js/client/js/rallysported/visual/canvas.js
 //	./rallysported-js/client/js/rallysported/track/varimaa.js
 //	./rallysported-js/client/js/rallysported/track/maasto.js
 //	./rallysported-js/client/js/rallysported/track/palat.js
 //	./rallysported-js/client/js/rallysported/track/props.js
 //	./rallysported-js/client/js/rallysported/ui/ui.js
+//	./rallysported-js/client/js/rallysported/ui/html.js
 //	./rallysported-js/client/js/rallysported/ui/popup-notification.js
 //	./rallysported-js/client/js/rallysported/ui/font.js
 //	./rallysported-js/client/js/rallysported/ui/ground-brush.js
@@ -2636,8 +2638,13 @@ Rsed.constants = Object.freeze(
     // How many hard-coded palettes there are in Rally-Sport's demo version.
     numPalettes: 4,
 
-    // How many colors there are in one of Rally-Sport's hard-coded palettes.
+    // How many colors there are per palette.
     paletteSize: 32,
+
+    // A URL pointing to the root of Rally-Sport Content, the service from which
+    // RallySportED-js will fetch track data. It would ideally be located on the
+    // same origin, to avoid CORS issues.
+    rallySportContentURL: `${window.location.origin}/rallysport-content/`,
 });
 /*
  * Most recent known filename: js/world/world.js
@@ -3125,6 +3132,8 @@ Rsed.world.camera = (function()
 
 "use strict";
 
+Rsed.visual = Rsed.visual || {};
+
 // Implements a 32-bit texture whose output interface is compatible with the retro n-gon
 // renderer's texture_rgba() object (so that n-gons can be textured with the object from
 // this function and rendered with the retro n-gon renderer).
@@ -3206,6 +3215,8 @@ Rsed.texture = function(args = {})
  */
 
 "use strict";
+
+Rsed.visual = Rsed.visual || {};
 
 Rsed.palette = (function()
 {
@@ -3447,6 +3458,54 @@ Rsed.palette = (function()
 
     return publicInterface;
 })();
+/*
+ * Most recent known filename: js/visual/canvas.js
+ *
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
+ * 
+ */
+
+"use strict";
+
+Rsed.visual = Rsed.visual || {};
+
+// Provides a canvas for RallySportED-js to render into.
+Rsed.visual.canvas =
+{
+    width: 0,
+    height: 0,
+    scalingFactor: 0.25,
+    domElement: document.getElementById("render-canvas"),
+    domElementID: null,
+
+    // One element for each pixel on the canvas. Will be populated during rendering
+    // with metainformation about the pixel - e.g. what kind of a polygon populates
+    // it. For use in determining what the mouse cursor is hovering over on the
+    // canvas.
+    mousePickingBuffer: [],
+};
+
+// The canvas DOM element is not available during unit testing. Otherwise, we expect
+// it to be present.
+if (!Rsed.unitTestRun)
+{
+    Rsed.assert && (Rsed.visual.canvas.domElement != null)
+                || Rsed.throw("Failed to find a canvas element to render into.");
+
+    Rsed.visual.canvas.domElementID = Rsed.visual.canvas.domElement.getAttribute("id");
+
+
+    // A bit of a kludge to prevent certain inputs from sticking if released while a non-
+    // RallySportED element has focus.
+    Rsed.visual.canvas.domElement.onmouseleave = function(event)
+    {
+        Rsed.ui.inputState.reset_mouse_buttons_state();
+        Rsed.ui.inputState.reset_modifier_keys_state();
+
+        return;
+    }
+}
 /*
  * Most recent known filename: js/track/varimaa.js
  *
@@ -4125,6 +4184,85 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
 "use strict";
 
 Rsed.ui = {};
+/*
+ * Most recent known filename: js/ui/html.js
+ *
+ * Tarpeeksi Hyvae Soft 2018 /
+ * RallySportED-js
+ * 
+ */
+
+"use strict";
+
+// Provides functionality to manage RallySportED-js's HTML UI.
+//
+// Note: This will likely be rewritten in the near future.
+//
+Rsed.ui.htmlUI = (function()
+{
+    const uiContainer = new Vue(
+    {
+        el: "#html-ui",
+        data:
+        {
+            // The display name of the track that's currently open in the editor.
+            trackName: "",
+
+            propList: [],
+
+            // Whether the UI should be displayed or kept invisible at this time.
+            uiVisible: false,
+        },
+        methods:
+        {
+            // Called when the user selects a prop from the prop dropdown menu.
+            /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
+            activate_prop: function(name = "")
+            {
+                if (!Rsed.ui.inputState.current_mouse_hover() ||
+                        Rsed.ui.inputState.current_mouse_hover().type !== "prop")
+                {
+                    return;
+                }
+
+                Rsed.core.current_project().props.change_prop_type(Rsed.core.current_project().track_id(),
+                                                                    Rsed.ui.inputState.current_mouse_hover().propTrackIdx,
+                                                                    Rsed.core.current_project().props.id_for_name(name));
+                window.close_dropdowns();
+
+                return;
+            },
+            
+            refresh: function()
+            {
+                this.trackName = Rsed.core.current_project().name;
+                this.propList = Rsed.core.current_project().props.names()
+                                            .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
+                                            .map(propName=>({propName}));
+
+                return;
+            }
+        }
+    });
+
+    const publicInterface = {};
+    {
+        publicInterface.refresh = function()
+        {
+            uiContainer.refresh();
+
+            return;
+        };
+
+        publicInterface.set_visible = function(isVisible)
+        {
+            uiContainer.uiVisible = isVisible;
+
+            return;
+        };
+    }
+    return publicInterface;
+})();
 /*
  * Most recent known filename: js/ui/notification.js
  *
@@ -5141,7 +5279,7 @@ Rsed.ui.draw = (function()
                 str = "HEIGHT:+000 PALA:000 X,Y:000,000";
             }
 
-            this.string(str, 0, Rsed.core.render_height() - Rsed.ui.font.font_height());
+            this.string(str, 0, Rsed.visual.canvas.height - Rsed.ui.font.font_height());
 
             return;
         },
@@ -5258,7 +5396,7 @@ Rsed.ui.draw = (function()
 
             // Recompute the pane's dimensions based on the current display size.
             /// FIXME: Leaves unnecessary empty rows for some resolutions.
-            numPalatPaneRows = (Math.floor(Rsed.core.render_height() / 8) - 1);
+            numPalatPaneRows = (Math.floor(Rsed.visual.canvas.height / 8) - 1);
             numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
             palatPaneWidth = ((numPalatPaneCols * (palaWidth / 2)) + 1);
             palatPaneHeight = ((numPalatPaneRows * (palaHeight / 2)) + 1);
@@ -5356,26 +5494,25 @@ window.onload = function(event)
     {
         project:
         {
-            // Whether the project's initial data files will be found on the server or on
-            // the client. If on the client, an additional property, .dataAsJSON, is expected
-            // to provide these data as a JSON string.
+            // Whether the project's data files will be loaded from Rally-Sport Content's
+            // server or provided by the client (e.g. via file drag onto the browser).
             dataLocality: "server", // | "client"
 
             // A property uniquely identifying this project's data. For server-side projects,
-            // this will be a string, and for client-side data a file reference.
+            // this will be a Rally-Sport Content track resource ID, and for client-side data
+            // a file reference.
             dataIdentifier: "demod",
         }
     };
     
-    // Parse any parameters the user supplied on the address line. Generally speaking, these
-    // will direct which track's assets RallySportED should load up when it starts.
+    // Parse any parameters the user supplied on the address line.
     {
         const params = new URLSearchParams(window.location.search);
 
         if (params.has("track"))
         {
             // Give the input a sanity check.
-            if (!(/^[0-9a-z]+$/.test(params.get("track"))))
+            if (!(/^[0-9a-zA-Z-]+$/.test(params.get("track"))))
             {
                 Rsed.throw("Invalid track identifier.");
                 return;
@@ -5384,41 +5521,12 @@ window.onload = function(event)
             rsedStartupArgs.project.dataLocality = "server";
             rsedStartupArgs.project.dataIdentifier = params.get("track");
         }
-        // Server side original tracks from Rally-Sport's demo. These take a value in the range 1..8,
-        // corresponding to the eight tracks in the demo.
-        else if (params.has("original"))
-        {
-            // Give the input a sanity check.
-            if (!(/^[1-8]+$/.test(params.get("original"))))
-            {
-                Rsed.throw("Invalid track identifier.");
-                return;
-            }
-
-            const trackId = parseInt(params.get("original"), 10);
-            Rsed.assert && ((trackId >= 1) &&
-                            (trackId <= 8))
-                        || Rsed.throw("The given track id is out of bounds.");
-
-            rsedStartupArgs.project.dataLocality = "server";
-            rsedStartupArgs.project.dataIdentifier = ("demo" + String.fromCharCode("a".charCodeAt(0) + trackId - 1));
-        }
     }
 
     // The app doesn't need to be run if we're just testing its units.
-    if (Rsed.unitTestRun)
-    {
-        return;
-    }
-
-    if (Rsed && Rsed.core)
-    {
-        Rsed.core.run(rsedStartupArgs);
-    }
-    else
-    {
-        Rsed.throw("Failed to launch RallySportED.");
-    }
+    if (Rsed.unitTestRun) return;
+    else if (Rsed && Rsed.core) Rsed.core.start(rsedStartupArgs);
+    else Rsed.throw("Failed to launch RallySportED.");
 
     return;
 }
@@ -5471,7 +5579,7 @@ window.oncontextmenu = function(event)
     }
 
     // Only handle clicks that occur over RallySportED's canvas.
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -5522,7 +5630,7 @@ window.onwheel = function(event)
     }
 
     // Only handle wheel events that occur over RallySportED's canvas.
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -5542,7 +5650,7 @@ window.onclick = function(event)
     }
 
     // Only handle clicks that occur over RallySportED's canvas.
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -5564,7 +5672,7 @@ window.onmousedown = function(event)
     }
 
     // Only handle clicks that occur over RallySportED's canvas.
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -5588,7 +5696,7 @@ window.onmouseup = function(event)
     }
 
     // Only handle clicks that occur over RallySportED's canvas.
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -5611,7 +5719,7 @@ window.onmousemove = function(event)
         return;
     }
 
-    if (event.target.id !== Rsed.core.render_surface_id())
+    if (event.target.id !== Rsed.visual.canvas.domElementID)
     {
         return;
     }
@@ -5685,8 +5793,7 @@ window.drop_handler = function(event)
         return;
     }
 
-    // Launch RallySportED with project data from the given zip file.
-    Rsed.core.run(
+    Rsed.core.start(
     {
         project:
         {
@@ -5759,11 +5866,13 @@ Rsed.ui.inputState = (function()
 
         mouse_pos_scaled_to_render_resolution: function()
         {
-            const scaledX = Math.floor(mouseState.position.x * (Rsed.core? Rsed.core.scaling_multiplier() : 1));
-            const scaledY = Math.floor(mouseState.position.y * (Rsed.core? Rsed.core.scaling_multiplier() : 1));
+            // Note: We guard against Rsed.visual.canvas being undefined, which
+            // it may be when running unit tests.
+            const scaledX = Math.floor(mouseState.position.x * (Rsed.visual.canvas? Rsed.visual.canvas.scalingFactor : 1));
+            const scaledY = Math.floor(mouseState.position.y * (Rsed.visual.canvas? Rsed.visual.canvas.scalingFactor : 1));
 
-            const clampedX = Math.max(0, Math.min(((Rsed.core? Rsed.core.render_width() : 1) - 1), scaledX));
-            const clampedY = Math.max(0, Math.min(((Rsed.core? Rsed.core.render_height() : 1) - 1), scaledY));
+            const clampedX = Math.max(0, Math.min(((Rsed.visual.canvas? Rsed.visual.canvas.width : 1) - 1), scaledX));
+            const clampedY = Math.max(0, Math.min(((Rsed.visual.canvas? Rsed.visual.canvas.height : 1) - 1), scaledY));
 
             return {...mouseState.position, x:clampedX, y:clampedY};
         },
@@ -5906,10 +6015,10 @@ Rsed.ui.inputState = (function()
             mouseState.position.y = y;
 
             // Update the hover info.
-            {
-                const scaledPosition = this.mouse_pos_scaled_to_render_resolution();
-                mouseState.hover = (Rsed.core? Rsed.core.mouse_pick_buffer_at(scaledPosition.x, scaledPosition.y) : null);
-            }
+            // Note: We guard against Rsed.visual.canvas being undefined, which
+            // it may be when running unit tests.
+            const mousePos = this.mouse_pos_scaled_to_render_resolution();
+            mouseState.hover = (Rsed.visual.canvas? Rsed.visual.canvas.mousePickingBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width] : null);
 
             return;
         },
@@ -6387,8 +6496,8 @@ Rsed.scenes = Rsed.scenes || {};
             Rsed.ui.draw.begin_drawing(canvas);
 
             // Draw a large minimap of the track in the middle of the screen.
-            const width = Math.floor(Rsed.core.render_width() * 0.81);
-            const height = Math.floor(Rsed.core.render_height() * 0.72);
+            const width = Math.floor(Rsed.visual.canvas.width * 0.81);
+            const height = Math.floor(Rsed.visual.canvas.height * 0.72);
             {
                 const xMul = (Rsed.core.current_project().maasto.width / width);
                 const zMul = (Rsed.core.current_project().maasto.width / height);
@@ -6597,102 +6706,10 @@ Rsed.core = (function()
         return (params.has("showFramerate") && (Number(params.get("showFramerate")) === 1));
     })();
 
-    const htmlUI = (function()
-    {
-        const uiContainer = new Vue(
-        {
-            el: "#html-ui",
-            data:
-            {
-                // The display name of the track that's currently open in the editor.
-                trackName: "",
-
-                propList: [],
-
-                // Whether the UI should be displayed or kept invisible at this time.
-                uiVisible: false,
-            },
-            methods:
-            {
-                // Called when the user selects a prop from the prop dropdown menu.
-                /// TODO: Needs to be somewhere more suitable, and named something more descriptive.
-                activate_prop: function(name = "")
-                {
-                    if (!Rsed.ui.inputState.current_mouse_hover() ||
-                         Rsed.ui.inputState.current_mouse_hover().type !== "prop")
-                    {
-                        return;
-                    }
-
-                    Rsed.core.current_project().props.change_prop_type(Rsed.core.current_project().track_id(),
-                                                                       Rsed.ui.inputState.current_mouse_hover().propTrackIdx,
-                                                                       Rsed.core.current_project().props.id_for_name(name));
-                    window.close_dropdowns();
-
-                    return;
-                },
-                
-                refresh: function()
-                {
-                    this.trackName = Rsed.core.current_project().name;
-                    this.propList = Rsed.core.current_project().props.names()
-                                             .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
-                                             .map(propName=>({propName}));
-
-                    return;
-                }
-            }
-        });
-
-        const publicInterface = {};
-        {
-            publicInterface.refresh = function()
-            {
-                uiContainer.refresh();
-
-                return;
-            };
-    
-            publicInterface.set_visible = function(isVisible)
-            {
-                uiContainer.uiVisible = isVisible;
-
-                return;
-            };
-        }
-        return publicInterface;
-    })();
-
-    // The canvas we'll render into.
-    const canvas =
-    {
-        width: 0,
-        height: 0,
-        scalingFactor: 0.25,
-        domElement: document.getElementById("render-canvas"),
-        
-        // An array where each element corresponds to a rendered pixel on the canvas and contains
-        // a 32-bit value identifying the source n-gon.
-        mousePickingBuffer: [],
-    };
-
-    Rsed.assert && (canvas.domElement != null)
-                || Rsed.throw("Failed to find a canvas element to render into.");
-
-    canvas.domElement.onmouseleave = function(event)
-    {
-        // A bit of a kludge to prevent certain inputs from sticking if released while a non-
-        // RallySportED element has focus.
-        Rsed.ui.inputState.reset_mouse_buttons_state();
-        Rsed.ui.inputState.reset_modifier_keys_state();
-
-        return;
-    }
-
     const publicInterface =
     {
         // Starts up RallySportED with the given project to edit.
-        run: async function(startupArgs = {})
+        start: async function(startupArgs = {})
         {
             Rsed.assert && (typeof startupArgs.project.dataLocality !== "undefined")
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
@@ -6700,7 +6717,7 @@ Rsed.core = (function()
             isRunning = false;
 
             // Hide the UI while we load up the project's data etc.
-            htmlUI.set_visible(false);
+            Rsed.ui.htmlUI.set_visible(false);
 
             verify_browser_compatibility();
 
@@ -6708,8 +6725,8 @@ Rsed.core = (function()
 
             Rsed.ui.draw.generate_palat_pane();
 
-            htmlUI.refresh();
-            htmlUI.set_visible(true);
+            Rsed.ui.htmlUI.refresh();
+            Rsed.ui.htmlUI.set_visible(true);
 
             isRunning = true;
             tick();
@@ -6720,7 +6737,7 @@ Rsed.core = (function()
         {
             //renderer.indicate_error(errorMessage);
             //renderer.remove_callbacks();
-            htmlUI.set_visible(false);
+            Rsed.ui.htmlUI.set_visible(false);
             isRunning = false;
             this.run = ()=>{};
         },
@@ -6752,13 +6769,8 @@ Rsed.core = (function()
         },
         
         is_running: ()=>isRunning,
-        render_width: ()=>canvas.width,
-        render_height: ()=>canvas.height,
         renderer_fps: ()=>programFPS,
-        render_surface_id: ()=>canvas.domElement.getAttribute("id"),
         fps_counter_enabled: ()=>fpsCounterEnabled,
-        scaling_multiplier: ()=>canvas.scalingFactor,
-        mouse_pick_buffer_at: (x, y)=>canvas.mousePickingBuffer[x + y * canvas.width],
     }
 
     return publicInterface;
@@ -6773,9 +6785,9 @@ Rsed.core = (function()
         scene.handle_user_interaction();
 
         // Render the next frame.
-        canvas.mousePickingBuffer.fill(null);
-        scene.draw_mesh(canvas);
-        scene.draw_ui(canvas);
+        Rsed.visual.canvas.mousePickingBuffer.fill(null);
+        scene.draw_mesh(Rsed.visual.canvas);
+        scene.draw_ui(Rsed.visual.canvas);
 
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
     }
