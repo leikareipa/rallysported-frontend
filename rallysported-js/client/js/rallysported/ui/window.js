@@ -186,7 +186,8 @@ window.onwheel = function(event)
         return;
     }
 
-    Rsed.ui.inputState.set_wheel_scroll(event.deltaY);
+
+    Rsed.ui.inputState.append_wheel_scroll(Math.sign(event.deltaY) * 60);
 
     return;
 }

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 20:31:34 UTC)
+// VERSION: live (26 January 2020 20:59:02 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5691,7 +5691,8 @@ window.onwheel = function(event)
         return;
     }
 
-    Rsed.ui.inputState.set_wheel_scroll(event.deltaY);
+
+    Rsed.ui.inputState.append_wheel_scroll(Math.sign(event.deltaY) * 60);
 
     return;
 }
@@ -6027,7 +6028,7 @@ Rsed.ui.inputState = (function()
             return mouseState.wheel;
         },
 
-        set_wheel_scroll: function(delta)
+        append_wheel_scroll: function(delta)
         {
             Rsed.throw_if_not_type("number", delta);
 

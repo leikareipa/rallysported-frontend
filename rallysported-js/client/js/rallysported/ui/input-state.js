@@ -159,7 +159,7 @@ Rsed.ui.inputState = (function()
             return mouseState.wheel;
         },
 
-        set_wheel_scroll: function(delta)
+        append_wheel_scroll: function(delta)
         {
             Rsed.throw_if_not_type("number", delta);
 
