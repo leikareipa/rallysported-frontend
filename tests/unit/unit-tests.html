@@ -27,9 +27,15 @@
 
         <!-- The code to be tested-->
         <script src="../../rallysported-js/client/js/rallysported/rallysported.js"></script>
+        <script>
+            // Notify the scripts that they'll be running in unit-testing mode,
+            // where certain parts of the app may not be available etc.
+            Rsed.unitTestRun = true;
+        </script>
         <script src="../../rallysported-js/client/js/rallysported/misc/constants.js"></script>
         <script src="../../rallysported-js/client/js/rallysported/project/manifesto.js"></script>
         <script src="../../rallysported-js/client/js/rallysported/project/project.js"></script>
+        <script src="../../rallysported-js/client/js/rallysported/visual/canvas.js"></script>
         <script src="../../rallysported-js/client/js/rallysported/visual/texture.js"></script>
         <script src="../../rallysported-js/client/js/rallysported/visual/palette.js"></script>
         <script src="../../rallysported-js/client/js/rallysported/world/world.js"></script>
