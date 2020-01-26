@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 12:04:21 UTC)
+// VERSION: live (26 January 2020 12:05:55 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6396,7 +6396,8 @@ Rsed.scenes["3d"] = (function()
                     }
 
                     // Paint the terrain.
-                    if (Rsed.ui.inputState.mid_mouse_button_down())
+                    if (!Rsed.ui.inputState.key_down("shift") &&
+                        Rsed.ui.inputState.mid_mouse_button_down())
                     {
                         Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
                                                                    Rsed.ui.groundBrush.brush_pala_idx(),

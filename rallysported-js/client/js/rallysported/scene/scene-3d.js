@@ -237,7 +237,8 @@ Rsed.scenes["3d"] = (function()
                     }
 
                     // Paint the terrain.
-                    if (Rsed.ui.inputState.mid_mouse_button_down())
+                    if (!Rsed.ui.inputState.key_down("shift") &&
+                        Rsed.ui.inputState.mid_mouse_button_down())
                     {
                         Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
                                                                    Rsed.ui.groundBrush.brush_pala_idx(),
