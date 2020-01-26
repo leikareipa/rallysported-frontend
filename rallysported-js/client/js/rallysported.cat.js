@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 23:46:57 UTC)
+// VERSION: live (26 January 2020 23:48:27 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2381,6 +2381,8 @@ Rsed.project = async function(projectArgs = {})
 
     function apply_manifesto()
     {
+        let numPropsAdded = 0;
+
         Rsed.assert && (!isPlaceholder)
                     || Rsed.throw("Can't apply manifestos to placeholder projects.");
 
@@ -2449,7 +2451,20 @@ Rsed.project = async function(projectArgs = {})
                 const x = Math.floor(((Number(args[1]) * 2) * Rsed.constants.groundTileSize) + Number(args[3]));
                 const z = Math.floor(((Number(args[2]) * 2) * Rsed.constants.groundTileSize) + Number(args[4]));
 
-                props.add_location(trackId, propId, {x, z});
+                // Prior to loader version 5, command #3 would insert a new prop onto the
+                // track. Since version 5, command #3 modifies an existing prop, after
+                // you've first used commad #2 to set the total prop count (which creates
+                // that many uninitialized props, which command #3 then initializes).
+                if (loaderVersion < 5)
+                {
+                    props.add_location(trackId, propId, {x, z});
+                }
+                else
+                {
+                    props.change_prop_type(trackId, numPropsAdded, propId);
+                    props.set_prop_location(trackId, numPropsAdded, {x, z});
+                    numPropsAdded++;
+                }
             }
 
             // Command: CHANGE_OBJ_TYPE. Changes the type of the given prop.
