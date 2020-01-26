@@ -29,7 +29,7 @@ if (!preg_match('/^[0-9a-z]+$/', $_GET["projectId"]) ||
 }
 
 // Enter the directory containing the project's data
-$projectFolder = ("./assets/tracks/local/");
+$projectFolder = ("./assets/tracks/");
 if (!chdir($projectFolder . $_GET["projectId"] . "/"))
 {
     exit(failure("A project by the given id does not exist on the server."));
