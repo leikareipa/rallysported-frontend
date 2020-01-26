@@ -10,7 +10,7 @@
 
 Rsed.visual = Rsed.visual || {};
 
-Rsed.palette = (function()
+Rsed.visual.palette = (function()
 {
     // How many colors there are in a single palette.
     const numColorsInPalette = 32;

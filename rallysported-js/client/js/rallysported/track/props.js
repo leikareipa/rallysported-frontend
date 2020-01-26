@@ -57,7 +57,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 const dataIdx = ((textureRects[idx].rect.topLeft.x + x) + (textureRects[idx].rect.topLeft.y + y) * textureAtlasWidth);
 
                 indices.push(textureAtlas[dataIdx]);
-                pixels.push(Rsed.palette.color_at_idx(textureAtlas[dataIdx], true));
+                pixels.push(Rsed.visual.palette.color_at_idx(textureAtlas[dataIdx], true));
             }
         }
 

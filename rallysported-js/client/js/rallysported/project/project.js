@@ -180,7 +180,7 @@ Rsed.project = async function(projectArgs = {})
                     default: Rsed.throw(`Unknown track id (${trackId}).`);
                 }
 
-                Rsed.palette.set_palette((trackId === 4)? 1 :
+                Rsed.visual.palette.set_palette((trackId === 4)? 1 :
                                          (trackId === 7)? 3 : 0);
             }
 

@@ -270,14 +270,14 @@ Rsed.world.meshBuilder = (function()
             {
                 const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x), (v.y + args.position.y), (v.z + args.position.z))),
                 {
-                    color: (args.solidProps? (ngon.fill.type === "texture"? Rsed.palette.color_at_idx(0)
-                                                                          : Rsed.palette.color_at_idx(ngon.fill.idx))
-                                           : Rsed.palette.color_at_idx(0, true)),
+                    color: (args.solidProps? (ngon.fill.type === "texture"? Rsed.visual.palette.color_at_idx(0)
+                                                                          : Rsed.visual.palette.color_at_idx(ngon.fill.idx))
+                                           : Rsed.visual.palette.color_at_idx(0, true)),
                     texture: (args.solidProps? (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx]
                                                                             : null)
                                              : null),
                     textureMapping: "ortho",
-                    wireframeColor: Rsed.palette.color_at_idx(args.solidProps? "black" : "lightgray"),
+                    wireframeColor: Rsed.visual.palette.color_at_idx(args.solidProps? "black" : "lightgray"),
                     hasWireframe: (args.solidProps? args.includeWireframe : true),
                     auxiliary:
                     {

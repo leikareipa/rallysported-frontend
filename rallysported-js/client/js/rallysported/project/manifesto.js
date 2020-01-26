@@ -138,7 +138,7 @@ Rsed.apply_manifesto = function(targetProject)
             const green = Math.floor(Number(args[2] * 4));
             const blue = Math.floor(Number(args[3] * 4));
             
-            Rsed.palette.set_color(targetPaletteIdx, {red, green, blue});
+            Rsed.visual.palette.set_color(targetPaletteIdx, {red, green, blue});
         }
 
         // Command: STOP. Stops parsing the manifesto file.

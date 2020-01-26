@@ -100,7 +100,7 @@ Rsed.ui.draw = (function()
 
                     if (alpha && (pixel === 0)) continue;
 
-                    const color = ((typeof pixel === "object")? pixel : Rsed.palette.color_at_idx(pixel));
+                    const color = ((typeof pixel === "object")? pixel : Rsed.visual.palette.color_at_idx(pixel));
                     
                     put_pixel((x + cx), (y + cy), color.red, color.green, color.blue);
 
@@ -351,7 +351,7 @@ Rsed.ui.draw = (function()
                             const bufferTexel = Math.floor((Math.floor(x * palaWidth + px) / 2) +
                                                             Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
 
-                            palatPaneBuffer[bufferTexel] = Rsed.palette.color_at_idx(pala.indices[palaTexel]);
+                            palatPaneBuffer[bufferTexel] = Rsed.visual.palette.color_at_idx(pala.indices[palaTexel]);
                             palatPaneMousePick[bufferTexel] = Rsed.ui.mouse_picking_element("ui-element",
                             {
                                 uiElementId: "palat-pane",

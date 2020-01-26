@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 12:52:35 UTC)
+// VERSION: live (26 January 2020 12:55:35 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2042,7 +2042,7 @@ Rsed.apply_manifesto = function(targetProject)
             const green = Math.floor(Number(args[2] * 4));
             const blue = Math.floor(Number(args[3] * 4));
             
-            Rsed.palette.set_color(targetPaletteIdx, {red, green, blue});
+            Rsed.visual.palette.set_color(targetPaletteIdx, {red, green, blue});
         }
 
         // Command: STOP. Stops parsing the manifesto file.
@@ -2235,7 +2235,7 @@ Rsed.project = async function(projectArgs = {})
                     default: Rsed.throw(`Unknown track id (${trackId}).`);
                 }
 
-                Rsed.palette.set_palette((trackId === 4)? 1 :
+                Rsed.visual.palette.set_palette((trackId === 4)? 1 :
                                          (trackId === 7)? 3 : 0);
             }
 
@@ -2929,14 +2929,14 @@ Rsed.world.meshBuilder = (function()
             {
                 const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x), (v.y + args.position.y), (v.z + args.position.z))),
                 {
-                    color: (args.solidProps? (ngon.fill.type === "texture"? Rsed.palette.color_at_idx(0)
-                                                                          : Rsed.palette.color_at_idx(ngon.fill.idx))
-                                           : Rsed.palette.color_at_idx(0, true)),
+                    color: (args.solidProps? (ngon.fill.type === "texture"? Rsed.visual.palette.color_at_idx(0)
+                                                                          : Rsed.visual.palette.color_at_idx(ngon.fill.idx))
+                                           : Rsed.visual.palette.color_at_idx(0, true)),
                     texture: (args.solidProps? (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx]
                                                                             : null)
                                              : null),
                     textureMapping: "ortho",
-                    wireframeColor: Rsed.palette.color_at_idx(args.solidProps? "black" : "lightgray"),
+                    wireframeColor: Rsed.visual.palette.color_at_idx(args.solidProps? "black" : "lightgray"),
                     hasWireframe: (args.solidProps? args.includeWireframe : true),
                     auxiliary:
                     {
@@ -3218,7 +3218,7 @@ Rsed.texture = function(args = {})
 
 Rsed.visual = Rsed.visual || {};
 
-Rsed.palette = (function()
+Rsed.visual.palette = (function()
 {
     // How many colors there are in a single palette.
     const numColorsInPalette = 32;
@@ -3736,8 +3736,8 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                     (palaHeight > 0))
                 || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
 
-    const palatPixels = Array.from(data, (colorIdx)=>Rsed.palette.color_at_idx(colorIdx, false));
-    const palatPixelsWithAlpha = Array.from(data, (colorIdx)=>Rsed.palette.color_at_idx(colorIdx, true));
+    const palatPixels = Array.from(data, (colorIdx)=>Rsed.visual.palette.color_at_idx(colorIdx, false));
+    const palatPixelsWithAlpha = Array.from(data, (colorIdx)=>Rsed.visual.palette.color_at_idx(colorIdx, true));
 
     const palaSize = (palaWidth * palaHeight);
 
@@ -3773,7 +3773,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                 ...args,
                 width: 1,
                 height: 1,
-                pixels: [Rsed.palette.color_at_idx("black")],
+                pixels: [Rsed.visual.palette.color_at_idx("black")],
                 indices: [0],
             });
         }
@@ -3856,7 +3856,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 const dataIdx = ((textureRects[idx].rect.topLeft.x + x) + (textureRects[idx].rect.topLeft.y + y) * textureAtlasWidth);
 
                 indices.push(textureAtlas[dataIdx]);
-                pixels.push(Rsed.palette.color_at_idx(textureAtlas[dataIdx], true));
+                pixels.push(Rsed.visual.palette.color_at_idx(textureAtlas[dataIdx], true));
             }
         }
 
@@ -5165,7 +5165,7 @@ Rsed.ui.draw = (function()
 
                     if (alpha && (pixel === 0)) continue;
 
-                    const color = ((typeof pixel === "object")? pixel : Rsed.palette.color_at_idx(pixel));
+                    const color = ((typeof pixel === "object")? pixel : Rsed.visual.palette.color_at_idx(pixel));
                     
                     put_pixel((x + cx), (y + cy), color.red, color.green, color.blue);
 
@@ -5416,7 +5416,7 @@ Rsed.ui.draw = (function()
                             const bufferTexel = Math.floor((Math.floor(x * palaWidth + px) / 2) +
                                                             Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
 
-                            palatPaneBuffer[bufferTexel] = Rsed.palette.color_at_idx(pala.indices[palaTexel]);
+                            palatPaneBuffer[bufferTexel] = Rsed.visual.palette.color_at_idx(pala.indices[palaTexel]);
                             palatPaneMousePick[bufferTexel] = Rsed.ui.mouse_picking_element("ui-element",
                             {
                                 uiElementId: "palat-pane",
