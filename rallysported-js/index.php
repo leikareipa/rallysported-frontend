@@ -19,13 +19,6 @@
                 save to disk
             </span>
 
-            <a class="button" href="./track-list/" target="_blank" rel="noopener"
-               style="font-variant: small-caps;
-                      color: rgb(170, 170, 170);
-                      background-color: rgb(87, 87, 87);">
-                track listing &#9656;
-            </a>
-
             <div class="disclaimer">
                 rallysported by tarpeeksi hyvae soft. rally-sport by jukka jakala. no endorsements or warranties.
                 <a href="./userguide/" target="_blank" rel="noopener">user guide</a> &#9656;
