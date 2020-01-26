@@ -24,9 +24,10 @@ window.onload = function(event)
     {
         project:
         {
-            // Whether the project's data files will be loaded from Rally-Sport Content's
-            // server or provided by the client (e.g. via file drag onto the browser).
-            dataLocality: "server", // | "client"
+            // Whether the project's data files will be loaded from RallySportED-js's server
+            // ("server-rsed"), from Rally-Sport Content's server ("server-rsc"), or provided
+            // by the client (e.g. via file drag onto the browser).
+            dataLocality: "server-rsed", // | "server-rsc" | "client"
 
             // A property uniquely identifying this project's data. For server-side projects,
             // this will be a Rally-Sport Content track resource ID, and for client-side data
@@ -39,24 +40,38 @@ window.onload = function(event)
     {
         const params = new URLSearchParams(window.location.search);
 
+        // The user can use the "track" parameter to specify which track to load.
         if (params.has("track"))
         {
+            const trackID = params.get("track");
+
             // Give the input a sanity check.
-            if (!(/^[0-9a-zA-Z-]+$/.test(params.get("track"))))
+            if ((trackID.length > 20) ||
+                !(/^[0-9a-zA-Z-]+$/.test(trackID)))
             {
                 Rsed.throw("Invalid track identifier.");
                 return;
             }
 
-            rsedStartupArgs.project.dataLocality = "server";
-            rsedStartupArgs.project.dataIdentifier = params.get("track");
+            // The RallySportED-js server hosts the original Rally-Sport demo tracks.
+            if (["demoa", "demob", "democ", "demod", "demoe", "demof", "demog", "demoh"].includes(trackID))
+            {
+                rsedStartupArgs.project.dataLocality = "server-rsed";
+            }
+            // The Rally-Sport Content server hosts custom (non-original) Rally-Sport tracks.
+            else
+            {
+                rsedStartupArgs.project.dataLocality = "server-rsc";
+            }
+
+            rsedStartupArgs.project.dataIdentifier = trackID;
         }
     }
 
     // The app doesn't need to be run if we're just testing its units.
     if (Rsed.unitTestRun) return;
-    else if (Rsed && Rsed.core) Rsed.core.start(rsedStartupArgs);
-    else Rsed.throw("Failed to launch RallySportED.");
+
+    Rsed.core.start(rsedStartupArgs);
 
     return;
 }

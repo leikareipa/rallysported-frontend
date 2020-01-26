@@ -28,6 +28,11 @@ Rsed.constants = Object.freeze(
     // How many hard-coded palettes there are in Rally-Sport's demo version.
     numPalettes: 4,
 
-    // How many colors there are in one of Rally-Sport's hard-coded palettes.
+    // How many colors there are per palette.
     paletteSize: 32,
+
+    // A URL pointing to the root of Rally-Sport Content, the service from which
+    // RallySportED-js will fetch track data. It would ideally be located on the
+    // same origin, to avoid CORS issues.
+    rallySportContentURL: `${window.location.origin}/rallysport-content/`,
 });

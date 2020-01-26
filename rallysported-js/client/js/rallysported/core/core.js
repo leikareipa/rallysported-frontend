@@ -10,8 +10,8 @@
 
 Rsed.core = (function()
 {
-    // Set to true while the core is running (e.g. as a result of calling run()).
-    let isRunning = false;
+    // Set to true while the core is running (e.g. as a result of calling start()).
+    let coreIsRunning = false;
 
     // The number of frames per second being generated.
     let programFPS = 0;
@@ -20,8 +20,8 @@ Rsed.core = (function()
     // this is the target project.
     let project = Rsed.project.placeholder;
 
-    // The scene we're currently viewing.
-    let scene = Rsed.scenes["3d"];
+    // The scene we're currently displaying to the user.
+    let currentScene = Rsed.scenes["3d"];
 
     // Whether to display an FPS counter to the user.
     const fpsCounterEnabled = (()=>
@@ -33,26 +33,28 @@ Rsed.core = (function()
     const publicInterface =
     {
         // Starts up RallySportED with the given project to edit.
-        start: async function(startupArgs = {})
+        start: async function(args = {})
         {
-            Rsed.assert && (typeof startupArgs.project.dataLocality !== "undefined")
+            Rsed.assert && ((typeof args.project !== "undefined") &&
+                            (typeof args.project.dataLocality !== "undefined") &&
+                            (typeof args.project.dataIdentifier !== "undefined"))
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
 
-            isRunning = false;
+            coreIsRunning = false;
 
             // Hide the UI while we load up the project's data etc.
             Rsed.ui.htmlUI.set_visible(false);
 
             verify_browser_compatibility();
 
-            await load_project(startupArgs);
+            await load_project(args);
 
             Rsed.ui.draw.generate_palat_pane();
 
             Rsed.ui.htmlUI.refresh();
             Rsed.ui.htmlUI.set_visible(true);
 
-            isRunning = true;
+            coreIsRunning = true;
             tick();
         },
 
@@ -62,7 +64,7 @@ Rsed.core = (function()
             //renderer.indicate_error(errorMessage);
             //renderer.remove_callbacks();
             Rsed.ui.htmlUI.set_visible(false);
-            isRunning = false;
+            coreIsRunning = false;
             this.run = ()=>{};
         },
 
@@ -76,10 +78,10 @@ Rsed.core = (function()
 
         current_scene: function()
         {
-            Rsed.assert && (scene !== null)
+            Rsed.assert && (currentScene !== null)
                         || Rsed.throw("Attempting to access an uninitialized scene.");
 
-            return scene;
+            return currentScene;
         },
 
         set_scene: function(sceneName)
@@ -87,12 +89,12 @@ Rsed.core = (function()
             Rsed.assert && (Rsed.scenes[sceneName])
                         || Rsed.throw("Attempting to set an unknown scene.");
 
-            scene = Rsed.scenes[sceneName];
+            currentScene = Rsed.scenes[sceneName];
 
             return;
         },
         
-        is_running: ()=>isRunning,
+        is_running: ()=>coreIsRunning,
         renderer_fps: ()=>programFPS,
         fps_counter_enabled: ()=>fpsCounterEnabled,
     }
@@ -102,16 +104,16 @@ Rsed.core = (function()
     // Called once per frame to orchestrate program flow.
     function tick(timestamp = 0, frameDeltaMs = 0)
     {
-        if (!isRunning) return;
+        if (!coreIsRunning) return;
 
         programFPS = Math.round(1000 / (frameDeltaMs || 1));
 
-        scene.handle_user_interaction();
+        currentScene.handle_user_interaction();
 
         // Render the next frame.
         Rsed.visual.canvas.mousePickingBuffer.fill(null);
-        scene.draw_mesh(Rsed.visual.canvas);
-        scene.draw_ui(Rsed.visual.canvas);
+        currentScene.draw_mesh(Rsed.visual.canvas);
+        currentScene.draw_ui(Rsed.visual.canvas);
 
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
     }
@@ -141,8 +143,10 @@ Rsed.core = (function()
 
     async function load_project(args = {})
     {
-        Rsed.assert && (typeof args.project.dataIdentifier !== "undefined")
-                    || Rsed.throw("Missing required arguments for loading a project.");
+        Rsed.assert && ((typeof args.project !== "undefined") &&
+                        (typeof args.project.dataLocality !== "undefined") &&
+                        (typeof args.project.dataIdentifier !== "undefined"))
+                || Rsed.throw("Missing required arguments for loading a project.");
             
         Rsed.world.camera.reset_camera_position();
 

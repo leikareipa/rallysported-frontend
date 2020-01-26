@@ -314,10 +314,7 @@ Rsed.project = async function(projectArgs = {})
 
     // Returns true if the project's base name is valid; false otherwise. The base name is the name
     // with which the project's files will be saved to disk; e.g. if the base name is "test", the
-    // project's files will be "test.dta" and "test.$ft". Note that the base name is separate from
-    // the project's display name, which is the name shown to the user in RallySportED's UI. The
-    // display name may be different from the base name, and has no restrictions on its composition
-    // like the base name does.
+    // project's files will be "test.dta" and "test.$ft".
     function is_valid_project_base_name()
     {
         // The base filename must be between 1 and 8 characters long, and the string must consist
@@ -326,7 +323,7 @@ Rsed.project = async function(projectArgs = {})
                 (typeof projectData.meta.internalName !== "undefined") &&
                 (projectData.meta.internalName.length >= 1) &&
                 (projectData.meta.internalName.length <= 8) &&
-                /^[a-z]+$/.test(projectData.meta.internalName));
+                /^[a-zA-Z]+$/.test(projectData.meta.internalName));
     }
 
     // Returns the data (container file, manifesto file, and certain metadata) of the
@@ -347,8 +344,9 @@ Rsed.project = async function(projectArgs = {})
                         (typeof projectArgs.dataIdentifier !== "undefined"))
                     || Rsed.throw("Missing required parameters for loading a project.");
 
-        const projectData = (projectArgs.dataLocality === "server")? await fetch_project_data_from_server() :
-                            (projectArgs.dataLocality === "client")? await fetch_project_data_from_local_zip_file() :
+        const projectData = (projectArgs.dataLocality === "server-rsc")?  await fetch_project_data_from_rsc_server() :
+                            (projectArgs.dataLocality === "server-rsed")? await fetch_project_data_from_rsed_server() :
+                            (projectArgs.dataLocality === "client")?      await fetch_project_data_from_local_zip_file() :
                             Rsed.throw("Unknown locality for project data.");
 
         return projectData;
@@ -356,7 +354,7 @@ Rsed.project = async function(projectArgs = {})
         async function fetch_project_data_from_local_zip_file()
         {
             Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
-                        || Rsed.throw("Missing required parameters for loading a project from a zip file.");
+                        || Rsed.throw("Missing required parameters for loading a client-side project.");
 
             const zip = await (new JSZip()).loadAsync(projectArgs.dataIdentifier);
 
@@ -454,13 +452,15 @@ Rsed.project = async function(projectArgs = {})
             return projectData;
         }
 
-        async function fetch_project_data_from_server()
+        // Loads the project's data from the RallySportED-js server. This server
+        // hosts the original tracks from the Rally-Sport demo.
+        async function fetch_project_data_from_rsed_server()
         {
             Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
                         || Rsed.throw("Missing required parameters for loading a project.");
 
             return fetch("server/get-project-data.php?projectId=" + projectArgs.dataIdentifier +
-                                                    "&editMode=" + projectArgs.editMode)
+                                                     "&editMode=" + projectArgs.editMode)
                    .then(response=>
                    {
                        if (!response.ok)
@@ -478,6 +478,41 @@ Rsed.project = async function(projectArgs = {})
                        }
     
                        return JSON.parse(ticket.data);
+                   })
+                   .catch(error=>{ Rsed.throw(error); });
+        }
+
+        // Loads the project's data from the Rally-Sport Content server. This
+        // server hosts custom, user-made tracks.
+        async function fetch_project_data_from_rsc_server()
+        {
+            Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
+                        || Rsed.throw("Missing required parameters for loading a server-side project.");
+
+            // Request the track's data in JSON format from the Rally-Sport Content
+            // server.
+            return fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.dataIdentifier}&json=true`)
+                   .then(response=>
+                   {
+                       if (!response.ok)
+                       {
+                           throw "A GET request to the server failed.";
+                       }
+    
+                       return response.json();
+                   })
+                   .then(responseJSON=>
+                   {
+                       if (!responseJSON.succeeded ||
+                           (typeof responseJSON.track !== "object"))
+                       {
+                           throw (`The server sent an error message: ${responseJSON.errorMessage}`);
+                       }
+
+                       /// TODO: Test to make sure the track contains all required
+                       /// parameters.
+    
+                       return responseJSON.track;
                    })
                    .catch(error=>{ Rsed.throw(error); });
         }

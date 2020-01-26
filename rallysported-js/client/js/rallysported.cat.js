@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 13:01:13 UTC)
+// VERSION: live (26 January 2020 15:43:55 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2369,10 +2369,7 @@ Rsed.project = async function(projectArgs = {})
 
     // Returns true if the project's base name is valid; false otherwise. The base name is the name
     // with which the project's files will be saved to disk; e.g. if the base name is "test", the
-    // project's files will be "test.dta" and "test.$ft". Note that the base name is separate from
-    // the project's display name, which is the name shown to the user in RallySportED's UI. The
-    // display name may be different from the base name, and has no restrictions on its composition
-    // like the base name does.
+    // project's files will be "test.dta" and "test.$ft".
     function is_valid_project_base_name()
     {
         // The base filename must be between 1 and 8 characters long, and the string must consist
@@ -2381,7 +2378,7 @@ Rsed.project = async function(projectArgs = {})
                 (typeof projectData.meta.internalName !== "undefined") &&
                 (projectData.meta.internalName.length >= 1) &&
                 (projectData.meta.internalName.length <= 8) &&
-                /^[a-z]+$/.test(projectData.meta.internalName));
+                /^[a-zA-Z]+$/.test(projectData.meta.internalName));
     }
 
     // Returns the data (container file, manifesto file, and certain metadata) of the
@@ -2402,8 +2399,9 @@ Rsed.project = async function(projectArgs = {})
                         (typeof projectArgs.dataIdentifier !== "undefined"))
                     || Rsed.throw("Missing required parameters for loading a project.");
 
-        const projectData = (projectArgs.dataLocality === "server")? await fetch_project_data_from_server() :
-                            (projectArgs.dataLocality === "client")? await fetch_project_data_from_local_zip_file() :
+        const projectData = (projectArgs.dataLocality === "server-rsc")?  await fetch_project_data_from_rsc_server() :
+                            (projectArgs.dataLocality === "server-rsed")? await fetch_project_data_from_rsed_server() :
+                            (projectArgs.dataLocality === "client")?      await fetch_project_data_from_local_zip_file() :
                             Rsed.throw("Unknown locality for project data.");
 
         return projectData;
@@ -2411,7 +2409,7 @@ Rsed.project = async function(projectArgs = {})
         async function fetch_project_data_from_local_zip_file()
         {
             Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
-                        || Rsed.throw("Missing required parameters for loading a project from a zip file.");
+                        || Rsed.throw("Missing required parameters for loading a client-side project.");
 
             const zip = await (new JSZip()).loadAsync(projectArgs.dataIdentifier);
 
@@ -2509,13 +2507,15 @@ Rsed.project = async function(projectArgs = {})
             return projectData;
         }
 
-        async function fetch_project_data_from_server()
+        // Loads the project's data from the RallySportED-js server. This server
+        // hosts the original tracks from the Rally-Sport demo.
+        async function fetch_project_data_from_rsed_server()
         {
             Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
                         || Rsed.throw("Missing required parameters for loading a project.");
 
             return fetch("server/get-project-data.php?projectId=" + projectArgs.dataIdentifier +
-                                                    "&editMode=" + projectArgs.editMode)
+                                                     "&editMode=" + projectArgs.editMode)
                    .then(response=>
                    {
                        if (!response.ok)
@@ -2533,6 +2533,41 @@ Rsed.project = async function(projectArgs = {})
                        }
     
                        return JSON.parse(ticket.data);
+                   })
+                   .catch(error=>{ Rsed.throw(error); });
+        }
+
+        // Loads the project's data from the Rally-Sport Content server. This
+        // server hosts custom, user-made tracks.
+        async function fetch_project_data_from_rsc_server()
+        {
+            Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
+                        || Rsed.throw("Missing required parameters for loading a server-side project.");
+
+            // Request the track's data in JSON format from the Rally-Sport Content
+            // server.
+            return fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.dataIdentifier}&json=true`)
+                   .then(response=>
+                   {
+                       if (!response.ok)
+                       {
+                           throw "A GET request to the server failed.";
+                       }
+    
+                       return response.json();
+                   })
+                   .then(responseJSON=>
+                   {
+                       if (!responseJSON.succeeded ||
+                           (typeof responseJSON.track !== "object"))
+                       {
+                           throw (`The server sent an error message: ${responseJSON.errorMessage}`);
+                       }
+
+                       /// TODO: Test to make sure the track contains all required
+                       /// parameters.
+    
+                       return responseJSON.track;
                    })
                    .catch(error=>{ Rsed.throw(error); });
         }
@@ -5493,9 +5528,10 @@ window.onload = function(event)
     {
         project:
         {
-            // Whether the project's data files will be loaded from Rally-Sport Content's
-            // server or provided by the client (e.g. via file drag onto the browser).
-            dataLocality: "server", // | "client"
+            // Whether the project's data files will be loaded from RallySportED-js's server
+            // ("server-rsed"), from Rally-Sport Content's server ("server-rsc"), or provided
+            // by the client (e.g. via file drag onto the browser).
+            dataLocality: "server-rsed", // | "server-rsc" | "client"
 
             // A property uniquely identifying this project's data. For server-side projects,
             // this will be a Rally-Sport Content track resource ID, and for client-side data
@@ -5508,24 +5544,38 @@ window.onload = function(event)
     {
         const params = new URLSearchParams(window.location.search);
 
+        // The user can use the "track" parameter to specify which track to load.
         if (params.has("track"))
         {
+            const trackID = params.get("track");
+
             // Give the input a sanity check.
-            if (!(/^[0-9a-zA-Z-]+$/.test(params.get("track"))))
+            if ((trackID.length > 20) ||
+                !(/^[0-9a-zA-Z-]+$/.test(trackID)))
             {
                 Rsed.throw("Invalid track identifier.");
                 return;
             }
 
-            rsedStartupArgs.project.dataLocality = "server";
-            rsedStartupArgs.project.dataIdentifier = params.get("track");
+            // The RallySportED-js server hosts the original Rally-Sport demo tracks.
+            if (["demoa", "demob", "democ", "demod", "demoe", "demof", "demog", "demoh"].includes(trackID))
+            {
+                rsedStartupArgs.project.dataLocality = "server-rsed";
+            }
+            // The Rally-Sport Content server hosts custom (non-original) Rally-Sport tracks.
+            else
+            {
+                rsedStartupArgs.project.dataLocality = "server-rsc";
+            }
+
+            rsedStartupArgs.project.dataIdentifier = trackID;
         }
     }
 
     // The app doesn't need to be run if we're just testing its units.
     if (Rsed.unitTestRun) return;
-    else if (Rsed && Rsed.core) Rsed.core.start(rsedStartupArgs);
-    else Rsed.throw("Failed to launch RallySportED.");
+
+    Rsed.core.start(rsedStartupArgs);
 
     return;
 }
@@ -6729,8 +6779,8 @@ Rsed.scenes["tilemap"] = (function()
 
 Rsed.core = (function()
 {
-    // Set to true while the core is running (e.g. as a result of calling run()).
-    let isRunning = false;
+    // Set to true while the core is running (e.g. as a result of calling start()).
+    let coreIsRunning = false;
 
     // The number of frames per second being generated.
     let programFPS = 0;
@@ -6739,8 +6789,8 @@ Rsed.core = (function()
     // this is the target project.
     let project = Rsed.project.placeholder;
 
-    // The scene we're currently viewing.
-    let scene = Rsed.scenes["3d"];
+    // The scene we're currently displaying to the user.
+    let currentScene = Rsed.scenes["3d"];
 
     // Whether to display an FPS counter to the user.
     const fpsCounterEnabled = (()=>
@@ -6752,26 +6802,28 @@ Rsed.core = (function()
     const publicInterface =
     {
         // Starts up RallySportED with the given project to edit.
-        start: async function(startupArgs = {})
+        start: async function(args = {})
         {
-            Rsed.assert && (typeof startupArgs.project.dataLocality !== "undefined")
+            Rsed.assert && ((typeof args.project !== "undefined") &&
+                            (typeof args.project.dataLocality !== "undefined") &&
+                            (typeof args.project.dataIdentifier !== "undefined"))
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
 
-            isRunning = false;
+            coreIsRunning = false;
 
             // Hide the UI while we load up the project's data etc.
             Rsed.ui.htmlUI.set_visible(false);
 
             verify_browser_compatibility();
 
-            await load_project(startupArgs);
+            await load_project(args);
 
             Rsed.ui.draw.generate_palat_pane();
 
             Rsed.ui.htmlUI.refresh();
             Rsed.ui.htmlUI.set_visible(true);
 
-            isRunning = true;
+            coreIsRunning = true;
             tick();
         },
 
@@ -6781,7 +6833,7 @@ Rsed.core = (function()
             //renderer.indicate_error(errorMessage);
             //renderer.remove_callbacks();
             Rsed.ui.htmlUI.set_visible(false);
-            isRunning = false;
+            coreIsRunning = false;
             this.run = ()=>{};
         },
 
@@ -6795,10 +6847,10 @@ Rsed.core = (function()
 
         current_scene: function()
         {
-            Rsed.assert && (scene !== null)
+            Rsed.assert && (currentScene !== null)
                         || Rsed.throw("Attempting to access an uninitialized scene.");
 
-            return scene;
+            return currentScene;
         },
 
         set_scene: function(sceneName)
@@ -6806,12 +6858,12 @@ Rsed.core = (function()
             Rsed.assert && (Rsed.scenes[sceneName])
                         || Rsed.throw("Attempting to set an unknown scene.");
 
-            scene = Rsed.scenes[sceneName];
+            currentScene = Rsed.scenes[sceneName];
 
             return;
         },
         
-        is_running: ()=>isRunning,
+        is_running: ()=>coreIsRunning,
         renderer_fps: ()=>programFPS,
         fps_counter_enabled: ()=>fpsCounterEnabled,
     }
@@ -6821,16 +6873,16 @@ Rsed.core = (function()
     // Called once per frame to orchestrate program flow.
     function tick(timestamp = 0, frameDeltaMs = 0)
     {
-        if (!isRunning) return;
+        if (!coreIsRunning) return;
 
         programFPS = Math.round(1000 / (frameDeltaMs || 1));
 
-        scene.handle_user_interaction();
+        currentScene.handle_user_interaction();
 
         // Render the next frame.
         Rsed.visual.canvas.mousePickingBuffer.fill(null);
-        scene.draw_mesh(Rsed.visual.canvas);
-        scene.draw_ui(Rsed.visual.canvas);
+        currentScene.draw_mesh(Rsed.visual.canvas);
+        currentScene.draw_ui(Rsed.visual.canvas);
 
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
     }
@@ -6860,8 +6912,10 @@ Rsed.core = (function()
 
     async function load_project(args = {})
     {
-        Rsed.assert && (typeof args.project.dataIdentifier !== "undefined")
-                    || Rsed.throw("Missing required arguments for loading a project.");
+        Rsed.assert && ((typeof args.project !== "undefined") &&
+                        (typeof args.project.dataLocality !== "undefined") &&
+                        (typeof args.project.dataIdentifier !== "undefined"))
+                || Rsed.throw("Missing required arguments for loading a project.");
             
         Rsed.world.camera.reset_camera_position();
 
