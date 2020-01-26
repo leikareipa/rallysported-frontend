@@ -62,7 +62,7 @@ Rsed.scenes["3d"] = (function()
 
         draw_mesh: function(canvas)
         {
-            const trackMesh = Rsed.world.mesh_builder.track_mesh(
+            const trackMesh = Rsed.world.meshBuilder.track_mesh(
             {
                 cameraPos: Rsed.world.camera.position_floored(),
                 solidProps: showProps,

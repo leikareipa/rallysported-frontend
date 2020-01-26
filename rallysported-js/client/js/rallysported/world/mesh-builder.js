@@ -10,7 +10,7 @@
 
 // Provides functions returning renderable 3d meshes of various world items - like the track and
 // its props - accounting for user-specified arguments such as camera position.
-Rsed.world.mesh_builder = (function()
+Rsed.world.meshBuilder = (function()
 {
     const publicInterface =
     {

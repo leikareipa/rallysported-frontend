@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 12:05:55 UTC)
+// VERSION: live (26 January 2020 12:52:35 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2669,7 +2669,7 @@ Rsed.world = {};
 
 // Provides functions returning renderable 3d meshes of various world items - like the track and
 // its props - accounting for user-specified arguments such as camera position.
-Rsed.world.mesh_builder = (function()
+Rsed.world.meshBuilder = (function()
 {
     const publicInterface =
     {
@@ -6221,7 +6221,7 @@ Rsed.scenes["3d"] = (function()
 
         draw_mesh: function(canvas)
         {
-            const trackMesh = Rsed.world.mesh_builder.track_mesh(
+            const trackMesh = Rsed.world.meshBuilder.track_mesh(
             {
                 cameraPos: Rsed.world.camera.position_floored(),
                 solidProps: showProps,
