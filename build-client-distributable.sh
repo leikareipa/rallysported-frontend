@@ -34,8 +34,8 @@ SOURCE_FILES=("./rallysported-js/client/js/jszip/jszip.min.js"
               "./rallysported-js/client/js/rallysported/ui/input-state.js"
               "./rallysported-js/client/js/rallysported/ui/mouse-picking-element.js"
               "./rallysported-js/client/js/rallysported/scene/scene.js"
-              "./rallysported-js/client/js/rallysported/core/scene-3d.js"
-              "./rallysported-js/client/js/rallysported/core/scene-tilemap.js"
+              "./rallysported-js/client/js/rallysported/scene/scene-3d.js"
+              "./rallysported-js/client/js/rallysported/scene/scene-tilemap.js"
               "./rallysported-js/client/js/rallysported/core/core.js")
 
 echo "// WHAT: Concatenated JavaScript source files" > "$DST_DIRECTORY/$DST_FILENAME"

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 01:30:40 UTC)
+// VERSION: live (26 January 2020 11:26:36 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -35,8 +35,8 @@
 //	./rallysported-js/client/js/rallysported/ui/input-state.js
 //	./rallysported-js/client/js/rallysported/ui/mouse-picking-element.js
 //	./rallysported-js/client/js/rallysported/scene/scene.js
-//	./rallysported-js/client/js/rallysported/core/scene-3d.js
-//	./rallysported-js/client/js/rallysported/core/scene-tilemap.js
+//	./rallysported-js/client/js/rallysported/scene/scene-3d.js
+//	./rallysported-js/client/js/rallysported/scene/scene-tilemap.js
 //	./rallysported-js/client/js/rallysported/core/core.js
 /////////////////////////////////////////////////
 
@@ -3476,8 +3476,8 @@ Rsed.visual.canvas =
     width: 0,
     height: 0,
     scalingFactor: 0.25,
-    domElement: document.getElementById("render-canvas"),
-    domElementID: null,
+    domElement: document.getElementById("render-canvas"), // May not be available during unit tests.
+    domElementID: null, // The canvas DOM element may not be available during unit tests, so let's not initialize this here.
 
     // One element for each pixel on the canvas. Will be populated during rendering
     // with metainformation about the pixel - e.g. what kind of a polygon populates
@@ -3494,7 +3494,6 @@ if (!Rsed.unitTestRun)
                 || Rsed.throw("Failed to find a canvas element to render into.");
 
     Rsed.visual.canvas.domElementID = Rsed.visual.canvas.domElement.getAttribute("id");
-
 
     // A bit of a kludge to prevent certain inputs from sticking if released while a non-
     // RallySportED element has focus.
@@ -6456,7 +6455,6 @@ Rsed.scenes = Rsed.scenes || {};
                 if (Rsed.ui.inputState.mouse_wheel_scroll())
                 {
                     Rsed.world.camera.zoom_vertically(-Rsed.ui.inputState.mouse_wheel_scroll() / 2);
-
                     Rsed.ui.inputState.reset_wheel_scroll();
                 }
             }

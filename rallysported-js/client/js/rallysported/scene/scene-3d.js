@@ -296,7 +296,6 @@ Rsed.scenes = Rsed.scenes || {};
                 if (Rsed.ui.inputState.mouse_wheel_scroll())
                 {
                     Rsed.world.camera.zoom_vertically(-Rsed.ui.inputState.mouse_wheel_scroll() / 2);
-
                     Rsed.ui.inputState.reset_wheel_scroll();
                 }
             }
