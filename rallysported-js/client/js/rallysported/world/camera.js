@@ -18,7 +18,7 @@ Rsed.world.camera = (function()
 
     let verticalZoom = 0;
 
-    const moveSpeed = 0.4;
+    const moveSpeed = 0.5;
 
     const publicInterface =
     {

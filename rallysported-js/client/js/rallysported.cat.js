@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 19:04:17 UTC)
+// VERSION: live (26 January 2020 19:06:46 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3029,7 +3029,7 @@ Rsed.world.camera = (function()
 
     let verticalZoom = 0;
 
-    const moveSpeed = 0.4;
+    const moveSpeed = 0.5;
 
     const publicInterface =
     {
