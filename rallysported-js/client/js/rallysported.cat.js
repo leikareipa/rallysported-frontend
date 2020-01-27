@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 January 2020 23:48:27 UTC)
+// VERSION: live (27 January 2020 01:57:09 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2438,7 +2438,14 @@ Rsed.project = async function(projectArgs = {})
 
                 const numObjs = Math.floor(Number(args[0]));
 
-                props.set_count(trackId, numObjs);
+                if (loaderVersion < 5)
+                {
+                    props.set_count(trackId, numObjs);
+                }
+                else
+                {
+                    props.set_count__loader_v5(trackId, numObjs);
+                }
             }
 
             // Command: ADD_OBJ. Adds a new prop to the track.
@@ -4084,7 +4091,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         },
 
         // Set the number of props on the given track. Props whose index value is higher than this
-        // count will be deleted.
+        // count will be deleted. Note that this function is for RallySportED Loader pre-v.5.
         set_count: (trackId = 0, newPropCount = 0)=>
         {
             Rsed.assert && ((trackId >= 0) &&
@@ -4092,10 +4099,33 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((newPropCount > 1) &&
-                            (newPropCount <= Rsed.constants.maxPropCount))
-                    || Rsed.throw("Trying to set a new prop count out of bounds.");
+                            (newPropCount <= trackPropLocations[trackId].locations.length))
+                        || Rsed.throw("Trying to set a new prop count out of bounds.");
 
-            trackPropLocations[trackId].locations.splice(newPropCount);
+            trackPropLocations[trackId].locations.length = newPropCount;
+        },
+
+        // Set the number of props on the given track. For RallySportED Loader v.5.
+        set_count__loader_v5: (trackId = 0, newPropCount = 0)=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId <= 7))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            Rsed.assert && ((newPropCount > 1) &&
+                            (newPropCount <= Rsed.constants.maxPropCount))
+                        || Rsed.throw("Trying to set a new prop count out of bounds.");
+
+            trackPropLocations[trackId].locations = new Array(newPropCount).fill().map(e=>({x:0, y:0, z:0, propId: 0}));
+        },
+
+        reset_count: (trackId = 0)=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId <= 7))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            trackPropLocations[trackId].locations.length = 0;
         },
 
         change_prop_type: (trackId = 0, propIdx = 0, newPropId = 0)=>

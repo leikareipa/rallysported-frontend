@@ -535,7 +535,14 @@ Rsed.project = async function(projectArgs = {})
 
                 const numObjs = Math.floor(Number(args[0]));
 
-                props.set_count(trackId, numObjs);
+                if (loaderVersion < 5)
+                {
+                    props.set_count(trackId, numObjs);
+                }
+                else
+                {
+                    props.set_count__loader_v5(trackId, numObjs);
+                }
             }
 
             // Command: ADD_OBJ. Adds a new prop to the track.

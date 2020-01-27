@@ -251,7 +251,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         },
 
         // Set the number of props on the given track. Props whose index value is higher than this
-        // count will be deleted.
+        // count will be deleted. Note that this function is for RallySportED Loader pre-v.5.
         set_count: (trackId = 0, newPropCount = 0)=>
         {
             Rsed.assert && ((trackId >= 0) &&
@@ -259,10 +259,33 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                         || Rsed.throw("Querying a track out of bounds.");
 
             Rsed.assert && ((newPropCount > 1) &&
-                            (newPropCount <= Rsed.constants.maxPropCount))
-                    || Rsed.throw("Trying to set a new prop count out of bounds.");
+                            (newPropCount <= trackPropLocations[trackId].locations.length))
+                        || Rsed.throw("Trying to set a new prop count out of bounds.");
 
-            trackPropLocations[trackId].locations.splice(newPropCount);
+            trackPropLocations[trackId].locations.length = newPropCount;
+        },
+
+        // Set the number of props on the given track. For RallySportED Loader v.5.
+        set_count__loader_v5: (trackId = 0, newPropCount = 0)=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId <= 7))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            Rsed.assert && ((newPropCount > 1) &&
+                            (newPropCount <= Rsed.constants.maxPropCount))
+                        || Rsed.throw("Trying to set a new prop count out of bounds.");
+
+            trackPropLocations[trackId].locations = new Array(newPropCount).fill().map(e=>({x:0, y:0, z:0, propId: 0}));
+        },
+
+        reset_count: (trackId = 0)=>
+        {
+            Rsed.assert && ((trackId >= 0) &&
+                            (trackId <= 7))
+                        || Rsed.throw("Querying a track out of bounds.");
+
+            trackPropLocations[trackId].locations.length = 0;
         },
 
         change_prop_type: (trackId = 0, propIdx = 0, newPropId = 0)=>
