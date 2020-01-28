@@ -78,7 +78,8 @@ Rsed.scenes["3d"] = (function()
                 nearPlane: 300,
                 farPlane: 10000,
                 clipToViewport: true,
-                depthSort: "none",
+                depthSort: "painter",
+                useDepthBuffer: false,
                 auxiliaryBuffers: [{buffer:canvas.mousePickingBuffer, property:"mousePickId"}],
             });
 
