@@ -133,11 +133,13 @@ To see why this happens, consider that the texture's *v* coordinate is derived f
 RallySportED-js is currently in beta, with development occurring in sporadic increments.
 
 ## System requirements
-A mouse and keyboard are required to operate the RallySportED-js UI. Although there are plans to implement a mobile-friendly UI, no schedule exists for it at this time.
+A mouse and keyboard are required to operate the RallySportED-js UI. There are plans to implement a mobile-friendly UI, but no schedule exists for it at this time.
 
-Since RallySportED-js uses a software 3d renderer, it requires a bit of processing power from the host CPU. No specific figures have yet been established, but a reasonable desktop CPU released in the last five years or so should do the job.
+As RallySportED-js uses a software 3d renderer, it requires a bit of extra CPU processing power compared to a normal web app. A mid-range desktop PC bought in the last five years or so combined with a well-optimized browser like Google Chrome should run it fine.
 
 ## Browser compatibility
+Although compatible with a number of browsers, RallySportED-js tends to work best - and is most tested - in Google Chrome.
+
 Below are rough estimates of the required browser versions to run a given version of RallySportED-js. Browsers marked with "No" are not compatible at all.
 
 <table>
