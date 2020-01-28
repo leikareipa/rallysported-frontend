@@ -1,20 +1,20 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (23 November 2019 07:17:52 UTC)
+// VERSION: beta live (28 January 2020 15:21:18 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
-//	../js/retro-ngon/retro-ngon.js
-//	../js/retro-ngon/trig.js
-//	../js/retro-ngon/color.js
-//	../js/retro-ngon/geometry.js
-//	../js/retro-ngon/line-draw.js
-//	../js/retro-ngon/matrix44.js
-//	../js/retro-ngon/ngon-fill.js
-//	../js/retro-ngon/render.js
-//	../js/retro-ngon/transform.js
-//	../js/retro-ngon/texture.js
-//	../js/retro-ngon/screen.js
+//	./js/retro-ngon/retro-ngon.js
+//	./js/retro-ngon/trig.js
+//	./js/retro-ngon/color.js
+//	./js/retro-ngon/geometry.js
+//	./js/retro-ngon/line-draw.js
+//	./js/retro-ngon/matrix44.js
+//	./js/retro-ngon/ngon-fill.js
+//	./js/retro-ngon/render.js
+//	./js/retro-ngon/transform.js
+//	./js/retro-ngon/texture.js
+//	./js/retro-ngon/screen.js
 /////////////////////////////////////////////////
 
 /*
@@ -42,7 +42,11 @@ const Rngon = {};
 
     Rngon.throw = (errMessage = "")=>
     {
-        alert("Retro n-gon error: " + errMessage);
+        if (Rngon.internalState.allowWindowAlert)
+        {
+            window.alert("Retro n-gon error: " + errMessage);
+        }
+
         throw Error("Retro n-gon error: " + errMessage);
     }
 
@@ -52,8 +56,9 @@ const Rngon = {};
     }
 }
 
-// Global render toggles. These should not be modified directly; they're instead
-// set by the renderer based on render parameters requested by the user.
+// Global app state, for internal use by the renderer. Unless otherwise noted, these
+// parameters should not be modified directly; they're instead set by the renderer
+// based on settings requested by the user.
 Rngon.internalState =
 {
     // Whether to require pixels to pass a depth test before being allowed on screen.
@@ -68,7 +73,13 @@ Rngon.internalState =
     // If set to true, all n-gons will be rendered with a wireframe.
     showGlobalWireframe: false,
 
+    // If true, all n-gons will be clipped against the viewport.
     applyViewportClipping: true,
+
+    // Whether the renderer is allowed to call window.alert(), e.g. to alert the user
+    // to errors. This parameter can be set directly, as the render API doesn't yet
+    // expose a way to toggle it otherwise.
+    allowWindowAlert: false,
 
     // All transformed n-gons on a particular call to render() will be placed here.
     // The cache size will be dynamically adjusted up to match the largest number
@@ -575,6 +586,7 @@ Rngon.ngon.defaultMaterial =
     hasWireframe: false,
     isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
+    allowTransform: true,
     auxiliary: {},
 };
 
@@ -946,7 +958,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             {
                 const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
 
-                const add_edge = (vert1, vert2, isLeftEdge, )=>
+                const add_edge = (vert1, vert2, isLeftEdge)=>
                 {
                     const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
                     const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
@@ -1037,7 +1049,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaUVW = ((rightEdge.startUVW - leftEdge.startUVW) / spanWidth);
                         let iplUVW = (leftEdge.startUVW - deltaUVW);
 
-                        // Assumes the pixel buffer consists of 4 elements (RGBA) per pixel.
+                        // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
                         let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
 
                         // Assumes the depth buffer consists of 1 element per pixel.
@@ -1055,7 +1067,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             depthBufferIdx++;
 
                             // Depth test.
-                            if (depthBuffer[depthBufferIdx] <= iplDepth) continue;
+                            if (depthBuffer && (depthBuffer[depthBufferIdx] <= iplDepth)) continue;
 
                             // Solid fill.
                             if (!ngon.material.texture)
@@ -1067,7 +1079,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
                                 pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
                                 pixelBuffer[pixelBufferIdx + 3] = ngon.material.color.alpha;
-                                depthBuffer[depthBufferIdx] = iplDepth;
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
                             // Textured fill.
                             else
@@ -1186,7 +1198,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
                                 pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
                                 pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
-                                depthBuffer[depthBufferIdx] = iplDepth;
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
 
                             for (let b = 0; b < auxiliaryBuffers.length; b++)
@@ -1277,10 +1289,10 @@ Rngon.render = function(canvasElementId,
     });
 
     // Modify any internal render parameters based on the user's options.
-    Rngon.internalState.useDepthBuffer = true;
-    Rngon.internalState.showGlobalWireframe = (options.globalWireframe === true);
-    Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
-    Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
+    Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
+    Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
+    Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
+    Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
@@ -1298,7 +1310,7 @@ Rngon.render = function(canvasElementId,
         callMetadata.renderHeight = renderSurface.height;
 
         prepare_ngon_cache(Rngon.internalState.transformedNgonsCache, meshes);
-    
+
         transform_ngons(meshes, renderSurface, options.cameraPosition, options.cameraDirection);
         mark_npot_textures(Rngon.internalState.transformedNgonsCache);
         depth_sort_ngons(Rngon.internalState.transformedNgonsCache.ngons, options.depthSort);
@@ -1423,7 +1435,9 @@ Rngon.render = function(canvasElementId,
             }
             
             // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
-            // list. Together with the depth buffer, this allows early rejection of obscured polygons.
+            // list. When used together with depth buffering, allows for early rejection of occluded
+            // pixels during rasterization.
+            case "painter-reverse":
             default:
             {
                 ngons.sort((ngonA, ngonB)=>
@@ -1453,6 +1467,7 @@ Rngon.render.defaultOptions =
     nearPlane: 1,
     farPlane: 1000,
     depthSort: "", // Use default.
+    useDepthBuffer: true,
     clipToViewport: true,
     globalWireframe: false,
     hibernateWhenNotOnScreen: true,
@@ -1515,25 +1530,25 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
             cachedNgon.isActive = true;
         }
 
-        // Clipping.
-        cachedNgon.transform(clipSpaceMatrix);
+        if (cachedNgon.material.allowTransform)
         {
+            cachedNgon.transform(clipSpaceMatrix);
             if (Rngon.internalState.applyViewportClipping)
             {
                 cachedNgon.clip_to_viewport();
-
-                // If there are no vertices left after clipping, it means this n-gon is not visible
-                // on the screen at all. We can just ignore it.
-                if (!cachedNgon.vertices.length)
-                {
-                    transformedNgonsCache.numActiveNgons--;
-                    continue;
-                }
             }
-        }
 
-        cachedNgon.transform(screenSpaceMatrix);
-        cachedNgon.perspective_divide();
+            // If there are no vertices left after clipping, it means this n-gon is not
+            // visible on the screen at all, and we don't need to consider it for rendering.
+            if (!cachedNgon.vertices.length)
+            {
+                transformedNgonsCache.numActiveNgons--;
+                continue;
+            }
+
+            cachedNgon.transform(screenSpaceMatrix);
+            cachedNgon.perspective_divide();
+        }
     };
 
     // Mark as inactive any cached n-gons that we didn't touch, so the renderer knows
