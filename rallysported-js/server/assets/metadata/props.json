@@ -2,21 +2,21 @@
 	"propNames":
 	[
 		{"propId":0,"name":"tree"},
-		{"propId":1,"name":"fence(wire)"},
-		{"propId":2,"name":"fence(horse)"},
-		{"propId":3,"name":"sign(80)"},
-		{"propId":4,"name":"sign(!)"},
-		{"propId":5,"name":"arch(stone)"},
-		{"propId":6,"name":"post(stone)"},
-		{"propId":7,"name":"rock(large)"},
-		{"propId":8,"name":"rock(small)"},
-		{"propId":9,"name":"billboard(large)"},
-		{"propId":10,"name":"billboard(small)"},
+		{"propId":1,"name":"wire fence"},
+		{"propId":2,"name":"horse fence"},
+		{"propId":3,"name":"sign: 80"},
+		{"propId":4,"name":"sign: !"},
+		{"propId":5,"name":"stone arch"},
+		{"propId":6,"name":"stone post"},
+		{"propId":7,"name":"large rock"},
+		{"propId":8,"name":"small rock"},
+		{"propId":9,"name":"large billboard"},
+		{"propId":10,"name":"small billboard"},
 		{"propId":11,"name":"house"},
-		{"propId":12,"name":"pole(1)"},
-		{"propId":13,"name":"pole(2)"},
-		{"propId":14,"name":"finish(normal)"},
-		{"propId":15,"name":"finish(arch)"}
+		{"propId":12,"name":"pole no. 1"},
+		{"propId":13,"name":"pole no .2"},
+		{"propId":14,"name":"finish (normal)"},
+		{"propId":15,"name":"finish (arch)"}
 	],
 
 	"propMeshes":
