@@ -25,7 +25,6 @@
             </div>
 
             <div id="prop-dropdown" class="dropdown-menu">
-                <div class="header">Set prop type</div>
                 <div class="item"
                      v-for="prop in propList"
                      v-on:click="activate_prop(prop.propName)">{{prop.propName}}</div>

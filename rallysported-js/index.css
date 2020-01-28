@@ -118,43 +118,42 @@ body
     position: absolute;
     left: 0;
     top: 0;
-    background-color: #f0f0f0;
+    background-color: #f0f2f0;
+    border: none;
     z-index: 3;
-    border-radius: 20px;
-    border-top-left-radius: 4px;
+    border-radius: 10px;
     display: none;
+    padding: 10px;
+    padding-left: 20px;
+    padding-right: 60px;
 }
 
-.dropdown-menu > .header
-{
-    color: black;
-    text-align: center;
-    border-top-left-radius: inherit;
-    border-top-right-radius: inherit;
-    padding: 10px;
-    background-color: rgb(162, 214, 57);
-    margin-bottom: 10px; /* Separate the header from the first item.*/
+/* A left-pointing arrow on the left edge of the dropdown menu. Adapted
+ * from http://www.cssarrowplease.com/.*/
+.dropdown-menu:after {
+	right: 99.5%;
+	top: 29%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+	border-color: transparent;
+	border-right-color: #f0f2f0;
+	border-width: 16px;
+	margin-top: -16px;
 }
 
 .dropdown-menu > .item
 {
     text-transform: capitalize;
     color: black;
-    padding: 1px;
-    padding-left: 20px;
-    padding-right: 80px;
-}
-
-.dropdown-menu > .item:last-of-type
-{
-    margin-bottom: 10px;
 }
 
 .dropdown-menu > .item:hover
 {
-    background-color: rgb(162, 214, 57);
-    transform: scale(1.16);
-    border-radius: 10px;
+    font-weight: bold;
 }
 
 .dropdown-menu.show
