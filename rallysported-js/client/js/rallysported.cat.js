@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (29 January 2020 01:37:19 UTC)
+// VERSION: live (29 January 2020 12:01:23 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6708,41 +6708,19 @@ Rsed.scenes["tilemap"] = (function()
         
         draw_ui: function(canvas)
         {
-            // Render the tilemap view.
-            {
-                if ((Rsed.visual.canvas.width != knownCanvasSizeX ||
-                     Rsed.visual.canvas.height != knownCanvasSizeY))
-                {
-                    this.refresh_tilemap_view();
-                }
+            Rsed.ui.draw.begin_drawing(canvas);
 
-                Rngon.render(canvas.domElement.getAttribute("id"), [tilemapMesh],
-                {
-                    scale: canvas.scalingFactor,
-                    fov: 45,
-                    nearPlane: 0,
-                    farPlane: 10,
-                    depthSort: "painter",
-                    useDepthBuffer: false,
-                });
-            }
+            Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
+                                ((canvas.width / 2) - (tilemapWidth / 2)),
+                                ((canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
 
-            // Draw the rest of the UI.
-            {
-                Rsed.ui.draw.begin_drawing(canvas);
+            Rsed.ui.draw.watermark();
+            Rsed.ui.draw.active_pala();
+            if (showPalatPane) Rsed.ui.draw.palat_pane();
+            if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
+            Rsed.ui.draw.mouse_cursor();
 
-                Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
-                                    ((canvas.width / 2) - (tilemapWidth / 2)),
-                                    ((canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
-
-                Rsed.ui.draw.watermark();
-                Rsed.ui.draw.active_pala();
-                if (showPalatPane) Rsed.ui.draw.palat_pane();
-                if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
-                Rsed.ui.draw.mouse_cursor();
-
-                Rsed.ui.draw.finish_drawing(canvas);
-            }
+            Rsed.ui.draw.finish_drawing(canvas);
 
             // Note: We assume that UI drawing is the last step in rendering the current
             // frame; and thus that once the UI rendering has finished, the frame is finished
@@ -6758,20 +6736,21 @@ Rsed.scenes["tilemap"] = (function()
 
         draw_mesh: function(canvas)
         {
-            // No mesh is used for this scene.
-            const emptyMesh = Rngon.mesh();
+           if ((Rsed.visual.canvas.width != knownCanvasSizeX ||
+                Rsed.visual.canvas.height != knownCanvasSizeY))
+           {
+               this.refresh_tilemap_view();
+           }
 
-            const renderInfo = Rngon.render(canvas.domElement.getAttribute("id"), [emptyMesh],
-            {
-                cameraPosition: Rngon.translation_vector(0, 0, 0),
-                cameraDirection: Rngon.rotation_vector(0, 0, 0),
-                scale: canvas.scalingFactor,
-                fov: 45,
-                nearPlane: 300,
-                farPlane: 10000,
-                clipToViewport: false,
-                depthSort: "none",
-            });
+           const renderInfo = Rngon.render(canvas.domElement.getAttribute("id"), [tilemapMesh],
+           {
+               scale: canvas.scalingFactor,
+               fov: 45,
+               nearPlane: 0,
+               farPlane: 10,
+               depthSort: "painter",
+               useDepthBuffer: false,
+           });
 
             // If the rendering was resized since the previous frame...
             if ((renderInfo.renderWidth !== canvas.width ||
