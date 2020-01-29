@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (29 January 2020 12:01:23 UTC)
+// VERSION: live (29 January 2020 12:05:32 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6301,9 +6301,9 @@ Rsed.scenes["3d"] = (function()
 
     return Rsed.scene(
     {
-        draw_ui: function(canvas)
+        draw_ui: function()
         {
-            Rsed.ui.draw.begin_drawing(canvas);
+            Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 
             Rsed.ui.draw.watermark();
             Rsed.ui.draw.minimap();
@@ -6313,7 +6313,7 @@ Rsed.scenes["3d"] = (function()
             if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 
-            Rsed.ui.draw.finish_drawing(canvas);
+            Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 
             // Note: We assume that UI drawing is the last step in rendering the current
             // frame; and thus that once the UI rendering has finished, the frame is finished
@@ -6327,7 +6327,7 @@ Rsed.scenes["3d"] = (function()
             return;
         },
 
-        draw_mesh: function(canvas)
+        draw_mesh: function()
         {
             const trackMesh = Rsed.world.meshBuilder.track_mesh(
             {
@@ -6336,26 +6336,26 @@ Rsed.scenes["3d"] = (function()
                 includeWireframe: showWireframe,
             });
 
-            const renderInfo = Rngon.render(canvas.domElement.getAttribute("id"), [trackMesh],
+            const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [trackMesh],
             {
                 cameraPosition: Rngon.translation_vector(0, 0, 0),
                 cameraDirection: Rsed.world.camera.rotation(),
-                scale: canvas.scalingFactor,
+                scale: Rsed.visual.canvas.scalingFactor,
                 fov: 45,
                 nearPlane: 300,
                 farPlane: 10000,
                 clipToViewport: true,
                 depthSort: "painter",
                 useDepthBuffer: false,
-                auxiliaryBuffers: [{buffer:canvas.mousePickingBuffer, property:"mousePickId"}],
+                auxiliaryBuffers: [{buffer:Rsed.visual.canvas.mousePickingBuffer, property:"mousePickId"}],
             });
 
             // If the rendering was resized since the previous frame...
-            if ((renderInfo.renderWidth !== canvas.width ||
-                (renderInfo.renderHeight !== canvas.height)))
+            if ((renderInfo.renderWidth !== Rsed.visual.canvas.width ||
+                (renderInfo.renderHeight !== Rsed.visual.canvas.height)))
             {
-                canvas.width = renderInfo.renderWidth;
-                canvas.height = renderInfo.renderHeight;
+                Rsed.visual.canvas.width = renderInfo.renderWidth;
+                Rsed.visual.canvas.height = renderInfo.renderHeight;
 
                 window.close_dropdowns();
 
@@ -6706,13 +6706,13 @@ Rsed.scenes["tilemap"] = (function()
             return;
         },
         
-        draw_ui: function(canvas)
+        draw_ui: function()
         {
-            Rsed.ui.draw.begin_drawing(canvas);
+            Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 
             Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
-                                ((canvas.width / 2) - (tilemapWidth / 2)),
-                                ((canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
+                                ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
+                                ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
 
             Rsed.ui.draw.watermark();
             Rsed.ui.draw.active_pala();
@@ -6720,7 +6720,7 @@ Rsed.scenes["tilemap"] = (function()
             if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 
-            Rsed.ui.draw.finish_drawing(canvas);
+            Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 
             // Note: We assume that UI drawing is the last step in rendering the current
             // frame; and thus that once the UI rendering has finished, the frame is finished
@@ -6734,7 +6734,7 @@ Rsed.scenes["tilemap"] = (function()
             return;
         },
 
-        draw_mesh: function(canvas)
+        draw_mesh: function()
         {
            if ((Rsed.visual.canvas.width != knownCanvasSizeX ||
                 Rsed.visual.canvas.height != knownCanvasSizeY))
@@ -6742,9 +6742,9 @@ Rsed.scenes["tilemap"] = (function()
                this.refresh_tilemap_view();
            }
 
-           const renderInfo = Rngon.render(canvas.domElement.getAttribute("id"), [tilemapMesh],
+           const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [tilemapMesh],
            {
-               scale: canvas.scalingFactor,
+               scale: Rsed.visual.canvas.scalingFactor,
                fov: 45,
                nearPlane: 0,
                farPlane: 10,
@@ -6753,11 +6753,11 @@ Rsed.scenes["tilemap"] = (function()
            });
 
             // If the rendering was resized since the previous frame...
-            if ((renderInfo.renderWidth !== canvas.width ||
-                (renderInfo.renderHeight !== canvas.height)))
+            if ((renderInfo.renderWidth !== Rsed.visual.canvas.width ||
+                (renderInfo.renderHeight !== Rsed.visual.canvas.height)))
             {
-                canvas.width = renderInfo.renderWidth;
-                canvas.height = renderInfo.renderHeight;
+                Rsed.visual.canvas.width = renderInfo.renderWidth;
+                Rsed.visual.canvas.height = renderInfo.renderHeight;
 
                 window.close_dropdowns();
 
@@ -6985,8 +6985,8 @@ Rsed.core = (function()
 
         // Render the next frame.
         Rsed.visual.canvas.mousePickingBuffer.fill(null);
-        currentScene.draw_mesh(Rsed.visual.canvas);
-        currentScene.draw_ui(Rsed.visual.canvas);
+        currentScene.draw_mesh();
+        currentScene.draw_ui();
 
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
     }

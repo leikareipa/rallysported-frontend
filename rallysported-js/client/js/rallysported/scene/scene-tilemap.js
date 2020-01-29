@@ -108,13 +108,13 @@ Rsed.scenes["tilemap"] = (function()
             return;
         },
         
-        draw_ui: function(canvas)
+        draw_ui: function()
         {
-            Rsed.ui.draw.begin_drawing(canvas);
+            Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 
             Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
-                                ((canvas.width / 2) - (tilemapWidth / 2)),
-                                ((canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
+                                ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
+                                ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
 
             Rsed.ui.draw.watermark();
             Rsed.ui.draw.active_pala();
@@ -122,7 +122,7 @@ Rsed.scenes["tilemap"] = (function()
             if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 
-            Rsed.ui.draw.finish_drawing(canvas);
+            Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 
             // Note: We assume that UI drawing is the last step in rendering the current
             // frame; and thus that once the UI rendering has finished, the frame is finished
@@ -136,7 +136,7 @@ Rsed.scenes["tilemap"] = (function()
             return;
         },
 
-        draw_mesh: function(canvas)
+        draw_mesh: function()
         {
            if ((Rsed.visual.canvas.width != knownCanvasSizeX ||
                 Rsed.visual.canvas.height != knownCanvasSizeY))
@@ -144,9 +144,9 @@ Rsed.scenes["tilemap"] = (function()
                this.refresh_tilemap_view();
            }
 
-           const renderInfo = Rngon.render(canvas.domElement.getAttribute("id"), [tilemapMesh],
+           const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [tilemapMesh],
            {
-               scale: canvas.scalingFactor,
+               scale: Rsed.visual.canvas.scalingFactor,
                fov: 45,
                nearPlane: 0,
                farPlane: 10,
@@ -155,11 +155,11 @@ Rsed.scenes["tilemap"] = (function()
            });
 
             // If the rendering was resized since the previous frame...
-            if ((renderInfo.renderWidth !== canvas.width ||
-                (renderInfo.renderHeight !== canvas.height)))
+            if ((renderInfo.renderWidth !== Rsed.visual.canvas.width ||
+                (renderInfo.renderHeight !== Rsed.visual.canvas.height)))
             {
-                canvas.width = renderInfo.renderWidth;
-                canvas.height = renderInfo.renderHeight;
+                Rsed.visual.canvas.width = renderInfo.renderWidth;
+                Rsed.visual.canvas.height = renderInfo.renderHeight;
 
                 window.close_dropdowns();
 

@@ -135,8 +135,8 @@ Rsed.core = (function()
 
         // Render the next frame.
         Rsed.visual.canvas.mousePickingBuffer.fill(null);
-        currentScene.draw_mesh(Rsed.visual.canvas);
-        currentScene.draw_ui(Rsed.visual.canvas);
+        currentScene.draw_mesh();
+        currentScene.draw_ui();
 
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
     }
