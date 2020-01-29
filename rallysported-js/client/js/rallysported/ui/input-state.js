@@ -87,6 +87,11 @@ Rsed.ui.inputState = (function()
             return mouseState.buttons.right;
         },
 
+        left_or_right_mouse_button_down: function()
+        {
+            return (mouseState.buttons.left || mouseState.buttons.right);
+        },
+
         key_down: function(key)
         {
             Rsed.throw_if_not_type("string", key);

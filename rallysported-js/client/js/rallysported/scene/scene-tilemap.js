@@ -22,76 +22,129 @@ Rsed.scenes["tilemap"] = (function()
     /// once the next frame has finished rendering. This is used e.g. to keep proper track
     /// mouse hover when various UI elements are toggled on/off.
     let updateMouseHoverOnFrameFinish = false;
+
+    let tilemap = []; // The tilemap view's pixels, in consecutive RGBA (0-255) values.
+    let tilemapMesh = null; // A retro n-gon renderer mesh.
+    let tilemapWidth = 0;
+    let tilemapHeight = 0;
+    let tilemapOffsetX = 0;
+    let tilemapOffsetY = 0;
+
+    // The latest known size of the canvas we're rendering to.
+    let knownCanvasSizeX = 0;
+    let knownCanvasSizeY = 0;
     
-    return Rsed.scene(
+    const scene = Rsed.scene(
     {
-        draw_ui: function(canvas)
+        // Refreshes the tilemap view with any new changes to the track's tilemap.
+        // Optionally, you can provide the extent of a dirty rectangle: its top
+        // left corner is at startX,startY, and it's of the given width and height.
+        // Unless a dirty rectangle is given, the entire tilemap view will be
+        // refreshed.
+        refresh_tilemap_view: function(startX = 0, startY = 0, width = -1, height = -1)
         {
-            Rsed.ui.draw.begin_drawing(canvas);
+            const project = Rsed.core.current_project();
+            const checkpoint = project.track_checkpoint();
 
-            /// TODO: The current way of drawing the tilemap - regenerating the entire map
-            /// each frame - is quite slow. Instead, we should pre-bake the image, and
-            /// modify it only when the user makes changes.
-
-            // Draw the tilemap in the middle of the canvas. For each ground tile on the
-            // track, we'll select a color from its texture, and draw the corresponding
-            // tilemap pixel with that color.
-            const tilemapWidth = Math.floor(Rsed.visual.canvas.width * 0.81);
-            const tilemapHeight = Math.floor(Rsed.visual.canvas.height * 0.72);
+            if (Rsed.visual.canvas.width != knownCanvasSizeX ||
+                Rsed.visual.canvas.height != knownCanvasSizeY)
             {
-                const xMul = (Rsed.core.current_project().maasto.width / tilemapWidth);
-                const zMul = (Rsed.core.current_project().maasto.width / tilemapHeight);
-                const checkpoint = Rsed.core.current_project().track_checkpoint();
-                const tilemap = new Array(tilemapWidth * tilemapHeight); // Palette indices that form the tilemap image.
-                const mousePick = new Array(tilemapWidth * tilemapHeight);
+                tilemapWidth = Math.round(Rsed.visual.canvas.width * 0.7);
+                tilemapHeight = Math.round(Rsed.visual.canvas.height * 0.7);
+                tilemapOffsetX = Math.floor((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2));
+                tilemapOffsetY = Math.floor((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2));
+                tilemap = new Array(project.varimaa.width * project.varimaa.height);
 
-                for (let z = 0; z < tilemapHeight; z++)
-                {
-                    for (let x = 0; x < tilemapWidth; x++)
-                    {
-                        const tileX = Math.floor(x * xMul);
-                        const tileZ = Math.floor(z * zMul);
-
-                        const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
-                        let color = ((pala == null)? 0 : pala.indices[1]);
-
-                        if ((tileX === checkpoint.x) &&
-                            (tileZ === checkpoint.y))
-                        {
-                            color = "white";
-                        }
-
-                        // We'll give the tilemap's outer edges a frame.
-                        if (z % (tilemapHeight - 1) === 0) color = "gray";
-                        if (x % (tilemapWidth - 1) === 0) color = "gray";
-
-                        tilemap[x + z * tilemapWidth] = color;
-                        mousePick[x + z * tilemapWidth] = Rsed.ui.mouse_picking_element("ui-element",
-                        {
-                            uiElementId: "tilemap",
-                            x: tileX,
-                            y: tileZ,
-                        });
-                    }
-                }
-
-                Rsed.ui.draw.image(tilemap, mousePick,
-                                   tilemapWidth, tilemapHeight,
-                                   ((canvas.width / 2) - (tilemapWidth / 2)), ((canvas.height / 2) - (tilemapHeight / 2)),
-                                   false);
+                knownCanvasSizeX = Rsed.visual.canvas.width;
+                knownCanvasSizeY = Rsed.visual.canvas.height;
             }
 
-            Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
-                                ((canvas.width / 2) - (tilemapWidth / 2)),
-                                ((canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
+            const maxX = ((width == -1)? project.varimaa.width : Math.min(project.varimaa.width, (width + startX)));
+            const maxY = ((height == -1)? project.varimaa.height : Math.min(project.varimaa.height, (height + startY)));
 
-            Rsed.ui.draw.watermark();
-            Rsed.ui.draw.active_pala();
-            if (showPalatPane) Rsed.ui.draw.palat_pane();
-            if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
-            Rsed.ui.draw.mouse_cursor();
+            // Refresh the tilemap texture.
+            for (let y = startY; y < maxY; y++)
+            {
+                for (let x = startX; x < maxX; x++)
+                {
+                    const pala = project.palat.texture[project.varimaa.tile_at(x, y)];
 
-            Rsed.ui.draw.finish_drawing(canvas);
+                    let colorIdx = ((pala == null)? 0 : pala.indices[1]);
+
+                    if ((x == checkpoint.x) &&
+                        (y == checkpoint.y))
+                    {
+                        colorIdx = "white";
+                    }
+
+                    const color = Rsed.visual.palette.color_at_idx(colorIdx);
+
+                    tilemap[(x + y * project.varimaa.width) * 4 + 0] = color.red;
+                    tilemap[(x + y * project.varimaa.width) * 4 + 1] = color.green;
+                    tilemap[(x + y * project.varimaa.width) * 4 + 2] = color.blue;
+                    tilemap[(x + y * project.varimaa.width) * 4 + 3] = 255;
+                }
+            }
+
+            // The tilemap n-gon is a rectangle drawn with the tilemap texture.
+            const tilemapNgon = Rngon.ngon([Rngon.vertex(tilemapOffsetX, tilemapOffsetY),
+                                            Rngon.vertex((tilemapOffsetX + tilemapWidth), tilemapOffsetY),
+                                            Rngon.vertex((tilemapOffsetX + tilemapWidth), (tilemapOffsetY + tilemapHeight)),
+                                            Rngon.vertex(tilemapOffsetX, (tilemapOffsetY + tilemapHeight))],
+                                            {
+                                                color: Rngon.color_rgba(255, 255, 255),
+                                                allowTransform: false, // The vertices are already in screen space.
+                                                texture: Rngon.texture_rgba({
+                                                    width: project.varimaa.width,
+                                                    height: project.varimaa.height,
+                                                    pixels: tilemap,
+                                                }),
+                                                hasWireframe: true,
+                                                wireframeColor: Rngon.color_rgba(127, 127, 127),
+                                            });
+
+            tilemapMesh = Rngon.mesh([tilemapNgon]);
+
+            return;
+        },
+        
+        draw_ui: function(canvas)
+        {
+            // Render the tilemap view.
+            {
+                if ((Rsed.visual.canvas.width != knownCanvasSizeX ||
+                     Rsed.visual.canvas.height != knownCanvasSizeY))
+                {
+                    this.refresh_tilemap_view();
+                }
+
+                Rngon.render(canvas.domElement.getAttribute("id"), [tilemapMesh],
+                {
+                    scale: canvas.scalingFactor,
+                    fov: 45,
+                    nearPlane: 0,
+                    farPlane: 10,
+                    depthSort: "painter",
+                    useDepthBuffer: false,
+                });
+            }
+
+            // Draw the rest of the UI.
+            {
+                Rsed.ui.draw.begin_drawing(canvas);
+
+                Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
+                                    ((canvas.width / 2) - (tilemapWidth / 2)),
+                                    ((canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
+
+                Rsed.ui.draw.watermark();
+                Rsed.ui.draw.active_pala();
+                if (showPalatPane) Rsed.ui.draw.palat_pane();
+                if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
+                Rsed.ui.draw.mouse_cursor();
+
+                Rsed.ui.draw.finish_drawing(canvas);
+            }
 
             // Note: We assume that UI drawing is the last step in rendering the current
             // frame; and thus that once the UI rendering has finished, the frame is finished
@@ -145,6 +198,8 @@ Rsed.scenes["tilemap"] = (function()
         },
     });
 
+    return scene;
+
     function handle_keyboard_input()
     {
         // Handle keyboard input for one-off events, where the key press is registered
@@ -181,48 +236,36 @@ Rsed.scenes["tilemap"] = (function()
 
     function handle_mouse_input()
     {
-        if (Rsed.ui.inputState.mouse_button_down())
+        const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+        const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
+
+        // Handle clicks over the PALAT pane.
+        if (mouseHover &&
+            (mouseHover.type == "ui-element") &&
+            (mouseHover.uiElementId == "palat-pane") &&
+            Rsed.ui.inputState.left_or_right_mouse_button_down())
         {
-            const grab = Rsed.ui.inputState.current_mouse_grab();
-            const hover = Rsed.ui.inputState.current_mouse_hover();
+            Rsed.ui.groundBrush.set_brush_pala_idx(mouseHover.palaIdx);
 
-            if (!grab || !hover) return;
+            return;
+        }
 
-            switch (grab.type)
-            {
-                case "ui-element":
-                {
-                    switch (hover.uiElementId)
-                    {
-                        case "tilemap":
-                        {
-                            if (Rsed.ui.inputState.mid_mouse_button_down())
-                            {
-                                Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
-                                                                           Rsed.ui.groundBrush.brush_pala_idx(),
-                                                                           hover.x,
-                                                                           hover.y);
-                            }
+        // Handle painting the tilemap.
+        if (Rsed.ui.inputState.mid_mouse_button_down())
+        {
+            const mousePosX = Math.round((mousePos.x - tilemapOffsetX) * (Rsed.core.current_project().maasto.width / tilemapWidth));
+            const mousePosY = Math.round((mousePos.y - tilemapOffsetY) * (Rsed.core.current_project().maasto.height / tilemapHeight));
+            const brushSize = (Rsed.ui.groundBrush.brush_size() + 1);
 
-                            break;
-                        }
-                        case "palat-pane":
-                        {
-                            if (Rsed.ui.inputState.left_mouse_button_down() ||
-                                Rsed.ui.inputState.right_mouse_button_down())
-                            {
-                                Rsed.ui.groundBrush.set_brush_pala_idx(hover.palaIdx);
-                            }
+            Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
+                                                       Rsed.ui.groundBrush.brush_pala_idx(),
+                                                       mousePosX, mousePosY);
 
-                            break;
-                        }
-                        default: Rsed.throw("Unknown UI element id for mouse picking."); break;
-                    }
-
-                    break;
-                }
-                default: break;
-            }
+            // Update the region of the tilemap that we painted over.
+            scene.refresh_tilemap_view((mousePosX - brushSize),
+                                       (mousePosY - brushSize),
+                                       (brushSize * 2),
+                                       (brushSize * 2));
         }
         
         return;

@@ -111,6 +111,13 @@ Rsed.core = (function()
 
             currentScene = Rsed.scenes[sceneName];
 
+            // If we've switched to the tilemap scene, make sure it's reflecting
+            // any changes we may have made to the track's tilemap in other scenes.
+            if (currentScene == Rsed.scenes["tilemap"])
+            {
+                currentScene.refresh_tilemap_view();
+            }
+
             return;
         },
     }
