@@ -11,7 +11,7 @@
 Rsed.world.camera = (function()
 {
     // The camera's position, in tile units.
-    const position = {x:0, y:0, z:0};
+    const position = {x:0.0, y:0.0, z:0.0};
 
     // The camera's rotation, in degrees.
     const rotation = {x:21, y:0, z:0};
@@ -123,16 +123,21 @@ Rsed.world.camera = (function()
                 x: Math.floor(position.x),
                 y: Math.floor(position.y),
                 z: Math.floor(position.z),
-            }
+            };
         },
 
         position: function()
         {
+            return {...position};
+        },
+
+        world_position: function()
+        {
             return {
-                x: position.x,
-                y: position.y,
-                z: position.z,
-            }
+                x: (position.x * Rsed.constants.groundTileSize),
+                y: (position.y * Rsed.constants.groundTileSize),
+                z: (position.z * Rsed.constants.groundTileSize),
+            };
         },
 
         movement_speed: moveSpeed,
