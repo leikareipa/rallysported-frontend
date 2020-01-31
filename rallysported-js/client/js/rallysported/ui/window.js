@@ -53,7 +53,7 @@ window.onload = function(event)
 
             // Give the input a sanity check.
             if ((trackID.length > 20) ||
-                !(/^[0-9a-zA-Z-]+$/.test(trackID)))
+                !(/^[0-9a-zA-Z-.]+$/.test(trackID)))
             {
                 Rsed.throw("Invalid track identifier.");
                 return;
