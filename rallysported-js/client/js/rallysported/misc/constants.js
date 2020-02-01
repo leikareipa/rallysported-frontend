@@ -34,5 +34,5 @@ Rsed.constants = Object.freeze(
     // A URL pointing to the root of Rally-Sport Content, the service from which
     // RallySportED-js will fetch track data. It would ideally be located on the
     // same origin, to avoid CORS issues.
-    rallySportContentURL: `${window.location.origin}/rallysport-content/`,
+    rallySportContentURL: `${window.location.origin}/rallysport-content`,
 });
