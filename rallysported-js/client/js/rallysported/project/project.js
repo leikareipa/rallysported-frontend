@@ -219,7 +219,7 @@ Rsed.project = async function(projectArgs = {})
         const manifesto = projectData.manifesto.split("\n").filter(line=>line.trim().length);
         
         // We'll append the new manifesto string here.
-        let updatedManifesto = `0 ${trackId + 1} ${palatId} ${requiredLoaderVersion}\n`;
+        let updatedManifesto = `0 ${trackId + 1} ${palatId + 1} ${requiredLoaderVersion}\n`;
 
         // Any manifesto commands we won't update will be copied verbatim into the updated
         // version.
@@ -515,8 +515,8 @@ Rsed.project = async function(projectArgs = {})
                 Rsed.assert && (args.length === 3)
                             || Rsed.throw("Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
 
-                set_track_id(Math.floor(Number(args[0]) - 1));
-                set_palat_id(palatId = Math.floor(Number(args[1])));
+                set_track_id(Math.floor(Number(args[0])) - 1);
+                set_palat_id(Math.floor(Number(args[1])) - 1);
                 set_required_loader_version(Number(args[2]));
             }
 
