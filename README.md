@@ -8,7 +8,7 @@ A live page running RallySportED-js is available [here](https://tarpeeksihyvaeso
 - Genuine olden-style software-rendered 3d graphics
 - Written in modern, vanilla JavaScript - with a bit of Vue for the UI
 
-![](images/screenshots/beta.3/yleisoek.png)
+![](images/screenshots/beta.3/yleisoek-2.png)
 
 # End-user's guide
 You can find a handy end-user's guide at https://tarpeeksihyvaesoft.com/rallysported/userguide/.
