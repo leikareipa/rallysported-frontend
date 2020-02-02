@@ -258,7 +258,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
-            Rsed.assert && ((newPropCount > 1) &&
+            Rsed.assert && ((newPropCount >= 1) &&
                             (newPropCount <= trackPropLocations[trackId].locations.length))
                         || Rsed.throw("Trying to set a new prop count out of bounds.");
 
@@ -272,7 +272,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
-            Rsed.assert && ((newPropCount > 1) &&
+            Rsed.assert && ((newPropCount >= 1) &&
                             (newPropCount <= Rsed.constants.maxPropCount))
                         || Rsed.throw("Trying to set a new prop count out of bounds.");
 
