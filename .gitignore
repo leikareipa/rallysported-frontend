@@ -1,4 +1,7 @@
 stats.php
 /misc/
 *.inc
+
+# Symlinks in local repo.
 rallysport-content
+rallysported

@@ -87,13 +87,14 @@ Rsed.project = async function(projectArgs = {})
 
         byteSize: function()
         {
-            const maasto = (new DataView(this.dataBuffer, 0, 4)).getUint32(0, true);
+            const maasto  = (new DataView(this.dataBuffer, 0, 4)).getUint32(0, true);
             const varimaa = (new DataView(this.dataBuffer, (maasto + 4), 4)).getUint32(0, true);
-            const palat = (new DataView(this.dataBuffer, (maasto + varimaa + 8), 4)).getUint32(0, true);
-            const anims = (new DataView(this.dataBuffer, (maasto + varimaa + palat + 12), 4)).getUint32(0, true);
-            const text = (new DataView(this.dataBuffer, (maasto + varimaa + palat + anims + 16), 4)).getUint32(0, true);
+            const palat   = (new DataView(this.dataBuffer, (maasto + varimaa + 8), 4)).getUint32(0, true);
+            const anims   = (new DataView(this.dataBuffer, (maasto + varimaa + palat + 12), 4)).getUint32(0, true);
+            const text    = (new DataView(this.dataBuffer, (maasto + varimaa + palat + anims + 16), 4)).getUint32(0, true);
+            const kierros = (new DataView(this.dataBuffer, (maasto + varimaa + palat + anims + text + 20), 4)).getUint32(0, true);
             
-            return Object.freeze({maasto, varimaa, palat, anims, text});
+            return Object.freeze({maasto, varimaa, palat, anims, text, kierros});
         },
 
         byteOffset: function()
@@ -101,13 +102,14 @@ Rsed.project = async function(projectArgs = {})
             const byteSize = this.byteSize();
 
             // The variable names here reflect the names of Rally-Sport's data files.
-            const maasto = 4;
-            const varimaa = (byteSize.maasto + 8);
-            const palat = (byteSize.maasto + byteSize.varimaa + 12);
-            const anims = (byteSize.maasto + byteSize.varimaa + byteSize.palat + 16);
-            const text = (byteSize.maasto + byteSize.varimaa + byteSize.palat + byteSize.anims + 20);
+            const maasto  = 4;
+            const varimaa = (maasto  + byteSize.maasto  + 4);
+            const palat   = (varimaa + byteSize.varimaa + 4);
+            const anims   = (palat   + byteSize.palat   + 4);
+            const text    = (anims   + byteSize.anims   + 4);
+            const kierros = (text    + byteSize.text    + 4);
 
-            return Object.freeze({maasto, varimaa, palat, anims, text});
+            return Object.freeze({maasto, varimaa, palat, anims, text, kierros});
         },
     });
 
@@ -132,6 +134,8 @@ Rsed.project = async function(projectArgs = {})
     const props = await Rsed.track.props(new Uint8Array(projectDataContainer.dataBuffer,
                                                         projectDataContainer.byteOffset().text,
                                                         projectDataContainer.byteSize().text));
+
+                                                        console.log(projectDataContainer.byteSize().kierros / 8)
 
     const manifesto = projectData.manifesto;
 
@@ -448,29 +452,16 @@ Rsed.project = async function(projectArgs = {})
                         || Rsed.throw("Missing required parameters for loading a server-side project.");
 
             // Request the track's data in JSON format from the Rally-Sport Content
-            // server.
+            // server. The data will be provided in the response body.
             return fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.dataIdentifier}&json=true`)
                    .then(response=>
                    {
-                       if (!response.ok)
+                       if (response.status !== 200)
                        {
-                           throw "A GET request to the server failed.";
+                           throw "Failed to fetch track data from the Rally-Sport Content server.";
                        }
     
                        return response.json();
-                   })
-                   .then(responseJSON=>
-                   {
-                       if (!responseJSON.succeeded ||
-                           (typeof responseJSON.track !== "object"))
-                       {
-                           throw (`The server sent an error message: ${responseJSON.errorMessage}`);
-                       }
-
-                       /// TODO: Test to make sure the track contains all required
-                       /// parameters.
-    
-                       return responseJSON.track;
                    })
                    .catch(error=>{ Rsed.throw(error); });
         }

@@ -46,8 +46,7 @@ Rsed.world.meshBuilder = (function()
                                 y: (-680 + args.cameraPos.y),
                                 z: (2800 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 
-            const grab = Rsed.ui.inputState.current_mouse_grab();
-            const hover = Rsed.ui.inputState.current_mouse_hover();
+            const mouseHover = Rsed.ui.inputState.current_mouse_hover();
             const tabPressed = Rsed.ui.inputState.key_down("tab");
 
             for (let z = 0; z < Rsed.world.camera.view_height; z++)
@@ -68,9 +67,9 @@ Rsed.world.meshBuilder = (function()
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         if ( tabPressed &&
-                            (hover && (hover.type === "ground")) &&
-                            (hover.groundTileX === tileX) &&
-                            (hover.groundTileY === (tileZ - 1)))
+                            (mouseHover && (mouseHover.type === "ground")) &&
+                            (mouseHover.groundTileX === tileX) &&
+                            (mouseHover.groundTileY === (tileZ - 1)))
                         {
                             idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }
@@ -131,9 +130,9 @@ Rsed.world.meshBuilder = (function()
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         if ( tabPressed &&
-                            (hover && (hover.type === "ground")) &&
-                            (hover.groundTileX === tileX) &&
-                            (hover.groundTileY === (tileZ - 1)))
+                            (mouseHover && (mouseHover.type === "ground")) &&
+                            (mouseHover.groundTileX === tileX) &&
+                            (mouseHover.groundTileY === (tileZ - 1)))
                         {
                             idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (29 January 2020 12:05:32 UTC)
+// VERSION: live (02 February 2020 23:25:07 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2005,13 +2005,14 @@ Rsed.project = async function(projectArgs = {})
 
         byteSize: function()
         {
-            const maasto = (new DataView(this.dataBuffer, 0, 4)).getUint32(0, true);
+            const maasto  = (new DataView(this.dataBuffer, 0, 4)).getUint32(0, true);
             const varimaa = (new DataView(this.dataBuffer, (maasto + 4), 4)).getUint32(0, true);
-            const palat = (new DataView(this.dataBuffer, (maasto + varimaa + 8), 4)).getUint32(0, true);
-            const anims = (new DataView(this.dataBuffer, (maasto + varimaa + palat + 12), 4)).getUint32(0, true);
-            const text = (new DataView(this.dataBuffer, (maasto + varimaa + palat + anims + 16), 4)).getUint32(0, true);
+            const palat   = (new DataView(this.dataBuffer, (maasto + varimaa + 8), 4)).getUint32(0, true);
+            const anims   = (new DataView(this.dataBuffer, (maasto + varimaa + palat + 12), 4)).getUint32(0, true);
+            const text    = (new DataView(this.dataBuffer, (maasto + varimaa + palat + anims + 16), 4)).getUint32(0, true);
+            const kierros = (new DataView(this.dataBuffer, (maasto + varimaa + palat + anims + text + 20), 4)).getUint32(0, true);
             
-            return Object.freeze({maasto, varimaa, palat, anims, text});
+            return Object.freeze({maasto, varimaa, palat, anims, text, kierros});
         },
 
         byteOffset: function()
@@ -2019,13 +2020,14 @@ Rsed.project = async function(projectArgs = {})
             const byteSize = this.byteSize();
 
             // The variable names here reflect the names of Rally-Sport's data files.
-            const maasto = 4;
-            const varimaa = (byteSize.maasto + 8);
-            const palat = (byteSize.maasto + byteSize.varimaa + 12);
-            const anims = (byteSize.maasto + byteSize.varimaa + byteSize.palat + 16);
-            const text = (byteSize.maasto + byteSize.varimaa + byteSize.palat + byteSize.anims + 20);
+            const maasto  = 4;
+            const varimaa = (maasto  + byteSize.maasto  + 4);
+            const palat   = (varimaa + byteSize.varimaa + 4);
+            const anims   = (palat   + byteSize.palat   + 4);
+            const text    = (anims   + byteSize.anims   + 4);
+            const kierros = (text    + byteSize.text    + 4);
 
-            return Object.freeze({maasto, varimaa, palat, anims, text});
+            return Object.freeze({maasto, varimaa, palat, anims, text, kierros});
         },
     });
 
@@ -2050,6 +2052,8 @@ Rsed.project = async function(projectArgs = {})
     const props = await Rsed.track.props(new Uint8Array(projectDataContainer.dataBuffer,
                                                         projectDataContainer.byteOffset().text,
                                                         projectDataContainer.byteSize().text));
+
+                                                        console.log(projectDataContainer.byteSize().kierros / 8)
 
     const manifesto = projectData.manifesto;
 
@@ -2137,7 +2141,7 @@ Rsed.project = async function(projectArgs = {})
         const manifesto = projectData.manifesto.split("\n").filter(line=>line.trim().length);
         
         // We'll append the new manifesto string here.
-        let updatedManifesto = `0 ${trackId + 1} ${palatId} ${requiredLoaderVersion}\n`;
+        let updatedManifesto = `0 ${trackId + 1} ${palatId + 1} ${requiredLoaderVersion}\n`;
 
         // Any manifesto commands we won't update will be copied verbatim into the updated
         // version.
@@ -2366,29 +2370,16 @@ Rsed.project = async function(projectArgs = {})
                         || Rsed.throw("Missing required parameters for loading a server-side project.");
 
             // Request the track's data in JSON format from the Rally-Sport Content
-            // server.
+            // server. The data will be provided in the response body.
             return fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.dataIdentifier}&json=true`)
                    .then(response=>
                    {
-                       if (!response.ok)
+                       if (response.status !== 200)
                        {
-                           throw "A GET request to the server failed.";
+                           throw "Failed to fetch track data from the Rally-Sport Content server.";
                        }
     
                        return response.json();
-                   })
-                   .then(responseJSON=>
-                   {
-                       if (!responseJSON.succeeded ||
-                           (typeof responseJSON.track !== "object"))
-                       {
-                           throw (`The server sent an error message: ${responseJSON.errorMessage}`);
-                       }
-
-                       /// TODO: Test to make sure the track contains all required
-                       /// parameters.
-    
-                       return responseJSON.track;
                    })
                    .catch(error=>{ Rsed.throw(error); });
         }
@@ -2433,8 +2424,8 @@ Rsed.project = async function(projectArgs = {})
                 Rsed.assert && (args.length === 3)
                             || Rsed.throw("Invalid number of arguments to manifesto command 0. Expected 4 but received " + args.length + ".");
 
-                set_track_id(Math.floor(Number(args[0]) - 1));
-                set_palat_id(palatId = Math.floor(Number(args[1])));
+                set_track_id(Math.floor(Number(args[0])) - 1);
+                set_palat_id(Math.floor(Number(args[1])) - 1);
                 set_required_loader_version(Number(args[2]));
             }
 
@@ -2699,7 +2690,7 @@ Rsed.constants = Object.freeze(
     // A URL pointing to the root of Rally-Sport Content, the service from which
     // RallySportED-js will fetch track data. It would ideally be located on the
     // same origin, to avoid CORS issues.
-    rallySportContentURL: `${window.location.origin}/rallysport-content/`,
+    rallySportContentURL: `${window.location.origin}/rallysport-content`,
 });
 /*
  * Most recent known filename: js/world/world.js
@@ -2760,8 +2751,7 @@ Rsed.world.meshBuilder = (function()
                                 y: (-680 + args.cameraPos.y),
                                 z: (2800 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 
-            const grab = Rsed.ui.inputState.current_mouse_grab();
-            const hover = Rsed.ui.inputState.current_mouse_hover();
+            const mouseHover = Rsed.ui.inputState.current_mouse_hover();
             const tabPressed = Rsed.ui.inputState.key_down("tab");
 
             for (let z = 0; z < Rsed.world.camera.view_height; z++)
@@ -2782,9 +2772,9 @@ Rsed.world.meshBuilder = (function()
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         if ( tabPressed &&
-                            (hover && (hover.type === "ground")) &&
-                            (hover.groundTileX === tileX) &&
-                            (hover.groundTileY === (tileZ - 1)))
+                            (mouseHover && (mouseHover.type === "ground")) &&
+                            (mouseHover.groundTileX === tileX) &&
+                            (mouseHover.groundTileY === (tileZ - 1)))
                         {
                             idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }
@@ -2845,9 +2835,9 @@ Rsed.world.meshBuilder = (function()
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
                         if ( tabPressed &&
-                            (hover && (hover.type === "ground")) &&
-                            (hover.groundTileX === tileX) &&
-                            (hover.groundTileY === (tileZ - 1)))
+                            (mouseHover && (mouseHover.type === "ground")) &&
+                            (mouseHover.groundTileX === tileX) &&
+                            (mouseHover.groundTileY === (tileZ - 1)))
                         {
                             idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }
@@ -3042,7 +3032,7 @@ Rsed.world.meshBuilder = (function()
 Rsed.world.camera = (function()
 {
     // The camera's position, in tile units.
-    const position = {x:0, y:0, z:0};
+    const position = {x:0.0, y:0.0, z:0.0};
 
     // The camera's rotation, in degrees.
     const rotation = {x:21, y:0, z:0};
@@ -3154,16 +3144,21 @@ Rsed.world.camera = (function()
                 x: Math.floor(position.x),
                 y: Math.floor(position.y),
                 z: Math.floor(position.z),
-            }
+            };
         },
 
         position: function()
         {
+            return {...position};
+        },
+
+        world_position: function()
+        {
             return {
-                x: position.x,
-                y: position.y,
-                z: position.z,
-            }
+                x: (position.x * Rsed.constants.groundTileSize),
+                y: (position.y * Rsed.constants.groundTileSize),
+                z: (position.z * Rsed.constants.groundTileSize),
+            };
         },
 
         movement_speed: moveSpeed,
@@ -4113,7 +4108,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
-            Rsed.assert && ((newPropCount > 1) &&
+            Rsed.assert && ((newPropCount >= 1) &&
                             (newPropCount <= trackPropLocations[trackId].locations.length))
                         || Rsed.throw("Trying to set a new prop count out of bounds.");
 
@@ -4127,7 +4122,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
-            Rsed.assert && ((newPropCount > 1) &&
+            Rsed.assert && ((newPropCount >= 1) &&
                             (newPropCount <= Rsed.constants.maxPropCount))
                         || Rsed.throw("Trying to set a new prop count out of bounds.");
 
@@ -5603,7 +5598,7 @@ window.onload = function(event)
 
             // Give the input a sanity check.
             if ((trackID.length > 20) ||
-                !(/^[0-9a-zA-Z-]+$/.test(trackID)))
+                !(/^[0-9a-zA-Z-.]+$/.test(trackID)))
             {
                 Rsed.throw("Invalid track identifier.");
                 return;
