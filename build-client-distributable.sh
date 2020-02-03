@@ -50,3 +50,9 @@ printf "//\t%s\n" "${SOURCE_FILES[@]}" >> "$DST_DIRECTORY/$DST_FILENAME"
 echo -e "/////////////////////////////////////////////////\n" >> "$DST_DIRECTORY/$DST_FILENAME"
 
 cat ${SOURCE_FILES[@]} >> "$DST_DIRECTORY/$DST_FILENAME"
+
+# Remove empty lines
+sed -i '/^[[:space:]]*$/d' "$DST_DIRECTORY/$DST_FILENAME"
+
+# Trim whitespace.
+sed -i 's/^[[:blank:]]*//;s/[[:blank:]]*$//' "$DST_DIRECTORY/$DST_FILENAME"
