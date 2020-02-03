@@ -135,8 +135,6 @@ Rsed.project = async function(projectArgs = {})
                                                         projectDataContainer.byteOffset().text,
                                                         projectDataContainer.byteSize().text));
 
-                                                        console.log(projectDataContainer.byteSize().kierros / 8)
-
     const manifesto = projectData.manifesto;
 
     apply_manifesto();
@@ -419,27 +417,17 @@ Rsed.project = async function(projectArgs = {})
         async function fetch_project_data_from_rsed_server()
         {
             Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
-                        || Rsed.throw("Missing required parameters for loading a project.");
+                        || Rsed.throw("Missing required parameters for loading project data.");
 
-            return fetch("server/get-project-data.php?projectId=" + projectArgs.dataIdentifier +
-                                                     "&editMode=" + projectArgs.editMode)
+            return fetch(`./server/get-project-data.php?projectId=${projectArgs.dataIdentifier}`)
                    .then(response=>
                    {
-                       if (!response.ok)
+                       if (response.status !== 200)
                        {
-                           throw "A GET request to the server failed.";
+                           throw "Failed to fetch project data from the RallySportED-js server.";
                        }
     
                        return response.json();
-                   })
-                   .then(ticket=>
-                   {
-                       if (!ticket.valid || (typeof ticket.data === "undefined"))
-                       {
-                           throw ("The server sent a GET ticket marked invalid. It said: " + ticket.message);
-                       }
-    
-                       return JSON.parse(ticket.data);
                    })
                    .catch(error=>{ Rsed.throw(error); });
         }

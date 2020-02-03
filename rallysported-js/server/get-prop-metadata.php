@@ -1,4 +1,4 @@
-<?php
+<?php namespace RallySportED;
 
 /*
  * Most recent known filename: server/get-prop-metadata.php
@@ -6,25 +6,19 @@
  * Tarpeeksi Hyvae Soft 2019 /
  * RallySportED-js
  * 
+ * Returns information about 3d track props - like vertex data, texture UV
+ * coordinates, etc.
+ * 
  */
 
-$metaData = file_get_contents("../server/assets/metadata/props.json");
+require_once __DIR__."/response.php";
 
-if (!$metaData)
+$propMetadata = file_get_contents(__DIR__."/assets/metadata/props.json");
+if (!$propMetadata)
 {
-    exit(failure("Server-side IO failure: Could not read prop metadata file."));
+    exit(Response::code(500)->error_message("Could not access the server-side prop metadata."));
 }
 
-exit(success($metaData));
-
-function failure($errorMessage = "")
-{
-    echo json_encode(["valid" => false, "message" => $errorMessage]);
-}
-
-function success($propMetadata)
-{
-    echo json_encode(["valid" => true, "data" => $propMetadata]);
-}
-
-?>
+// Note: We ask the client to cache the metadata for up to 30 days, as these
+// data rarely change.
+exit(Response::code(200)->json(json_decode($propMetadata, true), 2592000));

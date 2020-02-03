@@ -374,26 +374,19 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         return Rsed.clamp(value, min, max);
     }
 
+    // Prop metadata includes vertex data, texture UV coordinates, display names, etc. of
+    // track props.
     async function fetch_prop_metadata_from_server()
     {
-        return fetch("server/get-prop-metadata.php")
+        return fetch("./server/get-prop-metadata.php")
                .then(response=>
                {
-                   if (!response.ok)
+                   if (response.status !== 200)
                    {
-                       throw "A GET request to the server failed.";
+                       throw "Failed to fetch prop metadata from the RallySportED-js server.";
                    }
 
                    return response.json();
-               })
-               .then(ticket=>
-               {
-                   if (!ticket.valid || (typeof ticket.data === "undefined"))
-                   {
-                       throw ("The server sent a GET ticket marked invalid. It said: " + ticket.message);
-                   }
-
-                   return JSON.parse(ticket.data);
                })
                .catch(error=>{ Rsed.throw(error); });
     }

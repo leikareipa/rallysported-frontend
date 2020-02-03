@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (02 February 2020 23:25:07 UTC)
+// VERSION: live (03 February 2020 01:00:02 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2053,8 +2053,6 @@ Rsed.project = async function(projectArgs = {})
                                                         projectDataContainer.byteOffset().text,
                                                         projectDataContainer.byteSize().text));
 
-                                                        console.log(projectDataContainer.byteSize().kierros / 8)
-
     const manifesto = projectData.manifesto;
 
     apply_manifesto();
@@ -2337,27 +2335,17 @@ Rsed.project = async function(projectArgs = {})
         async function fetch_project_data_from_rsed_server()
         {
             Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
-                        || Rsed.throw("Missing required parameters for loading a project.");
+                        || Rsed.throw("Missing required parameters for loading project data.");
 
-            return fetch("server/get-project-data.php?projectId=" + projectArgs.dataIdentifier +
-                                                     "&editMode=" + projectArgs.editMode)
+            return fetch(`./server/get-project-data.php?projectId=${projectArgs.dataIdentifier}`)
                    .then(response=>
                    {
-                       if (!response.ok)
+                       if (response.status !== 200)
                        {
-                           throw "A GET request to the server failed.";
+                           throw "Failed to fetch project data from the RallySportED-js server.";
                        }
     
                        return response.json();
-                   })
-                   .then(ticket=>
-                   {
-                       if (!ticket.valid || (typeof ticket.data === "undefined"))
-                       {
-                           throw ("The server sent a GET ticket marked invalid. It said: " + ticket.message);
-                       }
-    
-                       return JSON.parse(ticket.data);
                    })
                    .catch(error=>{ Rsed.throw(error); });
         }
@@ -4224,26 +4212,19 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         return Rsed.clamp(value, min, max);
     }
 
+    // Prop metadata includes vertex data, texture UV coordinates, display names, etc. of
+    // track props.
     async function fetch_prop_metadata_from_server()
     {
-        return fetch("server/get-prop-metadata.php")
+        return fetch("./server/get-prop-metadata.php")
                .then(response=>
                {
-                   if (!response.ok)
+                   if (response.status !== 200)
                    {
-                       throw "A GET request to the server failed.";
+                       throw "Failed to fetch prop metadata from the RallySportED-js server.";
                    }
 
                    return response.json();
-               })
-               .then(ticket=>
-               {
-                   if (!ticket.valid || (typeof ticket.data === "undefined"))
-                   {
-                       throw ("The server sent a GET ticket marked invalid. It said: " + ticket.message);
-                   }
-
-                   return JSON.parse(ticket.data);
                })
                .catch(error=>{ Rsed.throw(error); });
     }
