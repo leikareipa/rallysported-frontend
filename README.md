@@ -94,15 +94,15 @@ The metadata file has the following contents:
 ```json
 {
     "internalName": "name",
-    "displayName": "Name without limitations",
+    "displayName": "Nomen est omen",
     "width": 128,
     "height": 128
 }
 ```
 
-The `internalName` property defines the name by which the project is identified by RallySportED. The name is limited to ASCII and can be at most eight characters long. When you import or export a project to/from RallySportED-js, this is the name that will be used.
+The `internalName` property defines the name by which the project is identified by RallySportED. The name is limited to ASCII A-Z and can be at most eight characters long. When you import or export a project to/from RallySportED-js, this is the name that will be used.
 
-The `displayName` property provides a name by which the project is referred in RallySportED-js's user-facing UI. This string is not limited to ASCII and can be of any reasonable length; but it will not be exported when you save the project to disk (`internalName` will be used, instead).
+The `displayName` property provides a name by which the project is referred in RallySportED-js's user-facing UI. This string can be at most 15 characters (ASCII A-Z, Ä, Ö, Å, space, and the following: ",.-()/") but it will not be exported when you save the project to disk (`internalName` will be used, instead).
 
 The `width` and `height` properties tell how many tiles per side the track has. Note that these properties do not define the track's dimensions but only describe them.
 
