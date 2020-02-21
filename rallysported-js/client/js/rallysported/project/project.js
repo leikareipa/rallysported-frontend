@@ -304,7 +304,7 @@ Rsed.project = async function(projectArgs = {})
                         (typeof projectArgs.dataIdentifier !== "undefined"))
                     || Rsed.throw("Missing required parameters for loading a project.");
 
-        const projectData = (projectArgs.dataLocality === "server-rsc")?  await fetch_project_data_from_rsc_server() :
+        const projectData = (projectArgs.dataLocality === "server-rsc")?  (await fetch_project_data_from_rsc_server())[0] :
                             (projectArgs.dataLocality === "server-rsed")? await fetch_project_data_from_rsed_server() :
                             (projectArgs.dataLocality === "client")?      await fetch_project_data_from_local_zip_file() :
                             Rsed.throw("Unknown locality for project data.");

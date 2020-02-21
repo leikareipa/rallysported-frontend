@@ -11,16 +11,22 @@
     </head>
     <body>
         <div id="html-ui" v-if="uiVisible" v-cloak>
-            <span id="track-name-display">{{trackName.length? (trackName + ".") : ""}}</span>
+            <span id="track-name-display">&ldquo;{{trackName.length? trackName : ""}}&rdquo;</span>
 
             <span class="button" onclick="Rsed.core.current_project().save_to_disk();"
-                  style="color: rgb(0, 0, 0);
-                         background-color: rgb(179, 112, 25);">
-                save to disk
+                  style="background-color: white; color: black;">
+                Save to disk
             </span>
 
+            <a class="button" href="/rallysport-content/tracks/" target="_blank"
+                  style="background-color: lightgray;
+                         transform: none;
+                         border-radius: 16px 2px 16px 16px;">
+                More tracks
+            </a>
+
             <div class="disclaimer">
-                rallysported by tarpeeksi hyvae soft. rally-sport by jukka jakala. no endorsements or warranties.
+                rallysported &copy; tarpeeksi hyvae soft. rally-sport &copy; jukka jäkälä.
                 <a href="./userguide/" target="_blank" rel="noopener">user guide</a> &#9656;
             </div>
 

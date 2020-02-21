@@ -169,7 +169,7 @@ Rsed.core = (function()
         Rsed.assert && ((typeof args.project !== "undefined") &&
                         (typeof args.project.dataLocality !== "undefined") &&
                         (typeof args.project.dataIdentifier !== "undefined"))
-                || Rsed.throw("Missing required arguments for loading a project.");
+                    || Rsed.throw("Missing required arguments for loading a project.");
             
         Rsed.world.camera.reset_camera_position();
 

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (03 February 2020 01:01:48 UTC)
+// VERSION: live (21 February 2020 04:34:29 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -1881,7 +1881,7 @@ async function fetch_project_data()
 Rsed.assert && ((typeof projectArgs.dataLocality !== "undefined") &&
 (typeof projectArgs.dataIdentifier !== "undefined"))
 || Rsed.throw("Missing required parameters for loading a project.");
-const projectData = (projectArgs.dataLocality === "server-rsc")?  await fetch_project_data_from_rsc_server() :
+const projectData = (projectArgs.dataLocality === "server-rsc")?  (await fetch_project_data_from_rsc_server())[0] :
 (projectArgs.dataLocality === "server-rsed")? await fetch_project_data_from_rsed_server() :
 (projectArgs.dataLocality === "client")?      await fetch_project_data_from_local_zip_file() :
 Rsed.throw("Unknown locality for project data.");
@@ -3518,7 +3518,6 @@ if (trackPropLocations[trackId].locations.length >= Rsed.constants.maxPropCount)
 Rsed.alert("Maximum number of props already in use. Remove some to add more.");
 return;
 }
-console.log(location, trackPropLocations[trackId].locations)
 Rsed.assert && ((trackId >= 0) &&
 (trackId <= 7))
 || Rsed.throw("Querying a track out of bounds.");

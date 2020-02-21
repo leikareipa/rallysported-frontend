@@ -1,3 +1,19 @@
+@font-face
+{
+    font-family: "Comic Sans (server-side)";
+    src: url("/rallysport-content/fonts/comic-sans/comic-sans.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face
+{
+    font-family: "Comic Sans (server-side)";
+    src: url("/rallysport-content/fonts/comic-sans/comic-sans-bold.ttf") format("truetype");
+    font-weight: bold;
+    font-style: normal;
+}
+
 *
 {
     /* Avoid some issues with double-clicks over the canvas initiating drags.*/
@@ -38,74 +54,70 @@ body
     height: 100vh;
     background-color: #101010;
     display: inline-block;
-    z-index: 2;
     padding: 0;
     margin: 0;
 }
 
 #html-ui
 {
-    background-color: #101010;
+    font-family: "Comic Sans (server-side)", sans-serif;
+    background-color: transparent;
     display: inline-block;
     line-height: 200%;
     width: auto;
     height: auto;
     padding: 90px;
     padding-bottom: 5px;
-    padding-top: 20px;
+    padding-top: 25px;
 }
 
 #html-ui #track-name-display
 {
-    letter-spacing: 1px;
-    font-family: 'Permanent Marker', sans-serif;
     font-weight: bold;
-    color: rgb(179, 112, 25);
+    color: white;
     font-size: 260%;
 }
 
 #html-ui .button
 {
+    font-weight: bold;
+    color: black;
     display: inline-block;
     vertical-align: text-bottom;
-	font-variant: small-caps;
-    font-family: 'Catamaran', sans-serif;
     font-size: 80%;
-    margin-left: 5px;
-    color: rgba(0,0,0,0.9);
+    margin-left: 8px;
     cursor: pointer;
-    border-radius: 2px;
+    border-radius: 16px 16px 16px 2px;
     padding: 0px 12px;
     text-decoration: none;
+    transform: translateY(-12px);
 }
 
 #html-ui .button:active
 {
-    transform: translateY(2px) scale(0.99);
+    transform: translateY(-11px) translateX(-2px) scale(0.98);
 }
 
 #html-ui .disclaimer
 {
-    font-family: 'Cabin', sans-serif;
     font-variant: small-caps;
-    margin-top: -10px;
+    margin-top: 5px;
     margin-bottom: 0px;
-    color: rgb(134, 134, 134);
-    text-align:center;
-    font-size: 70%;
-    z-index: 0;
-    position:relative;
+    color: lightgray;
+    text-align: center;
+    font-size: 80%;
+    line-height: 13px;
 }
 
 #html-ui .disclaimer a
 {
-    color: rgb(134, 134, 134);
+    color: inherit;
     text-decoration: none;
 }
 
 #html-ui .disclaimer a:hover
 {
-    color: rgb(134, 134, 134);
+    color: white;
     text-decoration: underline;
 }
 

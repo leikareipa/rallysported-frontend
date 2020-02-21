@@ -314,8 +314,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 return;
             }
 
-            console.log(location, trackPropLocations[trackId].locations)
-
             Rsed.assert && ((trackId >= 0) &&
                             (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
