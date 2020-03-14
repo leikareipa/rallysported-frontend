@@ -45,8 +45,81 @@ Rsed.ui.inputState = (function()
         grab: null,
     };
 
+    // For touch screen controls.
+    const touchState =
+    {
+        isTouching: false,
+
+        // Where, in screen coordinates, the current touch started.
+        touchStart:
+        {
+            x: 0,
+            y: 0,
+        },
+
+        // Where, in screen coordinates, the current touch is located now.
+        currentTouchPos:
+        {
+            x: 0,
+            y: 0,
+        },
+    };
+
     const publicInterface =
     {
+        // For touch screen controls.
+        set_is_touching: function(isTouching = false, {startX = 0, startY = 0})
+        {
+            touchState.isTouching = Boolean(isTouching);
+
+            if (touchState.isTouching)
+            {
+                touchState.touchStart.x = startX;
+                touchState.touchStart.y = startY;
+
+                this.update_touch_position({x:touchState.touchStart.x, y: touchState.touchStart.y});
+            }
+            else
+            {
+                touchState.touchStart.x = touchState.currentTouchPos.x = 0;
+                touchState.touchStart.y = touchState.currentTouchPos.y = 0;
+            }
+
+            return;
+        },
+
+        // For touch screen controls.
+        update_touch_position({x = 0, y = 0})
+        {
+            touchState.currentTouchPos.x = x;
+            touchState.currentTouchPos.y = y;
+
+            return;
+        },
+
+        // For touch screen controls. Returns the amount by which the current
+        // touch has moved since the last time this function was called. Note
+        // that calling this function will reset the count, so you'd only want
+        // to call this e.g. once per frame.
+        get_touch_move_delta: function()
+        {
+            if (!touchState.isTouching)
+            {
+                return {x: 0, y: 0};
+            }
+
+            const delta =
+            {
+                x: ((touchState.currentTouchPos.x - touchState.touchStart.x) / 5),
+                y: ((touchState.currentTouchPos.y - touchState.touchStart.y) / 5),
+            };
+
+            touchState.touchStart.x = touchState.currentTouchPos.x;
+            touchState.touchStart.y = touchState.currentTouchPos.y;
+
+            return delta;
+        },
+
         mouse_pos: function()
         {
             return {...mouseState.position};

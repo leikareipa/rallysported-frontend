@@ -43,5 +43,32 @@ if (!Rsed.unitTestRun)
         Rsed.ui.inputState.reset_modifier_keys_state();
 
         return;
-    }
+    };
+
+    Rsed.visual.canvas.domElement.ontouchstart = function(event)
+    {
+        Rsed.ui.inputState.set_is_touching(true, {startX: event.touches[0].clientX, startY: event.touches[0].clientY});
+
+        event.preventDefault();
+
+        return;
+    };
+
+    Rsed.visual.canvas.domElement.ontouchend = function(event)
+    {
+        Rsed.ui.inputState.set_is_touching(false, {});
+
+        event.preventDefault();
+
+        return;
+    };
+
+    Rsed.visual.canvas.domElement.ontouchmove = function(event)
+    {
+        Rsed.ui.inputState.update_touch_position({x: event.touches[0].clientX, y: event.touches[0].clientY})
+
+        event.preventDefault();
+
+        return;
+    };
 }

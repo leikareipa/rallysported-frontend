@@ -27,7 +27,7 @@
 
             <div class="disclaimer">
                 rallysported &copy; tarpeeksi hyvae soft. rally-sport &copy; jukka jäkälä.
-                <a href="./userguide/" target="_blank" rel="noopener">user guide</a> &#9656;
+                <a href="./userguide/" target="_blank" rel="noopener">user's guide</a> &#9656;
             </div>
 
             <div id="prop-dropdown" class="dropdown-menu">

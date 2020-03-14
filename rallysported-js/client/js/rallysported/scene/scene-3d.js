@@ -103,6 +103,10 @@ Rsed.scenes["3d"] = (function()
         {
             handle_keyboard_input();
             handle_mouse_input();
+
+            /// EXPERIMENTAL. Temporary testing of mobile controls.
+            const touchDelta = Rsed.ui.inputState.get_touch_move_delta();
+            Rsed.world.camera.move_camera(-touchDelta.x, 0, -touchDelta.y);
         },
     });
 

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (21 February 2020 04:34:29 UTC)
+// VERSION: live (14 March 2020 00:34:51 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3014,7 +3014,25 @@ Rsed.visual.canvas.domElement.onmouseleave = function(event)
 Rsed.ui.inputState.reset_mouse_buttons_state();
 Rsed.ui.inputState.reset_modifier_keys_state();
 return;
-}
+};
+Rsed.visual.canvas.domElement.ontouchstart = function(event)
+{
+Rsed.ui.inputState.set_is_touching(true, {startX: event.touches[0].clientX, startY: event.touches[0].clientY});
+event.preventDefault();
+return;
+};
+Rsed.visual.canvas.domElement.ontouchend = function(event)
+{
+Rsed.ui.inputState.set_is_touching(false, {});
+event.preventDefault();
+return;
+};
+Rsed.visual.canvas.domElement.ontouchmove = function(event)
+{
+Rsed.ui.inputState.update_touch_position({x: event.touches[0].clientX, y: event.touches[0].clientY})
+event.preventDefault();
+return;
+};
 }
 /*
 * Most recent known filename: js/track/varimaa.js
@@ -5015,8 +5033,68 @@ hover: null,
 // button is released, the grab is released also.
 grab: null,
 };
+// For touch screen controls.
+const touchState =
+{
+isTouching: false,
+// Where, in screen coordinates, the current touch started.
+touchStart:
+{
+x: 0,
+y: 0,
+},
+// Where, in screen coordinates, the current touch is located now.
+currentTouchPos:
+{
+x: 0,
+y: 0,
+},
+};
 const publicInterface =
 {
+// For touch screen controls.
+set_is_touching: function(isTouching = false, {startX = 0, startY = 0})
+{
+touchState.isTouching = Boolean(isTouching);
+if (touchState.isTouching)
+{
+touchState.touchStart.x = startX;
+touchState.touchStart.y = startY;
+this.update_touch_position({x:touchState.touchStart.x, y: touchState.touchStart.y});
+}
+else
+{
+touchState.touchStart.x = touchState.currentTouchPos.x = 0;
+touchState.touchStart.y = touchState.currentTouchPos.y = 0;
+}
+return;
+},
+// For touch screen controls.
+update_touch_position({x = 0, y = 0})
+{
+touchState.currentTouchPos.x = x;
+touchState.currentTouchPos.y = y;
+return;
+},
+// For touch screen controls. Returns the amount by which the current
+// touch has moved since the last time this function was called. Note
+// that calling this function will reset the count, so you'd only want
+// to call this e.g. once per frame.
+get_touch_move_delta: function()
+{
+if (!touchState.isTouching)
+{
+return {x: 0, y: 0};
+}
+const delta =
+{
+x: ((touchState.currentTouchPos.x - touchState.touchStart.x) / 5),
+y: ((touchState.currentTouchPos.y - touchState.touchStart.y) / 5),
+};
+touchState.touchStart.x = touchState.currentTouchPos.x;
+touchState.touchStart.y = touchState.currentTouchPos.y;
+return delta;
+},
 mouse_pos: function()
 {
 return {...mouseState.position};
@@ -5354,6 +5432,9 @@ handle_user_interaction: function()
 {
 handle_keyboard_input();
 handle_mouse_input();
+/// EXPERIMENTAL. Temporary testing of mobile controls.
+const touchDelta = Rsed.ui.inputState.get_touch_move_delta();
+Rsed.world.camera.move_camera(-touchDelta.x, 0, -touchDelta.y);
 },
 });
 function handle_keyboard_input()
