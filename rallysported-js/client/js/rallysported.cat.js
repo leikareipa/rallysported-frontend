@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 March 2020 00:34:51 UTC)
+// VERSION: live (25 March 2020 16:20:54 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2347,12 +2347,16 @@ const height1 = centerView.y + Rsed.core.current_project().maasto.tile_at( tileX
 const height2 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1),  tileZ);
 const height3 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1), (tileZ - 1));
 const height4 = centerView.y + Rsed.core.current_project().maasto.tile_at( tileX,      (tileZ - 1));
+// We'll do rudimentary shading of the polygon based on its orientation.
+// Ideally, the shading would replicate that of Rally-Sport, but this
+// particular implementation doesn't.
+const heightDiff = Math.max(150, Math.min(255, (255 - ((height1 - height3) * 2))));
 const groundQuad = Rngon.ngon([Rngon.vertex(vertX, height1, vertZ, 0, 0),
 Rngon.vertex((vertX + Rsed.constants.groundTileSize), height2, vertZ, 1, 0),
 Rngon.vertex((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize), 1, 1),
 Rngon.vertex(vertX, height4, (vertZ + Rsed.constants.groundTileSize), 0, 1)],
 {
-color: Rngon.color_rgba(255, 255, 255),
+color: Rngon.color_rgba(heightDiff, heightDiff, heightDiff),
 texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
 textureMapping: "ortho",
 uvWrapping: "clamp",

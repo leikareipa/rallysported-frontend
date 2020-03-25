@@ -85,12 +85,17 @@ Rsed.world.meshBuilder = (function()
                         const height3 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1), (tileZ - 1));
                         const height4 = centerView.y + Rsed.core.current_project().maasto.tile_at( tileX,      (tileZ - 1));
 
+                        // We'll do rudimentary shading of the polygon based on its orientation.
+                        // Ideally, the shading would replicate that of Rally-Sport, but this
+                        // particular implementation doesn't.
+                        const heightDiff = Math.max(150, Math.min(255, (255 - ((height1 - height3) * 2))));
+
                         const groundQuad = Rngon.ngon([Rngon.vertex(vertX, height1, vertZ, 0, 0),
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), height2, vertZ, 1, 0),
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize), 1, 1),
                                                        Rngon.vertex(vertX, height4, (vertZ + Rsed.constants.groundTileSize), 0, 1)],
                         {
-                            color: Rngon.color_rgba(255, 255, 255),
+                            color: Rngon.color_rgba(heightDiff, heightDiff, heightDiff),
                             texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
                             textureMapping: "ortho",
                             uvWrapping: "clamp",
