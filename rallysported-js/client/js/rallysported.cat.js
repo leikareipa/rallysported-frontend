@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (24 April 2020 05:34:13 UTC)
+// VERSION: live (24 April 2020 05:38:48 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2685,7 +2685,7 @@ z: (position.z * Rsed.constants.groundTileSize),
 movement_speed: moveSpeed,
 // How many track ground tiles, horizontally and vertically, should be
 // visible on screen when using this camera.
-view_width: 17,
+view_width: 19,
 view_height: 17,
 };
 publicInterface.reset_camera_position();
