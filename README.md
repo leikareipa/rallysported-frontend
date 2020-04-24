@@ -1,7 +1,7 @@
 # RallySportED-js
 A version of [RallySportED](https://github.com/leikareipa/rallysported/)'s track editor for browsers, written in JavaScript.
 
-A live page running RallySportED-js is available [here](https://tarpeeksihyvaesoft.com/rallysported/). It loads up a track in your browser for local editing.
+A live page running RallySportED-js is available [here](https://www.tarpeeksihyvaesoft.com/rallysported/). It loads up a track in your browser for local editing.
 
 ### Features in RallySportED-js
 - Create and edit tracks for Rally-Sport in your browser!
@@ -11,7 +11,7 @@ A live page running RallySportED-js is available [here](https://tarpeeksihyvaeso
 ![](images/screenshots/beta.3/yleisoek-2.png)
 
 # End-user's guide
-You can find a handy end-user's guide at https://tarpeeksihyvaesoft.com/rallysported/user-guide/.
+You can find a handy end-user's guide at https://www.tarpeeksihyvaesoft.com/rallysported/user-guide/.
 
 The guide walks you through the steps to create a custom track, and shows you how to get the track running in Rally-Sport.
 
@@ -191,7 +191,7 @@ Below are rough estimates of the required browser versions to run a given versio
 </table>
 
 # Authors and credits
-The principal author of RallySportED-js is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](http://www.tarpeeksihyvaesoft.com)).
+The principal author of RallySportED-js is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](https://www.tarpeeksihyvaesoft.com)).
 
 RallySportED-js makes use of [JSZip](https://stuk.github.io/jszip/) and [FileSaver.js](https://github.com/eligrey/FileSaver.js).
 
