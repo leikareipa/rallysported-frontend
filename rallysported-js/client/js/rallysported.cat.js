@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (25 March 2020 16:20:54 UTC)
+// VERSION: live (24 April 2020 05:30:59 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -1882,7 +1882,7 @@ Rsed.assert && ((typeof projectArgs.dataLocality !== "undefined") &&
 (typeof projectArgs.dataIdentifier !== "undefined"))
 || Rsed.throw("Missing required parameters for loading a project.");
 const projectData = (projectArgs.dataLocality === "server-rsc")?  (await fetch_project_data_from_rsc_server())[0] :
-(projectArgs.dataLocality === "server-rsed")? await fetch_project_data_from_rsed_server() :
+(projectArgs.dataLocality === "server-rsed")? (await fetch_project_data_from_rsed_server())[0] :
 (projectArgs.dataLocality === "client")?      await fetch_project_data_from_local_zip_file() :
 Rsed.throw("Unknown locality for project data.");
 return projectData;
@@ -1974,7 +1974,22 @@ async function fetch_project_data_from_rsed_server()
 {
 Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
 || Rsed.throw("Missing required parameters for loading project data.");
-return fetch(`./server/get-project-data.php?projectId=${projectArgs.dataIdentifier}`)
+const trackName = (()=>
+{
+switch (projectArgs.dataIdentifier)
+{
+case "demoa": return "demo-1";
+case "demob": return "demo-2";
+case "democ": return "demo-3";
+case "demod": return "demo-4";
+case "demoe": return "demo-5";
+case "demof": return "demo-6";
+case "demog": return "demo-7";
+case "demoh": return "demo-8";
+default: Rsed.throw("Unknown track name.");
+}
+})();
+return fetch(`./client/assets/tracks/${trackName}.json`)
 .then(response=>
 {
 if (response.status !== 200)
@@ -3593,7 +3608,7 @@ return Rsed.clamp(value, min, max);
 // track props.
 async function fetch_prop_metadata_from_server()
 {
-return fetch("./server/get-prop-metadata.php")
+return fetch("./client/assets/track-props.json")
 .then(response=>
 {
 if (response.status !== 200)

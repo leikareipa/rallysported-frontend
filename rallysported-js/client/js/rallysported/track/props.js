@@ -376,7 +376,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     // track props.
     async function fetch_prop_metadata_from_server()
     {
-        return fetch("./server/get-prop-metadata.php")
+        return fetch("./client/assets/track-props.json")
                .then(response=>
                {
                    if (response.status !== 200)

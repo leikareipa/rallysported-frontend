@@ -11,7 +11,7 @@ A live page running RallySportED-js is available [here](https://tarpeeksihyvaeso
 ![](images/screenshots/beta.3/yleisoek-2.png)
 
 # End-user's guide
-You can find a handy end-user's guide at https://tarpeeksihyvaesoft.com/rallysported/userguide/.
+You can find a handy end-user's guide at https://tarpeeksihyvaesoft.com/rallysported/user-guide/.
 
 The guide walks you through the steps to create a custom track, and shows you how to get the track running in Rally-Sport.
 
@@ -19,7 +19,7 @@ The guide walks you through the steps to create a custom track, and shows you ho
 To set up a copy of RallySportED-js on your own server, simply copy over the files from the [rallysported-js/](rallysported-js/) directory.
 
 - The destination folder on your server does not need to be named rallysported-js - only the directory structure inside it must reflect the contents of [rallysported-js/](rallysported-js/).
-- From [rallysported-js/client/js/](rallysported-js/client/js/), you only need to copy [rallysported.cat.js](rallysported-js/client/js/rallysported.cat.js), which is a concatenation of the source files under that directory (built using [build-client-distributable.sh](build-client-distributable.sh)).
+- From [rallysported-js/client/js/](rallysported-js/client/js/), you only need to copy [rallysported.cat.js](rallysported-js/client/js/rallysported.cat.js), which is a concatenation of the source files under that directory (built using the [build-client-distributable.sh](build-client-distributable.sh) script).
 
 You should now be able to run RallySportED-js in your browser by navigating to where you placed the files on your server - assuming the server then serves the [rallysported-js/index.php](rallysported-js/index.php) file as per usual.
 
