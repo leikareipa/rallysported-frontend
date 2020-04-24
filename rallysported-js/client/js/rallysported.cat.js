@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (24 April 2020 05:30:59 UTC)
+// VERSION: live (24 April 2020 05:34:13 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2582,7 +2582,7 @@ const position = {x:0.0, y:0.0, z:0.0};
 // The camera's rotation, in degrees.
 const rotation = {x:21, y:0, z:0};
 let verticalZoom = 0;
-const moveSpeed = 0.5;
+const moveSpeed = 0.4;
 const publicInterface =
 {
 // Restore the camera's default position.
