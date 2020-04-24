@@ -87,7 +87,7 @@ body
     font-size: 80%;
     margin-left: 6px;
     cursor: pointer;
-    border-radius: 16px 16px 16px 2px;
+    border-radius: 10px 10px 10px 1px;
     padding: 0px 12px;
     text-decoration: none;
     transform: translateY(-12px);

@@ -13,17 +13,23 @@
         <div id="html-ui" v-if="uiVisible" v-cloak>
             <span id="track-name-display">&ldquo;{{trackName.length? trackName : ""}}&rdquo;</span>
 
-            <span class="button" onclick="Rsed.core.current_project().save_to_disk();"
-                  style="background-color: white; color: black;">
+            <span class="button"
+                  onclick="Rsed.core.current_project().save_to_disk();"
+                  style="background-color: white;
+                         color: black;">
                 Save to disk
             </span>
 
-            <a class="button" href="/rallysport-content/tracks/" target="_blank"
-                  style="background-color: lightgray;
-                         transform: none;
-                         border-radius: 16px 2px 16px 16px;">
+            <span class="button"
+               style="background-color: rgb(231, 100, 100);
+                      color: white;
+                      transform: none;
+                      border-radius: 10px 1px 10px 10px;
+                      text-decoration: line-through;
+                      cursor: not-allowed;"
+               title="Rally-Sport Content is temporarily down!">
                 More tracks
-            </a>
+            </span>
 
             <div class="disclaimer">
                 rallysported &copy; tarpeeksi hyvae soft. rally-sport &copy; jukka jäkälä.
