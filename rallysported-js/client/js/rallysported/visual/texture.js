@@ -68,6 +68,52 @@ Rsed.visual.texture = function(args = {})
         default: Rsed.throw("Unknown texture-flipping mode."); break;
     }
 
+    // Generate mipmaps. Each successive mipmap is one half of the previous
+    // mipmap's width and height, starting from the full resolution and working
+    // down to 1 x 1. So mipmaps[0] is the original, full-resolution texture,
+    // and mipmaps[mipmaps.length-1] is the smallest, 1 x 1 texture.
+    const mipmaps = [];
+    for (let m = 0; ; m++)
+    {
+        const mipWidth = Math.max(1, Math.floor(args.width / Math.pow(2, m)));
+        const mipHeight = Math.max(1, Math.floor(args.height / Math.pow(2, m)));
+
+        // Downscale the texture image to the next mip level.
+        const mipPixelData = [];
+        {
+            const deltaW = (args.width / mipWidth);
+            const deltaH = (args.height / mipHeight);
+    
+            for (let y = 0; y < mipHeight; y++)
+            {
+                for (let x = 0; x < mipWidth; x++)
+                {
+                    const dstIdx = (x + y * mipWidth);
+                    const srcIdx = (Math.floor(x * deltaW) + Math.floor(y * deltaH) * args.width);
+
+                    mipPixelData[dstIdx] = args.pixels[srcIdx];
+                }
+            }
+        }
+
+        mipmaps.push({
+            width: mipWidth,
+            height: mipHeight,
+            pixels: mipPixelData,
+        });
+
+        // We're finished generating mip levels once we've done them down to 1 x 1.
+        if ((mipWidth === 1) && (mipHeight === 1))
+        {
+            if (!mipmaps.length)
+            {
+                Rsed.throw("Failed to generate mip levels for a texture.");
+            }
+
+            break;
+        }
+    }
+
     // Note: The elements of the 'pixels' array are returned by reference (they're objects of the
     // form {red, green, blue, alpha}). This is done to allow textures to be pre-generated and still
     // have their colors reflect any changes to the global palette without requiring a re-generation.
@@ -78,6 +124,7 @@ Rsed.visual.texture = function(args = {})
         flipped: args.flipped,
         pixels: args.pixels,
         indices: args.indices,
+        mipLevels: mipmaps,
     });
 
     return publicInterface;
