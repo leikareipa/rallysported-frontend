@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (03 July 2020 19:54:42 UTC)
+// VERSION: live (04 July 2020 00:07:00 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -10,33 +10,33 @@
 //	./rallysported-js/client/js/jszip/jszip.min.js
 //	./rallysported-js/client/js/filesaver/FileSaver.min.js
 //	./rallysported-js/client/js/retro-ngon/rngon.cat.js
-//	./rallysported-js/client/js/rallysported/rallysported.js
-//	./rallysported-js/client/js/rallysported/project/project.js
-//	./rallysported-js/client/js/rallysported/project/hitable.js
-//	./rallysported-js/client/js/rallysported/misc/constants.js
-//	./rallysported-js/client/js/rallysported/world/world.js
-//	./rallysported-js/client/js/rallysported/world/mesh-builder.js
-//	./rallysported-js/client/js/rallysported/world/camera.js
-//	./rallysported-js/client/js/rallysported/visual/texture.js
-//	./rallysported-js/client/js/rallysported/visual/palette.js
-//	./rallysported-js/client/js/rallysported/visual/canvas.js
-//	./rallysported-js/client/js/rallysported/track/varimaa.js
-//	./rallysported-js/client/js/rallysported/track/maasto.js
-//	./rallysported-js/client/js/rallysported/track/palat.js
-//	./rallysported-js/client/js/rallysported/track/props.js
-//	./rallysported-js/client/js/rallysported/ui/ui.js
-//	./rallysported-js/client/js/rallysported/ui/html.js
-//	./rallysported-js/client/js/rallysported/ui/popup-notification.js
-//	./rallysported-js/client/js/rallysported/ui/font.js
-//	./rallysported-js/client/js/rallysported/ui/ground-brush.js
-//	./rallysported-js/client/js/rallysported/ui/draw.js
-//	./rallysported-js/client/js/rallysported/ui/window.js
-//	./rallysported-js/client/js/rallysported/ui/input-state.js
-//	./rallysported-js/client/js/rallysported/ui/mouse-picking-element.js
-//	./rallysported-js/client/js/rallysported/scene/scene.js
-//	./rallysported-js/client/js/rallysported/scene/scene-3d.js
-//	./rallysported-js/client/js/rallysported/scene/scene-tilemap.js
-//	./rallysported-js/client/js/rallysported/core/core.js
+//	./rallysported-js/client/js/rallysported-js/rallysported.js
+//	./rallysported-js/client/js/rallysported-js/project/project.js
+//	./rallysported-js/client/js/rallysported-js/project/hitable.js
+//	./rallysported-js/client/js/rallysported-js/misc/constants.js
+//	./rallysported-js/client/js/rallysported-js/world/world.js
+//	./rallysported-js/client/js/rallysported-js/world/mesh-builder.js
+//	./rallysported-js/client/js/rallysported-js/world/camera.js
+//	./rallysported-js/client/js/rallysported-js/visual/texture.js
+//	./rallysported-js/client/js/rallysported-js/visual/palette.js
+//	./rallysported-js/client/js/rallysported-js/visual/canvas.js
+//	./rallysported-js/client/js/rallysported-js/track/varimaa.js
+//	./rallysported-js/client/js/rallysported-js/track/maasto.js
+//	./rallysported-js/client/js/rallysported-js/track/palat.js
+//	./rallysported-js/client/js/rallysported-js/track/props.js
+//	./rallysported-js/client/js/rallysported-js/ui/ui.js
+//	./rallysported-js/client/js/rallysported-js/ui/html.js
+//	./rallysported-js/client/js/rallysported-js/ui/popup-notification.js
+//	./rallysported-js/client/js/rallysported-js/ui/font.js
+//	./rallysported-js/client/js/rallysported-js/ui/ground-brush.js
+//	./rallysported-js/client/js/rallysported-js/ui/draw.js
+//	./rallysported-js/client/js/rallysported-js/ui/window.js
+//	./rallysported-js/client/js/rallysported-js/ui/input-state.js
+//	./rallysported-js/client/js/rallysported-js/ui/mouse-picking-element.js
+//	./rallysported-js/client/js/rallysported-js/scene/scene.js
+//	./rallysported-js/client/js/rallysported-js/scene/scene-3d.js
+//	./rallysported-js/client/js/rallysported-js/scene/scene-tilemap.js
+//	./rallysported-js/client/js/rallysported-js/core/core.js
 /////////////////////////////////////////////////
 /*!
 JSZip v3.1.5 - A JavaScript class for generating and reading zip files
