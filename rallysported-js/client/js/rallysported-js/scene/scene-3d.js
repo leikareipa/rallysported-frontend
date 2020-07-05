@@ -74,7 +74,7 @@ Rsed.scenes["3d"] = (function()
                 cameraPosition: Rngon.translation_vector(0, 0, 0),
                 cameraDirection: Rsed.world.camera.rotation(),
                 scale: Rsed.visual.canvas.scalingFactor,
-                fov: 45,
+                fov: 30,
                 nearPlane: 300,
                 farPlane: 10000,
                 clipToViewport: true,

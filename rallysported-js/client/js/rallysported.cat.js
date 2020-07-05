@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (04 July 2020 00:07:00 UTC)
+// VERSION: live (05 July 2020 22:17:32 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -915,9 +915,9 @@ return Object.freeze(mResult);
 })();
 /*
 * 2019, 2020 Tarpeeksi Hyvae Soft
-* 
+*
 * Software: Retro n-gon renderer
-* 
+*
 */
 "use strict";
 { // A block to limit the scope of the unit-global variables we set up, below.
@@ -1225,7 +1225,7 @@ const stipplePattern    = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
 const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 // Reject by stipple pattern.
 if (stipplePattern.pixels[stipplePixelIdx]) continue;
-}   
+}
 }
 red   = (material.color.red   * shade);
 green = (material.color.green * shade);
@@ -1338,7 +1338,7 @@ const stipplePattern    = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
 const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 // Reject by stipple pattern.
 if (stipplePattern.pixels[stipplePixelIdx]) continue;
-}   
+}
 }
 red   = (texel.red   * material.color.unitRange.red   * shade);
 green = (texel.green * material.color.unitRange.green * shade);
@@ -1475,7 +1475,7 @@ pixels: Rngon.ngon_filler.stipple_patterns[i].pixels.map(p=>Number(!p)),
 /*
 * Tarpeeksi Hyvae Soft 2019 /
 * Retro n-gon renderer
-* 
+*
 */
 "use strict";
 // Will create a HTML5 canvas element inside the given container, and render into it
@@ -1555,7 +1555,7 @@ ngonCache.count = 0;
 return;
 }
 };
-Rngon.render.defaultOptions = 
+Rngon.render.defaultOptions =
 {
 cameraPosition: Rngon.vector3(0, 0, 0),
 cameraDirection: Rngon.vector3(0, 0, 0),
@@ -1925,7 +1925,7 @@ resolve(Rngon.texture_rgba(data));
 /*
 * Tarpeeksi Hyvae Soft 2019 /
 * Retro n-gon renderer
-* 
+*
 * A surface for rendering onto. Maps onto a HTML5 canvas.
 *
 */
@@ -1982,7 +1982,7 @@ if (Rngon.internalState.useDepthBuffer &&
 {
 Rngon.internalState.depthBuffer.width = screenWidth;
 Rngon.internalState.depthBuffer.height = screenHeight;
-Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height); 
+Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height);
 }
 }
 const publicInterface = Object.freeze(
@@ -2379,7 +2379,7 @@ default: updatedManifesto += (manifesto[i] + "\n");
 }
 }
 // Update the various commands according to the current values of their related data.
-{ 
+{
 const trackProps = props.locations_of_props_on_track(trackId);
 // Command #2 for the number of props.
 {
@@ -2419,7 +2419,7 @@ return ((typeof projectData.meta !== "undefined") &&
 //    {
 //        container: "the contents of the project's binary container file as a Base64-encoded string",
 //        manifesto: "the contents of the prjoect's textual manifesto file as a string",
-//        meta: 
+//        meta:
 //        {
 //            // Metadata about the project; like its name, and the dimensions of its track.
 //        }
@@ -2877,8 +2877,8 @@ const trackPolygons = [];
 // We'll shift the track mesh by these values (world units) to center the mesh on screen.
 // Note that we adjust Z to account for vertical camera zooming.
 const centerView = {x: -((Rsed.world.camera.view_width / 2) * Rsed.constants.groundTileSize),
-y: (-680 + args.cameraPos.y),
-z: (2800 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
+y: (-650 + args.cameraPos.y),
+z: (3500 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 const tabPressed = Rsed.ui.inputState.key_down("tab");
 for (let z = 0; z < Rsed.world.camera.view_height; z++)
@@ -3126,10 +3126,12 @@ return palaId;
 "use strict";
 Rsed.world.camera = (function()
 {
-// The camera's position, in tile units.
-const position = {x:0.0, y:0.0, z:0.0};
+// The camera's starting position, in tile units.
+const defaultPosition = {x:15.0, y:0.0, z:13.0};
+// The camera's current position, in tile units.
+const position = {...defaultPosition};
 // The camera's rotation, in degrees.
-const rotation = {x:21, y:0, z:0};
+const rotation = {x:16, y:0, z:0};
 let verticalZoom = 0;
 const moveSpeed = 0.4;
 const publicInterface =
@@ -3137,9 +3139,9 @@ const publicInterface =
 // Restore the camera's default position.
 reset_camera_position: function()
 {
-position.x = 15;
-position.y = 0;
-position.z = 13;
+position.x = defaultPosition.x;
+position.y = defaultPosition.y;
+position.z = defaultPosition.z;
 },
 move_camera: function(deltaX, deltaY, deltaZ, enforceBounds = true)
 {
@@ -3202,9 +3204,9 @@ return;
 zoom_vertically: function(delta)
 {
 Rsed.throw_if_not_type("number", delta);
-verticalZoom = Math.max(0, Math.min(265, (verticalZoom + delta)));
+verticalZoom = Math.max(0, Math.min(296, (verticalZoom + delta)));
 position.y = (-verticalZoom * 7);
-rotation.x = (21 + (verticalZoom / 4));
+rotation.x = (16 + (verticalZoom / 4));
 return;
 },
 rotation: function()
@@ -3234,8 +3236,8 @@ z: (position.z * Rsed.constants.groundTileSize),
 movement_speed: moveSpeed,
 // How many track ground tiles, horizontally and vertically, should be
 // visible on screen when using this camera.
-view_width: 19,
-view_height: 17,
+view_width: 17,
+view_height: 21,
 };
 publicInterface.reset_camera_position();
 return publicInterface;
@@ -3253,14 +3255,14 @@ Rsed.visual = Rsed.visual || {};
 // renderer's texture_rgba() object (so that n-gons can be textured with the object from
 // this function and rendered with the retro n-gon renderer).
 Rsed.visual.texture = function(args = {})
-{ 
+{
 args =
 {
 ...{
 // Pixel RGB values, each element being {red, green, blue} (value range 0-255).
 pixels: [],
 // Each pixel's corresponding palette index.
-indices: [], 
+indices: [],
 // The texture's dimensions.
 width: 0,
 height: 0,
@@ -3663,7 +3665,7 @@ Rsed.assert && ((varimaaWidth > 0) &&
 || Rsed.throw("Expected VARIMAA width and height to be positive and non-zero.");
 Rsed.assert && (data.byteLength === (varimaaWidth * varimaaHeight))
 || Rsed.throw("Mismatched VARIMAA data length relative to its dimensions.");
-const publicInterface = 
+const publicInterface =
 {
 width: varimaaWidth,
 height: varimaaHeight,
@@ -4891,7 +4893,7 @@ return publicInterface;
 *
 * Tarpeeksi Hyvae Soft 2018 /
 * RallySportED-js
-* 
+*
 */
 "use strict";
 // A brush used to edit the current project's heightmap and tilemap.
@@ -5438,7 +5440,7 @@ return;
 }
 // Display a right-click menu for changing the type of the prop under the cursor.
 if ( Rsed.ui.inputState.current_mouse_hover() &&
-(Rsed.ui.inputState.current_mouse_hover().type === "prop")) 
+(Rsed.ui.inputState.current_mouse_hover().type === "prop"))
 {
 const mousePos = Rsed.ui.inputState.mouse_pos();
 const propDropdown = document.getElementById("prop-dropdown");
@@ -6016,7 +6018,7 @@ const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id")
 cameraPosition: Rngon.translation_vector(0, 0, 0),
 cameraDirection: Rsed.world.camera.rotation(),
 scale: Rsed.visual.canvas.scalingFactor,
-fov: 45,
+fov: 30,
 nearPlane: 300,
 farPlane: 10000,
 clipToViewport: true,

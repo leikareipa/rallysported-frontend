@@ -10,11 +10,14 @@
 
 Rsed.world.camera = (function()
 {
-    // The camera's position, in tile units.
-    const position = {x:0.0, y:0.0, z:0.0};
+    // The camera's starting position, in tile units.
+    const defaultPosition = {x:15.0, y:0.0, z:13.0};
+
+    // The camera's current position, in tile units.
+    const position = {...defaultPosition};
 
     // The camera's rotation, in degrees.
-    const rotation = {x:21, y:0, z:0};
+    const rotation = {x:16, y:0, z:0};
 
     let verticalZoom = 0;
 
@@ -25,9 +28,9 @@ Rsed.world.camera = (function()
         // Restore the camera's default position.
         reset_camera_position: function()
         {
-            position.x = 15;
-            position.y = 0;
-            position.z = 13;
+            position.x = defaultPosition.x;
+            position.y = defaultPosition.y;
+            position.z = defaultPosition.z;
         },
 
         move_camera: function(deltaX, deltaY, deltaZ, enforceBounds = true)
@@ -104,10 +107,10 @@ Rsed.world.camera = (function()
         {
             Rsed.throw_if_not_type("number", delta);
 
-            verticalZoom = Math.max(0, Math.min(265, (verticalZoom + delta)));
+            verticalZoom = Math.max(0, Math.min(296, (verticalZoom + delta)));
 
             position.y = (-verticalZoom * 7);
-            rotation.x = (21 + (verticalZoom / 4));
+            rotation.x = (16 + (verticalZoom / 4));
 
             return;
         },
@@ -144,8 +147,8 @@ Rsed.world.camera = (function()
 
         // How many track ground tiles, horizontally and vertically, should be
         // visible on screen when using this camera.
-        view_width: 19,
-        view_height: 17,
+        view_width: 17,
+        view_height: 21,
     };
 
     publicInterface.reset_camera_position();
