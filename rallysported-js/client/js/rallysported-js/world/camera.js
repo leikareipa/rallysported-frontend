@@ -147,8 +147,8 @@ Rsed.world.camera = (function()
 
         // How many track ground tiles, horizontally and vertically, should be
         // visible on screen when using this camera.
-        view_width: 17,
-        view_height: 21,
+        view_width: 18,
+        view_height: 22,
     };
 
     publicInterface.reset_camera_position();

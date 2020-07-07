@@ -7,35 +7,32 @@
         <link rel="stylesheet" type="text/css" href="index-responsive.css">
         <link rel="stylesheet" type="text/css" href="animations.css">
         <link href="https://fonts.googleapis.com/css?family=Catamaran|Permanent+Marker|Cabin|Montserrat" rel="stylesheet">
-        <title>RallySportED (beta.10, web-beta.5~dev)</title>
+        <title>RallySportED-js (web-beta.5~dev)</title>
     </head>
     <body>
         <div id="html-ui" v-if="uiVisible" v-cloak>
             <span id="track-name-display">&ldquo;{{trackName.length? trackName : ""}}&rdquo;</span>
 
-            <span class="button"
-                  onclick="Rsed.core.current_project().save_to_disk();"
-                  style="background-color: white;
-                         color: black;">
-                Save to disk
-            </span>
+            <div id="button-bar">
 
-            <span class="button"
-               style="background-color: rgb(231, 100, 100);
-                      color: white;
-                      transform: none;
-                      border-radius: 10px 1px 10px 10px;
-                      text-decoration: line-through;
-                      cursor: not-allowed;"
-               title="Rally-Sport Content is temporarily down!">
-                More tracks
-            </span>
+                <div class="button left enabled"
+                     title="Download this track"
+                     onclick="Rsed.core.current_project().save_to_disk();">
+                    Download
+                </div>
 
-            <div class="disclaimer">
-                rallysported &copy; tarpeeksi hyvae soft. rally-sport &copy; jukka jäkälä.
-                <a href="./user-guide/" target="_blank" rel="noopener">user's guide</a> &#9656;
+                <a class="button middle enabled"
+                   title="View RallySportED's user guide"
+                   href="./user-guide/" target="_blank" rel="noopener">Help</a>
+                </a>
+
+                <div class="button right disabled"
+                     title="View tracks contributed by others (temporarily unavailable)">
+                    More tracks
+                </div>
+
             </div>
-
+            
             <div id="prop-dropdown" class="dropdown-menu">
                 <div class="item"
                      v-for="prop in propList"

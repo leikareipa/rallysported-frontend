@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (05 July 2020 22:17:32 UTC)
+// VERSION: live (07 July 2020 22:44:51 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2878,7 +2878,7 @@ const trackPolygons = [];
 // Note that we adjust Z to account for vertical camera zooming.
 const centerView = {x: -((Rsed.world.camera.view_width / 2) * Rsed.constants.groundTileSize),
 y: (-650 + args.cameraPos.y),
-z: (3500 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
+z: (3628 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 const tabPressed = Rsed.ui.inputState.key_down("tab");
 for (let z = 0; z < Rsed.world.camera.view_height; z++)
@@ -3236,8 +3236,8 @@ z: (position.z * Rsed.constants.groundTileSize),
 movement_speed: moveSpeed,
 // How many track ground tiles, horizontally and vertically, should be
 // visible on screen when using this camera.
-view_width: 17,
-view_height: 21,
+view_width: 18,
+view_height: 22,
 };
 publicInterface.reset_camera_position();
 return publicInterface;
@@ -5076,7 +5076,7 @@ return;
 // of the screen's resolution in the range 0..1.
 string: function(string = "", x = 0, y = 0)
 {
-string = String(string).toUpperCase();
+string = (" " + String(string).toUpperCase());
 Rsed.assert && (pixelSurface != null)
 || Rsed.throw("Expected a valid pixel surface.");
 Rsed.assert && (string.length != null)
@@ -5116,9 +5116,9 @@ return;
 },
 watermark: function()
 {
-this.string("RALLY", -.012, 3);
-this.string("SPORT", -.012, 3 + Rsed.ui.font.font_height()-1);
-this.string("ED%", -.012, 3 + ((Rsed.ui.font.font_height()-1) * 2));
+//this.string("RALLY-", -.012, 3);
+//this.string("SPORT-", -.012, 3 + Rsed.ui.font.font_height()-1);
+//this.string("ED%", -.012, 3 + ((Rsed.ui.font.font_height()-1) * 2));
 return;
 },
 footer_info: function()
@@ -5156,7 +5156,7 @@ return;
 fps: function()
 {
 const fpsString = ("FPS: " + Rsed.core.renderer_fps());
-this.string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui.font.font_width()/2) - 73, 3);
+this.string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui.font.font_width()/2) - 40, 37);
 return;
 },
 palat_pane: function()
@@ -5186,9 +5186,6 @@ const tileX = (x * xMul);
 const tileZ = (y * yMul);
 const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
 let color = ((pala == null)? 0 : pala.indices[1]);
-// Have a black outline.
-if (y % (height - 1) === 0) color = "black";
-if (x % (width - 1) === 0) color = "black";
 image.push(color);
 mousePick.push(Rsed.ui.mouse_picking_element("ui-element",
 {
@@ -5198,7 +5195,7 @@ y: tileZ
 }));
 }
 }
-this.image(image, null, width, height, pixelSurface.width - width - 4, 3, false);
+this.image(image, null, width, height, pixelSurface.width - width - 4, 4, false);
 // Draw a frame around the camera view on the minimap.
 if (image && xMul && yMul)
 {
@@ -5228,8 +5225,8 @@ const currentPala = Rsed.ui.groundBrush.brush_pala_idx();
 const pala = Rsed.core.current_project().palat.texture[currentPala];
 if (pala != null)
 {
-this.image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false, true);
-this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
+this.image(pala.indices, null, 16, 16, pixelSurface.width - 15 - 5, 34 + 5, false, true);
+this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 22 - 4 + 6, 39 + 16)
 }
 return;
 },
@@ -5444,7 +5441,7 @@ if ( Rsed.ui.inputState.current_mouse_hover() &&
 {
 const mousePos = Rsed.ui.inputState.mouse_pos();
 const propDropdown = document.getElementById("prop-dropdown");
-propDropdown.style.transform = `translate(${mousePos.x + 65}px, ${mousePos.y - 40}px)`;
+propDropdown.style.transform = `translate(${mousePos.x + 25}px, ${mousePos.y - 153}px)`;
 propDropdown.classList.toggle("show");
 RSED_DROPDOWN_ACTIVATED = true;
 }
@@ -6076,6 +6073,10 @@ if (Rsed.ui.inputState.key_down("a"))
 {
 showPalatPane = !showPalatPane;
 Rsed.ui.inputState.set_key_down("a", false);
+// The PALAT pane might clip the HTML UI, in which case the UI might prevent
+// the user's cursor from interacting with the pane; so disable the UI while
+// the pane is visible.
+Rsed.ui.htmlUI.set_visible(!showPalatPane);
 // Prevent a mouse click from acting on the ground behind the pane when the pane
 // is brought up, and on the pane when the pane has been removed.
 updateMouseHoverOnFrameFinish = true;
@@ -6316,7 +6317,6 @@ width: project.varimaa.width,
 height: project.varimaa.height,
 pixels: tilemap,
 }),
-hasWireframe: true,
 wireframeColor: Rngon.color_rgba(127, 127, 127),
 });
 tilemapMesh = Rngon.mesh([tilemapNgon]);
@@ -6327,7 +6327,7 @@ draw_ui: function()
 Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
-((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
+((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height() + 1);
 Rsed.ui.draw.watermark();
 Rsed.ui.draw.active_pala();
 if (showPalatPane) Rsed.ui.draw.palat_pane();
@@ -6393,6 +6393,10 @@ if (Rsed.ui.inputState.key_down("a"))
 {
 showPalatPane = !showPalatPane;
 Rsed.ui.inputState.set_key_down("a", false);
+// The PALAT pane might clip the HTML UI, in which case the UI might prevent
+// the user's cursor from interacting with the pane; so disable the UI while
+// the pane is visible.
+Rsed.ui.htmlUI.set_visible(!showPalatPane);
 // Prevent a mouse click from acting on the ground behind the pane when the pane
 // is brought up, and on the pane when the pane has been removed.
 updateMouseHoverOnFrameFinish = true;

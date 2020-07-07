@@ -119,7 +119,7 @@ Rsed.ui.draw = (function()
         // of the screen's resolution in the range 0..1.
         string: function(string = "", x = 0, y = 0)
         {
-            string = String(string).toUpperCase();
+            string = (" " + String(string).toUpperCase());
 
             Rsed.assert && (pixelSurface != null)
                         || Rsed.throw("Expected a valid pixel surface.");
@@ -169,9 +169,9 @@ Rsed.ui.draw = (function()
 
         watermark: function()
         {
-            this.string("RALLY", -.012, 3);
-            this.string("SPORT", -.012, 3 + Rsed.ui.font.font_height()-1);
-            this.string("ED%", -.012, 3 + ((Rsed.ui.font.font_height()-1) * 2));
+            //this.string("RALLY-", -.012, 3);
+            //this.string("SPORT-", -.012, 3 + Rsed.ui.font.font_height()-1);
+            //this.string("ED%", -.012, 3 + ((Rsed.ui.font.font_height()-1) * 2));
 
             return;
         },
@@ -221,7 +221,7 @@ Rsed.ui.draw = (function()
         fps: function()
         {
             const fpsString = ("FPS: " + Rsed.core.renderer_fps());
-            this.string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui.font.font_width()/2) - 73, 3);
+            this.string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui.font.font_width()/2) - 40, 37);
 
             return;
         },
@@ -257,10 +257,6 @@ Rsed.ui.draw = (function()
                     const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
                     let color = ((pala == null)? 0 : pala.indices[1]);
 
-                    // Have a black outline.
-                    if (y % (height - 1) === 0) color = "black";
-                    if (x % (width - 1) === 0) color = "black";
-
                     image.push(color);
 
                     mousePick.push(Rsed.ui.mouse_picking_element("ui-element",
@@ -272,7 +268,7 @@ Rsed.ui.draw = (function()
                 }
             }
 
-            this.image(image, null, width, height, pixelSurface.width - width - 4, 3, false);
+            this.image(image, null, width, height, pixelSurface.width - width - 4, 4, false);
 
             // Draw a frame around the camera view on the minimap.
             if (image && xMul && yMul)
@@ -309,8 +305,8 @@ Rsed.ui.draw = (function()
 
             if (pala != null)
             {
-                this.image(pala.indices, null, 16, 16, pixelSurface.width - 16 - 5, 34 + 3, false, true);
-                this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 16 - 4 + 6, 34 + 3 + 16)
+                this.image(pala.indices, null, 16, 16, pixelSurface.width - 15 - 5, 34 + 5, false, true);
+                this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 22 - 4 + 6, 39 + 16)
             }
 
             return;

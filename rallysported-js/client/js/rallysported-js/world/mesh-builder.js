@@ -44,7 +44,7 @@ Rsed.world.meshBuilder = (function()
             // Note that we adjust Z to account for vertical camera zooming.
             const centerView = {x: -((Rsed.world.camera.view_width / 2) * Rsed.constants.groundTileSize),
                                 y: (-650 + args.cameraPos.y),
-                                z: (3500 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
+                                z: (3628 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 
             const mouseHover = Rsed.ui.inputState.current_mouse_hover();
             const tabPressed = Rsed.ui.inputState.key_down("tab");

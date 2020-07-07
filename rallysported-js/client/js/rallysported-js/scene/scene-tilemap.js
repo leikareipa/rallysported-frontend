@@ -99,7 +99,6 @@ Rsed.scenes["tilemap"] = (function()
                                                     height: project.varimaa.height,
                                                     pixels: tilemap,
                                                 }),
-                                                hasWireframe: true,
                                                 wireframeColor: Rngon.color_rgba(127, 127, 127),
                                             });
 
@@ -114,7 +113,7 @@ Rsed.scenes["tilemap"] = (function()
 
             Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
                                 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
-                                ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
+                                ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height() + 1);
 
             Rsed.ui.draw.watermark();
             Rsed.ui.draw.active_pala();
@@ -194,6 +193,11 @@ Rsed.scenes["tilemap"] = (function()
             {
                 showPalatPane = !showPalatPane;
                 Rsed.ui.inputState.set_key_down("a", false);
+
+                // The PALAT pane might clip the HTML UI, in which case the UI might prevent
+                // the user's cursor from interacting with the pane; so disable the UI while
+                // the pane is visible.
+                Rsed.ui.htmlUI.set_visible(!showPalatPane);
 
                 // Prevent a mouse click from acting on the ground behind the pane when the pane
                 // is brought up, and on the pane when the pane has been removed.
