@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (08 July 2020 14:02:08 UTC)
+// VERSION: live (08 July 2020 16:25:01 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4063,7 +4063,7 @@ Rsed.assert && ((propIdx >= 0) &&
 /// be substituted.
 if (propNames[trackPropLocations[trackId].locations[propIdx].propId].name.startsWith("finish"))
 {
-Rsed.ui.popup_notification("The finish line can't be removed.");
+Rsed.alert("The finish line can't be removed.");
 // Prevent the same input from registering again next frame, before
 // the user has had time to release the mouse button.
 Rsed.ui.inputState.reset_mouse_buttons_state();
@@ -5428,7 +5428,7 @@ event.preventDefault();
 /// Temp hack. The finish line is an immutable prop, so disallow changing it.
 if (Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish"))
 {
-Rsed.ui.popup_notification("The finish line can't be edited.");
+Rsed.alert("The finish line can't be edited.");
 // Prevent the same input from registering again next frame, before
 // the user has had time to release the mouse button.
 Rsed.ui.inputState.reset_mouse_buttons_state();
@@ -5493,9 +5493,9 @@ return;
 }
 switch (event.button)
 {
-case 0: Rsed.ui.inputState.set_mouse_button_down({left:true}); break;
-case 1: Rsed.ui.inputState.set_mouse_button_down({mid:true}); break;
-case 2: Rsed.ui.inputState.set_mouse_button_down({right:true}); break;
+case 0: Rsed.ui.inputState.set_mouse_button_down("left", true); break;
+case 1: Rsed.ui.inputState.set_mouse_button_down("middle", true); break;
+case 2: Rsed.ui.inputState.set_mouse_button_down("right", true); break;
 default: break;
 }
 return;
@@ -5513,9 +5513,9 @@ return;
 }
 switch (event.button)
 {
-case 0: Rsed.ui.inputState.set_mouse_button_down({left:false}); break;
-case 1: Rsed.ui.inputState.set_mouse_button_down({mid:false}); break;
-case 2: Rsed.ui.inputState.set_mouse_button_down({right:false}); break;
+case 0: Rsed.ui.inputState.set_mouse_button_down("left", false); break;
+case 1: Rsed.ui.inputState.set_mouse_button_down("middle", false); break;
+case 2: Rsed.ui.inputState.set_mouse_button_down("right", false); break;
 default: break;
 }
 return;
@@ -5617,12 +5617,25 @@ Rsed.ui.inputState = (function()
 const keyboardState = [];
 const mouseState =
 {
-// Which of the mouse buttons are currently down.
+// Which of the mouse buttons are currently down, and which modifiers were
+// being pressed when the click was registered.
 buttons:
 {
-left: false,
-mid: false,
-right: false,
+left:
+{
+isDown: false,
+modifiers: [],
+},
+middle:
+{
+isDown: false,
+modifiers: [],
+},
+right:
+{
+isDown: false,
+modifiers: [],
+},
 },
 // Wheel scroll.
 wheel: 0,
@@ -5723,15 +5736,27 @@ this.right_mouse_button_down());
 },
 left_mouse_button_down: function()
 {
-return mouseState.buttons.left;
+return mouseState.buttons.left.isDown;
+},
+left_mouse_click_modifiers: function()
+{
+return mouseState.buttons.left.modifiers;
 },
 mid_mouse_button_down: function()
 {
-return mouseState.buttons.mid;
+return mouseState.buttons.middle.isDown;
+},
+mid_mouse_click_modifiers: function()
+{
+return mouseState.buttons.middle.modifiers;
 },
 right_mouse_button_down: function()
 {
-return mouseState.buttons.right;
+return mouseState.buttons.right.isDown;
+},
+right_mouse_click_modifiers: function()
+{
+return mouseState.buttons.right.modifiers;
 },
 left_or_right_mouse_button_down: function()
 {
@@ -5764,9 +5789,9 @@ return;
 },
 reset_mouse_buttons_state: function()
 {
-mouseState.buttons.left = false;
-mouseState.buttons.mid = false;
-mouseState.buttons.right = false;
+mouseState.buttons.left = {isDown: false, modifiers: []};
+mouseState.buttons.mid = {isDown: false, modifiers: []};
+mouseState.buttons.right = {isDown: false, modifiers: []};
 return;
 },
 reset_modifier_keys_state: function()
@@ -5833,10 +5858,25 @@ const mousePos = this.mouse_pos_scaled_to_render_resolution();
 mouseState.hover = (Rsed.visual.canvas? Rsed.visual.canvas.mousePickingBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width] : null);
 return;
 },
-set_mouse_button_down: function(state = {})
+set_mouse_button_down: function(button = "left", isDown = false)
 {
-Rsed.throw_if_not_type("object", state);
-mouseState.buttons = {...mouseState.buttons, ...state};
+Rsed.throw_if_undefined(mouseState.buttons[button]);
+Rsed.throw_if_not_type("string", button);
+Rsed.throw_if_not_type("boolean", isDown);
+if (isDown)
+{
+mouseState.buttons[button].isDown = true;
+mouseState.buttons[button].modifiers = (()=>
+{
+knownModifiers = ["shift", "control", "alt"];
+return knownModifiers.filter(modifier=>this.key_down(modifier));
+})();
+}
+else
+{
+mouseState.buttons[button].isDown = false;
+mouseState.buttons[button].modifiers.length = 0;
+}
 if (!this.mouse_button_down())
 {
 mouseState.grab = null;
@@ -6171,7 +6211,7 @@ case "prop":
 if (Rsed.ui.inputState.left_mouse_button_down())
 {
 // Remove the selected prop.
-if (Rsed.ui.inputState.key_down("shift"))
+if (Rsed.ui.inputState.left_mouse_click_modifiers().includes("shift"))
 {
 Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), hover.propTrackIdx);
 Rsed.ui.inputState.reset_mouse_hover();
@@ -6182,7 +6222,7 @@ else
 // For now, don't allow moving the starting line (always prop #0).
 if (grab.propTrackIdx === 0)
 {
-Rsed.ui.popup_notification("The finish line can't be moved.");
+Rsed.alert("The finish line can't be moved.");
 // Prevent the same input from registering again next frame, before
 // the user has had time to release the mouse button.
 Rsed.ui.inputState.reset_mouse_buttons_state();

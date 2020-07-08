@@ -148,7 +148,7 @@ window.oncontextmenu = function(event)
     /// Temp hack. The finish line is an immutable prop, so disallow changing it.
     if (Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish"))
     {
-        Rsed.ui.popup_notification("The finish line can't be edited.");
+        Rsed.alert("The finish line can't be edited.");
 
         // Prevent the same input from registering again next frame, before
         // the user has had time to release the mouse button.
@@ -231,9 +231,9 @@ window.onmousedown = function(event)
     
     switch (event.button)
     {
-        case 0: Rsed.ui.inputState.set_mouse_button_down({left:true}); break;
-        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:true}); break;
-        case 2: Rsed.ui.inputState.set_mouse_button_down({right:true}); break;
+        case 0: Rsed.ui.inputState.set_mouse_button_down("left", true); break;
+        case 1: Rsed.ui.inputState.set_mouse_button_down("middle", true); break;
+        case 2: Rsed.ui.inputState.set_mouse_button_down("right", true); break;
         default: break;
     }
 
@@ -255,9 +255,9 @@ window.onmouseup = function(event)
 
     switch (event.button)
     {
-        case 0: Rsed.ui.inputState.set_mouse_button_down({left:false}); break;
-        case 1: Rsed.ui.inputState.set_mouse_button_down({mid:false}); break;
-        case 2: Rsed.ui.inputState.set_mouse_button_down({right:false}); break;
+        case 0: Rsed.ui.inputState.set_mouse_button_down("left", false); break;
+        case 1: Rsed.ui.inputState.set_mouse_button_down("middle", false); break;
+        case 2: Rsed.ui.inputState.set_mouse_button_down("right", false); break;
         default: break;
     }
 

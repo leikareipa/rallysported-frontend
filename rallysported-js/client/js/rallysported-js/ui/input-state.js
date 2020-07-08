@@ -18,12 +18,25 @@ Rsed.ui.inputState = (function()
 
     const mouseState =
     {
-        // Which of the mouse buttons are currently down.
+        // Which of the mouse buttons are currently down, and which modifiers were
+        // being pressed when the click was registered.
         buttons:
         {
-            left: false,
-            mid: false,
-            right: false,
+            left:
+            {
+                isDown: false,
+                modifiers: [],
+            },
+            middle:
+            {
+                isDown: false,
+                modifiers: [],
+            },
+            right:
+            {
+                isDown: false,
+                modifiers: [],
+            },
         },
 
         // Wheel scroll.
@@ -147,17 +160,32 @@ Rsed.ui.inputState = (function()
 
         left_mouse_button_down: function()
         {
-            return mouseState.buttons.left;
+            return mouseState.buttons.left.isDown;
+        },
+
+        left_mouse_click_modifiers: function()
+        {
+            return mouseState.buttons.left.modifiers;
         },
 
         mid_mouse_button_down: function()
         {
-            return mouseState.buttons.mid;
+            return mouseState.buttons.middle.isDown;
+        },
+
+        mid_mouse_click_modifiers: function()
+        {
+            return mouseState.buttons.middle.modifiers;
         },
 
         right_mouse_button_down: function()
         {
-            return mouseState.buttons.right;
+            return mouseState.buttons.right.isDown;
+        },
+
+        right_mouse_click_modifiers: function()
+        {
+            return mouseState.buttons.right.modifiers;
         },
 
         left_or_right_mouse_button_down: function()
@@ -200,9 +228,9 @@ Rsed.ui.inputState = (function()
 
         reset_mouse_buttons_state: function()
         {
-            mouseState.buttons.left = false;
-            mouseState.buttons.mid = false;
-            mouseState.buttons.right = false;
+            mouseState.buttons.left = {isDown: false, modifiers: []};
+            mouseState.buttons.mid = {isDown: false, modifiers: []};
+            mouseState.buttons.right = {isDown: false, modifiers: []};
 
             return;
         },
@@ -289,11 +317,26 @@ Rsed.ui.inputState = (function()
             return;
         },
 
-        set_mouse_button_down: function(state = {})
+        set_mouse_button_down: function(button = "left", isDown = false)
         {
-            Rsed.throw_if_not_type("object", state);
+            Rsed.throw_if_undefined(mouseState.buttons[button]);
+            Rsed.throw_if_not_type("string", button);
+            Rsed.throw_if_not_type("boolean", isDown);
 
-            mouseState.buttons = {...mouseState.buttons, ...state};
+            if (isDown)
+            {
+                mouseState.buttons[button].isDown = true;
+                mouseState.buttons[button].modifiers = (()=>
+                {
+                    knownModifiers = ["shift", "control", "alt"];
+                    return knownModifiers.filter(modifier=>this.key_down(modifier));
+                })();
+            }
+            else
+            {
+                mouseState.buttons[button].isDown = false;
+                mouseState.buttons[button].modifiers.length = 0;
+            }
 
             if (!this.mouse_button_down())
             {
