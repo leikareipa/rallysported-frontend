@@ -1,0 +1,71 @@
+@font-face
+{
+    font-family: "Comic Sans (server-side)";
+    src: url("/rallysport-content/api/fonts/comic-sans/comic-sans.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face
+{
+    font-family: "Comic Sans (server-side)";
+    src: url("/rallysport-content/api/fonts/comic-sans/comic-sans-bold.ttf") format("truetype");
+    font-weight: bold;
+    font-style: normal;
+}
+
+body
+{
+    text-align: center;
+    align-content: center;
+    background-color: #000000;
+    color: rgb(218, 218, 218);
+    padding: 0;
+    margin: 0;
+}
+
+h1
+{
+    text-align: center;
+    font-family: 'Comic Sans (server-side)';
+    font-weight: bold;
+    font-size: 200%;
+    color: rgb(231, 231, 231);
+}
+
+h2,h3,h4
+{
+    font-family: 'Comic Sans (server-side)';
+    padding-left: 10px;
+    padding-right: 15px;
+    color: rgb(224, 224, 224);
+    margin-bottom: 0;
+    margin-top: 35px;
+    display: block;
+    border-radius: 3px;
+    background-color: rgb(156, 75, 75);
+}
+
+img
+{
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 3px;
+    border: 3px solid rgb(121, 158, 137);
+}
+
+.container
+{
+    padding: 25px;
+    background-color: #aca38a;
+    color: rgb(31, 31, 31);
+    display: inline-block;
+    width: 100%;
+    max-width: 670px;
+    text-align: left;
+    position: relative;
+    z-index: 0;
+}
