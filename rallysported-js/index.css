@@ -287,3 +287,50 @@ body
 {
     display: none !important;
 }
+
+.animation-flip
+{
+    animation-name: animation-flip-frames;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-in-out;
+    animation-duration: 0.2s;
+}
+
+.animation-slide-in
+{
+    animation-name: animation-slide-in-frames;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-out;
+    animation-duration: 0.3s;
+}
+
+@keyframes animation-flip-frames
+{
+    0% { transform: rotateX(90deg); }
+    100% { transform: rotateX(0deg); }
+}
+
+@keyframes animation-slide-in-frames
+{
+    0% { opacity: 0; transform: translateX(100px); }
+    100% { opacity: 1; transform: translateX(0px); }
+}
+
+
+@media only screen and (max-width: 1500px)
+{
+    #popup-notification-container
+    {
+        right: 120px;
+        bottom: 40px;
+    }
+}
+
+@media only screen and (max-width: 1100px)
+{
+    #popup-notification-container
+    {
+        bottom: 0px;
+        right: 45px;
+    }
+}
