@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (08 July 2020 16:25:01 UTC)
+// VERSION: live (08 July 2020 21:19:30 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5200,7 +5200,7 @@ if (image && xMul && yMul)
 {
 const frame = [];
 const frameWidth = Math.round((Rsed.world.camera.view_width / xMul));
-const frameHeight = Math.floor((Rsed.world.camera.view_height / yMul));
+const frameHeight = Math.round((Rsed.world.camera.view_height / yMul));
 for (let y = 0; y < frameHeight; y++)
 {
 for (let x = 0; x < frameWidth; x++)
@@ -5214,7 +5214,7 @@ frame.push(color);
 const cameraPos = Rsed.world.camera.position_floored();
 const camX = (cameraPos.x / xMul);
 const camZ = (cameraPos.z / yMul);
-this.image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 3 + camZ, true);
+this.image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 4 + camZ, true);
 }
 return;
 },

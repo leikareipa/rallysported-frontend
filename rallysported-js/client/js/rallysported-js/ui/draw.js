@@ -275,7 +275,7 @@ Rsed.ui.draw = (function()
             {
                 const frame = [];
                 const frameWidth = Math.round((Rsed.world.camera.view_width / xMul));
-                const frameHeight = Math.floor((Rsed.world.camera.view_height / yMul));
+                const frameHeight = Math.round((Rsed.world.camera.view_height / yMul));
                 
                 for (let y = 0; y < frameHeight; y++)
                 {
@@ -292,7 +292,7 @@ Rsed.ui.draw = (function()
                 const cameraPos = Rsed.world.camera.position_floored();
                 const camX = (cameraPos.x / xMul);
                 const camZ = (cameraPos.z / yMul);
-                this.image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 3 + camZ, true);
+                this.image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 4 + camZ, true);
             }
 
             return;
