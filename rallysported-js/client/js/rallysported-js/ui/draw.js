@@ -187,7 +187,7 @@ Rsed.ui.draw = (function()
                 (mouseGrab && (mouseGrab.type === "prop")))
             {
                 // Prefer mouseGrab over mouseHover, as the prop follows the cursor lazily while
-                // dragging, so hover might be over the background.
+                // grabbing, so hover might be over the background.
                 const mouse = (mouseGrab || mouseHover);
 
                 str = "PROP:" + Rsed.core.current_project().props.name(mouse.propId) +

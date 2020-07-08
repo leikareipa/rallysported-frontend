@@ -28,7 +28,7 @@ Rsed.ui.popup_notification = function(string = "", args = {})
     Rsed.throw_if_not_type("string", args.notificationType);
 
     const popupElement = document.createElement("div");
-    popupElement.classList.add("popup-notification", "animation-flip", args.notificationType);
+    popupElement.classList.add("popup-notification", "animation-slide-in", args.notificationType);
     popupElement.appendChild(document.createTextNode(string));
     document.getElementById("popup-notification-container").appendChild(popupElement);
 

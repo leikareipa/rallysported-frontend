@@ -278,7 +278,7 @@ Rsed.scenes["3d"] = (function()
                             // For now, don't allow moving the starting line (always prop #0).
                             if (grab.propTrackIdx === 0)
                             {
-                                Rsed.ui.popup_notification("The finish line cannot be moved.");
+                                Rsed.ui.popup_notification("The finish line can't be moved.");
 
                                 // Prevent the same input from registering again next frame, before
                                 // the user has had time to release the mouse button.

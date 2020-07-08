@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (07 July 2020 23:45:37 UTC)
+// VERSION: live (08 July 2020 14:02:08 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4063,7 +4063,7 @@ Rsed.assert && ((propIdx >= 0) &&
 /// be substituted.
 if (propNames[trackPropLocations[trackId].locations[propIdx].propId].name.startsWith("finish"))
 {
-Rsed.ui.popup_notification("The finish line cannot be removed.");
+Rsed.ui.popup_notification("The finish line can't be removed.");
 // Prevent the same input from registering again next frame, before
 // the user has had time to release the mouse button.
 Rsed.ui.inputState.reset_mouse_buttons_state();
@@ -4311,7 +4311,7 @@ timeoutMs: 6000,
 Rsed.throw_if_not_type("number", args.timeoutMs);
 Rsed.throw_if_not_type("string", args.notificationType);
 const popupElement = document.createElement("div");
-popupElement.classList.add("popup-notification", "animation-flip", args.notificationType);
+popupElement.classList.add("popup-notification", "animation-slide-in", args.notificationType);
 popupElement.appendChild(document.createTextNode(string));
 document.getElementById("popup-notification-container").appendChild(popupElement);
 const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
@@ -5129,7 +5129,7 @@ if ((mouseHover && (mouseHover.type === "prop")) ||
 (mouseGrab && (mouseGrab.type === "prop")))
 {
 // Prefer mouseGrab over mouseHover, as the prop follows the cursor lazily while
-// dragging, so hover might be over the background.
+// grabbing, so hover might be over the background.
 const mouse = (mouseGrab || mouseHover);
 str = "PROP:" + Rsed.core.current_project().props.name(mouse.propId) +
 " IDX:" + mouse.propId + "(" + mouse.propTrackIdx + ")";
@@ -5428,7 +5428,7 @@ event.preventDefault();
 /// Temp hack. The finish line is an immutable prop, so disallow changing it.
 if (Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish"))
 {
-Rsed.ui.popup_notification("The finish line cannot be edited.");
+Rsed.ui.popup_notification("The finish line can't be edited.");
 // Prevent the same input from registering again next frame, before
 // the user has had time to release the mouse button.
 Rsed.ui.inputState.reset_mouse_buttons_state();
@@ -6182,7 +6182,7 @@ else
 // For now, don't allow moving the starting line (always prop #0).
 if (grab.propTrackIdx === 0)
 {
-Rsed.ui.popup_notification("The finish line cannot be moved.");
+Rsed.ui.popup_notification("The finish line can't be moved.");
 // Prevent the same input from registering again next frame, before
 // the user has had time to release the mouse button.
 Rsed.ui.inputState.reset_mouse_buttons_state();

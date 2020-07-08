@@ -24,6 +24,7 @@
 
 body
 {
+    font-family: sans-serif;
     cursor: url("./client/assets/cursors/rsed-cursor.png"), auto;
     text-align: center;
     align-content: center;
@@ -174,7 +175,6 @@ body
 .dropdown-menu
 {
     cursor: pointer;
-    font-family: "Montserrat", sans-serif;
     text-align: left;
     position: fixed;
     left: 0;
@@ -209,7 +209,7 @@ body
 {
     text-transform: capitalize;
     color: black;
-    padding: 3px 20px;
+    padding: 3px 15px;
     border-radius: 6px;
 }
 
@@ -236,28 +236,38 @@ body
     flex-direction: column;
 }
 
-#popup-notification-container > .popup-notification:not(:last-child)
-{
-    width: 97%;
-    padding: 17px;
-    margin-left: 15px;
-    font-size: 90%;
-}
-
 #popup-notification-container .popup-notification
 {
     width: 100%;
     height: auto;
     padding: 20px;
-    font-family: "Montserrat", sans-serif;
     text-align: center;
     margin-top: 8px;
-    border-radius: 20px;
-    line-height: 140%;
+    border-radius: 20px 0 20px 20px;
     word-wrap: break-word;
     color: black;
     background-color: gold;
     box-shadow: 0 5px 10px -4px black;
+}
+
+#popup-notification-container > .popup-notification:not(:last-child)
+{
+    border-radius: 20px 0 0 20px;
+    width: 95%;
+    padding: 17px;
+    margin-left: 20px;
+    font-size: 90%;
+    opacity: 0.9;
+}
+
+#popup-notification-container > .popup-notification:first-child
+{
+    border-radius: 20px 20px 0 20px;
+}
+
+#popup-notification-container > .popup-notification:only-child
+{
+    border-radius: 20px 0 20px 20px;
 }
 
 #popup-notification-container .popup-notification.warning
