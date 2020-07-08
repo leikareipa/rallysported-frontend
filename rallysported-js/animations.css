@@ -11,7 +11,7 @@
     animation-name: animation-slide-in-frames;
     animation-iteration-count: 1;
     animation-timing-function: ease-out;
-    animation-duration: 0.2s;
+    animation-duration: 0.3s;
 }
 
 @keyframes animation-flip-frames
