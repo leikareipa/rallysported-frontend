@@ -266,7 +266,7 @@ Rsed.scenes["3d"] = (function()
                     if (Rsed.ui.inputState.left_mouse_button_down())
                     {
                         // Remove the selected prop.
-                        if (Rsed.ui.inputState.key_down("shift"))
+                        if (Rsed.ui.inputState.left_mouse_click_modifiers().includes("shift"))
                         {
                             Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), hover.propTrackIdx);
 
@@ -278,7 +278,7 @@ Rsed.scenes["3d"] = (function()
                             // For now, don't allow moving the starting line (always prop #0).
                             if (grab.propTrackIdx === 0)
                             {
-                                Rsed.ui.popup_notification("The finish line can't be moved.");
+                                Rsed.alert("The finish line can't be moved.");
 
                                 // Prevent the same input from registering again next frame, before
                                 // the user has had time to release the mouse button.
