@@ -119,7 +119,7 @@ Rsed.ui.draw = (function()
         // of the screen's resolution in the range 0..1.
         string: function(string = "", x = 0, y = 0)
         {
-            string = (" " + String(string).toUpperCase());
+            string = String(string).toUpperCase();
 
             Rsed.assert && (pixelSurface != null)
                         || Rsed.throw("Expected a valid pixel surface.");
@@ -131,6 +131,15 @@ Rsed.ui.draw = (function()
             if (x < 0) x = Math.floor(-x * pixelSurface.width);
             if (y < 0) y = Math.floor(-y * pixelSurface.height);
 
+            // Draw a left vertical border for the string block. The font's
+            // bitmap characters include bottom, right, and top borders, but
+            // not left; so we need to create the left one manually.
+            for (let i = 0; i < Rsed.ui.font.font_height(); i++)
+            {
+                put_pixel(x, y + i, 0, 0, 0);
+            }
+            x++;
+
             // Draw the string, one character at a time.
             for (let i = 0; i < string.length; i++)
             {
@@ -140,7 +149,7 @@ Rsed.ui.draw = (function()
                 
                 this.image(character, null, width, height, x, y, false);
                 
-                x += (Rsed.ui.font.font_width() / 2);
+                x += Rsed.ui.font.font_width();
             }
 
             return;
@@ -306,7 +315,7 @@ Rsed.ui.draw = (function()
             if (pala != null)
             {
                 this.image(pala.indices, null, 16, 16, pixelSurface.width - 15 - 5, 34 + 5, false, true);
-                this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 22 - 4 + 6, 39 + 16)
+                this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 22 - 4 + 10, 39 + 16)
             }
 
             return;
