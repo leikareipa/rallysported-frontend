@@ -140,7 +140,7 @@ Rsed.ui.draw = (function()
                 
                 this.image(character, null, width, height, x, y, false);
                 
-                x += ((Rsed.ui.font.font_width() / 2) + 0.3);
+                x += (Rsed.ui.font.font_width() / 2);
             }
 
             return;
@@ -190,7 +190,7 @@ Rsed.ui.draw = (function()
                 // grabbing, so hover might be over the background.
                 const mouse = (mouseGrab || mouseHover);
 
-                str = "PROP:" + Rsed.core.current_project().props.name(mouse.propId) +
+                str = "PROP:\"" + Rsed.core.current_project().props.name(mouse.propId) + "\"" +
                       " IDX:" + mouse.propId + "(" + mouse.propTrackIdx + ")";
             }
             else if (mouseHover && (mouseHover.type === "ground"))
