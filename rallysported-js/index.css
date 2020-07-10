@@ -176,7 +176,7 @@ body
 {
     cursor: pointer;
     text-align: left;
-    position: fixed;
+    position: absolute;
     left: 0;
     top: 0;
     background-color: white;
@@ -209,15 +209,17 @@ body
 {
     text-transform: capitalize;
     color: black;
-    padding: 3px 15px;
+    padding: 3px 20px;
     border-radius: 6px;
+    white-space: nowrap;
 }
 
 .dropdown-menu > .item:hover
 {
     background-color: black;
     color: white;
-    box-shadow: 0 5px 10px -5px rgba(0, 0, 0, 0.76);
+    box-shadow: 0 6px 10px -5px rgba(0, 0, 0, 0.65);
+    transform: scale(1.05);
 }
 
 .dropdown-menu.show
@@ -296,9 +298,9 @@ body
     animation-duration: 0.2s;
 }
 
-.animation-slide-in
+.animation-popup-slide-in
 {
-    animation-name: animation-slide-in-frames;
+    animation-name: animation-popup-slide-in-frames;
     animation-iteration-count: 1;
     animation-timing-function: ease-out;
     animation-duration: 0.3s;
@@ -310,9 +312,9 @@ body
     100% { transform: rotateX(0deg); }
 }
 
-@keyframes animation-slide-in-frames
+@keyframes animation-popup-slide-in-frames
 {
-    0% { opacity: 0; transform: translateX(100px); }
+    0% { opacity: 0; transform: translateX(80px); }
     100% { opacity: 1; transform: translateX(0px); }
 }
 

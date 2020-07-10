@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (08 July 2020 21:19:30 UTC)
+// VERSION: live (10 July 2020 14:16:59 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4311,7 +4311,7 @@ timeoutMs: 6000,
 Rsed.throw_if_not_type("number", args.timeoutMs);
 Rsed.throw_if_not_type("string", args.notificationType);
 const popupElement = document.createElement("div");
-popupElement.classList.add("popup-notification", "animation-slide-in", args.notificationType);
+popupElement.classList.add("popup-notification", "animation-popup-slide-in", args.notificationType);
 popupElement.appendChild(document.createTextNode(string));
 document.getElementById("popup-notification-container").appendChild(popupElement);
 const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
@@ -5440,7 +5440,8 @@ if ( Rsed.ui.inputState.current_mouse_hover() &&
 {
 const mousePos = Rsed.ui.inputState.mouse_pos();
 const propDropdown = document.getElementById("prop-dropdown");
-propDropdown.style.transform = `translate(${mousePos.x + 25}px, ${mousePos.y - 153}px)`;
+propDropdown.style.left = `${mousePos.x + 32}px`;
+propDropdown.style.top = `${mousePos.y - 155}px`;
 propDropdown.classList.toggle("show");
 RSED_DROPDOWN_ACTIVATED = true;
 }

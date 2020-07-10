@@ -99,7 +99,6 @@ Rsed.world.meshBuilder = (function()
                             texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
                             textureMapping: "ortho",
                             uvWrapping: "clamp",
-                            hasSolidFill: true,
                             hasWireframe: args.includeWireframe,
                             auxiliary:
                             {
