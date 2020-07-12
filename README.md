@@ -1,36 +1,37 @@
 # RallySportED-js
-A version of [RallySportED](https://github.com/leikareipa/rallysported/)'s track editor for browsers, written in JavaScript.
+A version of [RallySportED](https://github.com/leikareipa/rallysported/)'s track editor for browsers. You can find it running live [here](https://www.tarpeeksihyvaesoft.com/rallysported/).
 
-A live page running RallySportED-js is available [here](https://www.tarpeeksihyvaesoft.com/rallysported/). It loads up a track in your browser for local editing.
-
-### Features in RallySportED-js
-- Create and edit tracks for Rally-Sport in your browser!
-- Genuine olden-style software-rendered 3d graphics
-- Written in modern, vanilla JavaScript - with a bit of Vue for the UI
+### Features
+- Create and edit Rally-Sport tracks in your browser
+- Genuine olden software-rendered 3d graphics
+- Vanilla JavaScript (+ a bit of Vue for the UI)
 
 ![](images/screenshots/beta.3/yleisoek-2.png)
 
 # End-user's guide
-You can find a handy end-user's guide at https://www.tarpeeksihyvaesoft.com/rallysported/user-guide/.
+An end-user's guide is provided in the [rallysported-js/user-guide/](rallysported-js/user-guide/) directory; and hosted live [here](https://www.tarpeeksihyvaesoft.com/rallysported/user-guide/).
 
-The guide walks you through the steps to create a custom track, and shows you how to get the track running in Rally-Sport.
+The guide walks you through the steps to creating a new track and getting it up and running in Rally-Sport.
+
+# Developer's guide
+If you'd like to modify RallySportED-js or otherwise inspect its internals, this guide is for you.
 
 ## Setting up RallySportED-js on a server
-To set up a copy of RallySportED-js on your own server, simply copy over the files from the [rallysported-js/](rallysported-js/) directory.
+To set up RallySportED-js on your server, simply copy over the [rallysported-js/](rallysported-js/) directory. The app is client-based and doesn't need dynamic hosting.
 
-- The destination folder on your server does not need to be named rallysported-js - only the directory structure inside it must reflect the contents of [rallysported-js/](rallysported-js/).
-- From [rallysported-js/client/js/](rallysported-js/client/js/), you only need to copy [rallysported.cat.js](rallysported-js/client/js/rallysported.cat.js), which is a concatenation of the source files under that directory (built using the [build-client-distributable.sh](build-client-distributable.sh) script).
+- You can rename the directory to something other than `rallysported-js`, but its internal structure should remain as-is.
 
-You should now be able to run RallySportED-js in your browser by navigating to where you placed the files on your server - assuming the server then serves the [rallysported-js/index.php](rallysported-js/index.php) file as per usual.
+- From [rallysported-js/client/js/](rallysported-js/client/js/), you only need to copy [rallysported.cat.js](rallysported-js/client/js/rallysported.cat.js). It's a concatenation of the source files under that directory, built using the [build-client-distributable.sh](build-client-distributable.sh) script.
 
-By default, RallySportED-js will load Rally-Sport's track #4 as stored in RallySportED's project format under `server/assets/tracks/demod/`. You can see the end-user's guide for more information about accessing different tracks, and the [Technical details](#technical-details) section of this document for the specifics of RallySportED's project files.
+You should now be able to run RallySportED-js in a browser by navigating to where you placed the files on your server, such that [rallysported-js/index.html](rallysported-js/index.html) is served.
 
-# Technical details
-Rally-Sport stores most of its asset data in fairly straightforward binary files; and RallySportED-js provides structured means to edit these data.
+By default, the app will load Rally-Sport's track #4, from [rallysported-js/client/assets/tracks/demo-4.json](rallysported-js/client/assets/tracks/demo-4.json). For information on how to load a different track, see the [end user's guide](#end-users-guide). To find out more about RallySportED's data formats, see the [data formats](#data-formats) section.
 
-For instance, the following asset files are involved with the game's first track, "Nurtsi cruising":
+## Data formats
+### Rally-Sport's track data
+The game stores its track data in discrete binary files. For instance, the following files are associated with track #1 ("Nurtsi cruising"):
 
-| File         | Contains                                                 |
+| File         | Description                                              |
 |--------------|----------------------------------------------------------|
 | MAASTO.001   | The track's heightmap.                                   |
 | VARIMAA.001  | The track's tilemap (texture indices for the PALAT file).|
@@ -39,77 +40,69 @@ For instance, the following asset files are involved with the game's first track
 | TEXT1.DTA    | A texture atlas for track-side 3d objects (trees, etc.). |
 | ANIMS.DTA    | A texture atlas for animations (tire smoke, etc.).       |
 
-In addition, a small amount of data is hard-coded into the RALLYE.EXE executable; for instance, the locations of track-side 3d objects.
+More information about Rally-Sport's data formats is available in [RallySportED's technical documentation](https://github.com/leikareipa/rallysported/tree/master/docs).
 
-RallySportED-js provides a 3d view that combines the data from a given track's MAASTO and VARIMAA files - as well as some of the hard-coded data from RALLYE.EXE - to allow the user to modify the track's appearance and surface features.
+### RallySportED's project data
+Tracks made using RallySportED are called *projects*. Each project is a single Rally-Sport track that is playable in-game with the [RallySportED Loader](https://github.com/leikareipa/rallysported-dos/tree/master/modules/rload) utility.
 
-For more in-depth information about Rally-Sport's data formats, see [RallySportED's technical documentation](https://github.com/leikareipa/rallysported/tree/master/docs).
+A project's data are spread across the following files (`NAME` to be replaced by the project's name):
 
-## What's a RallySportED project?
-Tracks created with RallySportED are called *projects*. A project holds the data of exactly one Rally-Sport track, in a format specific to RallySportED.
+| File                  | Known as  | Description                                       |
+|-----------------------|-----------|-------------------------------------------------------|
+| NAME/NAME.DTA         | Container | The track's data files concatenated into one. |
+| NAME/NAME.$FT         | Manifesto | Parameters for loading the track into Rally-Sport.    |
+| NAME/HITABLE.TXT      | Hi-table  | The track's record lap times.                            |
 
-A project called "Suorundi", for example, would consist of the following files (the files of a project are always placed inside a folder named after the project):
+#### Container file
 
-| File                  | Contains                                                                        |
-|-----------------------|---------------------------------------------------------------------------------|
-| SUORUNDI/SUORUNDI.DTA | All of the track's Rally-Sport data concatenated into one file. |
-| SUORUNDI/SUORUNDI.$FT | Parameters for loading the project's track into Rally-Sport.    |
+The container file contains the project's Rally-Sport track files concatenated into a single file. Each track file is stored in the container as a block of bytes preceded by a 32-bit header value indicating the block's length in bytes.
 
-RallySportED-js adds an extra file not present in other versions of RallySportED:
+From start to finish, the container's byte layout is the following:
 
-| File                  | Contains                                                                        |
-|-----------------------|---------------------------------------------------------------------------------|
-| SUORUNDI/SUORUNDI.META.JSON | Server-side metadata about the track. |
+| Header  | Data block          |
+|---------|---------------------|
+| 32b *n* | 8b * *n*: `MAASTO`  |
+| 32b *n* | 8b * *n*: `VARIMAA` |
+| 32b *n* | 8b * *n*: `PALAT`   |
+| 32b *n* | 8b * *n*: `ANIMS`   |
+| 32b *n* | 8b * *n*: `TEXT`    |
+| 32b *n* | 8b * *n*: `KIERROS` |
 
-### The container file
+If you wanted to extract e.g. the VARIMAA file, you'd read the first value of *n*, skip the next *n* bytes, read the next value of *n*, and output the next *n* bytes.
 
-The container (.DTA) file contains all of the track's data (MAASTO, VARIMAA, KIERROS, etc.) concatenated into one file.
+#### Manifesto file
 
-The container file has the following byte layout:
+Rally-Sport hard-codes certain track-related parameters in its executables. Playing RallySportED-made tracks requires some of these hard-coded parameters to be modified at load-time.
 
-| Header     | File segment           |
-|------------|------------------------|
-| 32-bit *n* | 8-bit * *n*: `MAASTO`  |
-| 32-bit *n* | 8-bit * *n*: `VARIMAA` |
-| 32-bit *n* | 8-bit * *n*: `PALAT`   |
-| 32-bit *n* | 8-bit * *n*: `ANIMS`   |
-| 32-bit *n* | 8-bit * *n*: `TEXT`    |
-| 32-bit *n* | 8-bit * *n*: `KIERROS` |
+A project's manifesto file tells the [RallySportED Loader](https://github.com/leikareipa/rallysported-dos/tree/master/modules/rload) utility &ndash; whose job it is to load RallySportED tracks into the game &ndash; how the hard-coded parameters should be modified for this particular track.
 
-Although not required to do so, the container file (more specifically, the KIERROS file inside it) will usually end with the 8-byte value 0xFFFFFFFF.
+*(Coming: A more in-depth description of the manifesto file.)*
 
-### The manifesto file
+### RallySportED-js's JSON track format
+For convenience, RallySportED-js stores the original Rally-Sport tracks &ndash; converted into RallySportED projects &ndash; in a JSON wrapper, which provides room for additional metadata. You can find examples of these JSON track files in the [rallysported-js/client/assets/tracks/](rallysported-js/client/assets/tracks/) directory.
 
-Since each track in Rally-Sport relies on some hard-coded parameters that are not stored in external asset files, loading custom-made track requires modifying the Rally-Sport executable.
-
-To achieve this, RallySportED uses a loader program. The loader takes instructions from the manifesto (.$FT) file on how to modify the game's hard-coded parameters so that the track is loaded in properly.
-
-*(Coming: A table of the manifesto file commands.)*
-
-### The metadata file
-RallySportED-js's server-side metadata file (.META.JSON) is a helper file for server-side code, providing convenient information about the track not readily available in the project's other files.
-
-The metadata file has the following contents:
+A JSON track file has the following format:
 
 ```json
-{
-    "internalName": "name",
-    "displayName": "Nomen est omen",
-    "width": 128,
-    "height": 128
-}
+[{
+    "container": "The container file's data as a Base64-encoded string",
+    "manifesto": "The manifesto file's data as a plain string",
+    "meta": {
+        "internalName": "DEMOA",
+        "displayName": "Nurtsi-cruising",
+        "width": 64,
+        "height": 64
+    }
+}]
 ```
 
-The `internalName` property defines the name by which the project is identified by RallySportED. The name is limited to ASCII A-Z and can be at most eight characters long. When you import or export a project to/from RallySportED-js, this is the name that will be used.
+The `internalName` property holds the project's base RallySportED name. This is the name by which the project's container and manifesto files are called, and is limited to at most eight characters in the ASCII A-Z range.
 
-The `displayName` property provides a name by which the project is referred in RallySportED-js's user-facing UI. This string is not limited in length or character set, as such, but will not be available outside of RallySportED-js.
+The `displayName` property provides a name by which the project is referred to in the RallySportED-js UI. Since this string is not limited in length or character set, it can be more descriptive than the base `internalName` one. However, it's not supported by the rest of the RallySportED toolset and so is lost when the track is exported into the normal RallySportED project format.
 
-The `width` and `height` properties tell how many tiles per side the track has. Note that these properties do not define the track's dimensions but only describe them.
+The `width` and `height` properties describe the track's dimensions.
 
-## The client and the server
-*(Coming.)*
-
-## The software 3d renderer
+## The software 3D renderer
 RallySportED-js uses the [retro n-gon renderer](https://www.github.com/leikareipa/retro-ngon/) to reproduce the original look of Rally-Sport in the 3d track editor.
 
 The retro n-gon renderer - forked from RallySportED-js's original renderer, developed into a standalone renderer, then backported into RallySportED-js - is a custom software 3d engine capable of natively rendering Rally-Sport's *n*-sided polygons onto a HTML5 canvas.
