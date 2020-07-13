@@ -36,6 +36,12 @@ Rsed.scenes["3d"] = (function()
     {
         draw_ui: function()
         {
+            if ((Rsed.visual.canvas.width <= 0) ||
+                (Rsed.visual.canvas.height <= 0))
+            {
+                return;
+            }
+
             Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 
             Rsed.ui.draw.watermark();

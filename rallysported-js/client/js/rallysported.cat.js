@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (12 July 2020 11:50:03 UTC)
+// VERSION: live (13 July 2020 12:34:31 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -62,7 +62,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 (function(a,b){if("function"==typeof define&&define.amd)define([],b);else if("undefined"!=typeof exports)b();else{b(),a.FileSaver={exports:{}}.exports}})(this,function(){"use strict";function b(a,b){return"undefined"==typeof b?b={autoBom:!1}:"object"!=typeof b&&(console.warn("Deprecated: Expected third argument to be a object"),b={autoBom:!b}),b.autoBom&&/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a.type)?new Blob(["\uFEFF",a],{type:a.type}):a}function c(b,c,d){var e=new XMLHttpRequest;e.open("GET",b),e.responseType="blob",e.onload=function(){a(e.response,c,d)},e.onerror=function(){console.error("could not download file")},e.send()}function d(a){var b=new XMLHttpRequest;b.open("HEAD",a,!1);try{b.send()}catch(a){}return 200<=b.status&&299>=b.status}function e(a){try{a.dispatchEvent(new MouseEvent("click"))}catch(c){var b=document.createEvent("MouseEvents");b.initMouseEvent("click",!0,!0,window,0,0,0,80,20,!1,!1,!1,!1,0,null),a.dispatchEvent(b)}}var f="object"==typeof window&&window.window===window?window:"object"==typeof self&&self.self===self?self:"object"==typeof global&&global.global===global?global:void 0,a=f.saveAs||("object"!=typeof window||window!==f?function(){}:"download"in HTMLAnchorElement.prototype?function(b,g,h){var i=f.URL||f.webkitURL,j=document.createElement("a");g=g||b.name||"download",j.download=g,j.rel="noopener","string"==typeof b?(j.href=b,j.origin===location.origin?e(j):d(j.href)?c(b,g,h):e(j,j.target="_blank")):(j.href=i.createObjectURL(b),setTimeout(function(){i.revokeObjectURL(j.href)},4E4),setTimeout(function(){e(j)},0))}:"msSaveOrOpenBlob"in navigator?function(f,g,h){if(g=g||f.name||"download","string"!=typeof f)navigator.msSaveOrOpenBlob(b(f,h),g);else if(d(f))c(f,g,h);else{var i=document.createElement("a");i.href=f,i.target="_blank",setTimeout(function(){e(i)})}}:function(a,b,d,e){if(e=e||open("","_blank"),e&&(e.document.title=e.document.body.innerText="downloading..."),"string"==typeof a)return c(a,b,d);var g="application/octet-stream"===a.type,h=/constructor/i.test(f.HTMLElement)||f.safari,i=/CriOS\/[\d]+/.test(navigator.userAgent);if((i||g&&h)&&"object"==typeof FileReader){var j=new FileReader;j.onloadend=function(){var a=j.result;a=i?a:a.replace(/^data:[^;]*;/,"data:attachment/file;"),e?e.location.href=a:location=a,e=null},j.readAsDataURL(a)}else{var k=f.URL||f.webkitURL,l=k.createObjectURL(a);e?e.location=l:location.href=l,e=null,setTimeout(function(){k.revokeObjectURL(l)},4E4)}});f.saveAs=a.saveAs=a,"undefined"!=typeof module&&(module.exports=a)});
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (07 July 2020 23:44:08 UTC)
+// VERSION: beta live (13 July 2020 11:46:57 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1525,7 +1525,8 @@ Rngon.ngon_transform_and_light,
 options);
 // We'll render either always or only when the render canvas is in view,
 // depending on whether the user asked us for the latter option.
-if (!options.hibernateWhenNotOnScreen || renderSurface.is_in_view())
+if (renderSurface &&
+(!options.hibernateWhenNotOnScreen || renderSurface.is_in_view()))
 {
 callMetadata.renderWidth = renderSurface.width;
 callMetadata.renderHeight = renderSurface.height;
@@ -1930,6 +1931,8 @@ resolve(Rngon.texture_rgba(data));
 *
 */
 "use strict";
+// Note: throws on unrecoverable errors; returns null if the canvas size
+// would be 0 or negative in width and/or height.
 Rngon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.
 ngon_fill = ()=>{},                // A function that rasterizes the given ngons onto the canvas.
 ngon_transform_and_light = ()=>{}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
@@ -1947,6 +1950,11 @@ const screenHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).
 Rngon.assert && (!isNaN(screenWidth) &&
 !isNaN(screenHeight))
 || Rngon.throw("Failed to extract the canvas size.");
+if ((screenWidth <= 0) ||
+(screenHeight <= 0))
+{
+return null;
+}
 canvasElement.setAttribute("width", screenWidth);
 canvasElement.setAttribute("height", screenHeight);
 }
@@ -5183,6 +5191,11 @@ numPalatPaneRows = (Math.floor(Rsed.visual.canvas.height / 8) - 1);
 numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
 palatPaneWidth = ((numPalatPaneCols * (palaWidth / 2)) + 1);
 palatPaneHeight = ((numPalatPaneRows * (palaHeight / 2)) + 1);
+if ((numPalatPaneCols <= 0) ||
+(numPalatPaneRows <= 0))
+{
+return;
+}
 let palaIdx = 0;
 for (let y = 0; y < numPalatPaneRows; y++)
 {
@@ -5962,6 +5975,11 @@ return Rsed.scene(
 {
 draw_ui: function()
 {
+if ((Rsed.visual.canvas.width <= 0) ||
+(Rsed.visual.canvas.height <= 0))
+{
+return;
+}
 Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 Rsed.ui.draw.watermark();
 Rsed.ui.draw.minimap();

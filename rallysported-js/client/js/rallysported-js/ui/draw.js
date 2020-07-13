@@ -339,6 +339,12 @@ Rsed.ui.draw = (function()
             numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
             palatPaneWidth = ((numPalatPaneCols * (palaWidth / 2)) + 1);
             palatPaneHeight = ((numPalatPaneRows * (palaHeight / 2)) + 1);
+
+            if ((numPalatPaneCols <= 0) ||
+                (numPalatPaneRows <= 0))
+            {
+                return;
+            }
         
             let palaIdx = 0;
             for (let y = 0; y < numPalatPaneRows; y++)
