@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (13 July 2020 12:42:13 UTC)
+// VERSION: live (13 July 2020 12:57:50 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5025,11 +5025,14 @@ if (y < 0) y = Math.floor(-y * pixelSurface.height);
 // Draw a left vertical border for the string block. The font's
 // bitmap characters include bottom, right, and top borders, but
 // not left; so we need to create the left one manually.
+if ((x >= 0) && (x < pixelSurface.width))
+{
 for (let i = 0; i < Rsed.ui.font.font_height(); i++)
 {
 put_pixel(x, y + i, 0, 0, 0);
 }
 x++;
+}
 // Draw the string, one character at a time.
 for (let i = 0; i < string.length; i++)
 {

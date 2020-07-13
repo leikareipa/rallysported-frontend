@@ -134,11 +134,15 @@ Rsed.ui.draw = (function()
             // Draw a left vertical border for the string block. The font's
             // bitmap characters include bottom, right, and top borders, but
             // not left; so we need to create the left one manually.
-            for (let i = 0; i < Rsed.ui.font.font_height(); i++)
+            if ((x >= 0) && (x < pixelSurface.width))
             {
-                put_pixel(x, y + i, 0, 0, 0);
+                for (let i = 0; i < Rsed.ui.font.font_height(); i++)
+                {
+                    put_pixel(x, y + i, 0, 0, 0);
+                }
+                
+                x++;
             }
-            x++;
 
             // Draw the string, one character at a time.
             for (let i = 0; i < string.length; i++)
