@@ -230,7 +230,7 @@ Rsed.ui.draw = (function()
         fps: function()
         {
             const fpsString = ("FPS: " + Rsed.core.renderer_fps());
-            this.string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui.font.font_width()/2) - 40, 37);
+            this.string(fpsString, 4, 15);
 
             return;
         },

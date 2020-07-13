@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (13 July 2020 12:34:31 UTC)
+// VERSION: live (13 July 2020 12:42:13 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5102,7 +5102,7 @@ return;
 fps: function()
 {
 const fpsString = ("FPS: " + Rsed.core.renderer_fps());
-this.string(fpsString, pixelSurface.width - (fpsString.length * Rsed.ui.font.font_width()/2) - 40, 37);
+this.string(fpsString, 4, 15);
 return;
 },
 palat_pane: function()
