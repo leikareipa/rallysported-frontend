@@ -27,6 +27,12 @@ Rsed.scenes["3d"] = (function()
     // Whether to render props (track-side 3d objects - like trees, billboards, etc.).
     let showProps = true;
 
+    // Whether the currently-selected brush PALA texture should be painted over the
+    // ground tile over which the mouse cursor is currently hovering. This gives the
+    // user a preview of what that texture would look like, without modifying the
+    // tile's actual texture.
+    let showHoverPala = false;
+
     /// Temp hack. Lets the renderer know that we want it to update mouse hover information
     /// once the next frame has finished rendering. This is used e.g. to keep proper track
     /// mouse hover when various UI elements are toggled on/off.
@@ -73,6 +79,7 @@ Rsed.scenes["3d"] = (function()
                 cameraPos: Rsed.world.camera.position_floored(),
                 solidProps: showProps,
                 includeWireframe: showWireframe,
+                paintHoverPala: showHoverPala,
             });
 
             const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [trackMesh],
@@ -144,6 +151,12 @@ Rsed.scenes["3d"] = (function()
             {
                 showWireframe = !showWireframe;
                 Rsed.ui.inputState.set_key_down("w", false);
+            }
+
+            if (Rsed.ui.inputState.key_down("g"))
+            {
+                showHoverPala = !showHoverPala;
+                Rsed.ui.inputState.set_key_down("g", false);
             }
 
             if (Rsed.ui.inputState.key_down("a"))

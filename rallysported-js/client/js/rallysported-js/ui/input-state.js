@@ -241,7 +241,6 @@ Rsed.ui.inputState = (function()
             this.set_key_down("control", false);
             this.set_key_down("alt", false);
             this.set_key_down("altgraph", false);
-            this.set_key_down("tab", false);
 
             return;
         },

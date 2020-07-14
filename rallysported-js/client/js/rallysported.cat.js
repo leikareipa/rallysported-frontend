@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 July 2020 14:46:54 UTC)
+// VERSION: live (14 July 2020 15:40:19 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2877,6 +2877,7 @@ z: 0,
 },
 solidProps: true, // Whether to draw props with solid colors(/textures) or with just a wireframe.
 includeWireframe: false,
+paintHoverPala: false,
 },
 ...args,
 };
@@ -2888,7 +2889,7 @@ const centerView = {x: -((Rsed.world.camera.view_width / 2) * Rsed.constants.gro
 y: (-650 + args.cameraPos.y),
 z: (3628 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
-const tabPressed = Rsed.ui.inputState.key_down("tab");
+const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
 for (let z = 0; z < Rsed.world.camera.view_height; z++)
 {
 // Add the ground tiles.
@@ -2903,7 +2904,8 @@ const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
 const tilePalaIdx = (()=>
 {
 let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
-if ( tabPressed &&
+if ( args.paintHoverPala &&
+!mouseGrab &&
 (mouseHover && (mouseHover.type === "ground")) &&
 (mouseHover.groundTileX === tileX) &&
 (mouseHover.groundTileY === (tileZ - 1)))
@@ -2961,7 +2963,8 @@ const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
 const tilePalaIdx = (()=>
 {
 let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
-if ( tabPressed &&
+if ( args.paintHoverPala &&
+!mouseGrab &&
 (mouseHover && (mouseHover.type === "ground")) &&
 (mouseHover.groundTileX === tileX) &&
 (mouseHover.groundTileY === (tileZ - 1)))
@@ -5756,7 +5759,6 @@ this.set_key_down("shift", false);
 this.set_key_down("control", false);
 this.set_key_down("alt", false);
 this.set_key_down("altgraph", false);
-this.set_key_down("tab", false);
 return;
 },
 reset_keys: function()
@@ -5970,6 +5972,11 @@ let showWireframe = true;
 let showPalatPane = false;
 // Whether to render props (track-side 3d objects - like trees, billboards, etc.).
 let showProps = true;
+// Whether the currently-selected brush PALA texture should be painted over the
+// ground tile over which the mouse cursor is currently hovering. This gives the
+// user a preview of what that texture would look like, without modifying the
+// tile's actual texture.
+let showHoverPala = false;
 /// Temp hack. Lets the renderer know that we want it to update mouse hover information
 /// once the next frame has finished rendering. This is used e.g. to keep proper track
 /// mouse hover when various UI elements are toggled on/off.
@@ -6009,6 +6016,7 @@ const trackMesh = Rsed.world.meshBuilder.track_mesh(
 cameraPos: Rsed.world.camera.position_floored(),
 solidProps: showProps,
 includeWireframe: showWireframe,
+paintHoverPala: showHoverPala,
 });
 const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [trackMesh],
 {
@@ -6068,6 +6076,11 @@ if (Rsed.ui.inputState.key_down("w"))
 {
 showWireframe = !showWireframe;
 Rsed.ui.inputState.set_key_down("w", false);
+}
+if (Rsed.ui.inputState.key_down("g"))
+{
+showHoverPala = !showHoverPala;
+Rsed.ui.inputState.set_key_down("g", false);
 }
 if (Rsed.ui.inputState.key_down("a"))
 {

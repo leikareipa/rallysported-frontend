@@ -33,6 +33,7 @@ Rsed.world.meshBuilder = (function()
                     },
                     solidProps: true, // Whether to draw props with solid colors(/textures) or with just a wireframe.
                     includeWireframe: false,
+                    paintHoverPala: false,
                 },
                 ...args,
             };
@@ -47,7 +48,7 @@ Rsed.world.meshBuilder = (function()
                                 z: (3628 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 
             const mouseHover = Rsed.ui.inputState.current_mouse_hover();
-            const tabPressed = Rsed.ui.inputState.key_down("tab");
+            const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
 
             for (let z = 0; z < Rsed.world.camera.view_height; z++)
             {
@@ -66,7 +67,8 @@ Rsed.world.meshBuilder = (function()
                     {
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
-                        if ( tabPressed &&
+                        if ( args.paintHoverPala &&
+                             !mouseGrab &&
                             (mouseHover && (mouseHover.type === "ground")) &&
                             (mouseHover.groundTileX === tileX) &&
                             (mouseHover.groundTileY === (tileZ - 1)))
@@ -133,7 +135,8 @@ Rsed.world.meshBuilder = (function()
                     {
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 
-                        if ( tabPressed &&
+                        if ( args.paintHoverPala &&
+                             !mouseGrab &&
                             (mouseHover && (mouseHover.type === "ground")) &&
                             (mouseHover.groundTileX === tileX) &&
                             (mouseHover.groundTileY === (tileZ - 1)))
