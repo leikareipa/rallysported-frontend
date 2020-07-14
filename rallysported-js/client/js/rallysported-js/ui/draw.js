@@ -162,19 +162,23 @@ Rsed.ui.draw = (function()
         // Draws the mouse cursor, and any indicators attached to it.
         mouse_cursor: function()
         {
+            const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
+
             if ( Rsed.ui.inputState.current_mouse_hover() &&
                 (Rsed.ui.inputState.current_mouse_hover().type === "ui-element") &&
                 (Rsed.ui.inputState.current_mouse_hover().uiElementId === "palat-pane"))
             {
-                this.string(("PALA:" + Rsed.ui.inputState.current_mouse_hover().palaIdx),
-                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
-                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().y + 17));
+                const label = `PALA:${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
+                const x = (mousePos.x + 10)
+                const y = (mousePos.y + 17);
+
+                this.string(label, x, y);
             }
             else if (Rsed.ui.groundBrush.brushSmoothens)
             {
                 this.string("SMOOTHING",
-                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
-                            (Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().y + 17));
+                            (mousePos.x + 10),
+                            (mousePos.y + 17));
             }
 
             return;
@@ -243,7 +247,9 @@ Rsed.ui.draw = (function()
         {
             if (palatPaneBuffer.length > 0)
             {
-                this.image(palatPaneBuffer, palatPaneMousePick, palatPaneWidth, palatPaneHeight, 0, 0);
+                this.image(palatPaneBuffer, palatPaneMousePick, palatPaneWidth, palatPaneHeight,
+                           ((Rsed.visual.canvas.width - palatPaneWidth) - 4),
+                           40);
             }
 
             return;
@@ -341,20 +347,28 @@ Rsed.ui.draw = (function()
         // thumbnails to the user for selecting PALAs.
         generate_palat_pane: function()
         {
+            if ((Rsed.visual.canvas.height <= 0) ||
+                (Rsed.visual.canvas.width <= 0))
+            {
+                return;
+            }
+
             const maxNumPalas = 253;
 
             const palaWidth = Rsed.constants.palaWidth;
             const palaHeight = Rsed.constants.palaHeight;
+            const palaThumbnailHeight = (palaWidth / 2);
 
             palatPaneBuffer.length = 0;
             palatPaneMousePick.length = 0;
+            
+            palatPaneHeight = (Math.floor((Rsed.visual.canvas.height - 40) / palaThumbnailHeight) - 1) * palaThumbnailHeight
+            numPalatPaneRows = Math.ceil(palatPaneHeight / (palaHeight / 2));
+            numPalatPaneCols = Math.ceil(maxNumPalas / numPalatPaneRows);
+            palatPaneWidth = (numPalatPaneCols * (palaWidth / 2));
 
-            // Recompute the pane's dimensions based on the current display size.
-            /// FIXME: Leaves unnecessary empty rows for some resolutions.
-            numPalatPaneRows = (Math.floor(Rsed.visual.canvas.height / 8) - 1);
-            numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
-            palatPaneWidth = ((numPalatPaneCols * (palaWidth / 2)) + 1);
-            palatPaneHeight = ((numPalatPaneRows * (palaHeight / 2)) + 1);
+            palatPaneWidth++;
+            palatPaneHeight++;
 
             if ((numPalatPaneCols <= 0) ||
                 (numPalatPaneRows <= 0))

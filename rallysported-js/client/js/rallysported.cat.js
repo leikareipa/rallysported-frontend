@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 July 2020 16:25:37 UTC)
+// VERSION: live (14 July 2020 19:26:54 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5063,19 +5063,21 @@ return;
 // Draws the mouse cursor, and any indicators attached to it.
 mouse_cursor: function()
 {
+const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 if ( Rsed.ui.inputState.current_mouse_hover() &&
 (Rsed.ui.inputState.current_mouse_hover().type === "ui-element") &&
 (Rsed.ui.inputState.current_mouse_hover().uiElementId === "palat-pane"))
 {
-this.string(("PALA:" + Rsed.ui.inputState.current_mouse_hover().palaIdx),
-(Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
-(Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().y + 17));
+const label = `PALA:${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
+const x = (mousePos.x + 10)
+const y = (mousePos.y + 17);
+this.string(label, x, y);
 }
 else if (Rsed.ui.groundBrush.brushSmoothens)
 {
 this.string("SMOOTHING",
-(Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().x + 10),
-(Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution().y + 17));
+(mousePos.x + 10),
+(mousePos.y + 17));
 }
 return;
 },
@@ -5128,7 +5130,9 @@ palat_pane: function()
 {
 if (palatPaneBuffer.length > 0)
 {
-this.image(palatPaneBuffer, palatPaneMousePick, palatPaneWidth, palatPaneHeight, 0, 0);
+this.image(palatPaneBuffer, palatPaneMousePick, palatPaneWidth, palatPaneHeight,
+((Rsed.visual.canvas.width - palatPaneWidth) - 4),
+40);
 }
 return;
 },
@@ -5209,17 +5213,23 @@ return;
 // thumbnails to the user for selecting PALAs.
 generate_palat_pane: function()
 {
+if ((Rsed.visual.canvas.height <= 0) ||
+(Rsed.visual.canvas.width <= 0))
+{
+return;
+}
 const maxNumPalas = 253;
 const palaWidth = Rsed.constants.palaWidth;
 const palaHeight = Rsed.constants.palaHeight;
+const palaThumbnailHeight = (palaWidth / 2);
 palatPaneBuffer.length = 0;
 palatPaneMousePick.length = 0;
-// Recompute the pane's dimensions based on the current display size.
-/// FIXME: Leaves unnecessary empty rows for some resolutions.
-numPalatPaneRows = (Math.floor(Rsed.visual.canvas.height / 8) - 1);
-numPalatPaneCols = Math.ceil(253 / numPalatPaneRows);
-palatPaneWidth = ((numPalatPaneCols * (palaWidth / 2)) + 1);
-palatPaneHeight = ((numPalatPaneRows * (palaHeight / 2)) + 1);
+palatPaneHeight = (Math.floor((Rsed.visual.canvas.height - 40) / palaThumbnailHeight) - 1) * palaThumbnailHeight
+numPalatPaneRows = Math.ceil(palatPaneHeight / (palaHeight / 2));
+numPalatPaneCols = Math.ceil(maxNumPalas / numPalatPaneRows);
+palatPaneWidth = (numPalatPaneCols * (palaWidth / 2));
+palatPaneWidth++;
+palatPaneHeight++;
 if ((numPalatPaneCols <= 0) ||
 (numPalatPaneRows <= 0))
 {
@@ -6109,10 +6119,6 @@ if (Rsed.ui.inputState.key_down("a"))
 {
 showPalatPane = !showPalatPane;
 Rsed.ui.inputState.set_key_down("a", false);
-// The PALAT pane might clip the HTML UI, in which case the UI might prevent
-// the user's cursor from interacting with the pane; so disable the UI while
-// the pane is visible.
-Rsed.ui.htmlUI.set_visible(!showPalatPane);
 // Prevent a mouse click from acting on the ground behind the pane when the pane
 // is brought up, and on the pane when the pane has been removed.
 updateMouseHoverOnFrameFinish = true;

@@ -164,11 +164,6 @@ Rsed.scenes["3d"] = (function()
                 showPalatPane = !showPalatPane;
                 Rsed.ui.inputState.set_key_down("a", false);
 
-                // The PALAT pane might clip the HTML UI, in which case the UI might prevent
-                // the user's cursor from interacting with the pane; so disable the UI while
-                // the pane is visible.
-                Rsed.ui.htmlUI.set_visible(!showPalatPane);
-
                 // Prevent a mouse click from acting on the ground behind the pane when the pane
                 // is brought up, and on the pane when the pane has been removed.
                 updateMouseHoverOnFrameFinish = true;
