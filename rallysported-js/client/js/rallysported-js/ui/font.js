@@ -15,7 +15,7 @@ Rsed.ui.font = (function()
     const charHeight = 7;
 
     // Shorthands for colors.
-    const X = "lightgray";
+    const X = "black";
     const _ = "background";
 
     // The sequential range of ASCII symbols represented in the font's character set.

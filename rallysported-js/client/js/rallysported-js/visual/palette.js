@@ -175,7 +175,7 @@ Rsed.visual.palette = (function()
             // Named UI colors.
             switch (colorIdx)
             {
-                case "background":  return {red:16,  green:16,  blue:16,  alpha:255};
+                case "background":  return {red:255,  green:255,  blue:16,  alpha:255};
                 case "black":       return {red:0,   green:0,   blue:0,   alpha:255};
                 case "gray":
                 case "grey":        return {red:127, green:127, blue:127, alpha:255};

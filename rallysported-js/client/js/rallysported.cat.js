@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 July 2020 23:15:19 UTC)
+// VERSION: live (14 July 2020 23:33:19 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3496,7 +3496,7 @@ color_at_idx: (colorIdx = 0, useAlpha = false)=>
 // Named UI colors.
 switch (colorIdx)
 {
-case "background":  return {red:16,  green:16,  blue:16,  alpha:255};
+case "background":  return {red:255,  green:255,  blue:16,  alpha:255};
 case "black":       return {red:0,   green:0,   blue:0,   alpha:255};
 case "gray":
 case "grey":        return {red:127, green:127, blue:127, alpha:255};
@@ -4365,7 +4365,7 @@ Rsed.ui.font = (function()
 const charWidth = 4;
 const charHeight = 7;
 // Shorthands for colors.
-const X = "lightgray";
+const X = "black";
 const _ = "background";
 // The sequential range of ASCII symbols represented in the font's character set.
 const firstChar = ' ';
@@ -5048,7 +5048,7 @@ Rsed.assert && (string.length != null)
 if (x < 0) x = Math.floor(-x * pixelSurface.width);
 if (y < 0) y = Math.floor(-y * pixelSurface.height);
 // Prevent the string from going past the viewport's edges.
-x = Math.min(x, (Rsed.visual.canvas.width - (string.length * Rsed.ui.font.font_width())));
+x = Math.min(x, (Rsed.visual.canvas.width - 1 - (string.length * Rsed.ui.font.font_width())));
 y = Math.min(y, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
 // Draw a left vertical border for the string block. The font's
 // bitmap characters include bottom, right, and top borders, but
@@ -5057,7 +5057,7 @@ if ((x >= 0) && (x < pixelSurface.width))
 {
 for (let i = 0; i < Rsed.ui.font.font_height(); i++)
 {
-put_pixel(x, y + i, 0, 0, 0);
+put_pixel(x, y + i, 255, 255, 0);
 }
 x++;
 }
