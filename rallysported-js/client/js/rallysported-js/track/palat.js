@@ -42,6 +42,64 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
         width: palaWidth,
         height: palaHeight,
         texture: Object.freeze(prebakedPalaTextures),
+
+        // Rally-Sport by default has four different 'skins' for spectators, and decides
+        // which skin a spectator will be given based on the spectator's XY ground tile
+        // coordinates.
+        //
+        // This function returns the PALA index of the skin associated with the given
+        // ground tile coordinates.
+        spectator_pala_idx_at: function(tileX = 0, tileY = 0)
+        {
+            const firstSpectatorTexIdx = 236; // Index of the first PALA representing a (standing) spectator. Assumes consecutive arrangement.
+            const numSkins = 4;
+            const sameRows = ((Rsed.core.current_project().maasto.width === 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
+
+            const yOffs = (Math.floor(tileY / sameRows)) % numSkins;
+            const texOffs = ((tileX + (numSkins - 1)) + (yOffs * (numSkins - 1))) % numSkins;
+
+            const palaId = (firstSpectatorTexIdx + texOffs);
+
+            return palaId;
+        },
+
+        // When used on ground tiles, some PALA textures are associated with billboards
+        // - a flat upright polygon stood by the ground tile. For instance, spectators
+        // and wooden poles are examples of billboards.
+        //
+        // This function returns the PALA texture index of the billboard associated
+        // with the given PALA texture index; or null if the PALA index has no billboard
+        // associated with it.
+        billboard_idx: function(palaIdx, groundTileX = 0, groundTileZ = 0)
+        {
+            Rsed.throw_if_not_type("number", palaIdx,
+                                             groundTileX,
+                                             groundTileZ);
+
+            switch (palaIdx)
+            {
+                // Spectators.
+                case 240:
+                case 241:
+                case 242: return this.spectator_pala_idx_at(groundTileX, groundTileZ);
+
+                // Shrubs.
+                case 243: return 208;
+                case 244: return 209;
+                case 245: return 210;
+
+                // Small poles.
+                case 246:
+                case 247: return 211;
+                case 250: return 212;
+
+                // Bridges.
+                case 248:
+                case 249: return 177;
+
+                default: return null;
+            }
+        },
     });
 
     // Returns the given PALA's pixel data as a texture, whose arguments are set as given.

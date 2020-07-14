@@ -70,8 +70,8 @@ Rsed.world.meshBuilder = (function()
                         if ( args.paintHoverPala &&
                              !mouseGrab &&
                             (mouseHover && (mouseHover.type === "ground")) &&
-                            (mouseHover.groundTileX === tileX) &&
-                            (mouseHover.groundTileY === (tileZ - 1)))
+                            (Math.abs(mouseHover.groundTileX - tileX) <= Rsed.ui.groundBrush.brush_size()) &&
+                            (Math.abs(mouseHover.groundTileY - (tileZ - 1)) <= Rsed.ui.groundBrush.brush_size()))
                         {
                             idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }
@@ -138,8 +138,8 @@ Rsed.world.meshBuilder = (function()
                         if ( args.paintHoverPala &&
                              !mouseGrab &&
                             (mouseHover && (mouseHover.type === "ground")) &&
-                            (mouseHover.groundTileX === tileX) &&
-                            (mouseHover.groundTileY === (tileZ - 1)))
+                            (Math.abs(mouseHover.groundTileX - tileX) <= Rsed.ui.groundBrush.brush_size()) &&
+                            (Math.abs(mouseHover.groundTileY - (tileZ - 1)) <= Rsed.ui.groundBrush.brush_size()))
                         {
                             idx = Rsed.ui.groundBrush.brush_pala_idx();
                         }
@@ -148,41 +148,35 @@ Rsed.world.meshBuilder = (function()
                     })();
 
                     // If this tile has a billboard, add it.
-                    if (tilePalaIdx > 239 && tilePalaIdx < 248)
+                    const billboardPalaIdx = Rsed.core.current_project().palat.billboard_idx(tilePalaIdx, tileX, (tileZ - 1));
+                    if (billboardPalaIdx != null)
                     {
                         const baseHeight = centerView.y + Rsed.core.current_project().maasto.tile_at(tileX, (tileZ - 1));
-
-                        const texture = (()=>
+                        const billboardTexture = Rsed.core.current_project().palat.texture[billboardPalaIdx];
+                        const billboardVertices = (()=>
                         {
-                            switch (tilePalaIdx)
+                            // Bridges (lay horizontally).
+                            if (billboardPalaIdx == 177)
                             {
-                                // Spectators.
-                                case 240:
-                                case 241:
-                                case 242: return Rsed.core.current_project().palat.texture[spectator_texture_at(tileX, (tileZ - 1))];
-                                break;
-            
-                                // Shrubs.
-                                case 243: return Rsed.core.current_project().palat.texture[208];
-                                case 244: return Rsed.core.current_project().palat.texture[209];
-                                case 245: return Rsed.core.current_project().palat.texture[210];
-            
-                                // Small poles.
-                                case 246:
-                                case 247: return Rsed.core.current_project().palat.texture[211];
-                                case 250: return Rsed.core.current_project().palat.texture[212];
-            
-                                default: Rsed.throw("Unrecognized billboard texture."); return null;
+                                return [Rngon.vertex( vertX,  centerView.y, vertZ, 0, 0),
+                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, vertZ, 1, 0),
+                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize), 1, 1),
+                                        Rngon.vertex( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize), 0, 1)];
+                            }
+                            // Other billboards (lay vertically).
+                            else
+                            {
+                                return [Rngon.vertex( vertX, baseHeight, vertZ, 0, 0),
+                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight, vertZ, 1, 0),
+                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight+Rsed.constants.groundTileSize, vertZ, 1, 1),
+                                        Rngon.vertex( vertX, baseHeight+Rsed.constants.groundTileSize, vertZ, 0, 1)];
                             }
                         })();
 
-                        const billboardQuad = Rngon.ngon([Rngon.vertex( vertX, baseHeight, vertZ, 0, 0),
-                                                          Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight, vertZ, 1, 0),
-                                                          Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight+Rsed.constants.groundTileSize, vertZ, 1, 1),
-                                                          Rngon.vertex( vertX, baseHeight+Rsed.constants.groundTileSize, vertZ, 0, 1)],
+                        const billboardQuad = Rngon.ngon(billboardVertices,
                         {
                             color: Rngon.color_rgba(255, 255, 255),
-                            texture: texture,
+                            texture: billboardTexture,
                             textureMapping: "ortho",
                             hasSolidFill: true,
                             hasWireframe: false,
@@ -193,27 +187,6 @@ Rsed.world.meshBuilder = (function()
                         });
 
                         trackPolygons.push(billboardQuad);
-                    }
-                    // If the tile has a bridge, add that.
-                    else if (tilePalaIdx === 248 || tilePalaIdx === 249)
-                    {
-                        const bridgeQuad = Rngon.ngon([Rngon.vertex( vertX,  centerView.y, vertZ, 0, 0),
-                                                       Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, vertZ, 1, 0),
-                                                       Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize), 1, 1),
-                                                       Rngon.vertex( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize), 0, 1)],
-                        {
-                            color: Rngon.color_rgba(255, 255, 255),
-                            texture: Rsed.core.current_project().palat.texture[177],
-                            textureMapping: "ortho",
-                            hasSolidFill: true,
-                            hasWireframe: false,
-                            auxiliary:
-                            {
-                                mousePickId: null,
-                            }
-                        });
-
-                        trackPolygons.push(bridgeQuad);
                     }
                 }
             }
@@ -303,21 +276,4 @@ Rsed.world.meshBuilder = (function()
     };
 
     return publicInterface;
-
-    // The game by default has four different 'skins' for spectators, and it decides which skin a
-    // spectator will be given based on the spectator's x,y coordinates on the track. This will
-    // return the correct skin for the given coordinates.
-    function spectator_texture_at(tileX = 0, tileY = 0)
-    {
-        const firstSpectatorTexIdx = 236; // Index of the first PALA representing a (standing) spectator. Assumes consecutive arrangement.
-        const numSkins = 4;
-        const sameRows = ((Rsed.core.current_project().maasto.width === 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
-
-        const yOffs = (Math.floor(tileY / sameRows)) % numSkins;
-        const texOffs = ((tileX + (numSkins - 1)) + (yOffs * (numSkins - 1))) % numSkins;
-
-        const palaId = (firstSpectatorTexIdx + texOffs);
-
-        return palaId;
-    }
 })();

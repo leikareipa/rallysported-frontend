@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 July 2020 15:40:19 UTC)
+// VERSION: live (14 July 2020 16:25:37 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2907,8 +2907,8 @@ let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 if ( args.paintHoverPala &&
 !mouseGrab &&
 (mouseHover && (mouseHover.type === "ground")) &&
-(mouseHover.groundTileX === tileX) &&
-(mouseHover.groundTileY === (tileZ - 1)))
+(Math.abs(mouseHover.groundTileX - tileX) <= Rsed.ui.groundBrush.brush_size()) &&
+(Math.abs(mouseHover.groundTileY - (tileZ - 1)) <= Rsed.ui.groundBrush.brush_size()))
 {
 idx = Rsed.ui.groundBrush.brush_pala_idx();
 }
@@ -2966,44 +2966,42 @@ let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
 if ( args.paintHoverPala &&
 !mouseGrab &&
 (mouseHover && (mouseHover.type === "ground")) &&
-(mouseHover.groundTileX === tileX) &&
-(mouseHover.groundTileY === (tileZ - 1)))
+(Math.abs(mouseHover.groundTileX - tileX) <= Rsed.ui.groundBrush.brush_size()) &&
+(Math.abs(mouseHover.groundTileY - (tileZ - 1)) <= Rsed.ui.groundBrush.brush_size()))
 {
 idx = Rsed.ui.groundBrush.brush_pala_idx();
 }
 return idx;
 })();
 // If this tile has a billboard, add it.
-if (tilePalaIdx > 239 && tilePalaIdx < 248)
+const billboardPalaIdx = Rsed.core.current_project().palat.billboard_idx(tilePalaIdx, tileX, (tileZ - 1));
+if (billboardPalaIdx != null)
 {
 const baseHeight = centerView.y + Rsed.core.current_project().maasto.tile_at(tileX, (tileZ - 1));
-const texture = (()=>
+const billboardTexture = Rsed.core.current_project().palat.texture[billboardPalaIdx];
+const billboardVertices = (()=>
 {
-switch (tilePalaIdx)
+// Bridges (lay horizontally).
+if (billboardPalaIdx == 177)
 {
-// Spectators.
-case 240:
-case 241:
-case 242: return Rsed.core.current_project().palat.texture[spectator_texture_at(tileX, (tileZ - 1))];
-break;
-// Shrubs.
-case 243: return Rsed.core.current_project().palat.texture[208];
-case 244: return Rsed.core.current_project().palat.texture[209];
-case 245: return Rsed.core.current_project().palat.texture[210];
-// Small poles.
-case 246:
-case 247: return Rsed.core.current_project().palat.texture[211];
-case 250: return Rsed.core.current_project().palat.texture[212];
-default: Rsed.throw("Unrecognized billboard texture."); return null;
+return [Rngon.vertex( vertX,  centerView.y, vertZ, 0, 0),
+Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, vertZ, 1, 0),
+Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize), 1, 1),
+Rngon.vertex( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize), 0, 1)];
 }
-})();
-const billboardQuad = Rngon.ngon([Rngon.vertex( vertX, baseHeight, vertZ, 0, 0),
+// Other billboards (lay vertically).
+else
+{
+return [Rngon.vertex( vertX, baseHeight, vertZ, 0, 0),
 Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight, vertZ, 1, 0),
 Rngon.vertex((vertX + Rsed.constants.groundTileSize), baseHeight+Rsed.constants.groundTileSize, vertZ, 1, 1),
-Rngon.vertex( vertX, baseHeight+Rsed.constants.groundTileSize, vertZ, 0, 1)],
+Rngon.vertex( vertX, baseHeight+Rsed.constants.groundTileSize, vertZ, 0, 1)];
+}
+})();
+const billboardQuad = Rngon.ngon(billboardVertices,
 {
 color: Rngon.color_rgba(255, 255, 255),
-texture: texture,
+texture: billboardTexture,
 textureMapping: "ortho",
 hasSolidFill: true,
 hasWireframe: false,
@@ -3013,26 +3011,6 @@ mousePickId: null,
 }
 });
 trackPolygons.push(billboardQuad);
-}
-// If the tile has a bridge, add that.
-else if (tilePalaIdx === 248 || tilePalaIdx === 249)
-{
-const bridgeQuad = Rngon.ngon([Rngon.vertex( vertX,  centerView.y, vertZ, 0, 0),
-Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, vertZ, 1, 0),
-Rngon.vertex((vertX + Rsed.constants.groundTileSize), centerView.y, (vertZ+Rsed.constants.groundTileSize), 1, 1),
-Rngon.vertex( vertX, centerView.y, (vertZ+Rsed.constants.groundTileSize), 0, 1)],
-{
-color: Rngon.color_rgba(255, 255, 255),
-texture: Rsed.core.current_project().palat.texture[177],
-textureMapping: "ortho",
-hasSolidFill: true,
-hasWireframe: false,
-auxiliary:
-{
-mousePickId: null,
-}
-});
-trackPolygons.push(bridgeQuad);
 }
 }
 }
@@ -3112,19 +3090,6 @@ return dstMesh;
 },
 };
 return publicInterface;
-// The game by default has four different 'skins' for spectators, and it decides which skin a
-// spectator will be given based on the spectator's x,y coordinates on the track. This will
-// return the correct skin for the given coordinates.
-function spectator_texture_at(tileX = 0, tileY = 0)
-{
-const firstSpectatorTexIdx = 236; // Index of the first PALA representing a (standing) spectator. Assumes consecutive arrangement.
-const numSkins = 4;
-const sameRows = ((Rsed.core.current_project().maasto.width === 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
-const yOffs = (Math.floor(tileY / sameRows)) % numSkins;
-const texOffs = ((tileX + (numSkins - 1)) + (yOffs * (numSkins - 1))) % numSkins;
-const palaId = (firstSpectatorTexIdx + texOffs);
-return palaId;
-}
 })();
 /*
 * Most recent known filename: js/world/camera.js
@@ -3853,6 +3818,54 @@ const publicInterface = Object.freeze(
 width: palaWidth,
 height: palaHeight,
 texture: Object.freeze(prebakedPalaTextures),
+// Rally-Sport by default has four different 'skins' for spectators, and decides
+// which skin a spectator will be given based on the spectator's XY ground tile
+// coordinates.
+//
+// This function returns the PALA index of the skin associated with the given
+// ground tile coordinates.
+spectator_pala_idx_at: function(tileX = 0, tileY = 0)
+{
+const firstSpectatorTexIdx = 236; // Index of the first PALA representing a (standing) spectator. Assumes consecutive arrangement.
+const numSkins = 4;
+const sameRows = ((Rsed.core.current_project().maasto.width === 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
+const yOffs = (Math.floor(tileY / sameRows)) % numSkins;
+const texOffs = ((tileX + (numSkins - 1)) + (yOffs * (numSkins - 1))) % numSkins;
+const palaId = (firstSpectatorTexIdx + texOffs);
+return palaId;
+},
+// When used on ground tiles, some PALA textures are associated with billboards
+// - a flat upright polygon stood by the ground tile. For instance, spectators
+// and wooden poles are examples of billboards.
+//
+// This function returns the PALA texture index of the billboard associated
+// with the given PALA texture index; or null if the PALA index has no billboard
+// associated with it.
+billboard_idx: function(palaIdx, groundTileX = 0, groundTileZ = 0)
+{
+Rsed.throw_if_not_type("number", palaIdx,
+groundTileX,
+groundTileZ);
+switch (palaIdx)
+{
+// Spectators.
+case 240:
+case 241:
+case 242: return this.spectator_pala_idx_at(groundTileX, groundTileZ);
+// Shrubs.
+case 243: return 208;
+case 244: return 209;
+case 245: return 210;
+// Small poles.
+case 246:
+case 247: return 211;
+case 250: return 212;
+// Bridges.
+case 248:
+case 249: return 177;
+default: return null;
+}
+},
 });
 // Returns the given PALA's pixel data as a texture, whose arguments are set as given.
 function generate_texture(palaId = 0, args = {})
@@ -5173,12 +5186,22 @@ return;
 },
 active_pala: function()
 {
-const currentPala = Rsed.ui.groundBrush.brush_pala_idx();
-const pala = Rsed.core.current_project().palat.texture[currentPala];
-if (pala != null)
+const currentPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
+const billboardIdx = Rsed.core.current_project().palat.billboard_idx(currentPalaIdx);
+const palaTexture = Rsed.core.current_project().palat.texture[currentPalaIdx];
+const billboardTexture = ((billboardIdx == null)? null : Rsed.core.current_project().palat.texture[billboardIdx]);
+if (palaTexture != null)
 {
-this.image(pala.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, false, true);
+this.image(palaTexture.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, false, true);
+if (billboardTexture != null)
+{
+this.image(billboardTexture.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, true, true);
+}
 this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 101 - 4 + 10, 3)
+}
+else
+{
+Rsed.throw("Invalid brush PALA index.");
 }
 return;
 },

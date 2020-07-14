@@ -313,13 +313,25 @@ Rsed.ui.draw = (function()
 
         active_pala: function()
         {
-            const currentPala = Rsed.ui.groundBrush.brush_pala_idx();
-            const pala = Rsed.core.current_project().palat.texture[currentPala];
+            const currentPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
+            const billboardIdx = Rsed.core.current_project().palat.billboard_idx(currentPalaIdx);
+            const palaTexture = Rsed.core.current_project().palat.texture[currentPalaIdx];
+            const billboardTexture = ((billboardIdx == null)? null : Rsed.core.current_project().palat.texture[billboardIdx]);
 
-            if (pala != null)
+            if (palaTexture != null)
             {
-                this.image(pala.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, false, true);
+                this.image(palaTexture.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, false, true);
+
+                if (billboardTexture != null)
+                {
+                    this.image(billboardTexture.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, true, true);
+                }
+
                 this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 101 - 4 + 10, 3)
+            }
+            else
+            {
+                Rsed.throw("Invalid brush PALA index.");
             }
 
             return;
