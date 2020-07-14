@@ -146,7 +146,7 @@ body
 #html-ui .button.enabled:active
 {
     border-bottom: none;
-    background-image: linear-gradient(rgb(133, 133, 133), rgb(170, 170, 170));
+    background-image: linear-gradient(rgb(133, 133, 133), rgb(190, 190, 190));
 }
 
 #html-ui .disclaimer
