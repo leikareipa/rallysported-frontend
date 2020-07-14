@@ -6,7 +6,7 @@ A version of [RallySportED](https://github.com/leikareipa/rallysported/)'s track
 - Genuine olden software-rendered 3d graphics
 - Vanilla JavaScript (+ a bit of Vue for the UI)
 
-![](images/screenshots/beta.3/yleisoek-2.png)
+![](images/screenshots/beta.6/yleiso-ek.png)
 
 # End-user's guide
 An end-user's guide is provided in the [rallysported-js/user-guide/](rallysported-js/user-guide/) directory; and hosted live [here](https://www.tarpeeksihyvaesoft.com/rallysported/user-guide/).
