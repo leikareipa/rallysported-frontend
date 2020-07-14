@@ -131,6 +131,10 @@ Rsed.ui.draw = (function()
             if (x < 0) x = Math.floor(-x * pixelSurface.width);
             if (y < 0) y = Math.floor(-y * pixelSurface.height);
 
+            // Prevent the string from going past the viewport's edges.
+            x = Math.min(x, (Rsed.visual.canvas.width - (string.length * Rsed.ui.font.font_width())));
+            y = Math.min(y, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
+
             // Draw a left vertical border for the string block. The font's
             // bitmap characters include bottom, right, and top borders, but
             // not left; so we need to create the left one manually.
