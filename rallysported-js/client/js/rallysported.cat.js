@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 July 2020 19:51:02 UTC)
+// VERSION: live (14 July 2020 23:15:19 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4959,8 +4959,17 @@ let numPalatPaneCols = 9;
 let numPalatPaneRows = 29;
 let palatPaneWidth = 0;
 let palatPaneHeight = 0;
+let palatPaneOffsetX = 0;
 const publicInterface =
 {
+get palatPaneOffsetX()
+{
+return ((Rsed.visual.canvas.width - palatPaneWidth) - 4);
+},
+get palatPaneOffsetY()
+{
+return 40;
+},
 // Readies the pixel buffer for UI drawing. This should be called before any draw
 // calls are made for the current frame.
 begin_drawing: function(canvas)
@@ -5067,13 +5076,17 @@ return;
 mouse_cursor: function()
 {
 const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
+// Draw a label on the PALA over which the mouse cursor hovers in the
+// PALAT pane.
 if ( Rsed.ui.inputState.current_mouse_hover() &&
 (Rsed.ui.inputState.current_mouse_hover().type === "ui-element") &&
 (Rsed.ui.inputState.current_mouse_hover().uiElementId === "palat-pane"))
 {
-const label = `PALA:${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
-const x = (mousePos.x + 10)
-const y = (mousePos.y + 17);
+const label = `${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
+const labelPixelWidth = (label.length * Rsed.ui.font.font_width());
+const labelPixelHeight = Rsed.ui.font.font_height();
+const x = (Rsed.ui.inputState.current_mouse_hover().cornerX - labelPixelWidth + 1);
+const y = (Rsed.ui.inputState.current_mouse_hover().cornerY - labelPixelHeight + 2);
 this.string(label, x, y);
 }
 else if (Rsed.ui.groundBrush.brushSmoothens)
@@ -5134,8 +5147,7 @@ palat_pane: function()
 if (palatPaneBuffer.length > 0)
 {
 this.image(palatPaneBuffer, palatPaneMousePick, palatPaneWidth, palatPaneHeight,
-((Rsed.visual.canvas.width - palatPaneWidth) - 4),
-40);
+this.palatPaneOffsetX, this.palatPaneOffsetY);
 }
 return;
 },
@@ -5224,13 +5236,15 @@ return;
 const maxNumPalas = 253;
 const palaWidth = Rsed.constants.palaWidth;
 const palaHeight = Rsed.constants.palaHeight;
-const palaThumbnailHeight = (palaWidth / 2);
+const palaThumbnailWidth = (palaWidth / 2);
+const palaThumbnailHeight = (palaHeight / 2);
 palatPaneBuffer.length = 0;
 palatPaneMousePick.length = 0;
-palatPaneHeight = (Math.floor((Rsed.visual.canvas.height - 40) / palaThumbnailHeight) - 1) * palaThumbnailHeight
+palatPaneHeight = (Math.floor((Rsed.visual.canvas.height - 40) / palaThumbnailHeight) - 2) * palaThumbnailHeight
 numPalatPaneRows = Math.ceil(palatPaneHeight / (palaHeight / 2));
 numPalatPaneCols = Math.ceil(maxNumPalas / numPalatPaneRows);
 palatPaneWidth = (numPalatPaneCols * (palaWidth / 2));
+// Make room for the border.
 palatPaneWidth++;
 palatPaneHeight++;
 if ((numPalatPaneCols <= 0) ||
@@ -5257,6 +5271,8 @@ palatPaneMousePick[bufferTexel] = Rsed.ui.mouse_picking_element("ui-element",
 {
 uiElementId: "palat-pane",
 palaIdx: palaIdx,
+cornerX: ((x * palaThumbnailWidth) + this.palatPaneOffsetX),
+cornerY: ((y * palaThumbnailHeight) + this.palatPaneOffsetY),
 });
 }
 }
