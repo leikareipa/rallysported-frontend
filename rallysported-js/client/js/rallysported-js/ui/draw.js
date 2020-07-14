@@ -318,8 +318,8 @@ Rsed.ui.draw = (function()
 
             if (pala != null)
             {
-                this.image(pala.indices, null, 16, 16, pixelSurface.width - 15 - 5, 34 + 5, false, true);
-                this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 22 - 4 + 10, 39 + 16)
+                this.image(pala.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, false, true);
+                this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 101 - 4 + 10, 3)
             }
 
             return;

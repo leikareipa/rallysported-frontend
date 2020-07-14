@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (13 July 2020 12:57:50 UTC)
+// VERSION: live (14 July 2020 14:46:54 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5174,8 +5174,8 @@ const currentPala = Rsed.ui.groundBrush.brush_pala_idx();
 const pala = Rsed.core.current_project().palat.texture[currentPala];
 if (pala != null)
 {
-this.image(pala.indices, null, 16, 16, pixelSurface.width - 15 - 5, 34 + 5, false, true);
-this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 22 - 4 + 10, 39 + 16)
+this.image(pala.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, false, true);
+this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 101 - 4 + 10, 3)
 }
 return;
 },
