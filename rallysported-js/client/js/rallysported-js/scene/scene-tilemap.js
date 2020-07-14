@@ -116,8 +116,9 @@ Rsed.scenes["tilemap"] = (function()
                                 ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height() + 1);
 
             Rsed.ui.draw.watermark();
+            Rsed.ui.draw.minimap();
             Rsed.ui.draw.active_pala();
-            if (showPalatPane) Rsed.ui.draw.palat_pane();
+            Rsed.ui.draw.palat_pane();
             if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 
@@ -193,11 +194,6 @@ Rsed.scenes["tilemap"] = (function()
             {
                 showPalatPane = !showPalatPane;
                 Rsed.ui.inputState.set_key_down("a", false);
-
-                // The PALAT pane might clip the HTML UI, in which case the UI might prevent
-                // the user's cursor from interacting with the pane; so disable the UI while
-                // the pane is visible.
-                Rsed.ui.htmlUI.set_visible(!showPalatPane);
 
                 // Prevent a mouse click from acting on the ground behind the pane when the pane
                 // is brought up, and on the pane when the pane has been removed.

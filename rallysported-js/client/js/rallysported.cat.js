@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 July 2020 19:26:54 UTC)
+// VERSION: live (14 July 2020 19:51:02 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5038,6 +5038,9 @@ Rsed.assert && (string.length != null)
 // Convert from percentages into absolute screen coordinates.
 if (x < 0) x = Math.floor(-x * pixelSurface.width);
 if (y < 0) y = Math.floor(-y * pixelSurface.height);
+// Prevent the string from going past the viewport's edges.
+x = Math.min(x, (Rsed.visual.canvas.width - (string.length * Rsed.ui.font.font_width())));
+y = Math.min(y, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
 // Draw a left vertical border for the string block. The font's
 // bitmap characters include bottom, right, and top borders, but
 // not left; so we need to create the left one manually.
@@ -6371,8 +6374,9 @@ Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "
 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
 ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height() + 1);
 Rsed.ui.draw.watermark();
+Rsed.ui.draw.minimap();
 Rsed.ui.draw.active_pala();
-if (showPalatPane) Rsed.ui.draw.palat_pane();
+Rsed.ui.draw.palat_pane();
 if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
 Rsed.ui.draw.mouse_cursor();
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
@@ -6435,10 +6439,6 @@ if (Rsed.ui.inputState.key_down("a"))
 {
 showPalatPane = !showPalatPane;
 Rsed.ui.inputState.set_key_down("a", false);
-// The PALAT pane might clip the HTML UI, in which case the UI might prevent
-// the user's cursor from interacting with the pane; so disable the UI while
-// the pane is visible.
-Rsed.ui.htmlUI.set_visible(!showPalatPane);
 // Prevent a mouse click from acting on the ground behind the pane when the pane
 // is brought up, and on the pane when the pane has been removed.
 updateMouseHoverOnFrameFinish = true;
