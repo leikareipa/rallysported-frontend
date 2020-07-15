@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 July 2020 01:22:53 UTC)
+// VERSION: live (15 July 2020 02:42:35 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5078,7 +5078,8 @@ mouse_cursor: function()
 const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 // Draw a label on the PALA over which the mouse cursor hovers in the
 // PALAT pane.
-if ( Rsed.ui.inputState.current_mouse_hover() &&
+if ( Rsed.ui.inputState.key_down("shift") &&
+Rsed.ui.inputState.current_mouse_hover() &&
 (Rsed.ui.inputState.current_mouse_hover().type === "ui-element") &&
 (Rsed.ui.inputState.current_mouse_hover().uiElementId === "palat-pane"))
 {
@@ -5148,6 +5149,42 @@ if (palatPaneBuffer.length > 0)
 {
 this.image(palatPaneBuffer, palatPaneMousePick, palatPaneWidth, palatPaneHeight,
 this.palatPaneOffsetX, this.palatPaneOffsetY);
+// Draw a frame around the currently-selected PALA.
+{
+const frame = [];
+const dottedFrame = []
+const frameWidth = 9;
+const frameHeight = 9;
+for (let y = 0; y < frameHeight; y++)
+{
+for (let x = 0; x < frameWidth; x++)
+{
+let color = 0;
+if (y % (frameHeight - 1) === 0) color = "yellow";
+if (x % (frameWidth - 1) === 0) color = "yellow";
+frame.push(color);
+if (color && ((x + y) % 2 !== 0))
+{
+dottedFrame.push("yellow");
+}
+else
+{
+dottedFrame.push(0);
+}
+}
+}
+const selectedPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
+const y = Math.floor(selectedPalaIdx / numPalatPaneCols);
+const x = (selectedPalaIdx - y * numPalatPaneCols);
+this.image(frame, null, frameWidth, frameHeight, this.palatPaneOffsetX + x * 8, this.palatPaneOffsetY + y * 8, true);
+const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+if (mouseHover &&
+mouseHover.type == "ui-element" &&
+mouseHover.uiElementId == "palat-pane")
+{
+this.image(dottedFrame, null, frameWidth, frameHeight, mouseHover.cornerX, mouseHover.cornerY, true);
+}
+}
 }
 return;
 },
