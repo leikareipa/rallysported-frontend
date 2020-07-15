@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 July 2020 02:42:35 UTC)
+// VERSION: live (15 July 2020 11:19:47 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3118,6 +3118,15 @@ position.x = defaultPosition.x;
 position.y = defaultPosition.y;
 position.z = defaultPosition.z;
 },
+set_camera_position: function(x, y, z)
+{
+position.x = 0;
+position.y = 0;
+position.z = 0;
+this.move_camera((x / moveSpeed),
+(y / moveSpeed),
+(z / moveSpeed));
+},
 move_camera: function(deltaX, deltaY, deltaZ, enforceBounds = true)
 {
 const prevPos = this.position_floored();
@@ -5211,12 +5220,12 @@ image.push(color);
 mousePick.push(Rsed.ui.mouse_picking_element("ui-element",
 {
 uiElementId: "minimap",
-x: tileX,
-y: tileZ
+tileX: tileX,
+tileZ: tileZ
 }));
 }
 }
-this.image(image, null, width, height, pixelSurface.width - width - 4, 4, false);
+this.image(image, mousePick, width, height, pixelSurface.width - width - 4, 4, false);
 // Draw a frame around the camera view on the minimap.
 if (image && xMul && yMul)
 {
@@ -6307,16 +6316,23 @@ break;
 }
 case "ui-element":
 {
-if (!hover) break;
-switch (hover.uiElementId)
+switch (grab.uiElementId)
 {
 case "palat-pane":
 {
 if (Rsed.ui.inputState.left_mouse_button_down() ||
 Rsed.ui.inputState.right_mouse_button_down())
 {
-Rsed.ui.groundBrush.set_brush_pala_idx(hover.palaIdx);
+Rsed.ui.groundBrush.set_brush_pala_idx(grab.palaIdx);
 }
+break;
+}
+case "minimap":
+{
+const x = Math.round((grab.tileX - (Rsed.world.camera.view_width / 2)) + 1);
+const z = Math.round((grab.tileZ - (Rsed.world.camera.view_height / 2)) + 1);
+const y = Rsed.world.camera.position().y;
+Rsed.world.camera.set_camera_position(x, y, z)
 break;
 }
 default: break;

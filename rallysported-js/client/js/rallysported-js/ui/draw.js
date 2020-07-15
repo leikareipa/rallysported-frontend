@@ -344,13 +344,13 @@ Rsed.ui.draw = (function()
                     mousePick.push(Rsed.ui.mouse_picking_element("ui-element",
                     {
                         uiElementId: "minimap",
-                        x: tileX,
-                        y: tileZ
+                        tileX: tileX,
+                        tileZ: tileZ
                     }));
                 }
             }
 
-            this.image(image, null, width, height, pixelSurface.width - width - 4, 4, false);
+            this.image(image, mousePick, width, height, pixelSurface.width - width - 4, 4, false);
 
             // Draw a frame around the camera view on the minimap.
             if (image && xMul && yMul)

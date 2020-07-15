@@ -33,6 +33,17 @@ Rsed.world.camera = (function()
             position.z = defaultPosition.z;
         },
 
+        set_camera_position: function(x, y, z)
+        {
+            position.x = 0;
+            position.y = 0;
+            position.z = 0;
+
+            this.move_camera((x / moveSpeed),
+                             (y / moveSpeed),
+                             (z / moveSpeed));
+        },
+
         move_camera: function(deltaX, deltaY, deltaZ, enforceBounds = true)
         {
             const prevPos = this.position_floored();

@@ -323,17 +323,25 @@ Rsed.scenes["3d"] = (function()
 
                 case "ui-element":
                 {
-                    if (!hover) break;
-                    
-                    switch (hover.uiElementId)
+                    switch (grab.uiElementId)
                     {
                         case "palat-pane":
                         {
                             if (Rsed.ui.inputState.left_mouse_button_down() ||
                                 Rsed.ui.inputState.right_mouse_button_down())
                             {
-                                Rsed.ui.groundBrush.set_brush_pala_idx(hover.palaIdx);
+                                Rsed.ui.groundBrush.set_brush_pala_idx(grab.palaIdx);
                             }
+
+                            break;
+                        }
+                        case "minimap":
+                        {
+                            const x = Math.round((grab.tileX - (Rsed.world.camera.view_width / 2)) + 1);
+                            const z = Math.round((grab.tileZ - (Rsed.world.camera.view_height / 2)) + 1);
+                            const y = Rsed.world.camera.position().y;
+
+                            Rsed.world.camera.set_camera_position(x, y, z)
 
                             break;
                         }
