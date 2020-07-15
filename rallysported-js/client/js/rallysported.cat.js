@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 July 2020 23:33:19 UTC)
+// VERSION: live (15 July 2020 01:22:53 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4392,11 +4392,11 @@ _,_,_,_,
 _,_,_,_,
 _,_,_,_,
 _,_,_,_,
-_,_,_,_,
-X,X,_,_,
-_,_,X,_,
+_,_,_,_, // #
 _,X,_,_,
-_,_,_,_,
+X,X,X,_,
+_,X,_,_,
+X,X,X,_,
 _,X,_,_,
 _,_,_,_,
 _,_,_,_,
@@ -5082,7 +5082,7 @@ if ( Rsed.ui.inputState.current_mouse_hover() &&
 (Rsed.ui.inputState.current_mouse_hover().type === "ui-element") &&
 (Rsed.ui.inputState.current_mouse_hover().uiElementId === "palat-pane"))
 {
-const label = `${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
+const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
 const labelPixelWidth = (label.length * Rsed.ui.font.font_width());
 const labelPixelHeight = Rsed.ui.font.font_height();
 const x = (Rsed.ui.inputState.current_mouse_hover().cornerX - labelPixelWidth + 1);

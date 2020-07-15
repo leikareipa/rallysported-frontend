@@ -185,7 +185,7 @@ Rsed.ui.draw = (function()
                 (Rsed.ui.inputState.current_mouse_hover().type === "ui-element") &&
                 (Rsed.ui.inputState.current_mouse_hover().uiElementId === "palat-pane"))
             {
-                const label = `${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
+                const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
                 const labelPixelWidth = (label.length * Rsed.ui.font.font_width());
                 const labelPixelHeight = Rsed.ui.font.font_height();
 
