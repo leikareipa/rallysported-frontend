@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 July 2020 11:19:47 UTC)
+// VERSION: live (16 July 2020 12:23:15 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -33,6 +33,7 @@
 //	./rallysported-js/client/js/rallysported-js/ui/window.js
 //	./rallysported-js/client/js/rallysported-js/ui/input-state.js
 //	./rallysported-js/client/js/rallysported-js/ui/mouse-picking-element.js
+//	./rallysported-js/client/js/rallysported-js/ui/component.js
 //	./rallysported-js/client/js/rallysported-js/scene/scene.js
 //	./rallysported-js/client/js/rallysported-js/scene/scene-3d.js
 //	./rallysported-js/client/js/rallysported-js/scene/scene-tilemap.js
@@ -2136,6 +2137,13 @@ const Rsed = {};
 // and keep this set to 'true'. The comparison against Rsed.assert may still
 // be done, though (I guess depending on the JS engine's ability to optimize).
 Object.defineProperty(Rsed, "assert", {value:true, writable:false});
+// Generates a version 4 UUID and returns it as a string. Adapted with
+// superficial modifications from https://stackoverflow.com/a/2117523,
+// which is based on https://gist.github.com/jed/982883.
+Rsed.generate_uuid4_string = ()=>
+{
+return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+}
 Rsed.throw = (errMessage = "")=>
 {
 if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
@@ -4971,6 +4979,10 @@ let palatPaneHeight = 0;
 let palatPaneOffsetX = 0;
 const publicInterface =
 {
+get pixelSurface()
+{
+return pixelSurface;
+},
 get palatPaneOffsetX()
 {
 return ((Rsed.visual.canvas.width - palatPaneWidth) - 4);
@@ -5000,6 +5012,19 @@ mousePickBuffer)
 canvas.domElement.getContext("2d").putImageData(pixelSurface, 0, 0);
 pixelSurface = null;
 mousePickBuffer = null;
+return;
+},
+pixel: function(x = 0, y = 0, r = 255, g = 255, b = 255, m = undefined)
+{
+const idx = ((x + y * pixelSurface.width) * 4);
+pixelSurface.data[idx + 0] = r;
+pixelSurface.data[idx + 1] = g;
+pixelSurface.data[idx + 2] = b;
+pixelSurface.data[idx + 3] = 255;
+if (m != undefined)
+{
+mousePickBuffer[(x + y * pixelSurface.width)] = m;
+}
 return;
 },
 // Draws the given set of paletted pixels (each being a value in the range 0..31 in Rally-Sport's
@@ -5034,7 +5059,7 @@ if ((x + cx) >= pixelSurface.width) break;
 const pixel = pixels[cx + (flipped? (height - cy - 1) : cy) * width];
 if (alpha && (pixel === 0)) continue;
 const color = ((typeof pixel === "object")? pixel : Rsed.visual.palette.color_at_idx(pixel));
-put_pixel((x + cx), (y + cy), color.red, color.green, color.blue);
+this.pixel((x + cx), (y + cy), color.red, color.green, color.blue);
 if (mousePick != null)
 {
 put_mouse_pick_value((x + cx), (y + cy), mousePick[cx + cy * width]);
@@ -5066,7 +5091,7 @@ if ((x >= 0) && (x < pixelSurface.width))
 {
 for (let i = 0; i < Rsed.ui.font.font_height(); i++)
 {
-put_pixel(x, y + i, 255, 255, 0);
+this.pixel(x, y + i, 255, 255, 0);
 }
 x++;
 }
@@ -5342,15 +5367,6 @@ palatPaneBuffer[i + (y * palaHeight/2) * palatPaneWidth] = "black";
 return;
 }
 };
-function put_pixel(x = 0, y = 0, r = 255, g = 255, b = 255)
-{
-const idx = ((x + y * pixelSurface.width) * 4);
-pixelSurface.data[idx + 0] = r;
-pixelSurface.data[idx + 1] = g;
-pixelSurface.data[idx + 2] = b;
-pixelSurface.data[idx + 3] = 255;
-return;
-}
 function put_mouse_pick_value(x = 0, y = 0, value = 0)
 {
 mousePickBuffer[(x + y * pixelSurface.width)] = value;
@@ -5444,6 +5460,7 @@ RSED_DROPDOWN_ACTIVATED = false;
 if (resetInputState)
 {
 Rsed.ui.inputState.reset_mouse_hover();
+Rsed.ui.inputState.reset_mouse_grab();
 Rsed.ui.inputState.reset_mouse_buttons_state();
 }
 return;
@@ -5743,14 +5760,12 @@ else
 touchState.touchStart.x = touchState.currentTouchPos.x = 0;
 touchState.touchStart.y = touchState.currentTouchPos.y = 0;
 }
-return;
 },
 // For touch screen controls.
 update_touch_position({x = 0, y = 0})
 {
 touchState.currentTouchPos.x = x;
 touchState.currentTouchPos.y = y;
-return;
 },
 // For touch screen controls. Returns the amount by which the current
 // touch has moved since the last time this function was called. Note
@@ -5836,20 +5851,20 @@ return mouseState.grab;
 update_mouse_hover: function()
 {
 this.set_mouse_pos(this.mouse_pos().x, this.mouse_pos().y);
-return;
 },
 reset_mouse_hover: function()
 {
 mouseState.hover = null;
+},
+reset_mouse_grab: function()
+{
 mouseState.grab = null;
-return;
 },
 reset_mouse_buttons_state: function()
 {
 mouseState.buttons.left = {isDown: false, modifiers: []};
 mouseState.buttons.mid = {isDown: false, modifiers: []};
 mouseState.buttons.right = {isDown: false, modifiers: []};
-return;
 },
 reset_modifier_keys_state: function()
 {
@@ -5857,17 +5872,14 @@ this.set_key_down("shift", false);
 this.set_key_down("control", false);
 this.set_key_down("alt", false);
 this.set_key_down("altgraph", false);
-return;
 },
 reset_keys: function()
 {
 keyboardState.fill(false);
-return;
 },
 reset_wheel_scroll: function()
 {
 mouseState.wheel = 0;
-return;
 },
 mouse_wheel_scroll: function()
 {
@@ -5885,7 +5897,6 @@ if (this.key_down("shift"))
 {
 mouseState.wheel += delta;
 }
-return;
 },
 set_key_down: function(keyCode, isDown = false)
 {
@@ -5900,7 +5911,6 @@ default: Rsed.throw("Unknown variable type for key code."); return "unknown";
 }
 })();
 keyboardState[keyIdx] = isDown;
-return;
 },
 set_mouse_pos: function(x = 0, y = 0)
 {
@@ -5912,7 +5922,6 @@ mouseState.position.y = y;
 // it may be when running unit tests.
 const mousePos = this.mouse_pos_scaled_to_render_resolution();
 mouseState.hover = (Rsed.visual.canvas? Rsed.visual.canvas.mousePickingBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width] : null);
-return;
 },
 set_mouse_button_down: function(button = "left", isDown = false)
 {
@@ -5941,7 +5950,6 @@ else if (!mouseState.grab)
 {
 mouseState.grab = mouseState.hover;
 }
-return;
 },
 };
 return publicInterface;
@@ -6019,6 +6027,67 @@ default: Rsed.throw("Unrecognized mouse-picking type."); break;
 return {type, ...args};
 }
 /*
+* Most recent known filename: js/ui/component.js
+*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+// A base implementation of a UI component.
+//
+// To create a new component, call this function to receive a component base,
+// then modify its draw() and update() functions according to your wishes.
+Rsed.ui.component = function()
+{
+const publicInterface =
+{
+// A string that uniquely identifies this component from other components.
+id: Object.freeze(Rsed.generate_uuid4_string()),
+// If the mouse cursor is currently grabbing this component, returns the grab
+// information; otherwise null is returned.
+is_grabbed: function()
+{
+const grab = Rsed.ui.inputState.current_mouse_grab();
+if (grab && (grab.componentId == this.id))
+{
+return grab;
+}
+else
+{
+return null;
+}
+},
+// If the mouse cursor is currently hovering over this component, returns the
+// hover information; otherwise null is returned.
+is_hovered: function()
+{
+const hover = Rsed.ui.inputState.current_mouse_hover();
+if (hover && (hover.componentId == this.id))
+{
+return hover;
+}
+else
+{
+return null;
+}
+},
+// Updates the component's internal state (e.g. to respond to user input).
+update: function(sceneSettings = {})
+{
+return;
+},
+// Renders the component to the currently-active canvas and at the given
+// XY canvas coordinates.
+draw: function(offsetX = 0, offsetY = 0)
+{
+return;
+},
+};
+return publicInterface;
+}
+/*
 * Most recent known filename: js/scene/scene.js
 *
 * 2019 Tarpeeksi Hyvae Soft /
@@ -6063,22 +6132,35 @@ Rsed.scenes["3d"] = (function()
 {
 // Lets us keep track of mouse position delta between frames; e.g. for dragging props.
 let prevMousePos = {x:0, y:0};
-// Whether to draw a wireframe around the scene's polygons.
-let showWireframe = true;
-// Whether to show the PALAT pane; i.e. a side panel that displays all the available
-// PALA textures.
-let showPalatPane = false;
-// Whether to render props (track-side 3d objects - like trees, billboards, etc.).
-let showProps = true;
-// Whether the currently-selected brush PALA texture should be painted over the
-// ground tile over which the mouse cursor is currently hovering. This gives the
-// user a preview of what that texture would look like, without modifying the
-// tile's actual texture.
-let showHoverPala = false;
 /// Temp hack. Lets the renderer know that we want it to update mouse hover information
 /// once the next frame has finished rendering. This is used e.g. to keep proper track
 /// mouse hover when various UI elements are toggled on/off.
 let updateMouseHoverOnFrameFinish = false;
+const sceneSettings = {
+// Whether to draw a wireframe around the scene's polygons.
+showWireframe: true,
+// Whether to show the PALAT pane; i.e. a side panel that displays all the available
+// PALA textures.
+showPalatPane: false,
+// Whether to render props (track-side 3d objects - like trees, billboards, etc.).
+showProps: true,
+// Whether the currently-selected brush PALA texture should be painted over the
+// ground tile over which the mouse cursor is currently hovering. This gives the
+// user a preview of what that texture would look like, without modifying the
+// tile's actual texture.
+showHoverPala: false,
+}
+// Load UI components.
+let uiComponents = null;
+(async()=>
+{
+const activePala = (await import("./ui-components/active-pala.js")).component;
+const footerInfo = (await import("./ui-components/ground-hover-info.js")).component;
+uiComponents = {
+activePala,
+footerInfo,
+};
+})();
 return Rsed.scene(
 {
 draw_ui: function()
@@ -6089,11 +6171,18 @@ if ((Rsed.visual.canvas.width <= 0) ||
 return;
 }
 Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
+if (uiComponents) // Once the UI components have finished async loading...
+{
+uiComponents.activePala.update(sceneSettings);
+uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 4);
+uiComponents.footerInfo.update(sceneSettings);
+uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
+}
 Rsed.ui.draw.watermark();
 Rsed.ui.draw.minimap();
-Rsed.ui.draw.active_pala();
-Rsed.ui.draw.footer_info();
-if (showPalatPane) Rsed.ui.draw.palat_pane();
+//Rsed.ui.draw.active_pala();
+//Rsed.ui.draw.footer_info();
+if (sceneSettings.showPalatPane) Rsed.ui.draw.palat_pane();
 if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
 Rsed.ui.draw.mouse_cursor();
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
@@ -6112,9 +6201,9 @@ draw_mesh: function()
 const trackMesh = Rsed.world.meshBuilder.track_mesh(
 {
 cameraPos: Rsed.world.camera.position_floored(),
-solidProps: showProps,
-includeWireframe: showWireframe,
-paintHoverPala: showHoverPala,
+solidProps: sceneSettings.showProps,
+includeWireframe: sceneSettings.showWireframe,
+paintHoverPala: sceneSettings.showHoverPala,
 });
 const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [trackMesh],
 {
@@ -6172,17 +6261,17 @@ Rsed.ui.inputState.set_key_down("q", false);
 }
 if (Rsed.ui.inputState.key_down("w"))
 {
-showWireframe = !showWireframe;
+sceneSettings.showWireframe = !sceneSettings.showWireframe;
 Rsed.ui.inputState.set_key_down("w", false);
 }
 if (Rsed.ui.inputState.key_down("g"))
 {
-showHoverPala = !showHoverPala;
+sceneSettings.showHoverPala = !sceneSettings.showHoverPala;
 Rsed.ui.inputState.set_key_down("g", false);
 }
 if (Rsed.ui.inputState.key_down("a"))
 {
-showPalatPane = !showPalatPane;
+sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
 Rsed.ui.inputState.set_key_down("a", false);
 // Prevent a mouse click from acting on the ground behind the pane when the pane
 // is brought up, and on the pane when the pane has been removed.
@@ -6199,7 +6288,7 @@ Rsed.ui.inputState.set_key_down("l", false);
 }
 if (Rsed.ui.inputState.key_down("b"))
 {
-showProps = !showProps;
+sceneSettings.showProps = !sceneSettings.showProps;
 Rsed.ui.inputState.set_key_down("b", false);
 }
 if (Rsed.ui.inputState.key_down(" "))
@@ -6248,6 +6337,7 @@ x: (hover.groundTileX * Rsed.constants.groundTileSize),
 z: (hover.groundTileY * Rsed.constants.groundTileSize),
 });
 Rsed.ui.inputState.reset_mouse_hover();
+Rsed.ui.inputState.reset_mouse_grab();
 break;
 }
 // Raise/lower the terrain.
@@ -6283,6 +6373,7 @@ if (Rsed.ui.inputState.left_mouse_click_modifiers().includes("shift"))
 {
 Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), hover.propTrackIdx);
 Rsed.ui.inputState.reset_mouse_hover();
+Rsed.ui.inputState.reset_mouse_grab();
 }
 // Drag the prop.
 else
@@ -6431,7 +6522,8 @@ width: project.varimaa.width,
 height: project.varimaa.height,
 pixels: tilemap,
 }),
-wireframeColor: Rngon.color_rgba(127, 127, 127),
+hasWireframe: true,
+wireframeColor: Rngon.color_rgba(255, 255, 0),
 });
 tilemapMesh = Rngon.mesh([tilemapNgon]);
 return;
@@ -6441,11 +6533,11 @@ draw_ui: function()
 Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
-((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height() + 1);
+((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
 Rsed.ui.draw.watermark();
 Rsed.ui.draw.minimap();
 Rsed.ui.draw.active_pala();
-Rsed.ui.draw.palat_pane();
+if (showPalatPane) Rsed.ui.draw.palat_pane();
 if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
 Rsed.ui.draw.mouse_cursor();
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);

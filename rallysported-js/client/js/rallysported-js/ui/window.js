@@ -100,6 +100,7 @@ window.close_dropdowns = function(resetInputState = true)
     if (resetInputState)
     {
         Rsed.ui.inputState.reset_mouse_hover();
+        Rsed.ui.inputState.reset_mouse_grab();
         Rsed.ui.inputState.reset_mouse_buttons_state();
     }
 

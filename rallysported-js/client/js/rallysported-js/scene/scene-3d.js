@@ -17,26 +17,41 @@ Rsed.scenes["3d"] = (function()
     // Lets us keep track of mouse position delta between frames; e.g. for dragging props.
     let prevMousePos = {x:0, y:0};
 
-    // Whether to draw a wireframe around the scene's polygons.
-    let showWireframe = true;
-
-    // Whether to show the PALAT pane; i.e. a side panel that displays all the available
-    // PALA textures.
-    let showPalatPane = false;
-
-    // Whether to render props (track-side 3d objects - like trees, billboards, etc.).
-    let showProps = true;
-
-    // Whether the currently-selected brush PALA texture should be painted over the
-    // ground tile over which the mouse cursor is currently hovering. This gives the
-    // user a preview of what that texture would look like, without modifying the
-    // tile's actual texture.
-    let showHoverPala = false;
-
     /// Temp hack. Lets the renderer know that we want it to update mouse hover information
     /// once the next frame has finished rendering. This is used e.g. to keep proper track
     /// mouse hover when various UI elements are toggled on/off.
     let updateMouseHoverOnFrameFinish = false;
+
+    const sceneSettings = {
+        // Whether to draw a wireframe around the scene's polygons.
+        showWireframe: true,
+
+        // Whether to show the PALAT pane; i.e. a side panel that displays all the available
+        // PALA textures.
+        showPalatPane: false,
+
+        // Whether to render props (track-side 3d objects - like trees, billboards, etc.).
+        showProps: true,
+
+        // Whether the currently-selected brush PALA texture should be painted over the
+        // ground tile over which the mouse cursor is currently hovering. This gives the
+        // user a preview of what that texture would look like, without modifying the
+        // tile's actual texture.
+        showHoverPala: false,
+    }
+
+    // Load UI components.
+    let uiComponents = null;
+    (async()=>
+    {
+        const activePala = (await import("./ui-components/active-pala.js")).component;
+        const footerInfo = (await import("./ui-components/ground-hover-info.js")).component;
+
+        uiComponents = {
+            activePala,
+            footerInfo,
+        };
+    })();
 
     return Rsed.scene(
     {
@@ -50,11 +65,20 @@ Rsed.scenes["3d"] = (function()
 
             Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 
+            if (uiComponents) // Once the UI components have finished async loading...
+            {
+                uiComponents.activePala.update(sceneSettings);
+                uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 4);
+
+                uiComponents.footerInfo.update(sceneSettings);
+                uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
+            }
+
             Rsed.ui.draw.watermark();
             Rsed.ui.draw.minimap();
-            Rsed.ui.draw.active_pala();
-            Rsed.ui.draw.footer_info();
-            if (showPalatPane) Rsed.ui.draw.palat_pane();
+            //Rsed.ui.draw.active_pala();
+            //Rsed.ui.draw.footer_info();
+            if (sceneSettings.showPalatPane) Rsed.ui.draw.palat_pane();
             if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 
@@ -77,9 +101,9 @@ Rsed.scenes["3d"] = (function()
             const trackMesh = Rsed.world.meshBuilder.track_mesh(
             {
                 cameraPos: Rsed.world.camera.position_floored(),
-                solidProps: showProps,
-                includeWireframe: showWireframe,
-                paintHoverPala: showHoverPala,
+                solidProps: sceneSettings.showProps,
+                includeWireframe: sceneSettings.showWireframe,
+                paintHoverPala: sceneSettings.showHoverPala,
             });
 
             const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [trackMesh],
@@ -149,19 +173,19 @@ Rsed.scenes["3d"] = (function()
 
             if (Rsed.ui.inputState.key_down("w"))
             {
-                showWireframe = !showWireframe;
+                sceneSettings.showWireframe = !sceneSettings.showWireframe;
                 Rsed.ui.inputState.set_key_down("w", false);
             }
 
             if (Rsed.ui.inputState.key_down("g"))
             {
-                showHoverPala = !showHoverPala;
+                sceneSettings.showHoverPala = !sceneSettings.showHoverPala;
                 Rsed.ui.inputState.set_key_down("g", false);
             }
 
             if (Rsed.ui.inputState.key_down("a"))
             {
-                showPalatPane = !showPalatPane;
+                sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
                 Rsed.ui.inputState.set_key_down("a", false);
 
                 // Prevent a mouse click from acting on the ground behind the pane when the pane
@@ -183,7 +207,7 @@ Rsed.scenes["3d"] = (function()
 
             if (Rsed.ui.inputState.key_down("b"))
             {
-                showProps = !showProps;
+                sceneSettings.showProps = !sceneSettings.showProps;
                 Rsed.ui.inputState.set_key_down("b", false);
             }
 
@@ -241,6 +265,7 @@ Rsed.scenes["3d"] = (function()
                                                                        });
 
                         Rsed.ui.inputState.reset_mouse_hover();
+                        Rsed.ui.inputState.reset_mouse_grab();
 
                         break;
                     }
@@ -285,6 +310,7 @@ Rsed.scenes["3d"] = (function()
                             Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), hover.propTrackIdx);
 
                             Rsed.ui.inputState.reset_mouse_hover();
+                            Rsed.ui.inputState.reset_mouse_grab();
                         }
                         // Drag the prop.
                         else

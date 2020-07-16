@@ -30,6 +30,11 @@ Rsed.ui.draw = (function()
 
     const publicInterface =
     {
+        get pixelSurface()
+        {
+            return pixelSurface;
+        },
+
         get palatPaneOffsetX()
         {
             return ((Rsed.visual.canvas.width - palatPaneWidth) - 4);
@@ -66,6 +71,23 @@ Rsed.ui.draw = (function()
 
             pixelSurface = null;
             mousePickBuffer = null;
+
+            return;
+        },
+
+        pixel: function(x = 0, y = 0, r = 255, g = 255, b = 255, m = undefined)
+        {
+            const idx = ((x + y * pixelSurface.width) * 4);
+
+            pixelSurface.data[idx + 0] = r;
+            pixelSurface.data[idx + 1] = g;
+            pixelSurface.data[idx + 2] = b;
+            pixelSurface.data[idx + 3] = 255;
+
+            if (m != undefined)
+            {
+                mousePickBuffer[(x + y * pixelSurface.width)] = m;
+            }
 
             return;
         },
@@ -113,7 +135,7 @@ Rsed.ui.draw = (function()
 
                     const color = ((typeof pixel === "object")? pixel : Rsed.visual.palette.color_at_idx(pixel));
                     
-                    put_pixel((x + cx), (y + cy), color.red, color.green, color.blue);
+                    this.pixel((x + cx), (y + cy), color.red, color.green, color.blue);
 
                     if (mousePick != null)
                     {
@@ -153,7 +175,7 @@ Rsed.ui.draw = (function()
             {
                 for (let i = 0; i < Rsed.ui.font.font_height(); i++)
                 {
-                    put_pixel(x, y + i, 255, 255, 0);
+                    this.pixel(x, y + i, 255, 255, 0);
                 }
                 
                 x++;
@@ -488,17 +510,6 @@ Rsed.ui.draw = (function()
             return;
         }
     };
-
-    function put_pixel(x = 0, y = 0, r = 255, g = 255, b = 255)
-    {
-        const idx = ((x + y * pixelSurface.width) * 4);
-        pixelSurface.data[idx + 0] = r;
-        pixelSurface.data[idx + 1] = g;
-        pixelSurface.data[idx + 2] = b;
-        pixelSurface.data[idx + 3] = 255;
-
-        return;
-    }
 
     function put_mouse_pick_value(x = 0, y = 0, value = 0)
     {

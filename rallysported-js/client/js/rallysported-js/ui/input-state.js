@@ -97,8 +97,6 @@ Rsed.ui.inputState = (function()
                 touchState.touchStart.x = touchState.currentTouchPos.x = 0;
                 touchState.touchStart.y = touchState.currentTouchPos.y = 0;
             }
-
-            return;
         },
 
         // For touch screen controls.
@@ -106,8 +104,6 @@ Rsed.ui.inputState = (function()
         {
             touchState.currentTouchPos.x = x;
             touchState.currentTouchPos.y = y;
-
-            return;
         },
 
         // For touch screen controls. Returns the amount by which the current
@@ -214,16 +210,16 @@ Rsed.ui.inputState = (function()
         update_mouse_hover: function()
         {
             this.set_mouse_pos(this.mouse_pos().x, this.mouse_pos().y);
-
-            return;
         },
 
         reset_mouse_hover: function()
         {
             mouseState.hover = null;
-            mouseState.grab = null;
+        },
 
-            return;
+        reset_mouse_grab: function()
+        {
+            mouseState.grab = null;
         },
 
         reset_mouse_buttons_state: function()
@@ -231,8 +227,6 @@ Rsed.ui.inputState = (function()
             mouseState.buttons.left = {isDown: false, modifiers: []};
             mouseState.buttons.mid = {isDown: false, modifiers: []};
             mouseState.buttons.right = {isDown: false, modifiers: []};
-
-            return;
         },
 
         reset_modifier_keys_state: function()
@@ -241,22 +235,16 @@ Rsed.ui.inputState = (function()
             this.set_key_down("control", false);
             this.set_key_down("alt", false);
             this.set_key_down("altgraph", false);
-
-            return;
         },
 
         reset_keys: function()
         {
             keyboardState.fill(false);
-
-            return;
         },
 
         reset_wheel_scroll: function()
         {
             mouseState.wheel = 0;
-
-            return;
         },
 
         mouse_wheel_scroll: function()
@@ -277,8 +265,6 @@ Rsed.ui.inputState = (function()
             {
                 mouseState.wheel += delta;
             }
-
-            return;
         },
         
         set_key_down: function(keyCode, isDown = false)
@@ -296,8 +282,6 @@ Rsed.ui.inputState = (function()
             })();
 
             keyboardState[keyIdx] = isDown;
-
-            return;
         },
 
         set_mouse_pos: function(x = 0, y = 0)
@@ -312,8 +296,6 @@ Rsed.ui.inputState = (function()
             // it may be when running unit tests.
             const mousePos = this.mouse_pos_scaled_to_render_resolution();
             mouseState.hover = (Rsed.visual.canvas? Rsed.visual.canvas.mousePickingBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width] : null);
-
-            return;
         },
 
         set_mouse_button_down: function(button = "left", isDown = false)
@@ -345,8 +327,6 @@ Rsed.ui.inputState = (function()
             {
                 mouseState.grab = mouseState.hover;
             }
-
-            return;
         },
     };
 

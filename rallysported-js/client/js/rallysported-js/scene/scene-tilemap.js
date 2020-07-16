@@ -99,7 +99,8 @@ Rsed.scenes["tilemap"] = (function()
                                                     height: project.varimaa.height,
                                                     pixels: tilemap,
                                                 }),
-                                                wireframeColor: Rngon.color_rgba(127, 127, 127),
+                                                hasWireframe: true,
+                                                wireframeColor: Rngon.color_rgba(255, 255, 0),
                                             });
 
             tilemapMesh = Rngon.mesh([tilemapNgon]);
@@ -113,12 +114,12 @@ Rsed.scenes["tilemap"] = (function()
 
             Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
                                 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
-                                ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height() + 1);
+                                ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
 
             Rsed.ui.draw.watermark();
             Rsed.ui.draw.minimap();
             Rsed.ui.draw.active_pala();
-            Rsed.ui.draw.palat_pane();
+            if (showPalatPane) Rsed.ui.draw.palat_pane();
             if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 

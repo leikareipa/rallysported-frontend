@@ -20,6 +20,14 @@ const Rsed = {};
     // and keep this set to 'true'. The comparison against Rsed.assert may still
     // be done, though (I guess depending on the JS engine's ability to optimize).
     Object.defineProperty(Rsed, "assert", {value:true, writable:false});
+
+    // Generates a version 4 UUID and returns it as a string. Adapted with
+    // superficial modifications from https://stackoverflow.com/a/2117523,
+    // which is based on https://gist.github.com/jed/982883.
+    Rsed.generate_uuid4_string = ()=>
+    {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+    }
     
     Rsed.throw = (errMessage = "")=>
     {
