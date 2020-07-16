@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 July 2020 21:03:30 UTC)
+// VERSION: live (16 July 2020 21:15:38 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5099,12 +5099,6 @@ this.string("SMOOTHING",
 }
 return;
 },
-fps: function()
-{
-const fpsString = ("FPS: " + Rsed.core.renderer_fps());
-this.string(fpsString, 4, 15);
-return;
-},
 };
 function put_mouse_pick_value(x = 0, y = 0, value = 0)
 {
@@ -5894,10 +5888,11 @@ let uiComponents = null;
 (async()=>
 {
 uiComponents = {
-activePala: (await import("./ui-components/active-pala.js")).component,
-footerInfo: (await import("./ui-components/ground-hover-info.js")).component,
-minimap:    (await import("./ui-components/tilemap-minimap.js")).component,
-palatPane:  (await import("./ui-components/palat-pane.js")).component,
+activePala:   (await import("./ui-components/active-pala.js")).component,
+footerInfo:   (await import("./ui-components/ground-hover-info.js")).component,
+minimap:      (await import("./ui-components/tilemap-minimap.js")).component,
+palatPane:    (await import("./ui-components/palat-pane.js")).component,
+fpsIndicator: (await import("./ui-components/fps-indicator.js")).component,
 };
 })();
 return Rsed.scene(
@@ -5923,8 +5918,12 @@ if (sceneSettings.showPalatPane)
 uiComponents.palatPane.update(sceneSettings);
 uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 40);
 }
+if (Rsed.core.fps_counter_enabled())
+{
+uiComponents.fpsIndicator.update(sceneSettings);
+uiComponents.fpsIndicator.draw(4, 15);
 }
-if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
+}
 Rsed.ui.draw.mouse_cursor();
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 // Note: We assume that UI drawing is the last step in rendering the current
@@ -6187,8 +6186,9 @@ let uiComponents = null;
 (async()=>
 {
 uiComponents = {
-activePala: (await import("./ui-components/active-pala.js")).component,
-palatPane:  (await import("./ui-components/palat-pane.js")).component,
+activePala:   (await import("./ui-components/active-pala.js")).component,
+palatPane:    (await import("./ui-components/palat-pane.js")).component,
+fpsIndicator: (await import("./ui-components/fps-indicator.js")).component,
 };
 })();
 const scene = Rsed.scene(
@@ -6265,11 +6265,15 @@ if (sceneSettings.showPalatPane)
 uiComponents.palatPane.update(sceneSettings);
 uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 24);
 }
+if (Rsed.core.fps_counter_enabled())
+{
+uiComponents.fpsIndicator.update(sceneSettings);
+uiComponents.fpsIndicator.draw(4, 15);
+}
 }
 Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
 ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
-if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
 Rsed.ui.draw.mouse_cursor();
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 // Note: We assume that UI drawing is the last step in rendering the current

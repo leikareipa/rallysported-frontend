@@ -188,15 +188,6 @@ Rsed.ui.draw = (function()
 
             return;
         },
-
-        fps: function()
-        {
-            const fpsString = ("FPS: " + Rsed.core.renderer_fps());
-            
-            this.string(fpsString, 4, 15);
-
-            return;
-        },
     };
 
     function put_mouse_pick_value(x = 0, y = 0, value = 0)

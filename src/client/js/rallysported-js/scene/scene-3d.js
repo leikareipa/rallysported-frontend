@@ -45,10 +45,11 @@ Rsed.scenes["3d"] = (function()
     (async()=>
     {
         uiComponents = {
-            activePala: (await import("./ui-components/active-pala.js")).component,
-            footerInfo: (await import("./ui-components/ground-hover-info.js")).component,
-            minimap:    (await import("./ui-components/tilemap-minimap.js")).component,
-            palatPane:  (await import("./ui-components/palat-pane.js")).component,
+            activePala:   (await import("./ui-components/active-pala.js")).component,
+            footerInfo:   (await import("./ui-components/ground-hover-info.js")).component,
+            minimap:      (await import("./ui-components/tilemap-minimap.js")).component,
+            palatPane:    (await import("./ui-components/palat-pane.js")).component,
+            fpsIndicator: (await import("./ui-components/fps-indicator.js")).component,
         };
     })();
 
@@ -80,9 +81,14 @@ Rsed.scenes["3d"] = (function()
                     uiComponents.palatPane.update(sceneSettings);
                     uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 40);
                 }
+
+                if (Rsed.core.fps_counter_enabled())
+                {
+                    uiComponents.fpsIndicator.update(sceneSettings);
+                    uiComponents.fpsIndicator.draw(4, 15);
+                }
             }
 
-            if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 
             Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
