@@ -21,8 +21,6 @@ To set up RallySportED-js on your server, simply copy over the [rallysported-js/
 
 - You can rename the directory to something other than `rallysported-js`, but its internal structure should remain as-is.
 
-- From [rallysported-js/client/js/](rallysported-js/client/js/), you only need to copy [rallysported.cat.js](rallysported-js/client/js/rallysported.cat.js). It's a concatenation of the source files under that directory, built using the [build-client-distributable.sh](build-client-distributable.sh) script.
-
 You should now be able to run RallySportED-js in a browser by navigating to where you placed the files on your server, such that [rallysported-js/index.html](rallysported-js/index.html) is served.
 
 By default, the app will load Rally-Sport's track #4, from [rallysported-js/client/assets/tracks/demo-4.json](rallysported-js/client/assets/tracks/demo-4.json). For information on how to load a different track, see the [end user's guide](#end-users-guide). To find out more about RallySportED's data formats, see the [data formats](#data-formats) section.
