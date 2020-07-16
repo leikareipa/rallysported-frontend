@@ -114,7 +114,7 @@ export function create()
 
                     // Draw a label on the PALA over which the mouse cursor hovers in the
                     // PALAT pane.
-                    if (Rsed.ui.inputState.key_down("shift"))
+                    if (Rsed.ui.inputState.key_down("tab"))
                     {
                         const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
                         const labelPixelWidth = (label.length * Rsed.ui.font.font_width());
