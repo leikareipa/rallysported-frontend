@@ -149,7 +149,7 @@ function generate_palat_pane()
     palatPaneBuffer.length = 0;
     palatPaneMousePick.length = 0;
     
-    palatPaneHeight = (Math.floor((Rsed.visual.canvas.height - 40) / palaThumbnailHeight) - 2) * palaThumbnailHeight
+    palatPaneHeight = (Math.floor((Rsed.visual.canvas.height - palatPaneOffsetY) / palaThumbnailHeight) - 2) * palaThumbnailHeight
     numPalatPaneRows = Math.ceil(palatPaneHeight / (palaHeight / 2));
     numPalatPaneCols = Math.ceil(maxNumPalas / numPalatPaneRows);
     palatPaneWidth = (numPalatPaneCols * (palaWidth / 2));

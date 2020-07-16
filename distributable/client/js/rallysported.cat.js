@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 July 2020 15:11:53 UTC)
+// VERSION: live (16 July 2020 21:01:27 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -916,9 +916,9 @@ return Object.freeze(mResult);
 })();
 /*
 * 2019, 2020 Tarpeeksi Hyvae Soft
-* 
+*
 * Software: Retro n-gon renderer
-* 
+*
 */
 "use strict";
 { // A block to limit the scope of the unit-global variables we set up, below.
@@ -1226,7 +1226,7 @@ const stipplePattern    = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
 const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 // Reject by stipple pattern.
 if (stipplePattern.pixels[stipplePixelIdx]) continue;
-}   
+}
 }
 red   = (material.color.red   * shade);
 green = (material.color.green * shade);
@@ -1339,7 +1339,7 @@ const stipplePattern    = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
 const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 // Reject by stipple pattern.
 if (stipplePattern.pixels[stipplePixelIdx]) continue;
-}   
+}
 }
 red   = (texel.red   * material.color.unitRange.red   * shade);
 green = (texel.green * material.color.unitRange.green * shade);
@@ -1476,7 +1476,7 @@ pixels: Rngon.ngon_filler.stipple_patterns[i].pixels.map(p=>Number(!p)),
 /*
 * Tarpeeksi Hyvae Soft 2019 /
 * Retro n-gon renderer
-* 
+*
 */
 "use strict";
 // Will create a HTML5 canvas element inside the given container, and render into it
@@ -1557,7 +1557,7 @@ ngonCache.count = 0;
 return;
 }
 };
-Rngon.render.defaultOptions = 
+Rngon.render.defaultOptions =
 {
 cameraPosition: Rngon.vector3(0, 0, 0),
 cameraDirection: Rngon.vector3(0, 0, 0),
@@ -1927,7 +1927,7 @@ resolve(Rngon.texture_rgba(data));
 /*
 * Tarpeeksi Hyvae Soft 2019 /
 * Retro n-gon renderer
-* 
+*
 * A surface for rendering onto. Maps onto a HTML5 canvas.
 *
 */
@@ -1991,7 +1991,7 @@ if (Rngon.internalState.useDepthBuffer &&
 {
 Rngon.internalState.depthBuffer.width = screenWidth;
 Rngon.internalState.depthBuffer.height = screenHeight;
-Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height); 
+Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height);
 }
 }
 const publicInterface = Object.freeze(
@@ -5090,7 +5090,8 @@ return;
 mouse_cursor: function()
 {
 const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
-if (Rsed.ui.groundBrush.brushSmoothens)
+if ( Rsed.ui.groundBrush.brushSmoothens &&
+(Rsed.core.current_scene() == Rsed.scenes["3d"]))
 {
 this.string("SMOOTHING",
 (mousePos.x + 10),
