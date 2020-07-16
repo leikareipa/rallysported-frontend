@@ -178,7 +178,8 @@ Rsed.ui.draw = (function()
         {
             const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 
-            if (Rsed.ui.groundBrush.brushSmoothens)
+            if ( Rsed.ui.groundBrush.brushSmoothens &&
+                (Rsed.core.current_scene() == Rsed.scenes["3d"]))
             {
                 this.string("SMOOTHING",
                             (mousePos.x + 10),
