@@ -38,7 +38,6 @@ component.draw = function(offsetX = 0, offsetY = 0)
     const mousePick = new Array(palaTexture.indices.length).fill({
         type: "ui-component",
         componentId: component.id,
-        string: "Hello",
     });
 
     if (palaTexture)

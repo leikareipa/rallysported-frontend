@@ -281,6 +281,7 @@ Rsed.ui.draw = (function()
         fps: function()
         {
             const fpsString = ("FPS: " + Rsed.core.renderer_fps());
+            
             this.string(fpsString, 4, 15);
 
             return;
@@ -335,94 +336,6 @@ Rsed.ui.draw = (function()
                         this.image(dottedFrame, null, frameWidth, frameHeight, mouseHover.cornerX, mouseHover.cornerY, true);
                     }
                 }
-            }
-
-            return;
-        },
-
-        minimap: function()
-        {
-            // Generate the minimap image by iterating over the tilemap and grabbing a pixel off each
-            // corresponding PALA texture.
-            /// TODO: You can pre-generate the image rather than re-generating it each frame.
-            const width = 64;
-            const height = 32;
-            const xMul = (Rsed.core.current_project().maasto.width / width);
-            const yMul = (Rsed.core.current_project().maasto.width / height);
-            const image = [];   // An array of palette indices that forms the minimap image.
-            const mousePick = [];
-            for (let y = 0; y < height; y++)
-            {
-                for (let x = 0; x < width; x++)
-                {
-                    const tileX = (x * xMul);
-                    const tileZ = (y * yMul);
-
-                    const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
-                    let color = ((pala == null)? 0 : pala.indices[1]);
-
-                    image.push(color);
-
-                    mousePick.push(Rsed.ui.mouse_picking_element("ui-element",
-                    {
-                        uiElementId: "minimap",
-                        tileX: tileX,
-                        tileZ: tileZ
-                    }));
-                }
-            }
-
-            this.image(image, mousePick, width, height, pixelSurface.width - width - 4, 4, false);
-
-            // Draw a frame around the camera view on the minimap.
-            if (image && xMul && yMul)
-            {
-                const frame = [];
-                const frameWidth = Math.round((Rsed.world.camera.view_width / xMul));
-                const frameHeight = Math.round((Rsed.world.camera.view_height / yMul));
-                
-                for (let y = 0; y < frameHeight; y++)
-                {
-                    for (let x = 0; x < frameWidth; x++)
-                    {
-                        let color = 0;
-                        if (y % (frameHeight - 1) === 0) color = "yellow";
-                        if (x % (frameWidth - 1) === 0) color = "yellow";
-
-                        frame.push(color);
-                    }
-                }
-
-                const cameraPos = Rsed.world.camera.position_floored();
-                const camX = (cameraPos.x / xMul);
-                const camZ = (cameraPos.z / yMul);
-                this.image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 4 + camZ, true);
-            }
-
-            return;
-        },
-
-        active_pala: function()
-        {
-            const currentPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
-            const billboardIdx = Rsed.core.current_project().palat.billboard_idx(currentPalaIdx);
-            const palaTexture = Rsed.core.current_project().palat.texture[currentPalaIdx];
-            const billboardTexture = ((billboardIdx == null)? null : Rsed.core.current_project().palat.texture[billboardIdx]);
-
-            if (palaTexture != null)
-            {
-                this.image(palaTexture.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, false, true);
-
-                if (billboardTexture != null)
-                {
-                    this.image(billboardTexture.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, true, true);
-                }
-
-                this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 101 - 4 + 10, 3)
-            }
-            else
-            {
-                Rsed.throw("Invalid brush PALA index.");
             }
 
             return;

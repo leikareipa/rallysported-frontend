@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 July 2020 12:54:38 UTC)
+// VERSION: live (16 July 2020 13:51:46 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5222,79 +5222,6 @@ this.image(dottedFrame, null, frameWidth, frameHeight, mouseHover.cornerX, mouse
 }
 return;
 },
-minimap: function()
-{
-// Generate the minimap image by iterating over the tilemap and grabbing a pixel off each
-// corresponding PALA texture.
-/// TODO: You can pre-generate the image rather than re-generating it each frame.
-const width = 64;
-const height = 32;
-const xMul = (Rsed.core.current_project().maasto.width / width);
-const yMul = (Rsed.core.current_project().maasto.width / height);
-const image = [];   // An array of palette indices that forms the minimap image.
-const mousePick = [];
-for (let y = 0; y < height; y++)
-{
-for (let x = 0; x < width; x++)
-{
-const tileX = (x * xMul);
-const tileZ = (y * yMul);
-const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
-let color = ((pala == null)? 0 : pala.indices[1]);
-image.push(color);
-mousePick.push(Rsed.ui.mouse_picking_element("ui-element",
-{
-uiElementId: "minimap",
-tileX: tileX,
-tileZ: tileZ
-}));
-}
-}
-this.image(image, mousePick, width, height, pixelSurface.width - width - 4, 4, false);
-// Draw a frame around the camera view on the minimap.
-if (image && xMul && yMul)
-{
-const frame = [];
-const frameWidth = Math.round((Rsed.world.camera.view_width / xMul));
-const frameHeight = Math.round((Rsed.world.camera.view_height / yMul));
-for (let y = 0; y < frameHeight; y++)
-{
-for (let x = 0; x < frameWidth; x++)
-{
-let color = 0;
-if (y % (frameHeight - 1) === 0) color = "yellow";
-if (x % (frameWidth - 1) === 0) color = "yellow";
-frame.push(color);
-}
-}
-const cameraPos = Rsed.world.camera.position_floored();
-const camX = (cameraPos.x / xMul);
-const camZ = (cameraPos.z / yMul);
-this.image(frame, null, frameWidth, frameHeight, pixelSurface.width - width - 4 + camX, 4 + camZ, true);
-}
-return;
-},
-active_pala: function()
-{
-const currentPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
-const billboardIdx = Rsed.core.current_project().palat.billboard_idx(currentPalaIdx);
-const palaTexture = Rsed.core.current_project().palat.texture[currentPalaIdx];
-const billboardTexture = ((billboardIdx == null)? null : Rsed.core.current_project().palat.texture[billboardIdx]);
-if (palaTexture != null)
-{
-this.image(palaTexture.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, false, true);
-if (billboardTexture != null)
-{
-this.image(billboardTexture.indices, null, 16, 16, pixelSurface.width - 15 - 73, 4, true, true);
-}
-this.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", pixelSurface.width - 101 - 4 + 10, 3)
-}
-else
-{
-Rsed.throw("Invalid brush PALA index.");
-}
-return;
-},
 // Create a set of thumbnails of the contents of the current PALAT file. We'll display this pane of
 // thumbnails to the user for selecting PALAs.
 generate_palat_pane: function()
@@ -6154,11 +6081,10 @@ showHoverPala: false,
 let uiComponents = null;
 (async()=>
 {
-const activePala = (await import("./ui-components/active-pala.js")).component;
-const footerInfo = (await import("./ui-components/ground-hover-info.js")).component;
 uiComponents = {
-activePala,
-footerInfo,
+activePala: (await import("./ui-components/active-pala.js")).component,
+footerInfo: (await import("./ui-components/ground-hover-info.js")).component,
+minimap:    (await import("./ui-components/tilemap-minimap.js")).component,
 };
 })();
 return Rsed.scene(
@@ -6177,9 +6103,11 @@ uiComponents.activePala.update(sceneSettings);
 uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 4);
 uiComponents.footerInfo.update(sceneSettings);
 uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
+uiComponents.minimap.update(sceneSettings);
+uiComponents.minimap.draw((Rsed.visual.canvas.width - 4), 4);
 }
 Rsed.ui.draw.watermark();
-Rsed.ui.draw.minimap();
+//Rsed.ui.draw.minimap();
 //Rsed.ui.draw.active_pala();
 //Rsed.ui.draw.footer_info();
 if (sceneSettings.showPalatPane) Rsed.ui.draw.palat_pane();
@@ -6416,14 +6344,6 @@ Rsed.ui.inputState.right_mouse_button_down())
 {
 Rsed.ui.groundBrush.set_brush_pala_idx(grab.palaIdx);
 }
-break;
-}
-case "minimap":
-{
-const x = Math.round((grab.tileX - (Rsed.world.camera.view_width / 2)) + 1);
-const z = Math.round((grab.tileZ - (Rsed.world.camera.view_height / 2)) + 1);
-const y = Rsed.world.camera.position().y;
-Rsed.world.camera.set_camera_position(x, y, z)
 break;
 }
 default: break;

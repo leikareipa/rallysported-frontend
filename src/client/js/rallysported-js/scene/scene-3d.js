@@ -44,12 +44,10 @@ Rsed.scenes["3d"] = (function()
     let uiComponents = null;
     (async()=>
     {
-        const activePala = (await import("./ui-components/active-pala.js")).component;
-        const footerInfo = (await import("./ui-components/ground-hover-info.js")).component;
-
         uiComponents = {
-            activePala,
-            footerInfo,
+            activePala: (await import("./ui-components/active-pala.js")).component,
+            footerInfo: (await import("./ui-components/ground-hover-info.js")).component,
+            minimap:    (await import("./ui-components/tilemap-minimap.js")).component,
         };
     })();
 
@@ -72,10 +70,13 @@ Rsed.scenes["3d"] = (function()
 
                 uiComponents.footerInfo.update(sceneSettings);
                 uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
+
+                uiComponents.minimap.update(sceneSettings);
+                uiComponents.minimap.draw((Rsed.visual.canvas.width - 4), 4);
             }
 
             Rsed.ui.draw.watermark();
-            Rsed.ui.draw.minimap();
+            //Rsed.ui.draw.minimap();
             //Rsed.ui.draw.active_pala();
             //Rsed.ui.draw.footer_info();
             if (sceneSettings.showPalatPane) Rsed.ui.draw.palat_pane();
@@ -358,16 +359,6 @@ Rsed.scenes["3d"] = (function()
                             {
                                 Rsed.ui.groundBrush.set_brush_pala_idx(grab.palaIdx);
                             }
-
-                            break;
-                        }
-                        case "minimap":
-                        {
-                            const x = Math.round((grab.tileX - (Rsed.world.camera.view_width / 2)) + 1);
-                            const z = Math.round((grab.tileZ - (Rsed.world.camera.view_height / 2)) + 1);
-                            const y = Rsed.world.camera.position().y;
-
-                            Rsed.world.camera.set_camera_position(x, y, z)
 
                             break;
                         }
