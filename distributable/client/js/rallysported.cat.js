@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 July 2020 14:52:06 UTC)
+// VERSION: live (16 July 2020 15:11:53 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4969,10 +4969,6 @@ let pixelSurface = null;
 let mousePickBuffer = null;
 const publicInterface =
 {
-get pixelSurface()
-{
-return pixelSurface;
-},
 // Readies the pixel buffer for UI drawing. This should be called before any draw
 // calls are made for the current frame.
 begin_drawing: function(canvas)
@@ -4998,14 +4994,14 @@ return;
 },
 pixel: function(x = 0, y = 0, r = 255, g = 255, b = 255, m = undefined)
 {
-const idx = ((x + y * pixelSurface.width) * 4);
+const idx = ((x + y * Rsed.visual.canvas.width) * 4);
 pixelSurface.data[idx + 0] = r;
 pixelSurface.data[idx + 1] = g;
 pixelSurface.data[idx + 2] = b;
 pixelSurface.data[idx + 3] = 255;
 if (m != undefined)
 {
-mousePickBuffer[(x + y * pixelSurface.width)] = m;
+mousePickBuffer[(x + y * Rsed.visual.canvas.width)] = m;
 }
 return;
 },
@@ -5060,16 +5056,18 @@ Rsed.assert && (pixelSurface != null)
 || Rsed.throw("Expected a valid pixel surface.");
 Rsed.assert && (string.length != null)
 || Rsed.throw("Expected a non-empty string");
+x = Math.floor(x);
+y = Math.floor(y);
 // Convert from percentages into absolute screen coordinates.
-if (x < 0) x = Math.floor(-x * pixelSurface.width);
-if (y < 0) y = Math.floor(-y * pixelSurface.height);
+if (x < 0) x = Math.floor(-x * Rsed.visual.canvas.width);
+if (y < 0) y = Math.floor(-y * Rsed.visual.canvas.height);
 // Prevent the string from going past the viewport's edges.
 x = Math.min(x, (Rsed.visual.canvas.width - 1 - (string.length * Rsed.ui.font.font_width())));
 y = Math.min(y, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
 // Draw a left vertical border for the string block. The font's
 // bitmap characters include bottom, right, and top borders, but
 // not left; so we need to create the left one manually.
-if ((x >= 0) && (x < pixelSurface.width))
+if ((x >= 0) && (x < Rsed.visual.canvas.width))
 {
 for (let i = 0; i < Rsed.ui.font.font_height(); i++)
 {
@@ -5964,11 +5962,6 @@ uiComponents.palatPane.update(sceneSettings);
 uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 40);
 }
 }
-Rsed.ui.draw.watermark();
-//Rsed.ui.draw.minimap();
-//Rsed.ui.draw.active_pala();
-//Rsed.ui.draw.footer_info();
-// if (sceneSettings.showPalatPane) Rsed.ui.draw.palat_pane();
 if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
 Rsed.ui.draw.mouse_cursor();
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
@@ -6209,9 +6202,6 @@ Rsed.scenes = Rsed.scenes || {};
 // interaction.
 Rsed.scenes["tilemap"] = (function()
 {
-// Whether to show the PALAT pane; i.e. a side panel that displays all the available
-// PALA textures.
-let showPalatPane = false;
 /// Temp hack. Lets the renderer know that we want it to update mouse hover information
 /// once the next frame has finished rendering. This is used e.g. to keep proper track
 /// mouse hover when various UI elements are toggled on/off.
@@ -6225,6 +6215,20 @@ let tilemapOffsetY = 0;
 // The latest known size of the canvas we're rendering to.
 let knownCanvasSizeX = 0;
 let knownCanvasSizeY = 0;
+const sceneSettings = {
+// Whether to show the PALAT pane; i.e. a side panel that displays all the available
+// PALA textures.
+showPalatPane: false,
+};
+// Load UI components.
+let uiComponents = null;
+(async()=>
+{
+uiComponents = {
+activePala: (await import("./ui-components/active-pala.js")).component,
+palatPane:  (await import("./ui-components/palat-pane.js")).component,
+};
+})();
 const scene = Rsed.scene(
 {
 // Refreshes the tilemap view with any new changes to the track's tilemap.
@@ -6290,13 +6294,19 @@ return;
 draw_ui: function()
 {
 Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
+if (uiComponents) // Once the UI components have finished async loading...
+{
+uiComponents.activePala.update(sceneSettings);
+uiComponents.activePala.draw((Rsed.visual.canvas.width - 20), 4);
+if (sceneSettings.showPalatPane)
+{
+uiComponents.palatPane.update(sceneSettings);
+uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 24);
+}
+}
 Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
 ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
-Rsed.ui.draw.watermark();
-Rsed.ui.draw.minimap();
-Rsed.ui.draw.active_pala();
-if (showPalatPane) Rsed.ui.draw.palat_pane();
 if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
 Rsed.ui.draw.mouse_cursor();
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
@@ -6355,7 +6365,7 @@ Rsed.ui.inputState.set_key_down("q", false);
 }
 if (Rsed.ui.inputState.key_down("a"))
 {
-showPalatPane = !showPalatPane;
+sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
 Rsed.ui.inputState.set_key_down("a", false);
 // Prevent a mouse click from acting on the ground behind the pane when the pane
 // is brought up, and on the pane when the pane has been removed.
@@ -6377,7 +6387,7 @@ function handle_mouse_input()
 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 // Handle clicks over the PALAT pane.
-if (mouseHover &&
+if ( mouseHover &&
 (mouseHover.type == "ui-element") &&
 (mouseHover.uiElementId == "palat-pane") &&
 Rsed.ui.inputState.left_or_right_mouse_button_down())

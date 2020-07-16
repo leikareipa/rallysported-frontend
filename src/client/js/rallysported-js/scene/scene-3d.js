@@ -82,11 +82,6 @@ Rsed.scenes["3d"] = (function()
                 }
             }
 
-            Rsed.ui.draw.watermark();
-            //Rsed.ui.draw.minimap();
-            //Rsed.ui.draw.active_pala();
-            //Rsed.ui.draw.footer_info();
-           // if (sceneSettings.showPalatPane) Rsed.ui.draw.palat_pane();
             if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 

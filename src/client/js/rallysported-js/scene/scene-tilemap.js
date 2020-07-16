@@ -14,10 +14,6 @@ Rsed.scenes = Rsed.scenes || {};
 // interaction.
 Rsed.scenes["tilemap"] = (function()
 {
-    // Whether to show the PALAT pane; i.e. a side panel that displays all the available
-    // PALA textures.
-    let showPalatPane = false;
-
     /// Temp hack. Lets the renderer know that we want it to update mouse hover information
     /// once the next frame has finished rendering. This is used e.g. to keep proper track
     /// mouse hover when various UI elements are toggled on/off.
@@ -33,6 +29,22 @@ Rsed.scenes["tilemap"] = (function()
     // The latest known size of the canvas we're rendering to.
     let knownCanvasSizeX = 0;
     let knownCanvasSizeY = 0;
+
+    const sceneSettings = {
+        // Whether to show the PALAT pane; i.e. a side panel that displays all the available
+        // PALA textures.
+        showPalatPane: false,
+    };
+
+    // Load UI components.
+    let uiComponents = null;
+    (async()=>
+    {
+        uiComponents = {
+            activePala: (await import("./ui-components/active-pala.js")).component,
+            palatPane:  (await import("./ui-components/palat-pane.js")).component,
+        };
+    })();
     
     const scene = Rsed.scene(
     {
@@ -112,14 +124,22 @@ Rsed.scenes["tilemap"] = (function()
         {
             Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 
+            if (uiComponents) // Once the UI components have finished async loading...
+            {
+                uiComponents.activePala.update(sceneSettings);
+                uiComponents.activePala.draw((Rsed.visual.canvas.width - 20), 4);
+
+                if (sceneSettings.showPalatPane)
+                {
+                    uiComponents.palatPane.update(sceneSettings);
+                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 24);
+                }
+            }
+
             Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
                                 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
                                 ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
 
-            Rsed.ui.draw.watermark();
-            Rsed.ui.draw.minimap();
-            Rsed.ui.draw.active_pala();
-            if (showPalatPane) Rsed.ui.draw.palat_pane();
             if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 
@@ -190,7 +210,7 @@ Rsed.scenes["tilemap"] = (function()
 
             if (Rsed.ui.inputState.key_down("a"))
             {
-                showPalatPane = !showPalatPane;
+                sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
                 Rsed.ui.inputState.set_key_down("a", false);
 
                 // Prevent a mouse click from acting on the ground behind the pane when the pane
@@ -217,7 +237,7 @@ Rsed.scenes["tilemap"] = (function()
         const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 
         // Handle clicks over the PALAT pane.
-        if (mouseHover &&
+        if ( mouseHover &&
             (mouseHover.type == "ui-element") &&
             (mouseHover.uiElementId == "palat-pane") &&
             Rsed.ui.inputState.left_or_right_mouse_button_down())

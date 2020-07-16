@@ -19,11 +19,6 @@ Rsed.ui.draw = (function()
 
     const publicInterface =
     {
-        get pixelSurface()
-        {
-            return pixelSurface;
-        },
-
         // Readies the pixel buffer for UI drawing. This should be called before any draw
         // calls are made for the current frame.
         begin_drawing: function(canvas)
@@ -56,7 +51,7 @@ Rsed.ui.draw = (function()
 
         pixel: function(x = 0, y = 0, r = 255, g = 255, b = 255, m = undefined)
         {
-            const idx = ((x + y * pixelSurface.width) * 4);
+            const idx = ((x + y * Rsed.visual.canvas.width) * 4);
 
             pixelSurface.data[idx + 0] = r;
             pixelSurface.data[idx + 1] = g;
@@ -65,7 +60,7 @@ Rsed.ui.draw = (function()
 
             if (m != undefined)
             {
-                mousePickBuffer[(x + y * pixelSurface.width)] = m;
+                mousePickBuffer[(x + y * Rsed.visual.canvas.width)] = m;
             }
 
             return;
@@ -139,9 +134,12 @@ Rsed.ui.draw = (function()
             Rsed.assert && (string.length != null)
                         || Rsed.throw("Expected a non-empty string");
 
+            x = Math.floor(x);
+            y = Math.floor(y);
+
             // Convert from percentages into absolute screen coordinates.
-            if (x < 0) x = Math.floor(-x * pixelSurface.width);
-            if (y < 0) y = Math.floor(-y * pixelSurface.height);
+            if (x < 0) x = Math.floor(-x * Rsed.visual.canvas.width);
+            if (y < 0) y = Math.floor(-y * Rsed.visual.canvas.height);
 
             // Prevent the string from going past the viewport's edges.
             x = Math.min(x, (Rsed.visual.canvas.width - 1 - (string.length * Rsed.ui.font.font_width())));
@@ -150,7 +148,7 @@ Rsed.ui.draw = (function()
             // Draw a left vertical border for the string block. The font's
             // bitmap characters include bottom, right, and top borders, but
             // not left; so we need to create the left one manually.
-            if ((x >= 0) && (x < pixelSurface.width))
+            if ((x >= 0) && (x < Rsed.visual.canvas.width))
             {
                 for (let i = 0; i < Rsed.ui.font.font_height(); i++)
                 {
