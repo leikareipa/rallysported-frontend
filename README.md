@@ -17,9 +17,9 @@ The guide walks you through the steps to creating a new track and getting it up 
 If you'd like to modify RallySportED-js or otherwise inspect its internals, this guide is for you.
 
 ## Setting up RallySportED-js on a server
-To set up RallySportED-js on your server, simply copy over the [rallysported-js/](rallysported-js/) directory. The app is client-based and doesn't need dynamic hosting.
+To set up RallySportED-js on your server, simply copy over the [distributable/](distributable/) directory. The app is client-based and doesn't need dynamic hosting.
 
-- You can rename the directory to something other than `rallysported-js`, but its internal structure should remain as-is.
+- You can rename the `distributable` directory however you want, but its internal structure should remain as-is.
 
 You should now be able to run RallySportED-js in a browser by navigating to where you placed the files on your server, such that [rallysported-js/index.html](rallysported-js/index.html) is served.
 
