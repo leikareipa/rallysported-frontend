@@ -9,11 +9,16 @@
 
 "use strict";
 
-export const component = Rsed.ui.component();
-
-component.draw = function(offsetX = 0, offsetY = 0)
+export function create()
 {
-    Rsed.throw_if_not_type("number", offsetX, offsetY);
+    const component = Rsed.ui.component();
 
-    Rsed.ui.draw.string(`FPS: ${Rsed.core.renderer_fps()}`, offsetX, offsetY);
-};
+    component.draw = function(offsetX = 0, offsetY = 0)
+    {
+        Rsed.throw_if_not_type("number", offsetX, offsetY);
+
+        Rsed.ui.draw.string(`FPS: ${Rsed.core.renderer_fps()}`, offsetX, offsetY);
+    };
+
+    return component;
+}

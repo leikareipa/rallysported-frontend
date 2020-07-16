@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 July 2020 21:15:38 UTC)
+// VERSION: live (16 July 2020 22:15:32 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5888,11 +5888,11 @@ let uiComponents = null;
 (async()=>
 {
 uiComponents = {
-activePala:   (await import("./ui-components/active-pala.js")).component,
-footerInfo:   (await import("./ui-components/ground-hover-info.js")).component,
-minimap:      (await import("./ui-components/tilemap-minimap.js")).component,
-palatPane:    (await import("./ui-components/palat-pane.js")).component,
-fpsIndicator: (await import("./ui-components/fps-indicator.js")).component,
+activePala:   (await import("./ui-components/active-pala.js")).create(),
+footerInfo:   (await import("./ui-components/ground-hover-info.js")).create(),
+minimap:      (await import("./ui-components/tilemap-minimap.js")).create(),
+palatPane:    (await import("./ui-components/palat-pane.js")).create(),
+fpsIndicator: (await import("./ui-components/fps-indicator.js")).create(),
 };
 })();
 return Rsed.scene(
@@ -6186,9 +6186,9 @@ let uiComponents = null;
 (async()=>
 {
 uiComponents = {
-activePala:   (await import("./ui-components/active-pala.js")).component,
-palatPane:    (await import("./ui-components/palat-pane.js")).component,
-fpsIndicator: (await import("./ui-components/fps-indicator.js")).component,
+activePala:   (await import("./ui-components/active-pala.js")).create(),
+palatPane:    (await import("./ui-components/palat-pane.js")).create(),
+fpsIndicator: (await import("./ui-components/fps-indicator.js")).create(),
 };
 })();
 const scene = Rsed.scene(

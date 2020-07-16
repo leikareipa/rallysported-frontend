@@ -41,9 +41,9 @@ Rsed.scenes["tilemap"] = (function()
     (async()=>
     {
         uiComponents = {
-            activePala:   (await import("./ui-components/active-pala.js")).component,
-            palatPane:    (await import("./ui-components/palat-pane.js")).component,
-            fpsIndicator: (await import("./ui-components/fps-indicator.js")).component,
+            activePala:   (await import("./ui-components/active-pala.js")).create(),
+            palatPane:    (await import("./ui-components/palat-pane.js")).create(),
+            fpsIndicator: (await import("./ui-components/fps-indicator.js")).create(),
         };
     })();
     
