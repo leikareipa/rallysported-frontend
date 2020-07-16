@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 July 2020 21:01:27 UTC)
+// VERSION: live (16 July 2020 21:03:30 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5097,45 +5097,6 @@ this.string("SMOOTHING",
 (mousePos.x + 10),
 (mousePos.y + 17));
 }
-return;
-},
-watermark: function()
-{
-//this.string("RALLY-", -.012, 3);
-//this.string("SPORT-", -.012, 3 + Rsed.ui.font.font_height()-1);
-//this.string("ED%", -.012, 3 + ((Rsed.ui.font.font_height()-1) * 2));
-return;
-},
-footer_info: function()
-{
-const mouseHover = Rsed.ui.inputState.current_mouse_hover();
-const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
-let str;
-if ((mouseHover && (mouseHover.type === "prop")) ||
-(mouseGrab && (mouseGrab.type === "prop")))
-{
-// Prefer mouseGrab over mouseHover, as the prop follows the cursor lazily while
-// grabbing, so hover might be over the background.
-const mouse = (mouseGrab || mouseHover);
-str = "PROP:\"" + Rsed.core.current_project().props.name(mouse.propId) + "\"" +
-" IDX:" + mouse.propId + "(" + mouse.propTrackIdx + ")";
-}
-else if (mouseHover && (mouseHover.type === "ground"))
-{
-const x = mouseHover.groundTileX;
-const y = mouseHover.groundTileY;
-const xStr = String(x).padStart(3, "0");
-const yStr = String(y).padStart(3, "0");
-const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
-String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
-const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
-str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
-}
-else
-{
-str = "HEIGHT:+000 PALA:000 X,Y:000,000";
-}
-this.string(str, 0, Rsed.visual.canvas.height - Rsed.ui.font.font_height());
 return;
 },
 fps: function()
