@@ -69,8 +69,6 @@ Rsed.core = (function()
 
             await load_project(args);
 
-            Rsed.ui.draw.generate_palat_pane();
-
             Rsed.ui.htmlUI.refresh();
             Rsed.ui.htmlUI.set_visible(true);
 

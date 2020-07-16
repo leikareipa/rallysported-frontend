@@ -17,32 +17,11 @@ Rsed.ui.draw = (function()
     // The mouse-picking pixel buffer that UI render commands will write into.
     let mousePickBuffer = null;
 
-    // This will hold a pre-baked PALAT pane image, i.e. thumbnails for all the PALA textures,
-    // as RGBA color values. Its size (rows * columns) will be set dynamically depending on the
-    // window resolution.
-    const palatPaneBuffer = [];
-    const palatPaneMousePick = [];
-    let numPalatPaneCols = 9;
-    let numPalatPaneRows = 29;
-    let palatPaneWidth = 0;
-    let palatPaneHeight = 0;
-    let palatPaneOffsetX = 0;
-
     const publicInterface =
     {
         get pixelSurface()
         {
             return pixelSurface;
-        },
-
-        get palatPaneOffsetX()
-        {
-            return ((Rsed.visual.canvas.width - palatPaneWidth) - 4);
-        },
-
-        get palatPaneOffsetY()
-        {
-            return 40;
         },
 
         // Readies the pixel buffer for UI drawing. This should be called before any draw
@@ -201,23 +180,7 @@ Rsed.ui.draw = (function()
         {
             const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 
-            // Draw a label on the PALA over which the mouse cursor hovers in the
-            // PALAT pane.
-            if ( Rsed.ui.inputState.key_down("shift") &&
-                 Rsed.ui.inputState.current_mouse_hover() &&
-                (Rsed.ui.inputState.current_mouse_hover().type === "ui-element") &&
-                (Rsed.ui.inputState.current_mouse_hover().uiElementId === "palat-pane"))
-            {
-                const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
-                const labelPixelWidth = (label.length * Rsed.ui.font.font_width());
-                const labelPixelHeight = Rsed.ui.font.font_height();
-
-                const x = (Rsed.ui.inputState.current_mouse_hover().cornerX - labelPixelWidth + 1);
-                const y = (Rsed.ui.inputState.current_mouse_hover().cornerY - labelPixelHeight + 2);
-
-                this.string(label, x, y);
-            }
-            else if (Rsed.ui.groundBrush.brushSmoothens)
+            if (Rsed.ui.groundBrush.brushSmoothens)
             {
                 this.string("SMOOTHING",
                             (mousePos.x + 10),
@@ -286,142 +249,6 @@ Rsed.ui.draw = (function()
 
             return;
         },
-
-        palat_pane: function()
-        {
-            if (palatPaneBuffer.length > 0)
-            {
-                this.image(palatPaneBuffer, palatPaneMousePick, palatPaneWidth, palatPaneHeight,
-                           this.palatPaneOffsetX, this.palatPaneOffsetY);
-
-                // Draw a frame around the currently-selected PALA.
-                {
-                    const frame = [];
-                    const dottedFrame = []
-                    const frameWidth = 9;
-                    const frameHeight = 9;
-                    
-                    for (let y = 0; y < frameHeight; y++)
-                    {
-                        for (let x = 0; x < frameWidth; x++)
-                        {
-                            let color = 0;
-
-                            if (y % (frameHeight - 1) === 0) color = "yellow";
-                            if (x % (frameWidth - 1) === 0) color = "yellow";
-
-                            frame.push(color);
-
-                            if (color && ((x + y) % 2 !== 0))
-                            {
-                                dottedFrame.push("yellow");
-                            }
-                            else
-                            {
-                                dottedFrame.push(0);
-                            }
-                        }
-                    }
-
-                    const selectedPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
-                    const y = Math.floor(selectedPalaIdx / numPalatPaneCols);
-                    const x = (selectedPalaIdx - y * numPalatPaneCols);
-                    this.image(frame, null, frameWidth, frameHeight, this.palatPaneOffsetX + x * 8, this.palatPaneOffsetY + y * 8, true);
-
-                    const mouseHover = Rsed.ui.inputState.current_mouse_hover();
-                    if (mouseHover &&
-                        mouseHover.type == "ui-element" &&
-                        mouseHover.uiElementId == "palat-pane")
-                    {
-                        this.image(dottedFrame, null, frameWidth, frameHeight, mouseHover.cornerX, mouseHover.cornerY, true);
-                    }
-                }
-            }
-
-            return;
-        },
-
-        // Create a set of thumbnails of the contents of the current PALAT file. We'll display this pane of
-        // thumbnails to the user for selecting PALAs.
-        generate_palat_pane: function()
-        {
-            if ((Rsed.visual.canvas.height <= 0) ||
-                (Rsed.visual.canvas.width <= 0))
-            {
-                return;
-            }
-
-            const maxNumPalas = 253;
-            const palaWidth = Rsed.constants.palaWidth;
-            const palaHeight = Rsed.constants.palaHeight;
-            const palaThumbnailWidth = (palaWidth / 2);
-            const palaThumbnailHeight = (palaHeight / 2);
-
-            palatPaneBuffer.length = 0;
-            palatPaneMousePick.length = 0;
-            
-            palatPaneHeight = (Math.floor((Rsed.visual.canvas.height - 40) / palaThumbnailHeight) - 2) * palaThumbnailHeight
-            numPalatPaneRows = Math.ceil(palatPaneHeight / (palaHeight / 2));
-            numPalatPaneCols = Math.ceil(maxNumPalas / numPalatPaneRows);
-            palatPaneWidth = (numPalatPaneCols * (palaWidth / 2));
-
-            // Make room for the border.
-            palatPaneWidth++;
-            palatPaneHeight++;
-
-            if ((numPalatPaneCols <= 0) ||
-                (numPalatPaneRows <= 0))
-            {
-                return;
-            }
-        
-            let palaIdx = 0;
-            for (let y = 0; y < numPalatPaneRows; y++)
-            {
-                for (let x = 0; x < numPalatPaneCols; (x++, palaIdx++))
-                {
-                    if (palaIdx > maxNumPalas) break;
-
-                    const pala = Rsed.core.current_project().palat.texture[palaIdx];
-                    for (let py = 0; py < palaHeight; py++)
-                    {
-                        for (let px = 0; px < palaWidth; px++)
-                        {
-                            const palaTexel = Math.floor(px + (palaHeight - py - 1) * palaWidth);
-                            const bufferTexel = Math.floor((Math.floor(x * palaWidth + px) / 2) +
-                                                            Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
-
-                            palatPaneBuffer[bufferTexel] = Rsed.visual.palette.color_at_idx(pala.indices[palaTexel]);
-                            palatPaneMousePick[bufferTexel] = Rsed.ui.mouse_picking_element("ui-element",
-                            {
-                                uiElementId: "palat-pane",
-                                palaIdx: palaIdx,
-                                cornerX: ((x * palaThumbnailWidth) + this.palatPaneOffsetX),
-                                cornerY: ((y * palaThumbnailHeight) + this.palatPaneOffsetY),
-                            });
-                        }
-                    }
-                }
-            }
-
-            // Draw a grid over the PALA thumbnails.
-            for (let i = 0; i < numPalatPaneRows * palaHeight/2; i++)
-            {
-                for (let x = 0; x < numPalatPaneCols; x++)
-                {
-                    palatPaneBuffer[(x * palaWidth/2) + i * palatPaneWidth] = "black";
-                }
-            }
-            for (let i = 0; i < numPalatPaneCols * palaWidth/2; i++)
-            {
-                for (let y = 0; y < numPalatPaneRows; y++)
-                {
-                    palatPaneBuffer[i + (y * palaHeight/2) * palatPaneWidth] = "black";
-                }
-            }
-
-            return;
-        }
     };
 
     function put_mouse_pick_value(x = 0, y = 0, value = 0)

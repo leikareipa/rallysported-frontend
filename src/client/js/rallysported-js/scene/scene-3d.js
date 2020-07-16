@@ -48,6 +48,7 @@ Rsed.scenes["3d"] = (function()
             activePala: (await import("./ui-components/active-pala.js")).component,
             footerInfo: (await import("./ui-components/ground-hover-info.js")).component,
             minimap:    (await import("./ui-components/tilemap-minimap.js")).component,
+            palatPane:  (await import("./ui-components/palat-pane.js")).component,
         };
     })();
 
@@ -73,13 +74,19 @@ Rsed.scenes["3d"] = (function()
 
                 uiComponents.minimap.update(sceneSettings);
                 uiComponents.minimap.draw((Rsed.visual.canvas.width - 4), 4);
+
+                if (sceneSettings.showPalatPane)
+                {
+                    uiComponents.palatPane.update(sceneSettings);
+                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 40);
+                }
             }
 
             Rsed.ui.draw.watermark();
             //Rsed.ui.draw.minimap();
             //Rsed.ui.draw.active_pala();
             //Rsed.ui.draw.footer_info();
-            if (sceneSettings.showPalatPane) Rsed.ui.draw.palat_pane();
+           // if (sceneSettings.showPalatPane) Rsed.ui.draw.palat_pane();
             if (Rsed.core.fps_counter_enabled()) Rsed.ui.draw.fps();
             Rsed.ui.draw.mouse_cursor();
 
@@ -129,9 +136,6 @@ Rsed.scenes["3d"] = (function()
                 Rsed.visual.canvas.height = renderInfo.renderHeight;
 
                 window.close_dropdowns();
-
-                // The PALAT pane needs to adjust to the new size of the canvas.
-                Rsed.ui.draw.generate_palat_pane();
             }
 
             return;
@@ -343,26 +347,6 @@ Rsed.scenes["3d"] = (function()
                                                                        });
                             }
                         }
-                    }
-
-                    break;
-                }
-
-                case "ui-element":
-                {
-                    switch (grab.uiElementId)
-                    {
-                        case "palat-pane":
-                        {
-                            if (Rsed.ui.inputState.left_mouse_button_down() ||
-                                Rsed.ui.inputState.right_mouse_button_down())
-                            {
-                                Rsed.ui.groundBrush.set_brush_pala_idx(grab.palaIdx);
-                            }
-
-                            break;
-                        }
-                        default: break;
                     }
 
                     break;
