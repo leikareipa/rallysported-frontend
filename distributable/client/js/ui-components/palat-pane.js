@@ -105,7 +105,12 @@ export function create()
 
                 const mouseHover = component.is_hovered()
 
-                if (mouseHover)
+                // Draw a frame around the PALA over which the mouse cursor is hovering.
+                //
+                // Note: we don't draw the frame if the cursor is also grabbing something;
+                // to prevent the PALAT pane from responding to mouse hover while the cursor
+                // is grabbing some other element.
+                if (mouseHover && !Rsed.ui.inputState.current_mouse_grab())
                 {
                     Rsed.ui.draw.image(dottedFrame, null,
                                     frameWidth, frameHeight,
