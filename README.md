@@ -128,8 +128,8 @@ A mouse and keyboard are required to operate the RallySportED-js UI. There are p
 
 As RallySportED-js uses a software 3d renderer, it requires a bit of extra CPU processing power compared to a normal web app. A mid-range desktop PC bought in the last five years or so combined with a well-optimized browser like Google Chrome should run it fine.
 
-## Browser compatibility
-Although compatible with a number of browsers, RallySportED-js tends to work best - and is most tested - in Google Chrome.
+## System compatibility
+Generally speaking, RallySportED-js tends to work best - and is most tested - in Google Chrome.
 
 Below are rough estimates of the required browser versions to run a given version of RallySportED-js. Browsers marked with "No" are not compatible at all.
 
@@ -168,7 +168,7 @@ Below are rough estimates of the required browser versions to run a given versio
         <td align="center">51</td>
         <td align="center">11</td>
         <td align="center">15</td>
-        <td align="center">No</td>
+        <td align="center" style="text-decoration: underline wavy crimson;">No</td>
     </tr>
     <tr>
         <td align="left">beta.3</td>
@@ -177,9 +177,40 @@ Below are rough estimates of the required browser versions to run a given versio
         <td align="center">37</td>
         <td align="center">8</td>
         <td align="center">12</td>
-        <td align="center">No</td>
+        <td align="center" style="text-decoration: underline wavy crimson;">No</td>
     </tr>
 </table>
+
+Below is a table of the OS/browser combinations the author has tested RallySportED-js with and whether the combination worked.
+
+<table>
+    <tr>
+        <th align="left" width="110"></th>
+        <th align="center" width="90">
+            <img alt="Linux" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/24x24/linux.png">
+            <br>+<br>
+            <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
+            <img alt="Firefox" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_24x24.png">
+        </th>
+        <th align="center" width="90">
+            <img alt="iOS" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/24x24/IOS.png">
+            <br>+<br>
+            <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
+        </th>
+    </tr>
+    <tr>
+        <td align="left">web-beta.6</td>
+        <td align="center">Yes</td>
+        <td align="center" style="text-decoration: underline wavy crimson;">No*</td>
+    </tr>
+    <tr>
+        <td align="left">web-beta.5</td>
+        <td align="center">Yes</td>
+        <td align="center">Yes</td>
+    </tr>
+</table>
+
+\* Tested on an iPad (iPadOS). The in-canvas UI doesn't load (possibly a problem with `include()`); and the HTML UI's "Download" button doesn't seem to work.
 
 # Authors and credits
 The principal author of RallySportED-js is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](https://www.tarpeeksihyvaesoft.com)).
@@ -188,4 +219,6 @@ RallySportED-js makes use of [JSZip](https://stuk.github.io/jszip/) and [FileSav
 
 The implementation of the Bresenham line algo in [js/rallysported/render/line-draw.js](js/rallysported/render/line-draw.js) has been adapted, with changes, from the one given by [Phrogz](https://stackoverflow.com/users/405017/phrogz) on [Stack Overflow](https://stackoverflow.com/a/4672319).
 
-The browser icons used in the [Browser compatibility](#browser-compatibility) section come from [alrra](https://github.com/alrra)'s [Browser Logos](https://github.com/alrra/browser-logos) repository.
+The browser icons used in the [Browser compatibility](#browser-compatibility) section come from [alrra](https://github.com/alrra)'s [Browser Logos](https://github.com/alrra/browser-logos) repository. Their use here is purely for visual effect and carries no implication of endorsement, certification, etc.
+
+The OS icons used in the [Browser compatibility](#browser-compatibility) section come from [EgoistDeveloper](https://github.com/EgoistDeveloper)'s [operating-system-logos](https://github.com/EgoistDeveloper/operating-system-logos) repository. Their use here is purely for visual effect and carries no implication of endorsement, certification, etc.
