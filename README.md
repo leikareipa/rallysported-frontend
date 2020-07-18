@@ -183,6 +183,8 @@ Below are rough estimates of the required browser versions to run a given versio
 
 Below is a table of the OS/browser combinations the author has tested RallySportED-js with and whether the combination worked.
 
+- Note: The RallySportED-js UI is intended for larger (tablet or PC) screens and to be controlled with a mouse and keyboard. Even if the table below indicates that the app works on a particular mobile platform, you may not find its usability to be adequate on such devices.
+
 <table>
     <tr>
         <th align="left" width="110"></th>
@@ -193,6 +195,11 @@ Below is a table of the OS/browser combinations the author has tested RallySport
             <img alt="Firefox" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_24x24.png">
         </th>
         <th align="center" width="90">
+            <img alt="Android" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/24x24/android.png">
+            <br>+<br>
+            <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
+        </th>
+        <th align="center" width="90">
             <img alt="iOS" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/24x24/IOS.png">
             <br>+<br>
             <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
@@ -201,16 +208,18 @@ Below is a table of the OS/browser combinations the author has tested RallySport
     <tr>
         <td align="left">web-beta.6</td>
         <td align="center">Yes</td>
+        <td align="center">Yes</td>
         <td align="center" style="text-decoration: underline wavy crimson;">No*</td>
     </tr>
     <tr>
         <td align="left">web-beta.5</td>
         <td align="center">Yes</td>
         <td align="center">Yes</td>
+        <td align="center">Yes?</td>
     </tr>
 </table>
 
-\* Tested on an iPad (iPadOS). The in-canvas UI doesn't load (possibly a problem with `include()`); and the HTML UI's "Download" button doesn't seem to work.
+\* Tested on an iPad (iPadOS). The in-canvas UI doesn't load (possibly a problem with the use of JavaScript's `include()`); and pressing the HTML UI's "Download" button doesn't seem to do anything.
 
 # Authors and credits
 The principal author of RallySportED-js is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](https://www.tarpeeksihyvaesoft.com)).
