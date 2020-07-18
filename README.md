@@ -183,24 +183,24 @@ Below are rough estimates of the required browser versions to run a given versio
 
 Below is a table of the OS/browser combinations the author has tested RallySportED-js with and whether the combination worked.
 
-- Note: The RallySportED-js UI is intended for larger (tablet or PC) screens and to be controlled with a mouse and keyboard. Even if the table below indicates that the app works on a particular mobile platform, you may not find its usability to be adequate on such devices.
+- Note: The RallySportED-js UI is intended for larger (tablet or PC) screens and to be controlled with a mouse and keyboard. Even if the table below indicates that the app works on a particular mobile platform, you might not find its usability to be adequate on such devices.
 
 <table>
     <tr>
         <th align="left" width="110"></th>
         <th align="center" width="90">
-            <img alt="Linux" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/24x24/linux.png">
+            <img alt="Linux" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/32x32/linux.png">
             <br>+<br>
             <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
             <img alt="Firefox" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_24x24.png">
         </th>
         <th align="center" width="90">
-            <img alt="Android" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/24x24/android.png">
+            <img alt="Android" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/32x32/android.png">
             <br>+<br>
             <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
         </th>
         <th align="center" width="90">
-            <img alt="iOS" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/24x24/IOS.png">
+            <img alt="iOS" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/32x32/IOS.png">
             <br>+<br>
             <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
         </th>
