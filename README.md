@@ -190,18 +190,18 @@ Below is a table of the OS/browser combinations the author has tested RallySport
         <th align="left" width="110"></th>
         <th align="center" width="90">
             <img alt="Linux" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/32x32/linux.png">
-            <br>+<br>
+            <br>Linux<br>+<br>
             <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
             <img alt="Firefox" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_24x24.png">
         </th>
         <th align="center" width="90">
             <img alt="Android" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/32x32/android.png">
-            <br>+<br>
+            <br>Android<br>+<br>
             <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
         </th>
         <th align="center" width="90">
             <img alt="iOS" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/32x32/IOS.png">
-            <br>+<br>
+            <br>iOS<br>+<br>
             <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
         </th>
     </tr>
