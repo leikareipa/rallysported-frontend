@@ -22,17 +22,19 @@ export function create()
         const mouseHover = Rsed.ui.inputState.current_mouse_hover();
         const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
 
-        let str;
+        let str = "HEIGHT:+000 PALA:000 X,Y:000,000";
 
         if ((mouseHover && (mouseHover.type === "prop")) ||
             (mouseGrab && (mouseGrab.type === "prop")))
         {
             // Prefer mouseGrab over mouseHover, as the prop follows the cursor lazily while
             // grabbing, so hover might be over the background.
-            const mouse = (mouseGrab || mouseHover);
+            const mouse = (mouseGrab && (mouseGrab.type === "prop"))
+                          ? mouseGrab
+                          : mouseHover;
 
             str = "PROP:\"" + Rsed.core.current_project().props.name(mouse.propId) + "\"" +
-                " IDX:" + mouse.propId + "(" + mouse.propTrackIdx + ")";
+                  " IDX:" + mouse.propId + "(" + mouse.propTrackIdx + ")";
         }
         else if (mouseHover && (mouseHover.type === "ground"))
         {
@@ -48,10 +50,6 @@ export function create()
             const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
 
             str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
-        }
-        else
-        {
-            str = "HEIGHT:+000 PALA:000 X,Y:000,000";
         }
 
         Rsed.ui.draw.string(str, offsetX, offsetY);

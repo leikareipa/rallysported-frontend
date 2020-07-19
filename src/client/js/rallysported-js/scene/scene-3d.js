@@ -257,7 +257,14 @@ Rsed.scenes["3d"] = (function()
             {
                 case "ground":
                 {
+                    // Note: We'll access the mouse-picking info via hover instead of grab,
+                    // since grab will be the tile over which the user pressed down the
+                    // mouse button regardless of whether the mouse is moved after that;
+                    // while hover indicates the tile over which the mouse - with the button
+                    // held down - is currently over.
                     if (!hover) break;
+
+                    if (hover.type !== "ground") break;
 
                     // Add a new prop.
                     if (Rsed.ui.inputState.key_down("shift") &&

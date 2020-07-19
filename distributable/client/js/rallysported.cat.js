@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (17 July 2020 12:32:25 UTC)
+// VERSION: live (19 July 2020 11:06:11 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6063,7 +6063,13 @@ switch (grab.type)
 {
 case "ground":
 {
+// Note: We'll access the mouse-picking info via hover instead of grab,
+// since grab will be the tile over which the user pressed down the
+// mouse button regardless of whether the mouse is moved after that;
+// while hover indicates the tile over which the mouse - with the button
+// held down - is currently over.
 if (!hover) break;
+if (hover.type !== "ground") break;
 // Add a new prop.
 if (Rsed.ui.inputState.key_down("shift") &&
 Rsed.ui.inputState.left_mouse_button_down())
