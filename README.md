@@ -220,7 +220,7 @@ Below is a table of the OS/browser combinations the author has tested RallySport
     </tr>
 </table>
 
-\* Tested on an iPad (iPadOS). The in-canvas UI doesn't show (possibly a problem with the use of JavaScript's `include()`). On Chrome, pressing the HTML UI's "Download" button does nothing.
+\* Tested on an iPad (iPadOS). The in-canvas UI doesn't show (possibly a problem with the use of JavaScript's `import()`). On Chrome, pressing the HTML UI's "Download" button does nothing.
 
 # Authors and credits
 The principal author of RallySportED-js is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](https://www.tarpeeksihyvaesoft.com)).
