@@ -45,11 +45,11 @@ Rsed.scenes["3d"] = (function()
     (async()=>
     {
         uiComponents = {
-            activePala:   (await import("./ui-components/active-pala.js")).create(),
-            footerInfo:   (await import("./ui-components/ground-hover-info.js")).create(),
-            minimap:      (await import("./ui-components/tilemap-minimap.js")).create(),
-            palatPane:    (await import("./ui-components/palat-pane.js")).create(),
-            fpsIndicator: (await import("./ui-components/fps-indicator.js")).create(),
+            activePala:   Rsed.ui.component.activePala.create(),
+            footerInfo:   Rsed.ui.component.groundHoverInfo.create(),
+            minimap:      Rsed.ui.component.tilemapMinimap.create(),
+            palatPane:    Rsed.ui.component.palatPane.create(),
+            fpsIndicator: Rsed.ui.component.fpsIndicator.create(),
         };
     })();
 

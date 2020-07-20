@@ -11,49 +11,52 @@
 
 "use strict";
 
-export function create()
+Rsed.ui.component.groundHoverInfo =
 {
-    const component = Rsed.ui.component();
-
-    component.draw = function(offsetX = 0, offsetY = 0)
+    create: function()
     {
-        Rsed.throw_if_not_type("number", offsetX, offsetY);
-        
-        const mouseHover = Rsed.ui.inputState.current_mouse_hover();
-        const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
+        const component = Rsed.ui.component();
 
-        let str = "HEIGHT:+000 PALA:000 X,Y:000,000";
-
-        if ((mouseHover && (mouseHover.type === "prop")) ||
-            (mouseGrab && (mouseGrab.type === "prop")))
+        component.draw = function(offsetX = 0, offsetY = 0)
         {
-            // Prefer mouseGrab over mouseHover, as the prop follows the cursor lazily while
-            // grabbing, so hover might be over the background.
-            const mouse = (mouseGrab && (mouseGrab.type === "prop"))
-                          ? mouseGrab
-                          : mouseHover;
+            Rsed.throw_if_not_type("number", offsetX, offsetY);
+            
+            const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+            const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
 
-            str = "PROP:\"" + Rsed.core.current_project().props.name(mouse.propId) + "\"" +
-                  " IDX:" + mouse.propId + "(" + mouse.propTrackIdx + ")";
-        }
-        else if (mouseHover && (mouseHover.type === "ground"))
-        {
-            const x = mouseHover.groundTileX;
-            const y = mouseHover.groundTileY;
+            let str = "HEIGHT:+000 PALA:#000 X,Y:000,000";
 
-            const xStr = String(x).padStart(3, "0");
-            const yStr = String(y).padStart(3, "0");
+            if ((mouseHover && (mouseHover.type === "prop")) ||
+                (mouseGrab && (mouseGrab.type === "prop")))
+            {
+                // Prefer mouseGrab over mouseHover, as the prop follows the cursor lazily while
+                // grabbing, so hover might be over the background.
+                const mouse = (mouseGrab && (mouseGrab.type === "prop"))
+                              ? mouseGrab
+                              : mouseHover;
 
-            const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
-                                String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
+                str = "PROP:\"" + Rsed.core.current_project().props.name(mouse.propId) + "\"" +
+                      " IDX:" + mouse.propId + "(" + mouse.propTrackIdx + ")";
+            }
+            else if (mouseHover && (mouseHover.type === "ground"))
+            {
+                const x = mouseHover.groundTileX;
+                const y = mouseHover.groundTileY;
 
-            const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
+                const xStr = String(x).padStart(3, "0");
+                const yStr = String(y).padStart(3, "0");
 
-            str = "HEIGHT:" + heightStr + " PALA:" + palaStr +" X,Y:"+xStr+","+yStr;
-        }
+                const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
+                                   String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
 
-        Rsed.ui.draw.string(str, offsetX, offsetY);
-    };
+                const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
 
-    return component;
+                str = `HEIGHT:${heightStr} PALA:#${palaStr} X,Y:${xStr}+,${yStr}`;
+            }
+
+            Rsed.ui.draw.string(str, offsetX, offsetY);
+        };
+
+        return component;
+    }
 }

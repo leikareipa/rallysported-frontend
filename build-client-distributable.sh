@@ -34,6 +34,11 @@ SOURCE_FILES=("$SRC_DIRECTORY/jszip/jszip.min.js"
               "$SRC_DIRECTORY/rallysported-js/ui/input-state.js"
               "$SRC_DIRECTORY/rallysported-js/ui/mouse-picking-element.js"
               "$SRC_DIRECTORY/rallysported-js/ui/component.js"
+              "$SRC_DIRECTORY/rallysported-js/ui/components/active-pala.js"
+              "$SRC_DIRECTORY/rallysported-js/ui/components/fps-indicator.js"
+              "$SRC_DIRECTORY/rallysported-js/ui/components/ground-hover-info.js"
+              "$SRC_DIRECTORY/rallysported-js/ui/components/palat-pane.js"
+              "$SRC_DIRECTORY/rallysported-js/ui/components/tilemap-minimap.js"
               "$SRC_DIRECTORY/rallysported-js/scene/scene.js"
               "$SRC_DIRECTORY/rallysported-js/scene/scene-3d.js"
               "$SRC_DIRECTORY/rallysported-js/scene/scene-tilemap.js"
@@ -58,5 +63,3 @@ sed -i '/^[[:space:]]*$/d' "$DST_DIRECTORY/$DST_FILENAME"
 
 # Trim whitespace.
 sed -i 's/^[[:blank:]]*//;s/[[:blank:]]*$//' "$DST_DIRECTORY/$DST_FILENAME"
-
-cp -R "$SRC_DIRECTORY/rallysported-js/ui/components/." "$DST_DIRECTORY/ui-components/"

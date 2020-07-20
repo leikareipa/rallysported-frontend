@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 July 2020 00:24:00 UTC)
+// VERSION: live (20 July 2020 16:48:17 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -34,6 +34,11 @@
 //	./src/client/js/rallysported-js/ui/input-state.js
 //	./src/client/js/rallysported-js/ui/mouse-picking-element.js
 //	./src/client/js/rallysported-js/ui/component.js
+//	./src/client/js/rallysported-js/ui/components/active-pala.js
+//	./src/client/js/rallysported-js/ui/components/fps-indicator.js
+//	./src/client/js/rallysported-js/ui/components/ground-hover-info.js
+//	./src/client/js/rallysported-js/ui/components/palat-pane.js
+//	./src/client/js/rallysported-js/ui/components/tilemap-minimap.js
 //	./src/client/js/rallysported-js/scene/scene.js
 //	./src/client/js/rallysported-js/scene/scene-3d.js
 //	./src/client/js/rallysported-js/scene/scene-tilemap.js
@@ -5821,6 +5826,401 @@ return;
 return publicInterface;
 }
 /*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+// A UI component that displays the currently-selected PALA texture. Clicking
+// on the component opens/closes the scene's PALAT pane.
+Rsed.ui.component.activePala =
+{
+// Creates and returns a new instance of the component.
+create: function()
+{
+const component = Rsed.ui.component();
+component.update = function(sceneSettings = {})
+{
+Rsed.throw_if_not_type("object", sceneSettings);
+Rsed.throw_if_undefined(sceneSettings.showPalatPane);
+if (component.is_grabbed())
+{
+sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
+Rsed.ui.inputState.reset_mouse_grab();
+}
+};
+component.draw = function(offsetX = 0, offsetY = 0)
+{
+Rsed.throw_if_not_type("number", offsetX, offsetY);
+const currentPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
+const billboardIdx = Rsed.core.current_project().palat.billboard_idx(currentPalaIdx);
+const palaTexture = Rsed.core.current_project().palat.texture[currentPalaIdx];
+const billboardTexture = (billboardIdx == null)
+? null
+: Rsed.core.current_project().palat.texture[billboardIdx];
+const mousePick = new Array(palaTexture.indices.length).fill({
+type: "ui-component",
+componentId: component.id,
+});
+if (palaTexture)
+{
+Rsed.ui.draw.image(palaTexture.indices, mousePick, 16, 16, offsetX, offsetY, false, true);
+if (billboardTexture)
+{
+Rsed.ui.draw.image(billboardTexture.indices, null, 16, 16, offsetX, offsetY, true, true);
+}
+Rsed.ui.draw.string((Rsed.ui.groundBrush.brush_size() + 1) + "*", (offsetX - 7), (offsetY - 1))
+}
+else
+{
+Rsed.throw("Invalid brush PALA index.");
+}
+};
+return component;
+}
+}
+/*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+// A UI component that displays the current renderer frame rate (FPS).
+Rsed.ui.component.fpsIndicator =
+{
+create: function()
+{
+const component = Rsed.ui.component();
+component.draw = function(offsetX = 0, offsetY = 0)
+{
+Rsed.throw_if_not_type("number", offsetX, offsetY);
+Rsed.ui.draw.string(`FPS: ${Rsed.core.renderer_fps()}`, offsetX, offsetY);
+};
+return component;
+}
+}
+/*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+* A UI component that displays information about the ground under the
+* mouse cursor. This information might be, for instance, the height of
+* the terrain or the name of a prop.
+*
+*/
+"use strict";
+Rsed.ui.component.groundHoverInfo =
+{
+create: function()
+{
+const component = Rsed.ui.component();
+component.draw = function(offsetX = 0, offsetY = 0)
+{
+Rsed.throw_if_not_type("number", offsetX, offsetY);
+const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
+let str = "HEIGHT:+000 PALA:#000 X,Y:000,000";
+if ((mouseHover && (mouseHover.type === "prop")) ||
+(mouseGrab && (mouseGrab.type === "prop")))
+{
+// Prefer mouseGrab over mouseHover, as the prop follows the cursor lazily while
+// grabbing, so hover might be over the background.
+const mouse = (mouseGrab && (mouseGrab.type === "prop"))
+? mouseGrab
+: mouseHover;
+str = "PROP:\"" + Rsed.core.current_project().props.name(mouse.propId) + "\"" +
+" IDX:" + mouse.propId + "(" + mouse.propTrackIdx + ")";
+}
+else if (mouseHover && (mouseHover.type === "ground"))
+{
+const x = mouseHover.groundTileX;
+const y = mouseHover.groundTileY;
+const xStr = String(x).padStart(3, "0");
+const yStr = String(y).padStart(3, "0");
+const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
+String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
+const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
+str = `HEIGHT:${heightStr} PALA:#${palaStr} X,Y:${xStr}+,${yStr}`;
+}
+Rsed.ui.draw.string(str, offsetX, offsetY);
+};
+return component;
+}
+}
+/*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+// A UI component that displays a thumbnail of each of the current project's PALA textures.
+// The user can click on the thumbnails to select which texture to paint the ground with.
+Rsed.ui.component.palatPane =
+{
+create: function()
+{
+const component = Rsed.ui.component();
+// We'll pre-generate the thumbnails into these pixel buffers.
+const palatPaneBuffer = [];
+const palatPaneMousePick = [];
+let knownResX = undefined;
+let knownResY = undefined;
+let numPalatPaneCols = 9;
+let numPalatPaneRows = 29;
+let palatPaneWidth = 0;
+let palatPaneHeight = 0;
+let palatPaneOffsetX = undefined;
+let palatPaneOffsetY = undefined;
+component.update = function()
+{
+const grab = component.is_grabbed();
+if (grab)
+{
+if (Rsed.ui.inputState.left_mouse_button_down() ||
+Rsed.ui.inputState.right_mouse_button_down())
+{
+Rsed.ui.groundBrush.set_brush_pala_idx(grab.palaIdx);
+}
+}
+};
+component.draw = function(offsetX = 0, offsetY = 0)
+{
+if (knownResX !== Rsed.visual.canvas.width ||
+knownResY !== Rsed.visual.canvas.height ||
+offsetX !== palatPaneOffsetX ||
+offsetY !== palatPaneOffsetY)
+{
+knownResX = Rsed.visual.canvas.width;
+knownResY = Rsed.visual.canvas.height;
+generate_palat_pane();
+}
+offsetX -= palatPaneWidth;
+palatPaneOffsetX = offsetX;
+palatPaneOffsetY = offsetY;
+if (palatPaneBuffer.length > 0)
+{
+Rsed.ui.draw.image(palatPaneBuffer, palatPaneMousePick,
+palatPaneWidth, palatPaneHeight,
+palatPaneOffsetX, palatPaneOffsetY);
+// Draw a frame around the currently-selected PALA.
+{
+const frame = [];
+const dottedFrame = []
+const frameWidth = 9;
+const frameHeight = 9;
+for (let y = 0; y < frameHeight; y++)
+{
+for (let x = 0; x < frameWidth; x++)
+{
+let color = 0;
+if (y % (frameHeight - 1) === 0) color = "yellow";
+if (x % (frameWidth - 1) === 0) color = "yellow";
+frame.push(color);
+if (color && ((x + y) % 2 !== 0))
+{
+dottedFrame.push("yellow");
+}
+else
+{
+dottedFrame.push(0);
+}
+}
+}
+const selectedPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
+const y = Math.floor(selectedPalaIdx / numPalatPaneCols);
+const x = (selectedPalaIdx - y * numPalatPaneCols);
+Rsed.ui.draw.image(frame, null,
+frameWidth, frameHeight,
+palatPaneOffsetX + x * 8, palatPaneOffsetY + y * 8,
+true);
+const mouseHover = component.is_hovered()
+// Draw a frame around the PALA over which the mouse cursor is hovering.
+//
+// Note: we don't draw the frame if the cursor is also grabbing something;
+// to prevent the PALAT pane from responding to mouse hover while the cursor
+// is grabbing some other element.
+if (mouseHover && !Rsed.ui.inputState.current_mouse_grab())
+{
+Rsed.ui.draw.image(dottedFrame, null,
+frameWidth, frameHeight,
+mouseHover.cornerX, mouseHover.cornerY,
+true);
+// Draw a label on the PALA over which the mouse cursor hovers in the
+// PALAT pane.
+if (Rsed.ui.inputState.key_down("tab"))
+{
+const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
+const labelPixelWidth = (label.length * Rsed.ui.font.font_width());
+const labelPixelHeight = Rsed.ui.font.font_height();
+const x = (Rsed.ui.inputState.current_mouse_hover().cornerX - labelPixelWidth + 1);
+const y = (Rsed.ui.inputState.current_mouse_hover().cornerY - labelPixelHeight + 2);
+Rsed.ui.draw.string(label, x, y);
+}
+}
+}
+}
+return;
+};
+// Create a set of thumbnails of the contents of the current PALAT file. We'll
+// display this pane of thumbnails to the user for selecting PALAs.
+function generate_palat_pane()
+{
+if ((Rsed.visual.canvas.height <= 0) ||
+(Rsed.visual.canvas.width <= 0))
+{
+return;
+}
+const maxNumPalas = 253;
+const palaWidth = Rsed.constants.palaWidth;
+const palaHeight = Rsed.constants.palaHeight;
+const palaThumbnailWidth = (palaWidth / 2);
+const palaThumbnailHeight = (palaHeight / 2);
+palatPaneBuffer.length = 0;
+palatPaneMousePick.length = 0;
+palatPaneHeight = (Math.floor((Rsed.visual.canvas.height - palatPaneOffsetY) / palaThumbnailHeight) - 2) * palaThumbnailHeight
+numPalatPaneRows = Math.ceil(palatPaneHeight / (palaHeight / 2));
+numPalatPaneCols = Math.ceil(maxNumPalas / numPalatPaneRows);
+palatPaneWidth = (numPalatPaneCols * (palaWidth / 2));
+// Make room for the border.
+palatPaneWidth++;
+palatPaneHeight++;
+if ((numPalatPaneCols <= 0) ||
+(numPalatPaneRows <= 0))
+{
+return;
+}
+let palaIdx = 0;
+for (let y = 0; y < numPalatPaneRows; y++)
+{
+for (let x = 0; x < numPalatPaneCols; (x++, palaIdx++))
+{
+if (palaIdx > maxNumPalas) break;
+const pala = Rsed.core.current_project().palat.texture[palaIdx];
+for (let py = 0; py < palaHeight; py++)
+{
+for (let px = 0; px < palaWidth; px++)
+{
+const palaTexel = Math.floor(px + (palaHeight - py - 1) * palaWidth);
+const bufferTexel = Math.floor((Math.floor(x * palaWidth + px) / 2) +
+Math.floor((y * palaHeight + py) / 2) * palatPaneWidth);
+palatPaneBuffer[bufferTexel] = Rsed.visual.palette.color_at_idx(pala.indices[palaTexel]);
+palatPaneMousePick[bufferTexel] = {
+type: "ui-component",
+componentId: component.id,
+palaIdx: palaIdx,
+cornerX: ((x * palaThumbnailWidth) + palatPaneOffsetX),
+cornerY: ((y * palaThumbnailHeight) + palatPaneOffsetY),
+};
+}
+}
+}
+}
+// Draw a grid over the PALA thumbnails.
+for (let i = 0; i < numPalatPaneRows * palaHeight/2; i++)
+{
+for (let x = 0; x < numPalatPaneCols; x++)
+{
+palatPaneBuffer[(x * palaWidth/2) + i * palatPaneWidth] = "black";
+}
+}
+for (let i = 0; i < numPalatPaneCols * palaWidth/2; i++)
+{
+for (let y = 0; y < numPalatPaneRows; y++)
+{
+palatPaneBuffer[i + (y * palaHeight/2) * palatPaneWidth] = "black";
+}
+}
+return;
+};
+return component;
+}
+}
+/*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+// A UI component that displays a thumbnail of current project's tilemap. Clicking
+// on the thumbnail centers the camera on that position.
+Rsed.ui.component.tilemapMinimap =
+{
+create: function()
+{
+const component = Rsed.ui.component();
+component.update = function()
+{
+const grab = component.is_grabbed();
+if (grab)
+{
+const x = Math.round((grab.tileX - (Rsed.world.camera.view_width / 2)) + 1);
+const z = Math.round((grab.tileZ - (Rsed.world.camera.view_height / 2)) + 1);
+const y = Rsed.world.camera.position().y;
+Rsed.world.camera.set_camera_position(x, y, z)
+}
+};
+component.draw = function(offsetX = 0, offsetY = 0)
+{
+Rsed.throw_if_not_type("number", offsetX, offsetY);
+// Generate the minimap image by iterating over the tilemap and grabbing a pixel off each
+// corresponding PALA texture.
+/// TODO: You can pre-generate the image rather than re-generating it each frame.
+const width = 64;
+const height = 32;
+const xMul = (Rsed.core.current_project().maasto.width / width);
+const yMul = (Rsed.core.current_project().maasto.width / height);
+const image = []; // An array of palette indices that forms the minimap image.
+const mousePick = [];
+for (let y = 0; y < height; y++)
+{
+for (let x = 0; x < width; x++)
+{
+const tileX = (x * xMul);
+const tileZ = (y * yMul);
+const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
+let color = ((pala == null)? 0 : pala.indices[1]);
+image.push(color);
+mousePick.push({
+type: "ui-component",
+componentId: component.id,
+tileX: tileX,
+tileZ: tileZ
+});
+}
+}
+Rsed.ui.draw.image(image, mousePick, width, height, (offsetX - width), offsetY, false);
+// Draw a frame around the camera view on the minimap.
+if (image && xMul && yMul)
+{
+const frame = [];
+const frameWidth = Math.round((Rsed.world.camera.view_width / xMul));
+const frameHeight = Math.round((Rsed.world.camera.view_height / yMul));
+for (let y = 0; y < frameHeight; y++)
+{
+for (let x = 0; x < frameWidth; x++)
+{
+let color = 0;
+if (y % (frameHeight - 1) === 0) color = "yellow";
+if (x % (frameWidth - 1) === 0) color = "yellow";
+frame.push(color);
+}
+}
+const cameraPos = Rsed.world.camera.position_floored();
+const camX = (cameraPos.x / xMul);
+const camZ = (cameraPos.z / yMul);
+Rsed.ui.draw.image(frame, null, frameWidth, frameHeight, (offsetX - width + camX), (offsetY + camZ), true);
+}
+return;
+}
+return component;
+}
+}
+/*
 * Most recent known filename: js/scene/scene.js
 *
 * 2019 Tarpeeksi Hyvae Soft /
@@ -5888,11 +6288,11 @@ let uiComponents = null;
 (async()=>
 {
 uiComponents = {
-activePala:   (await import("./ui-components/active-pala.js")).create(),
-footerInfo:   (await import("./ui-components/ground-hover-info.js")).create(),
-minimap:      (await import("./ui-components/tilemap-minimap.js")).create(),
-palatPane:    (await import("./ui-components/palat-pane.js")).create(),
-fpsIndicator: (await import("./ui-components/fps-indicator.js")).create(),
+activePala:   Rsed.ui.component.activePala.create(),
+footerInfo:   Rsed.ui.component.groundHoverInfo.create(),
+minimap:      Rsed.ui.component.tilemapMinimap.create(),
+palatPane:    Rsed.ui.component.palatPane.create(),
+fpsIndicator: Rsed.ui.component.fpsIndicator.create(),
 };
 })();
 return Rsed.scene(
@@ -6192,9 +6592,9 @@ let uiComponents = null;
 (async()=>
 {
 uiComponents = {
-activePala:   (await import("./ui-components/active-pala.js")).create(),
-palatPane:    (await import("./ui-components/palat-pane.js")).create(),
-fpsIndicator: (await import("./ui-components/fps-indicator.js")).create(),
+activePala:   Rsed.ui.component.activePala.create(),
+palatPane:    Rsed.ui.component.palatPane.create(),
+fpsIndicator: Rsed.ui.component.fpsIndicator.create(),
 };
 })();
 const scene = Rsed.scene(

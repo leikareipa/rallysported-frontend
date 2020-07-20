@@ -3,22 +3,24 @@
  * 
  * Software: RallySportED-js
  * 
- * A UI component that displays the current renderer frame rate (FPS).
- * 
  */
 
 "use strict";
 
-export function create()
+// A UI component that displays the current renderer frame rate (FPS).
+Rsed.ui.component.fpsIndicator =
 {
-    const component = Rsed.ui.component();
-
-    component.draw = function(offsetX = 0, offsetY = 0)
+    create: function()
     {
-        Rsed.throw_if_not_type("number", offsetX, offsetY);
+        const component = Rsed.ui.component();
 
-        Rsed.ui.draw.string(`FPS: ${Rsed.core.renderer_fps()}`, offsetX, offsetY);
-    };
+        component.draw = function(offsetX = 0, offsetY = 0)
+        {
+            Rsed.throw_if_not_type("number", offsetX, offsetY);
 
-    return component;
+            Rsed.ui.draw.string(`FPS: ${Rsed.core.renderer_fps()}`, offsetX, offsetY);
+        };
+
+        return component;
+    }
 }
