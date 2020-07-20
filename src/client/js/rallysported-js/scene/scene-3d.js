@@ -267,8 +267,8 @@ Rsed.scenes["3d"] = (function()
                     if (hover.type !== "ground") break;
 
                     // Add a new prop.
-                    if (Rsed.ui.inputState.key_down("shift") &&
-                        Rsed.ui.inputState.left_mouse_button_down()) 
+                    if (Rsed.ui.inputState.left_mouse_button_down() &&
+                        Rsed.ui.inputState.left_mouse_click_modifiers().includes("shift"))
                     {
                         Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
                                                                        Rsed.core.current_project().props.id_for_name("tree"),

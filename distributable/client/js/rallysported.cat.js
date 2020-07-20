@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (19 July 2020 11:06:11 UTC)
+// VERSION: live (20 July 2020 00:24:00 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6071,8 +6071,8 @@ case "ground":
 if (!hover) break;
 if (hover.type !== "ground") break;
 // Add a new prop.
-if (Rsed.ui.inputState.key_down("shift") &&
-Rsed.ui.inputState.left_mouse_button_down())
+if (Rsed.ui.inputState.left_mouse_button_down() &&
+Rsed.ui.inputState.left_mouse_click_modifiers().includes("shift"))
 {
 Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
 Rsed.core.current_project().props.id_for_name("tree"),
