@@ -13,7 +13,7 @@
 
 Rsed.ui.component.groundHoverInfo =
 {
-    create: function()
+    instance: function()
     {
         const component = Rsed.ui.component();
 

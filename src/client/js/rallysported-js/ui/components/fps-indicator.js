@@ -10,7 +10,7 @@
 // A UI component that displays the current renderer frame rate (FPS).
 Rsed.ui.component.fpsIndicator =
 {
-    create: function()
+    instance: function()
     {
         const component = Rsed.ui.component();
 

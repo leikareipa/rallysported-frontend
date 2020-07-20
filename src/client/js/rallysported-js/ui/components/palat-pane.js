@@ -11,7 +11,7 @@
 // The user can click on the thumbnails to select which texture to paint the ground with.
 Rsed.ui.component.palatPane =
 {
-    create: function()
+    instance: function()
     {
         const component = Rsed.ui.component();
 

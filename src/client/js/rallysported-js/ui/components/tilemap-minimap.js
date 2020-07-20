@@ -11,7 +11,7 @@
 // on the thumbnail centers the camera on that position.
 Rsed.ui.component.tilemapMinimap =
 {
-    create: function()
+    instance: function()
     {
         const component = Rsed.ui.component();
 

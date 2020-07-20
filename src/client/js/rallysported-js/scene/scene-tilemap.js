@@ -41,9 +41,9 @@ Rsed.scenes["tilemap"] = (function()
     (async()=>
     {
         uiComponents = {
-            activePala:   Rsed.ui.component.activePala.create(),
-            palatPane:    Rsed.ui.component.palatPane.create(),
-            fpsIndicator: Rsed.ui.component.fpsIndicator.create(),
+            activePala:   Rsed.ui.component.activePala.instance(),
+            palatPane:    Rsed.ui.component.palatPane.instance(),
+            fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
         };
     })();
     

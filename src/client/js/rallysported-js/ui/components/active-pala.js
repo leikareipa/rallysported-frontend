@@ -12,7 +12,7 @@
 Rsed.ui.component.activePala =
 {
     // Creates and returns a new instance of the component.
-    create: function()
+    instance: function()
     {
         const component = Rsed.ui.component();
 

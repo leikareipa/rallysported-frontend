@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 July 2020 16:48:17 UTC)
+// VERSION: live (20 July 2020 16:51:40 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5837,7 +5837,7 @@ return publicInterface;
 Rsed.ui.component.activePala =
 {
 // Creates and returns a new instance of the component.
-create: function()
+instance: function()
 {
 const component = Rsed.ui.component();
 component.update = function(sceneSettings = {})
@@ -5890,7 +5890,7 @@ return component;
 // A UI component that displays the current renderer frame rate (FPS).
 Rsed.ui.component.fpsIndicator =
 {
-create: function()
+instance: function()
 {
 const component = Rsed.ui.component();
 component.draw = function(offsetX = 0, offsetY = 0)
@@ -5914,7 +5914,7 @@ return component;
 "use strict";
 Rsed.ui.component.groundHoverInfo =
 {
-create: function()
+instance: function()
 {
 const component = Rsed.ui.component();
 component.draw = function(offsetX = 0, offsetY = 0)
@@ -5961,7 +5961,7 @@ return component;
 // The user can click on the thumbnails to select which texture to paint the ground with.
 Rsed.ui.component.palatPane =
 {
-create: function()
+instance: function()
 {
 const component = Rsed.ui.component();
 // We'll pre-generate the thumbnails into these pixel buffers.
@@ -6150,7 +6150,7 @@ return component;
 // on the thumbnail centers the camera on that position.
 Rsed.ui.component.tilemapMinimap =
 {
-create: function()
+instance: function()
 {
 const component = Rsed.ui.component();
 component.update = function()
@@ -6288,11 +6288,11 @@ let uiComponents = null;
 (async()=>
 {
 uiComponents = {
-activePala:   Rsed.ui.component.activePala.create(),
-footerInfo:   Rsed.ui.component.groundHoverInfo.create(),
-minimap:      Rsed.ui.component.tilemapMinimap.create(),
-palatPane:    Rsed.ui.component.palatPane.create(),
-fpsIndicator: Rsed.ui.component.fpsIndicator.create(),
+activePala:   Rsed.ui.component.activePala.instance(),
+footerInfo:   Rsed.ui.component.groundHoverInfo.instance(),
+minimap:      Rsed.ui.component.tilemapMinimap.instance(),
+palatPane:    Rsed.ui.component.palatPane.instance(),
+fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
 };
 })();
 return Rsed.scene(
@@ -6592,9 +6592,9 @@ let uiComponents = null;
 (async()=>
 {
 uiComponents = {
-activePala:   Rsed.ui.component.activePala.create(),
-palatPane:    Rsed.ui.component.palatPane.create(),
-fpsIndicator: Rsed.ui.component.fpsIndicator.create(),
+activePala:   Rsed.ui.component.activePala.instance(),
+palatPane:    Rsed.ui.component.palatPane.instance(),
+fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
 };
 })();
 const scene = Rsed.scene(
