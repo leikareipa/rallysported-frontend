@@ -203,6 +203,7 @@ Below is a table of the OS/browser combinations the author has tested RallySport
             <img alt="iOS" src="https://raw.githubusercontent.com/EgoistDeveloper/operating-system-logos/master/src/32x32/IOS.png">
             <br>iOS<br>+<br>
             <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
+            <img alt="Safari" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/safari/safari_24x24.png">
         </th>
     </tr>
     <tr>
@@ -219,7 +220,7 @@ Below is a table of the OS/browser combinations the author has tested RallySport
     </tr>
 </table>
 
-\* Tested on an iPad (iPadOS). The in-canvas UI doesn't load (possibly a problem with the use of JavaScript's `include()`); and pressing the HTML UI's "Download" button doesn't seem to do anything.
+\* Tested on an iPad (iPadOS). The in-canvas UI doesn't show (possibly a problem with the use of JavaScript's `include()`). On Chrome, pressing the HTML UI's "Download" button does nothing.
 
 # Authors and credits
 The principal author of RallySportED-js is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](https://www.tarpeeksihyvaesoft.com)).
