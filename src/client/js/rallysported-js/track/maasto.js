@@ -34,7 +34,7 @@ Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Arra
         height: maastoHeight,
 
         // Returns the MAASTO height of the tile at the given track tile coordinates.
-        tile_at: (x = 0, y = 0)=>
+        tile_at: function(x = 0, y = 0)
         {
             x = Math.floor(x);
             y = Math.floor(y);
@@ -51,7 +51,7 @@ Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Arra
         },
 
         // Alter the MAASTO heightmap at the given tile.
-        set_tile_value_at: (x = 0, y = 0, newHeight = 0)=>
+        set_tile_value_at: function(x = 0, y = 0, newHeight = 0)
         {
             newHeight = Math.max(minHeightmapValue, Math.min(maxHeightmapValue, newHeight));
 
@@ -66,6 +66,7 @@ Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Arra
                 return;
             }
 
+            Rsed.ui.undoStack.mark_dirty_ground_tile(x, y);
             [data[idx], data[idx+1]] = [...integer_height_as_two_bytes(newHeight)];
         },
 

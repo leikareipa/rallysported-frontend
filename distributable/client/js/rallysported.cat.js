@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 July 2020 16:51:40 UTC)
+// VERSION: live (21 July 2020 16:12:51 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -25,6 +25,7 @@
 //	./src/client/js/rallysported-js/track/palat.js
 //	./src/client/js/rallysported-js/track/props.js
 //	./src/client/js/rallysported-js/ui/ui.js
+//	./src/client/js/rallysported-js/ui/undo-stack.js
 //	./src/client/js/rallysported-js/ui/html.js
 //	./src/client/js/rallysported-js/ui/popup-notification.js
 //	./src/client/js/rallysported-js/ui/font.js
@@ -2318,6 +2319,7 @@ Rsed.log("\"" + projectData.meta.displayName + "\" is a valid RallySportED proje
 "Its internal name is \"" + projectData.meta.internalName + "\".");
 const publicInterface = Object.freeze(
 {
+isPlaceholder: false,
 name: projectData.meta.displayName,
 internalName: projectData.meta.internalName,
 track_checkpoint: ()=>(trackCheckpoints[0] || {x:0,y:0}),
@@ -2758,6 +2760,7 @@ Rsed.project.placeholder =
 isPlaceholder: true,
 name: "",
 manifesto: "",
+trackId: 0,
 set_track_id: ()=>{Rsed.throw("Can't set the track id of a null project.");},
 varimaa:
 {
@@ -3688,6 +3691,7 @@ if ((idx < 0) || (idx >= data.byteLength))
 {
 return;
 }
+Rsed.ui.undoStack.mark_dirty_ground_tile(x, y);
 data[idx] = newPalaIdx;
 },
 };
@@ -3721,7 +3725,7 @@ const publicInterface =
 width: maastoWidth,
 height: maastoHeight,
 // Returns the MAASTO height of the tile at the given track tile coordinates.
-tile_at: (x = 0, y = 0)=>
+tile_at: function(x = 0, y = 0)
 {
 x = Math.floor(x);
 y = Math.floor(y);
@@ -3734,7 +3738,7 @@ return 0;
 return two_byte_height_as_integer(data[idx], data[idx+1]);
 },
 // Alter the MAASTO heightmap at the given tile.
-set_tile_value_at: (x = 0, y = 0, newHeight = 0)=>
+set_tile_value_at: function(x = 0, y = 0, newHeight = 0)
 {
 newHeight = Math.max(minHeightmapValue, Math.min(maxHeightmapValue, newHeight));
 x = Math.floor(x);
@@ -3745,6 +3749,7 @@ if ((idx < 0) || (idx >= data.byteLength))
 {
 return;
 }
+Rsed.ui.undoStack.mark_dirty_ground_tile(x, y);
 [data[idx], data[idx+1]] = [...integer_height_as_two_bytes(newHeight)];
 },
 // Reset all height values in the heightmap to the specified height.
@@ -4092,6 +4097,7 @@ delta =
 ...{x:0,y:0,z:0},
 ...delta,
 };
+Rsed.ui.undoStack.mark_dirty_props();
 currentLocation.x = clamped_to_prop_margins(currentLocation.x + delta.x);
 currentLocation.y = (currentLocation.y + delta.y);
 currentLocation.z = clamped_to_prop_margins(currentLocation.z + delta.z);
@@ -4115,6 +4121,7 @@ Rsed.alert("The finish line can't be removed.");
 Rsed.ui.inputState.reset_mouse_buttons_state();
 return;
 }
+Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations.splice(propIdx, 1);
 },
 // Assigns a new location to the propIdx'th prop on the given track.
@@ -4136,6 +4143,7 @@ z: trackPropLocations[trackId].locations[propIdx].z,
 },
 ...location,
 }
+Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations[propIdx].x = location.x;
 trackPropLocations[trackId].locations[propIdx].y = location.y;
 trackPropLocations[trackId].locations[propIdx].z = location.z;
@@ -4150,6 +4158,7 @@ Rsed.assert && ((trackId >= 0) &&
 Rsed.assert && ((newPropCount >= 1) &&
 (newPropCount <= trackPropLocations[trackId].locations.length))
 || Rsed.throw("Trying to set a new prop count out of bounds.");
+Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations.length = newPropCount;
 },
 // Set the number of props on the given track. For RallySportED Loader v.5.
@@ -4161,6 +4170,7 @@ Rsed.assert && ((trackId >= 0) &&
 Rsed.assert && ((newPropCount >= 1) &&
 (newPropCount <= Rsed.constants.maxPropCount))
 || Rsed.throw("Trying to set a new prop count out of bounds.");
+Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations = new Array(newPropCount).fill().map(e=>({x:0, y:0, z:0, propId: 0}));
 },
 reset_count: (trackId = 0)=>
@@ -4168,6 +4178,7 @@ reset_count: (trackId = 0)=>
 Rsed.assert && ((trackId >= 0) &&
 (trackId <= 7))
 || Rsed.throw("Querying a track out of bounds.");
+Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations.length = 0;
 },
 change_prop_type: (trackId = 0, propIdx = 0, newPropId = 0)=>
@@ -4178,6 +4189,7 @@ Rsed.assert && ((trackId >= 0) &&
 Rsed.assert && ((propIdx >= 0) &&
 (propIdx < trackPropLocations[trackId].locations.length))
 || Rsed.throw("Querying a prop location out of bounds.");
+Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations[propIdx].propId = newPropId;
 },
 num_props_on_track: (trackId = 0)=>
@@ -4207,6 +4219,7 @@ z: 0,
 },
 ...location,
 }
+Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations.push(
 {
 propId: newPropId,
@@ -4265,6 +4278,221 @@ return response.json();
 */
 "use strict";
 Rsed.ui = {};
+/*
+* Most recent known filename: js/ui/undo-stack.js
+*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+// An undo/redo system.
+//
+// The system keeps track of the user's track edits (like altering ground height, moving
+// props, etc.), and stores them in 'undo levels'.
+//
+// An undo level starts when the user makes an edit, and ends when they release all mouse
+// buttons (it's assumed that only mouse buttons can be used to make track edits). This
+// undo level will then consist of any track edits the user made in that time.
+//
+// To undo the most recent edits, you'd call undo(). And, provided that the user hasn't
+// made any new edits since that call to undo(), you can re-do the edits by calling redo().
+//
+// Making new edits after calling undo() will cause the undo levels above it to be erased
+// and replaced with one or more new levels reflecting the new edits.
+Rsed.ui.undoStack = (function()
+{
+// While true, no new new undo levels can be added.
+let frozen = false;
+// We'll use a timer (setInterval()) to decide when to seal the current undo level
+// once it has been created.
+let timerId = null;
+// Track data as it were before the current undo level for any track elements
+// that are modified by this undo level.
+let dirtyGround = [];
+let dirtyProps = [];
+// All undo levels we've recorded since they were last reset. Note that if the user
+// undoes and then makes new changes, the undo levels above that point will be
+// replaced with new undo levels that reflect the new changes.
+const undoLevels = [];
+// The index in 'undoLevels' that we're currently at. If the user hasn't undone
+// anything, this will be the total count of undo levels; otherwise, this is moved
+// back (down) each time the user undoes, and forward (up) when the user redoes.
+let undoLevelHead = 0;
+function create_undo_level()
+{
+// If we already have an active group.
+if (timerId !== null)
+{
+return;
+}
+timerId = setInterval(seal_undo_level, 1);
+}
+// Marks all changes made since starting the current undo level as
+// belonging to that undo level.
+function seal_undo_level()
+{
+if (!timerId)
+{
+Rsed.throw("Attempting to seal a nonexistent undo level.");
+}
+if (Rsed.ui.inputState.mouse_button_down())
+{
+return;
+}
+clearInterval(timerId);
+timerId = null;
+undoLevels.length = (undoLevelHead + 1);
+// Ground data after this undo level's changes are made.
+const groundAfter = [];
+for (tile of Object.keys(dirtyGround))
+{
+const x = dirtyGround[tile].x;
+const y = dirtyGround[tile].y;
+groundAfter[tile] = {
+x,
+y,
+height: Rsed.core.current_project().maasto.tile_at(x, y),
+palaIdx: Rsed.core.current_project().varimaa.tile_at(x, y),
+};
+}
+// Prop data after this undo level's changes are made.
+const propsAfter = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().trackId);
+undoLevels[undoLevelHead] = {
+before: {
+ground: dirtyGround,
+props: dirtyProps,
+},
+after: {
+ground: groundAfter,
+props: propsAfter,
+}
+};
+undoLevelHead++;
+dirtyGround = [];
+dirtyProps = [];
+}
+function apply_undo_level(undoLevel, when = "before")
+{
+if (!undoLevel)
+{
+return;
+}
+// Don't allow undo while an action group is being recorded.
+if (timerId !== null)
+{
+return;
+}
+frozen = true;
+// Undo on ground tiles.
+for (tile of Object.keys(undoLevel[when].ground))
+{
+Rsed.core.current_project().maasto.set_tile_value_at(undoLevel[when].ground[tile].x,
+undoLevel[when].ground[tile].y,
+undoLevel[when].ground[tile].height);
+Rsed.core.current_project().varimaa.set_tile_value_at(undoLevel[when].ground[tile].x,
+undoLevel[when].ground[tile].y,
+undoLevel[when].ground[tile].palaIdx);
+}
+// Undo on props.
+if (undoLevel[when].props.length)
+{
+const trackId = Rsed.core.current_project().trackId;
+Rsed.core.current_project().props.set_count__loader_v5(trackId, undoLevel[when].props.length);
+for (let i = 0; i < undoLevel[when].props.length; i++)
+{
+Rsed.core.current_project().props.set_prop_location(trackId, i, {
+x: undoLevel[when].props[i].x,
+y: undoLevel[when].props[i].y,
+z: undoLevel[when].props[i].z,
+});
+Rsed.core.current_project().props.change_prop_type(trackId, i, undoLevel[when].props[i].propId);
+}
+}
+frozen = false;
+}
+const publicInterface =
+{
+// Removes all undo levels.
+reset: function()
+{
+frozen = false;
+timerId = null;
+dirtyGround = [];
+dirtyProps = [];
+undoLevels.length = 0;
+undoLevelHead = 0;
+},
+// Undoes the latest level.
+undo: function()
+{
+if (frozen || Rsed.ui.inputState.mouse_button_down())
+{
+return;
+}
+// If no more undo levels.
+if (undoLevelHead <= 0)
+{
+return;
+}
+undoLevelHead--;
+apply_undo_level(undoLevels[undoLevelHead], "before");
+},
+// Redoes the latest level.
+redo: function()
+{
+if (frozen || Rsed.ui.inputState.mouse_button_down())
+{
+return;
+}
+// If no more undo levels.
+if (undoLevelHead >= undoLevels.length)
+{
+return;
+}
+apply_undo_level(undoLevels[undoLevelHead], "after");
+undoLevelHead++;
+},
+// For the given XY ground tile, marks its height and texture index at
+// the beginning of the current undo level.
+mark_dirty_ground_tile: function(x, y)
+{
+if (frozen || Rsed.core.current_project().isPlaceholder)
+{
+return;
+}
+create_undo_level();
+if (typeof dirtyGround[`${x} ${y}`] === "undefined")
+{
+dirtyGround[`${x} ${y}`] = {
+x,
+y,
+height: Rsed.core.current_project().maasto.tile_at(x, y),
+palaIdx: Rsed.core.current_project().varimaa.tile_at(x, y),
+};
+}
+},
+// Stores all of the current track's prop info at the beginning of the
+// current undo level.
+mark_dirty_props: function()
+{
+if (frozen || Rsed.core.current_project().isPlaceholder)
+{
+return;
+}
+// If we've already stored the prop info for the current undo level.
+if (dirtyProps.length)
+{
+return;
+}
+create_undo_level();
+dirtyProps = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().trackId);
+},
+};
+publicInterface.reset();
+return publicInterface;
+})();
 /*
 * Most recent known filename: js/ui/html.js
 *
@@ -6392,6 +6620,25 @@ Rsed.world.camera.move_camera(movement.x, movement.y, movement.z);
 // Handle keyboard input for one-off events, where the key press is registered
 // only once (no repeat).
 {
+if (Rsed.ui.inputState.key_down("z"))
+{
+if (Rsed.ui.inputState.key_down("control") &&
+Rsed.ui.inputState.key_down("shift"))
+{
+Rsed.ui.undoStack.redo();
+}
+else if (Rsed.ui.inputState.key_down("control"))
+{
+Rsed.ui.undoStack.undo();
+}
+Rsed.ui.inputState.set_key_down("z", false);
+}
+if (Rsed.ui.inputState.key_down("y") &&
+Rsed.ui.inputState.key_down("control") )
+{
+Rsed.ui.undoStack.redo();
+Rsed.ui.inputState.set_key_down("y", false);
+}
 if (Rsed.ui.inputState.key_down("q"))
 {
 Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
@@ -6730,6 +6977,27 @@ function handle_keyboard_input()
 // Handle keyboard input for one-off events, where the key press is registered
 // only once (no repeat).
 {
+if (Rsed.ui.inputState.key_down("z"))
+{
+if (Rsed.ui.inputState.key_down("control") &&
+Rsed.ui.inputState.key_down("shift"))
+{
+Rsed.ui.undoStack.redo();
+scene.refresh_tilemap_view();
+}
+else if (Rsed.ui.inputState.key_down("control"))
+{
+Rsed.ui.undoStack.undo();
+scene.refresh_tilemap_view();
+}
+Rsed.ui.inputState.set_key_down("z", false);
+}
+if (Rsed.ui.inputState.key_down("y") &&
+Rsed.ui.inputState.key_down("control") )
+{
+Rsed.ui.undoStack.redo();
+Rsed.ui.inputState.set_key_down("y", false);
+}
 if (Rsed.ui.inputState.key_down("q"))
 {
 Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
@@ -6922,6 +7190,8 @@ Rsed.assert && ((typeof args.project !== "undefined") &&
 (typeof args.project.dataLocality !== "undefined") &&
 (typeof args.project.dataIdentifier !== "undefined"))
 || Rsed.throw("Missing required arguments for loading a project.");
+project = Rsed.project.placeholder;
+Rsed.ui.undoStack.reset();
 Rsed.world.camera.reset_camera_position();
 project = await Rsed.project(args.project);
 }

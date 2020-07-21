@@ -144,6 +144,7 @@ Rsed.project = async function(projectArgs = {})
 
     const publicInterface = Object.freeze(
     {
+        isPlaceholder: false,
         name: projectData.meta.displayName,
         internalName: projectData.meta.internalName,
         track_checkpoint: ()=>(trackCheckpoints[0] || {x:0,y:0}),
@@ -677,6 +678,7 @@ Rsed.project.placeholder =
     isPlaceholder: true,
     name: "",
     manifesto: "",
+    trackId: 0,
     set_track_id: ()=>{Rsed.throw("Can't set the track id of a null project.");},
     varimaa:
     {

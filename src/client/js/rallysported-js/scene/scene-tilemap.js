@@ -208,6 +208,31 @@ Rsed.scenes["tilemap"] = (function()
         // Handle keyboard input for one-off events, where the key press is registered
         // only once (no repeat).
         {
+            if (Rsed.ui.inputState.key_down("z"))
+            {
+                if (Rsed.ui.inputState.key_down("control") &&
+                    Rsed.ui.inputState.key_down("shift"))
+                {
+                    Rsed.ui.undoStack.redo();
+                    scene.refresh_tilemap_view();
+                }
+                else if (Rsed.ui.inputState.key_down("control"))
+                {
+                    Rsed.ui.undoStack.undo();
+                    scene.refresh_tilemap_view();
+                }
+
+                Rsed.ui.inputState.set_key_down("z", false);
+            }
+
+            if (Rsed.ui.inputState.key_down("y") &&
+                Rsed.ui.inputState.key_down("control") )
+            {
+                Rsed.ui.undoStack.redo();
+
+                Rsed.ui.inputState.set_key_down("y", false);
+            }
+            
             if (Rsed.ui.inputState.key_down("q"))
             {
                 Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");

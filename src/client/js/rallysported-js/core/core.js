@@ -168,6 +168,10 @@ Rsed.core = (function()
                         (typeof args.project.dataLocality !== "undefined") &&
                         (typeof args.project.dataIdentifier !== "undefined"))
                     || Rsed.throw("Missing required arguments for loading a project.");
+
+        project = Rsed.project.placeholder;
+
+        Rsed.ui.undoStack.reset();
             
         Rsed.world.camera.reset_camera_position();
 
