@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (21 July 2020 16:12:51 UTC)
+// VERSION: live (23 July 2020 08:38:10 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6171,7 +6171,7 @@ const yStr = String(y).padStart(3, "0");
 const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
 String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
 const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
-str = `HEIGHT:${heightStr} PALA:#${palaStr} X,Y:${xStr}+,${yStr}`;
+str = `HEIGHT:${heightStr} PALA:#${palaStr} X,Y:${xStr},${yStr}`;
 }
 Rsed.ui.draw.string(str, offsetX, offsetY);
 };

@@ -51,7 +51,7 @@ Rsed.ui.component.groundHoverInfo =
 
                 const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
 
-                str = `HEIGHT:${heightStr} PALA:#${palaStr} X,Y:${xStr}+,${yStr}`;
+                str = `HEIGHT:${heightStr} PALA:#${palaStr} X,Y:${xStr},${yStr}`;
             }
 
             Rsed.ui.draw.string(str, offsetX, offsetY);
