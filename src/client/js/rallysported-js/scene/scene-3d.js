@@ -200,6 +200,19 @@ Rsed.scenes["3d"] = (function()
                 Rsed.ui.inputState.set_key_down("q", false);
             }
 
+            if (Rsed.ui.inputState.key_down("t"))
+            {
+                const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+
+                if (mouseHover && mouseHover.texture)
+                {
+                    Rsed.scenes["texture"].set_texture(mouseHover.texture);
+                    Rsed.core.set_scene("texture");
+                    
+                    Rsed.ui.inputState.set_key_down("t", false);
+                }
+            }
+
             if (Rsed.ui.inputState.key_down("w"))
             {
                 sceneSettings.showWireframe = !sceneSettings.showWireframe;

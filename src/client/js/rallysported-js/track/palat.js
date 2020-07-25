@@ -29,9 +29,6 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                     (palaHeight > 0))
                 || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
 
-    const palatPixels = Array.from(data, (colorIdx)=>Rsed.visual.palette.color_at_idx(colorIdx, false));
-    const palatPixelsWithAlpha = Array.from(data, (colorIdx)=>Rsed.visual.palette.color_at_idx(colorIdx, true));
-
     const palaSize = (palaWidth * palaHeight);
 
     // Pre-compute the individual PALA textures.
@@ -41,7 +38,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
     {
         width: palaWidth,
         height: palaHeight,
-        texture: Object.freeze(prebakedPalaTextures),
+        texture: prebakedPalaTextures,
 
         // Rally-Sport by default has four different 'skins' for spectators, and decides
         // which skin a spectator will be given based on the spectator's XY ground tile
@@ -135,14 +132,33 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                                  (palaId == 177) ||
                                 ((palaId >= 208) && (palaId <= 239)));
 
+        // A slice of the entire PALAT data representing the region in which this particular
+        // PALAT texture's pixels are.
+        const dataSlice = data.slice(dataIdx, (dataIdx + palaSize));
+
+        const pixels = Array.from(dataSlice, (colorIdx)=>Rsed.visual.palette.color_at_idx(colorIdx, isBillboardPala));
+
         return Rsed.visual.texture(
         {
             ...args,
             width: palaWidth,
             height: palaHeight,
-            pixels: (isBillboardPala? palatPixelsWithAlpha : palatPixels).slice(dataIdx, (dataIdx + palaSize)),
-            indices: data.slice(dataIdx, (dataIdx + palaSize)),
+            pixels: pixels,
+            indices: dataSlice,
             flipped: "no",
+            set_pixel_at: function(x = 0, y = 0, newColorIdx = 0)
+            {
+                const texelIdx = (x + y * palaWidth);
+
+                data[dataIdx + texelIdx] = newColorIdx;
+
+                // Regenerate this texture to incorporate the changes we've made to the
+                // master data array.
+                prebakedPalaTextures[palaId] = generate_texture(palaId, args);
+
+                // Return the updated reference to this texture:
+                return prebakedPalaTextures[palaId];
+            },
         });
     }
     

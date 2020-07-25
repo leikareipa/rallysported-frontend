@@ -92,13 +92,15 @@ Rsed.world.meshBuilder = (function()
                         // particular implementation doesn't.
                         const heightDiff = Math.max(150, Math.min(255, (255 - ((height1 - height3) * 2))));
 
+                        const texture = Rsed.core.current_project().palat.texture[tilePalaIdx];
+
                         const groundQuad = Rngon.ngon([Rngon.vertex(vertX, height1, vertZ, 0, 0),
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), height2, vertZ, 1, 0),
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize), 1, 1),
                                                        Rngon.vertex(vertX, height4, (vertZ + Rsed.constants.groundTileSize), 0, 1)],
                         {
                             color: Rngon.color_rgba(heightDiff, heightDiff, heightDiff),
-                            texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
+                            texture: texture,
                             textureMapping: "ortho",
                             uvWrapping: "clamp",
                             hasWireframe: args.includeWireframe,
@@ -109,6 +111,7 @@ Rsed.world.meshBuilder = (function()
                                 // quad the mouse cursor is hovering over.
                                 mousePickId: Rsed.ui.mouse_picking_element("ground",
                                 {
+                                    texture: texture,
                                     groundTileX: tileX,
                                     groundTileY: (tileZ - 1),
                                 }),
@@ -247,14 +250,16 @@ Rsed.world.meshBuilder = (function()
 
             srcMesh.ngons.forEach(ngon=>
             {
+                const texture = (args.solidProps? (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx]
+                                                                               : null)
+                                                : null);
+
                 const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x), (v.y + args.position.y), (v.z + args.position.z))),
                 {
                     color: (args.solidProps? (ngon.fill.type === "texture"? Rsed.visual.palette.color_at_idx(0)
                                                                           : Rsed.visual.palette.color_at_idx(ngon.fill.idx))
                                            : Rsed.visual.palette.color_at_idx(0, true)),
-                    texture: (args.solidProps? (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx]
-                                                                            : null)
-                                             : null),
+                    texture: texture,
                     textureMapping: "ortho",
                     wireframeColor: Rsed.visual.palette.color_at_idx(args.solidProps? "black" : "lightgray"),
                     hasWireframe: (args.solidProps? args.includeWireframe : true),
@@ -262,6 +267,7 @@ Rsed.world.meshBuilder = (function()
                     {
                         mousePickId: Rsed.ui.mouse_picking_element("prop",
                         {
+                            texture: texture,
                             propId: propId,
                             propTrackIdx: idxOnTrack
                         }),

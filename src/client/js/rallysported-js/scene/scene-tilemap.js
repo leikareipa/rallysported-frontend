@@ -267,17 +267,6 @@ Rsed.scenes["tilemap"] = (function()
         const mouseHover = Rsed.ui.inputState.current_mouse_hover();
         const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 
-        // Handle clicks over the PALAT pane.
-        if ( mouseHover &&
-            (mouseHover.type == "ui-element") &&
-            (mouseHover.uiElementId == "palat-pane") &&
-            Rsed.ui.inputState.left_or_right_mouse_button_down())
-        {
-            Rsed.ui.groundBrush.set_brush_pala_idx(mouseHover.palaIdx);
-
-            return;
-        }
-
         // Handle painting the tilemap.
         if (Rsed.ui.inputState.mid_mouse_button_down())
         {

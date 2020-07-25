@@ -30,6 +30,9 @@ Rsed.visual.texture = function(args = {})
 
             // Whether to flip (mirror) the texture's pixels.
             flipped: "no", // | "vertical"
+
+            // A function with which a given texel's color in the texture can be altered.
+            set_pixel_at: (x, y, newColorIdx)=>{},
         },
         ...args
     };
@@ -125,6 +128,7 @@ Rsed.visual.texture = function(args = {})
         pixels: args.pixels,
         indices: args.indices,
         mipLevels: mipmaps,
+        set_pixel_at: args.set_pixel_at,
     });
 
     return publicInterface;

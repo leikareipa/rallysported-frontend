@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (23 July 2020 08:38:10 UTC)
+// VERSION: live (25 July 2020 16:38:25 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -43,6 +43,7 @@
 //	./src/client/js/rallysported-js/scene/scene.js
 //	./src/client/js/rallysported-js/scene/scene-3d.js
 //	./src/client/js/rallysported-js/scene/scene-tilemap.js
+//	./src/client/js/rallysported-js/scene/scene-texture.js
 //	./src/client/js/rallysported-js/core/core.js
 /////////////////////////////////////////////////
 /*!
@@ -2941,13 +2942,14 @@ const height4 = centerView.y + Rsed.core.current_project().maasto.tile_at( tileX
 // Ideally, the shading would replicate that of Rally-Sport, but this
 // particular implementation doesn't.
 const heightDiff = Math.max(150, Math.min(255, (255 - ((height1 - height3) * 2))));
+const texture = Rsed.core.current_project().palat.texture[tilePalaIdx];
 const groundQuad = Rngon.ngon([Rngon.vertex(vertX, height1, vertZ, 0, 0),
 Rngon.vertex((vertX + Rsed.constants.groundTileSize), height2, vertZ, 1, 0),
 Rngon.vertex((vertX + Rsed.constants.groundTileSize), height3, (vertZ + Rsed.constants.groundTileSize), 1, 1),
 Rngon.vertex(vertX, height4, (vertZ + Rsed.constants.groundTileSize), 0, 1)],
 {
 color: Rngon.color_rgba(heightDiff, heightDiff, heightDiff),
-texture: Rsed.core.current_project().palat.texture[tilePalaIdx],
+texture: texture,
 textureMapping: "ortho",
 uvWrapping: "clamp",
 hasWireframe: args.includeWireframe,
@@ -2958,6 +2960,7 @@ auxiliary:
 // quad the mouse cursor is hovering over.
 mousePickId: Rsed.ui.mouse_picking_element("ground",
 {
+texture: texture,
 groundTileX: tileX,
 groundTileY: (tileZ - 1),
 }),
@@ -3080,14 +3083,15 @@ const srcMesh = Rsed.core.current_project().props.mesh[propId];
 const dstMesh = [];
 srcMesh.ngons.forEach(ngon=>
 {
+const texture = (args.solidProps? (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx]
+: null)
+: null);
 const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x), (v.y + args.position.y), (v.z + args.position.z))),
 {
 color: (args.solidProps? (ngon.fill.type === "texture"? Rsed.visual.palette.color_at_idx(0)
 : Rsed.visual.palette.color_at_idx(ngon.fill.idx))
 : Rsed.visual.palette.color_at_idx(0, true)),
-texture: (args.solidProps? (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx]
-: null)
-: null),
+texture: texture,
 textureMapping: "ortho",
 wireframeColor: Rsed.visual.palette.color_at_idx(args.solidProps? "black" : "lightgray"),
 hasWireframe: (args.solidProps? args.includeWireframe : true),
@@ -3095,6 +3099,7 @@ auxiliary:
 {
 mousePickId: Rsed.ui.mouse_picking_element("prop",
 {
+texture: texture,
 propId: propId,
 propTrackIdx: idxOnTrack
 }),
@@ -3268,6 +3273,8 @@ width: 0,
 height: 0,
 // Whether to flip (mirror) the texture's pixels.
 flipped: "no", // | "vertical"
+// A function with which a given texel's color in the texture can be altered.
+set_pixel_at: (x, y, newColorIdx)=>{},
 },
 ...args
 };
@@ -3350,6 +3357,7 @@ flipped: args.flipped,
 pixels: args.pixels,
 indices: args.indices,
 mipLevels: mipmaps,
+set_pixel_at: args.set_pixel_at,
 });
 return publicInterface;
 }
@@ -3835,8 +3843,6 @@ Rsed.assert && (palaWidth === palaHeight)
 Rsed.assert && ((palaWidth > 0) &&
 (palaHeight > 0))
 || Rsed.throw("Expected PALA width and height to be positive and non-zero.");
-const palatPixels = Array.from(data, (colorIdx)=>Rsed.visual.palette.color_at_idx(colorIdx, false));
-const palatPixelsWithAlpha = Array.from(data, (colorIdx)=>Rsed.visual.palette.color_at_idx(colorIdx, true));
 const palaSize = (palaWidth * palaHeight);
 // Pre-compute the individual PALA textures.
 const prebakedPalaTextures = new Array(256).fill().map((pala, idx)=>generate_texture(idx));
@@ -3844,7 +3850,7 @@ const publicInterface = Object.freeze(
 {
 width: palaWidth,
 height: palaHeight,
-texture: Object.freeze(prebakedPalaTextures),
+texture: prebakedPalaTextures,
 // Rally-Sport by default has four different 'skins' for spectators, and decides
 // which skin a spectator will be given based on the spectator's XY ground tile
 // coordinates.
@@ -3923,14 +3929,28 @@ indices: [0],
 const isBillboardPala = ((palaId == 176) ||
 (palaId == 177) ||
 ((palaId >= 208) && (palaId <= 239)));
+// A slice of the entire PALAT data representing the region in which this particular
+// PALAT texture's pixels are.
+const dataSlice = data.slice(dataIdx, (dataIdx + palaSize));
+const pixels = Array.from(dataSlice, (colorIdx)=>Rsed.visual.palette.color_at_idx(colorIdx, isBillboardPala));
 return Rsed.visual.texture(
 {
 ...args,
 width: palaWidth,
 height: palaHeight,
-pixels: (isBillboardPala? palatPixelsWithAlpha : palatPixels).slice(dataIdx, (dataIdx + palaSize)),
-indices: data.slice(dataIdx, (dataIdx + palaSize)),
+pixels: pixels,
+indices: dataSlice,
 flipped: "no",
+set_pixel_at: function(x = 0, y = 0, newColorIdx = 0)
+{
+const texelIdx = (x + y * palaWidth);
+data[dataIdx + texelIdx] = newColorIdx;
+// Regenerate this texture to incorporate the changes we've made to the
+// master data array.
+prebakedPalaTextures[palaId] = generate_texture(palaId, args);
+// Return the updated reference to this texture:
+return prebakedPalaTextures[palaId];
+},
 });
 }
 return publicInterface;
@@ -3968,33 +3988,10 @@ const trackPropLocations = data.propLocations.filter(m=>(typeof m.trackId !== "u
 .sort((a, b)=>((a.trackId === b.trackId)? 0 : ((a.trackId > b.trackId)? 1 : -1)));
 const textureRects = data.propTextureRects.filter(m=>(typeof m.textureId !== "undefined"))
 .sort((a, b)=>((a.textureId === b.textureId)? 0 : ((a.textureId > b.textureId)? 1 : -1)));
-// Pre-compute the individual prop textures.
-const prebakedPropTextures = (new Array(textureRects.length)).fill().map((tex, idx)=>
-{
-const width = textureRects[idx].rect.width;
-const height = textureRects[idx].rect.height;
-const pixels = [];
-const indices = [];
-// Copy the texture's pixel region from the texture atlas.
-for (let y = 0; y < height; y++)
-{
-for (let x = 0; x < width; x++)
-{
+// The assumed width of the prop texture atlas.
 const textureAtlasWidth = 128;
-const dataIdx = ((textureRects[idx].rect.topLeft.x + x) + (textureRects[idx].rect.topLeft.y + y) * textureAtlasWidth);
-indices.push(textureAtlas[dataIdx]);
-pixels.push(Rsed.visual.palette.color_at_idx(textureAtlas[dataIdx], true));
-}
-}
-return Rsed.visual.texture(
-{
-width,
-height,
-pixels: pixels,
-indices: indices,
-flipped: "no",
-});
-});
+// Pre-compute the individual prop textures.
+const prebakedPropTextures = (new Array(textureRects.length)).fill().map((tex, idx)=>generate_prop_texture(idx));
 // Pre-compute prop meshes. Each mesh will be an object with the following form:
 //
 //     {
@@ -4062,7 +4059,7 @@ return {ngons};
 const publicInterface =
 {
 mesh: Object.freeze(prebakedPropMeshes),
-texture: Object.freeze(prebakedPropTextures),
+texture: prebakedPropTextures,
 name: (propId = 0)=>
 {
 Rsed.assert && ((propId >= 0) &&
@@ -4244,6 +4241,43 @@ z: loc.z
 },
 };
 return publicInterface;
+function generate_prop_texture(idx)
+{
+const width = textureRects[idx].rect.width;
+const height = textureRects[idx].rect.height;
+const pixels = [];
+const indices = [];
+// Copy the texture's pixel region from the texture atlas.
+for (let y = 0; y < height; y++)
+{
+for (let x = 0; x < width; x++)
+{
+const dataIdx = ((textureRects[idx].rect.topLeft.x + x) + (textureRects[idx].rect.topLeft.y + y) * textureAtlasWidth);
+indices.push(textureAtlas[dataIdx]);
+pixels.push(Rsed.visual.palette.color_at_idx(textureAtlas[dataIdx], true));
+}
+}
+return Rsed.visual.texture(
+{
+width,
+height,
+pixels: pixels,
+indices: indices,
+flipped: "no",
+set_pixel_at: function(x = 0, y = 0, newColorIdx = 0)
+{
+const texelIdx = ((textureRects[idx].rect.topLeft.x + x) +
+(textureRects[idx].rect.topLeft.y + y) *
+textureAtlasWidth);
+textureAtlas[texelIdx] = newColorIdx;
+// Regenerate this texture to incorporate the changes we've made to the
+// master data array.
+prebakedPropTextures[idx] = generate_prop_texture(idx);
+// Return the updated reference to this texture:
+return prebakedPropTextures[idx];
+},
+});
+}
 // Clamp the given value (expected to be track tile units) so that it doesn't exceed the
 // track prop margins. (E.g. if the track is 128 tiles wide and the margin is 2 tiles, a
 // value of 132 would be clamped to 126; and a value of -5 to 2.)
@@ -6644,6 +6678,16 @@ if (Rsed.ui.inputState.key_down("q"))
 Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
 Rsed.ui.inputState.set_key_down("q", false);
 }
+if (Rsed.ui.inputState.key_down("t"))
+{
+const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+if (mouseHover && mouseHover.texture)
+{
+Rsed.scenes["texture"].set_texture(mouseHover.texture);
+Rsed.core.set_scene("texture");
+Rsed.ui.inputState.set_key_down("t", false);
+}
+}
 if (Rsed.ui.inputState.key_down("w"))
 {
 sceneSettings.showWireframe = !sceneSettings.showWireframe;
@@ -7026,15 +7070,6 @@ function handle_mouse_input()
 {
 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
-// Handle clicks over the PALAT pane.
-if ( mouseHover &&
-(mouseHover.type == "ui-element") &&
-(mouseHover.uiElementId == "palat-pane") &&
-Rsed.ui.inputState.left_or_right_mouse_button_down())
-{
-Rsed.ui.groundBrush.set_brush_pala_idx(mouseHover.palaIdx);
-return;
-}
 // Handle painting the tilemap.
 if (Rsed.ui.inputState.mid_mouse_button_down())
 {
@@ -7049,6 +7084,228 @@ scene.refresh_tilemap_view((mousePosX - brushSize),
 (mousePosY - brushSize),
 (brushSize * 2),
 (brushSize * 2));
+}
+return;
+}
+})();
+/*
+* Most recent known filename: js/scenes/scene-texture.js
+*
+* 2019 Tarpeeksi Hyvae Soft /
+* RallySportED-js
+*
+*/
+"use strict";
+Rsed.scenes = Rsed.scenes || {};
+// A view of a given texture, allowing the user to paint the texture.
+Rsed.scenes["texture"] = (function()
+{
+/// Temp hack. Lets the renderer know that we want it to update mouse hover information
+/// once the next frame has finished rendering. This is used e.g. to keep proper track
+/// mouse hover when various UI elements are toggled on/off.
+let updateMouseHoverOnFrameFinish = false;
+// A reference to the Rsed.visual.texture() object that we're to edit.
+let texture = null;
+// The amount by which the user has moved the texture's position in the view.
+let textureUserOffsetX = 0;
+let textureUserOffsetY = 0;
+let textureZoom = 50;
+// A buffer in which we store mouse-picking information about the rendering - so for
+// each pixel on-screen, we can tell to which part of the texture the pixel corresponds.
+const textureMousePickBuffer = [];
+const sceneSettings = {
+// Whether to show the PALAT pane; i.e. a side panel that displays all the available
+// PALA textures.
+showPalatPane: false,
+};
+// Load UI components.
+let uiComponents = null;
+(async()=>
+{
+uiComponents = {
+fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
+};
+})();
+const scene = Rsed.scene(
+{
+// Assign the texture to be edited. Must be either an instance of Rsed.visual.texture
+// or an object that implements Rsed.visual.texture's public API.
+set_texture: function(tex)
+{
+texture = tex;
+},
+draw_ui: function()
+{
+Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
+if (uiComponents) // Once the UI components have finished async loading...
+{
+if (Rsed.core.fps_counter_enabled())
+{
+uiComponents.fpsIndicator.update(sceneSettings);
+uiComponents.fpsIndicator.draw(4, 15);
+}
+}
+Rsed.ui.draw.mouse_cursor();
+Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
+// Note: We assume that UI drawing is the last step in rendering the current
+// frame; and thus that once the UI rendering has finished, the frame is finished
+// also.
+if (updateMouseHoverOnFrameFinish)
+{
+Rsed.ui.inputState.update_mouse_hover();
+updateMouseHoverOnFrameFinish = false;
+}
+return;
+},
+draw_mesh: function()
+{
+if (!texture)
+{
+return;
+}
+textureMousePickBuffer.length = 0;
+const textureNgon = Rngon.ngon([Rngon.vertex(0, 0, textureZoom, 0, 0),
+Rngon.vertex(texture.width, 0, textureZoom, 1, 0),
+Rngon.vertex(texture.width, texture.height, textureZoom, 1, 1),
+Rngon.vertex(0, texture.height, textureZoom, 0, 1)],
+{
+color: Rngon.color_rgba(255, 255, 255),
+texture: texture,
+hasWireframe: true,
+wireframeColor: Rngon.color_rgba(255, 255, 0),
+textureMapping: "affine",
+uvWrapping: "clamp",
+});
+const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [Rngon.mesh([textureNgon])],
+{
+cameraPosition: Rngon.translation_vector(-textureUserOffsetX, textureUserOffsetY, 0),
+scale: Rsed.visual.canvas.scalingFactor,
+fov: 45,
+nearPlane: 0,
+farPlane: 10000,
+depthSort: "painter",
+useDepthBuffer: false,
+// For each pixel we're rendered, mark its texture UV coordinates into our
+// mouse-picking buffer.
+pixelShaderFunction: function({renderWidth, renderHeight, fragmentBuffer})
+{
+for (let i = 0; i < (renderWidth * renderHeight); i++)
+{
+const u = fragmentBuffer[i].textureU;
+const v = fragmentBuffer[i].textureV;
+textureMousePickBuffer[i] = {
+u: ((typeof u === "undefined")? undefined : ~~(u * texture.width)),
+v: ((typeof v === "undefined")? undefined : ~~(v * texture.height)),
+};
+// Reset the fragment buffer as we go along, since the renderer doesn't at the
+// time of writing this clear the fragment buffer at the beginning of each frame.
+fragmentBuffer[i].textureU = undefined;
+fragmentBuffer[i].textureV = undefined;
+}
+},
+});
+// If the rendering was resized since the previous frame...
+if ((renderInfo.renderWidth !== Rsed.visual.canvas.width ||
+(renderInfo.renderHeight !== Rsed.visual.canvas.height)))
+{
+Rsed.visual.canvas.width = renderInfo.renderWidth;
+Rsed.visual.canvas.height = renderInfo.renderHeight;
+window.close_dropdowns();
+}
+return;
+},
+handle_user_interaction: function()
+{
+handle_keyboard_input();
+handle_mouse_input();
+},
+});
+return scene;
+function handle_keyboard_input()
+{
+// Handle keyboard input to move the texture.
+{
+const direction = Rngon.vector3(0, 0, 0);
+const movementSpeed = 0.5;
+if (Rsed.ui.inputState.key_down("s")) direction.x += -1;
+if (Rsed.ui.inputState.key_down("f")) direction.x +=  1;
+if (Rsed.ui.inputState.key_down("e")) direction.y += -1;
+if (Rsed.ui.inputState.key_down("d")) direction.y +=  1;
+Rngon.vector3.normalize(direction);
+textureUserOffsetX += (direction.x * movementSpeed);
+textureUserOffsetY += (direction.y * movementSpeed);
+}
+// Handle keyboard input for one-off events, where the key press is registered
+// only once (no repeat).
+{
+if (Rsed.ui.inputState.key_down("z"))
+{
+if (Rsed.ui.inputState.key_down("control") &&
+Rsed.ui.inputState.key_down("shift"))
+{
+Rsed.ui.undoStack.redo();
+}
+else if (Rsed.ui.inputState.key_down("control"))
+{
+Rsed.ui.undoStack.undo();
+}
+Rsed.ui.inputState.set_key_down("z", false);
+}
+if (Rsed.ui.inputState.key_down("y") &&
+Rsed.ui.inputState.key_down("control") )
+{
+Rsed.ui.undoStack.redo();
+Rsed.ui.inputState.set_key_down("y", false);
+}
+if (Rsed.ui.inputState.key_down("q"))
+{
+Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
+Rsed.ui.inputState.set_key_down("q", false);
+}
+if (Rsed.ui.inputState.key_down("a"))
+{
+sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
+Rsed.ui.inputState.set_key_down("a", false);
+// Prevent a mouse click from acting on the ground behind the pane when the pane
+// is brought up, and on the pane when the pane has been removed.
+updateMouseHoverOnFrameFinish = true;
+}
+for (const brushSizeKey of ["1", "2", "3", "4", "5"])
+{
+if (Rsed.ui.inputState.key_down(brushSizeKey))
+{
+Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+Rsed.ui.inputState.set_key_down(brushSizeKey, false);
+}
+}
+}
+return;
+}
+function handle_mouse_input()
+{
+if (!texture)
+{
+return;
+}
+const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
+// Handle painting the texture.
+if (Rsed.ui.inputState.mouse_button_down())
+{
+const pickElement = textureMousePickBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width];
+if (pickElement &&
+(typeof pickElement.u !== "undefined") &&
+(typeof pickElement.v !== "undefined"))
+{
+// Note: Changing a pixel in the texture causes the texture to be regenerated,
+// so we need to update our reference to it. (The new reference is returned
+// from the pixel-setting function.)
+texture = texture.set_pixel_at(pickElement.u, pickElement.v, 4);
+}
+}
+else if (Rsed.ui.inputState.mouse_wheel_scroll())
+{
+textureZoom += Rsed.ui.inputState.mouse_wheel_scroll() / 3;
+Rsed.ui.inputState.reset_wheel_scroll();
 }
 return;
 }

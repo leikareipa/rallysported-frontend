@@ -40,36 +40,11 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     const textureRects = data.propTextureRects.filter(m=>(typeof m.textureId !== "undefined"))
                                               .sort((a, b)=>((a.textureId === b.textureId)? 0 : ((a.textureId > b.textureId)? 1 : -1)));
 
+    // The assumed width of the prop texture atlas.
+    const textureAtlasWidth = 128;
+
     // Pre-compute the individual prop textures.
-    const prebakedPropTextures = (new Array(textureRects.length)).fill().map((tex, idx)=>
-    {
-        const width = textureRects[idx].rect.width;
-        const height = textureRects[idx].rect.height;
-        const pixels = [];
-        const indices = [];
-
-        // Copy the texture's pixel region from the texture atlas.
-        for (let y = 0; y < height; y++)
-        {
-            for (let x = 0; x < width; x++)
-            {
-                const textureAtlasWidth = 128;
-                const dataIdx = ((textureRects[idx].rect.topLeft.x + x) + (textureRects[idx].rect.topLeft.y + y) * textureAtlasWidth);
-
-                indices.push(textureAtlas[dataIdx]);
-                pixels.push(Rsed.visual.palette.color_at_idx(textureAtlas[dataIdx], true));
-            }
-        }
-
-        return Rsed.visual.texture(
-        {
-            width,
-            height,
-            pixels: pixels,
-            indices: indices,
-            flipped: "no",
-        });
-    });
+    const prebakedPropTextures = (new Array(textureRects.length)).fill().map((tex, idx)=>generate_prop_texture(idx));
 
     // Pre-compute prop meshes. Each mesh will be an object with the following form:
     //
@@ -144,8 +119,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     const publicInterface =
     {
         mesh: Object.freeze(prebakedPropMeshes),
-
-        texture: Object.freeze(prebakedPropTextures),
+        texture: prebakedPropTextures,
 
         name: (propId = 0)=>
         {
@@ -368,6 +342,50 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     };
 
     return publicInterface;
+
+    function generate_prop_texture(idx)
+    {
+        const width = textureRects[idx].rect.width;
+        const height = textureRects[idx].rect.height;
+        const pixels = [];
+        const indices = [];
+
+        // Copy the texture's pixel region from the texture atlas.
+        for (let y = 0; y < height; y++)
+        {
+            for (let x = 0; x < width; x++)
+            {
+                const dataIdx = ((textureRects[idx].rect.topLeft.x + x) + (textureRects[idx].rect.topLeft.y + y) * textureAtlasWidth);
+
+                indices.push(textureAtlas[dataIdx]);
+                pixels.push(Rsed.visual.palette.color_at_idx(textureAtlas[dataIdx], true));
+            }
+        }
+
+        return Rsed.visual.texture(
+        {
+            width,
+            height,
+            pixels: pixels,
+            indices: indices,
+            flipped: "no",
+            set_pixel_at: function(x = 0, y = 0, newColorIdx = 0)
+            {
+                const texelIdx = ((textureRects[idx].rect.topLeft.x + x) +
+                                  (textureRects[idx].rect.topLeft.y + y) *
+                                  textureAtlasWidth);
+
+                textureAtlas[texelIdx] = newColorIdx;
+
+                // Regenerate this texture to incorporate the changes we've made to the
+                // master data array.
+                prebakedPropTextures[idx] = generate_prop_texture(idx);
+
+                // Return the updated reference to this texture:
+                return prebakedPropTextures[idx];
+            },
+        });
+    }
 
     // Clamp the given value (expected to be track tile units) so that it doesn't exceed the
     // track prop margins. (E.g. if the track is 128 tiles wide and the margin is 2 tiles, a
