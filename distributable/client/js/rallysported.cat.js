@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (25 July 2020 16:38:25 UTC)
+// VERSION: live (26 July 2020 10:16:34 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -40,6 +40,7 @@
 //	./src/client/js/rallysported-js/ui/components/ground-hover-info.js
 //	./src/client/js/rallysported-js/ui/components/palat-pane.js
 //	./src/client/js/rallysported-js/ui/components/tilemap-minimap.js
+//	./src/client/js/rallysported-js/ui/components/color-selector.js
 //	./src/client/js/rallysported-js/scene/scene.js
 //	./src/client/js/rallysported-js/scene/scene-3d.js
 //	./src/client/js/rallysported-js/scene/scene-tilemap.js
@@ -3517,6 +3518,7 @@ const activePalette = (new Array(256)).fill().map(e=>({red:127,green:127,blue:12
 const activePaletteWithAlpha = (new Array(256)).fill().map(e=>({red:127,green:127,blue:127,alpha:255,unitRange:{red:1, green:1, blue:1, alpha:1}}));
 const publicInterface =
 {
+numColorsInPalette,
 // Return the color at the given index in the palette. Optionally, the index may be
 // a string identifying one of the pre-set UI colors (which are otherwise the same as
 // regular colors, but guaranteed to remain constant even when the palette is otherwise
@@ -6483,6 +6485,85 @@ return component;
 }
 }
 /*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+// A UI component that displays a list of clickable color swatches that represents the
+// current project's color palette, allowing the user to indicate which color he wants
+// (e.g. to paint a texture with).
+Rsed.ui.component.colorSelector =
+{
+instance: function()
+{
+const component = Rsed.ui.component();
+const swatchSideLen = Rsed.ui.font.font_height();
+const swatch = new Array(swatchSideLen * swatchSideLen);
+const mousePick = new Array(swatch.length);
+// The currently-selected color - an index to the current Rsed.visual.palette
+// palette.
+let currentColorIdx = 19;
+component.update = function(sceneSettings = {})
+{
+Rsed.throw_if_not_type("object", sceneSettings);
+Rsed.throw_if_undefined(sceneSettings.selectedColorIdx);
+sceneSettings.selectedColorIdx = currentColorIdx;
+if (component.is_grabbed())
+{
+currentColorIdx = Rsed.ui.inputState.current_mouse_grab().colorIdx;
+Rsed.ui.inputState.reset_mouse_grab();
+}
+};
+component.draw = function(offsetX = 0, offsetY = 0)
+{
+Rsed.throw_if_not_type("number", offsetX, offsetY);
+const numSwatchesPerRow = 4;
+// Draw a grid of color swatches.
+for (let i = 0; i < Rsed.visual.palette.numColorsInPalette; i++)
+{
+const y = Math.floor(i / numSwatchesPerRow);
+const x = (i % numSwatchesPerRow);
+swatch.fill(Rsed.visual.palette.color_at_idx(i));
+mousePick.fill({
+type: "ui-component",
+componentId: component.id,
+colorIdx: i,
+});
+Rsed.ui.draw.image(swatch, mousePick,
+swatchSideLen, swatchSideLen,
+(offsetX + (x * swatchSideLen)),
+(offsetY + (y * swatchSideLen)));
+}
+// Draw a frame around the currently-selected swatch.
+{
+const frame = [];
+const frameWidth = 9;
+const frameHeight = 9;
+for (let y = 0; y < frameHeight; y++)
+{
+for (let x = 0; x < frameWidth; x++)
+{
+let color = 0;
+if (y % (frameHeight - 1) === 0) color = (currentColorIdx || "black");
+if (x % (frameWidth - 1) === 0) color = (currentColorIdx || "black");
+frame.push(color);
+}
+}
+const y = Math.floor(currentColorIdx / numSwatchesPerRow);
+const x = (currentColorIdx - y * numSwatchesPerRow);
+Rsed.ui.draw.image(frame, null,
+frameWidth, frameHeight,
+(offsetX + (x * swatchSideLen) - 1),
+(offsetY + (y * swatchSideLen) - 1),
+true);
+}
+};
+return component;
+}
+}
+/*
 * Most recent known filename: js/scene/scene.js
 *
 * 2019 Tarpeeksi Hyvae Soft /
@@ -7114,9 +7195,8 @@ let textureZoom = 50;
 // each pixel on-screen, we can tell to which part of the texture the pixel corresponds.
 const textureMousePickBuffer = [];
 const sceneSettings = {
-// Whether to show the PALAT pane; i.e. a side panel that displays all the available
-// PALA textures.
-showPalatPane: false,
+// Which color (index to Rally-Sport's palette) to paint with.
+selectedColorIdx: false,
 };
 // Load UI components.
 let uiComponents = null;
@@ -7124,6 +7204,7 @@ let uiComponents = null;
 {
 uiComponents = {
 fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
+colorSelector: Rsed.ui.component.colorSelector.instance(),
 };
 })();
 const scene = Rsed.scene(
@@ -7139,6 +7220,8 @@ draw_ui: function()
 Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 if (uiComponents) // Once the UI components have finished async loading...
 {
+uiComponents.colorSelector.update(sceneSettings);
+uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 35), 4);
 if (Rsed.core.fps_counter_enabled())
 {
 uiComponents.fpsIndicator.update(sceneSettings);
@@ -7299,12 +7382,12 @@ if (pickElement &&
 // Note: Changing a pixel in the texture causes the texture to be regenerated,
 // so we need to update our reference to it. (The new reference is returned
 // from the pixel-setting function.)
-texture = texture.set_pixel_at(pickElement.u, pickElement.v, 4);
+texture = texture.set_pixel_at(pickElement.u, pickElement.v, sceneSettings.selectedColorIdx);
 }
 }
 else if (Rsed.ui.inputState.mouse_wheel_scroll())
 {
-textureZoom += Rsed.ui.inputState.mouse_wheel_scroll() / 3;
+textureZoom += (Rsed.ui.inputState.mouse_wheel_scroll() / 3);
 Rsed.ui.inputState.reset_wheel_scroll();
 }
 return;

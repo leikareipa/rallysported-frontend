@@ -31,9 +31,8 @@ Rsed.scenes["texture"] = (function()
     const textureMousePickBuffer = [];
 
     const sceneSettings = {
-        // Whether to show the PALAT pane; i.e. a side panel that displays all the available
-        // PALA textures.
-        showPalatPane: false,
+        // Which color (index to Rally-Sport's palette) to paint with.
+        selectedColorIdx: false,
     };
 
     // Load UI components.
@@ -42,6 +41,7 @@ Rsed.scenes["texture"] = (function()
     {
         uiComponents = {
             fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
+            colorSelector: Rsed.ui.component.colorSelector.instance(),
         };
     })();
 
@@ -60,6 +60,9 @@ Rsed.scenes["texture"] = (function()
 
             if (uiComponents) // Once the UI components have finished async loading...
             {
+                uiComponents.colorSelector.update(sceneSettings);
+                uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 35), 4);
+                
                 if (Rsed.core.fps_counter_enabled())
                 {
                     uiComponents.fpsIndicator.update(sceneSettings);
@@ -252,12 +255,12 @@ Rsed.scenes["texture"] = (function()
                 // Note: Changing a pixel in the texture causes the texture to be regenerated,
                 // so we need to update our reference to it. (The new reference is returned
                 // from the pixel-setting function.)
-                texture = texture.set_pixel_at(pickElement.u, pickElement.v, 4);
+                texture = texture.set_pixel_at(pickElement.u, pickElement.v, sceneSettings.selectedColorIdx);
             }
         }
         else if (Rsed.ui.inputState.mouse_wheel_scroll())
         {
-            textureZoom += Rsed.ui.inputState.mouse_wheel_scroll() / 3;
+            textureZoom += (Rsed.ui.inputState.mouse_wheel_scroll() / 3);
             Rsed.ui.inputState.reset_wheel_scroll();
         }
         

@@ -163,6 +163,8 @@ Rsed.visual.palette = (function()
 
     const publicInterface =
     {
+        numColorsInPalette,
+        
         // Return the color at the given index in the palette. Optionally, the index may be
         // a string identifying one of the pre-set UI colors (which are otherwise the same as
         // regular colors, but guaranteed to remain constant even when the palette is otherwise
