@@ -36,6 +36,7 @@ Rsed.ui.undoStack = (function()
     // that are modified by this undo level.
     let dirtyGround = [];
     let dirtyProps = [];
+    let dirtyTextures = [];
 
     // All undo levels we've recorded since they were last reset. Note that if the user
     // undoes and then makes new changes, the undo levels above that point will be
@@ -95,14 +96,27 @@ Rsed.ui.undoStack = (function()
         // Prop data after this undo level's changes are made.
         const propsAfter = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().trackId);
 
+        // Texture data after this undo level's changes are made.
+        const texturesAfter = [];
+        for (textureId of Object.keys(dirtyTextures))
+        {
+            // We expect the texture id to be of the form "<type> <value>", e.g.
+            // "palat 97" for PALA texture #97.
+            const [textureType, textureIndex] = textureId.split(" ");
+
+            texturesAfter[textureId] = Rsed.core.current_project()[textureType].texture[textureIndex];
+        }
+
         undoLevels[undoLevelHead] = {
             before: {
                 ground: dirtyGround,
                 props: dirtyProps,
+                textures: dirtyTextures,
             },
             after: {
                 ground: groundAfter,
                 props: propsAfter,
+                textures: texturesAfter,
             }
         };
 
@@ -110,8 +124,11 @@ Rsed.ui.undoStack = (function()
 
         dirtyGround = [];
         dirtyProps = [];
+        dirtyTextures = [];
     }
 
+    // Undo the changes in the current undo level if when == "before", or redo
+    // the current undo level's changes if when == "after".
     function apply_undo_level(undoLevel, when = "before")
     {
         if (!undoLevel)
@@ -158,6 +175,27 @@ Rsed.ui.undoStack = (function()
             }
         }
 
+        // Undo on textures.
+        for (textureId of Object.keys(undoLevel[when].textures))
+        {
+            // We expect the texture id to be of the form "<type> <value>", e.g.
+            // "palat 97" for PALA texture #97.
+            const [textureType, textureIndex] = textureId.split(" ");
+
+            // Update the texture's data. We'll get back a reference to the updated
+            // texture object.
+            const updatedTexture = Rsed.core.current_project()[textureType]
+                                            .copy_texture_data(Number(textureIndex),
+                                                               undoLevel[when].textures[textureId]);
+
+            // The texture-editing view doesn't automatically update its texture
+            // reference, so we'll need to let it known the texture has changed.
+            if (Rsed.core.current_scene() == Rsed.scenes["texture"])
+            {
+                Rsed.scenes["texture"].set_texture(updatedTexture);
+            }
+        }
+
         frozen = false;
     }
 
@@ -172,6 +210,7 @@ Rsed.ui.undoStack = (function()
 
             dirtyGround = [];
             dirtyProps = [];
+            dirtyTextures = [];
         
             undoLevels.length = 0;
             undoLevelHead = 0;
@@ -217,8 +256,10 @@ Rsed.ui.undoStack = (function()
 
         // For the given XY ground tile, marks its height and texture index at
         // the beginning of the current undo level.
-        mark_dirty_ground_tile: function(x, y)
+        mark_dirty_ground_tile: function(x = 0, y = 0)
         {
+            Rsed.throw_if_not_type("number", x, y);
+
             if (frozen || Rsed.core.current_project().isPlaceholder)
             {
                 return;
@@ -255,6 +296,30 @@ Rsed.ui.undoStack = (function()
             create_undo_level();
 
             dirtyProps = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().trackId);
+        },
+
+        // Stores the data of the given texture at the beginning of the current undo
+        // level.
+        mark_dirty_texture: function(textureType = "", palaIdx = 0)
+        {
+            if (frozen || Rsed.core.current_project().isPlaceholder)
+            {
+                return;
+            }
+
+            Rsed.throw_if_not_type("number", palaIdx);
+
+            if (!["props", "palat"].includes(textureType))
+            {
+                Rsed.throw("Unknown texture type.");
+            }
+
+            create_undo_level();
+
+            if (typeof dirtyTextures[`${textureType} ${palaIdx}`] === "undefined")
+            {
+                dirtyTextures[`${textureType} ${palaIdx}`] = Rsed.core.current_project()[textureType].texture[palaIdx];
+            }
         },
     };
 

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 July 2020 10:16:34 UTC)
+// VERSION: live (29 July 2020 13:03:17 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3853,6 +3853,28 @@ const publicInterface = Object.freeze(
 width: palaWidth,
 height: palaHeight,
 texture: prebakedPalaTextures,
+// Copies the given texture's data over the PALA texture at the given index.
+// This causes the current texture to be re-generated; a reference to the
+// new texture object is returned.
+copy_texture_data: function(palaIdx = 0, srcTexture)
+{
+Rsed.throw_if_not_type("number", palaIdx);
+// All PALA textures are expected to be the same resolution.
+if ((srcTexture.width !== palaWidth) ||
+(srcTexture.height !== palaHeight))
+{
+Rsed.throw("Invalid PALA texture dimensions for copying.")
+}
+const dataIdx = (palaIdx * (palaWidth * palaHeight));
+for (let i = 0; i < (palaWidth * palaHeight); i++)
+{
+data[dataIdx + i] = srcTexture.indices[i];
+}
+// Regenerate this texture to incorporate the changes we've made to the
+// master data array.
+prebakedPalaTextures[palaIdx] = generate_texture(palaIdx, srcTexture.args);
+return prebakedPalaTextures[palaIdx];
+},
 // Rally-Sport by default has four different 'skins' for spectators, and decides
 // which skin a spectator will be given based on the spectator's XY ground tile
 // coordinates.
@@ -3924,6 +3946,7 @@ width: 1,
 height: 1,
 pixels: [Rsed.visual.palette.color_at_idx("black")],
 indices: [0],
+args: args,
 });
 }
 // Billboard PALAs will have alpha-testing enabled (so color index 0 is see-through),
@@ -3943,9 +3966,11 @@ height: palaHeight,
 pixels: pixels,
 indices: dataSlice,
 flipped: "no",
+args: args,
 set_pixel_at: function(x = 0, y = 0, newColorIdx = 0)
 {
 const texelIdx = (x + y * palaWidth);
+Rsed.ui.undoStack.mark_dirty_texture("palat", palaId);
 data[dataIdx + texelIdx] = newColorIdx;
 // Regenerate this texture to incorporate the changes we've made to the
 // master data array.
@@ -4062,6 +4087,32 @@ const publicInterface =
 {
 mesh: Object.freeze(prebakedPropMeshes),
 texture: prebakedPropTextures,
+// Copies the given texture's data over the prop texture at the given index.
+// This causes the current texture to be re-generated; a reference to the
+// new texture object is returned.
+copy_texture_data: function(textureIdx = 0, srcTexture)
+{
+Rsed.throw_if_not_type("number", textureIdx);
+if ((srcTexture.width !== textureRects[textureIdx].rect.width) ||
+(srcTexture.height !== textureRects[textureIdx].rect.height))
+{
+Rsed.throw("Invalid prop texture dimensions for copying.")
+}
+for (let y = 0; y < srcTexture.height; y++)
+{
+for (let x = 0; x < srcTexture.width; x++)
+{
+const dataIdx = ((textureRects[textureIdx].rect.topLeft.x + x) +
+(textureRects[textureIdx].rect.topLeft.y + y) *
+textureAtlasWidth);
+textureAtlas[dataIdx] = srcTexture.indices[x + y * srcTexture.width];
+}
+}
+// Regenerate this texture to incorporate the changes we've made to the
+// master data array.
+prebakedPropTextures[textureIdx] = generate_prop_texture(textureIdx);
+return prebakedPropTextures[textureIdx];
+},
 name: (propId = 0)=>
 {
 Rsed.assert && ((propId >= 0) &&
@@ -4271,6 +4322,7 @@ set_pixel_at: function(x = 0, y = 0, newColorIdx = 0)
 const texelIdx = ((textureRects[idx].rect.topLeft.x + x) +
 (textureRects[idx].rect.topLeft.y + y) *
 textureAtlasWidth);
+Rsed.ui.undoStack.mark_dirty_texture("props", idx);
 textureAtlas[texelIdx] = newColorIdx;
 // Regenerate this texture to incorporate the changes we've made to the
 // master data array.
@@ -4348,6 +4400,7 @@ let timerId = null;
 // that are modified by this undo level.
 let dirtyGround = [];
 let dirtyProps = [];
+let dirtyTextures = [];
 // All undo levels we've recorded since they were last reset. Note that if the user
 // undoes and then makes new changes, the undo levels above that point will be
 // replaced with new undo levels that reflect the new changes.
@@ -4395,20 +4448,34 @@ palaIdx: Rsed.core.current_project().varimaa.tile_at(x, y),
 }
 // Prop data after this undo level's changes are made.
 const propsAfter = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().trackId);
+// Texture data after this undo level's changes are made.
+const texturesAfter = [];
+for (textureId of Object.keys(dirtyTextures))
+{
+// We expect the texture id to be of the form "<type> <value>", e.g.
+// "palat 97" for PALA texture #97.
+const [textureType, textureIndex] = textureId.split(" ");
+texturesAfter[textureId] = Rsed.core.current_project()[textureType].texture[textureIndex];
+}
 undoLevels[undoLevelHead] = {
 before: {
 ground: dirtyGround,
 props: dirtyProps,
+textures: dirtyTextures,
 },
 after: {
 ground: groundAfter,
 props: propsAfter,
+textures: texturesAfter,
 }
 };
 undoLevelHead++;
 dirtyGround = [];
 dirtyProps = [];
+dirtyTextures = [];
 }
+// Undo the changes in the current undo level if when == "before", or redo
+// the current undo level's changes if when == "after".
 function apply_undo_level(undoLevel, when = "before")
 {
 if (!undoLevel)
@@ -4446,6 +4513,24 @@ z: undoLevel[when].props[i].z,
 Rsed.core.current_project().props.change_prop_type(trackId, i, undoLevel[when].props[i].propId);
 }
 }
+// Undo on textures.
+for (textureId of Object.keys(undoLevel[when].textures))
+{
+// We expect the texture id to be of the form "<type> <value>", e.g.
+// "palat 97" for PALA texture #97.
+const [textureType, textureIndex] = textureId.split(" ");
+// Update the texture's data. We'll get back a reference to the updated
+// texture object.
+const updatedTexture = Rsed.core.current_project()[textureType]
+.copy_texture_data(Number(textureIndex),
+undoLevel[when].textures[textureId]);
+// The texture-editing view doesn't automatically update its texture
+// reference, so we'll need to let it known the texture has changed.
+if (Rsed.core.current_scene() == Rsed.scenes["texture"])
+{
+Rsed.scenes["texture"].set_texture(updatedTexture);
+}
+}
 frozen = false;
 }
 const publicInterface =
@@ -4457,6 +4542,7 @@ frozen = false;
 timerId = null;
 dirtyGround = [];
 dirtyProps = [];
+dirtyTextures = [];
 undoLevels.length = 0;
 undoLevelHead = 0;
 },
@@ -4492,8 +4578,9 @@ undoLevelHead++;
 },
 // For the given XY ground tile, marks its height and texture index at
 // the beginning of the current undo level.
-mark_dirty_ground_tile: function(x, y)
+mark_dirty_ground_tile: function(x = 0, y = 0)
 {
+Rsed.throw_if_not_type("number", x, y);
 if (frozen || Rsed.core.current_project().isPlaceholder)
 {
 return;
@@ -4524,6 +4611,25 @@ return;
 }
 create_undo_level();
 dirtyProps = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().trackId);
+},
+// Stores the data of the given texture at the beginning of the current undo
+// level.
+mark_dirty_texture: function(textureType = "", palaIdx = 0)
+{
+if (frozen || Rsed.core.current_project().isPlaceholder)
+{
+return;
+}
+Rsed.throw_if_not_type("number", palaIdx);
+if (!["props", "palat"].includes(textureType))
+{
+Rsed.throw("Unknown texture type.");
+}
+create_undo_level();
+if (typeof dirtyTextures[`${textureType} ${palaIdx}`] === "undefined")
+{
+dirtyTextures[`${textureType} ${palaIdx}`] = Rsed.core.current_project()[textureType].texture[palaIdx];
+}
 },
 };
 publicInterface.reset();

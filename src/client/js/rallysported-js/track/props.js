@@ -121,6 +121,38 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         mesh: Object.freeze(prebakedPropMeshes),
         texture: prebakedPropTextures,
 
+        // Copies the given texture's data over the prop texture at the given index.
+        // This causes the current texture to be re-generated; a reference to the
+        // new texture object is returned.
+        copy_texture_data: function(textureIdx = 0, srcTexture)
+        {
+            Rsed.throw_if_not_type("number", textureIdx);
+
+            if ((srcTexture.width !== textureRects[textureIdx].rect.width) ||
+                (srcTexture.height !== textureRects[textureIdx].rect.height))
+            {
+                Rsed.throw("Invalid prop texture dimensions for copying.")
+            }
+
+            for (let y = 0; y < srcTexture.height; y++)
+            {
+                for (let x = 0; x < srcTexture.width; x++)
+                {
+                    const dataIdx = ((textureRects[textureIdx].rect.topLeft.x + x) +
+                                     (textureRects[textureIdx].rect.topLeft.y + y) *
+                                     textureAtlasWidth);
+
+                    textureAtlas[dataIdx] = srcTexture.indices[x + y * srcTexture.width];
+                }
+            }
+
+            // Regenerate this texture to incorporate the changes we've made to the
+            // master data array.
+            prebakedPropTextures[textureIdx] = generate_prop_texture(textureIdx);
+
+            return prebakedPropTextures[textureIdx];
+        },
+
         name: (propId = 0)=>
         {
             Rsed.assert && ((propId >= 0) &&
@@ -375,6 +407,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                                   (textureRects[idx].rect.topLeft.y + y) *
                                   textureAtlasWidth);
 
+                Rsed.ui.undoStack.mark_dirty_texture("props", idx);
                 textureAtlas[texelIdx] = newColorIdx;
 
                 // Regenerate this texture to incorporate the changes we've made to the

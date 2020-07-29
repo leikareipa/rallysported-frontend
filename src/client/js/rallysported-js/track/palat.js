@@ -40,6 +40,33 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
         height: palaHeight,
         texture: prebakedPalaTextures,
 
+        // Copies the given texture's data over the PALA texture at the given index.
+        // This causes the current texture to be re-generated; a reference to the
+        // new texture object is returned.
+        copy_texture_data: function(palaIdx = 0, srcTexture)
+        {
+            Rsed.throw_if_not_type("number", palaIdx);
+
+            // All PALA textures are expected to be the same resolution.
+            if ((srcTexture.width !== palaWidth) ||
+                (srcTexture.height !== palaHeight))
+            {
+                Rsed.throw("Invalid PALA texture dimensions for copying.")
+            }
+
+            const dataIdx = (palaIdx * (palaWidth * palaHeight));
+            for (let i = 0; i < (palaWidth * palaHeight); i++)
+            {
+                data[dataIdx + i] = srcTexture.indices[i];
+            }
+
+            // Regenerate this texture to incorporate the changes we've made to the
+            // master data array.
+            prebakedPalaTextures[palaIdx] = generate_texture(palaIdx, srcTexture.args);
+
+            return prebakedPalaTextures[palaIdx];
+        },
+
         // Rally-Sport by default has four different 'skins' for spectators, and decides
         // which skin a spectator will be given based on the spectator's XY ground tile
         // coordinates.
@@ -123,6 +150,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
                 height: 1,
                 pixels: [Rsed.visual.palette.color_at_idx("black")],
                 indices: [0],
+                args: args,
             });
         }
 
@@ -146,10 +174,12 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
             pixels: pixels,
             indices: dataSlice,
             flipped: "no",
+            args: args,
             set_pixel_at: function(x = 0, y = 0, newColorIdx = 0)
             {
                 const texelIdx = (x + y * palaWidth);
 
+                Rsed.ui.undoStack.mark_dirty_texture("palat", palaId);
                 data[dataIdx + texelIdx] = newColorIdx;
 
                 // Regenerate this texture to incorporate the changes we've made to the
