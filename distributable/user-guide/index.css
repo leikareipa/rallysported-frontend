@@ -1,49 +1,50 @@
-@font-face
-{
-    font-family: "Comic Sans (server-side)";
-    src: url("/rallysport-content/api/fonts/comic-sans/comic-sans.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face
-{
-    font-family: "Comic Sans (server-side)";
-    src: url("/rallysport-content/api/fonts/comic-sans/comic-sans-bold.ttf") format("truetype");
-    font-weight: bold;
-    font-style: normal;
-}
-
 body
 {
+    font-family: sans-serif;
+    overflow-y: hidden;
     text-align: center;
     align-content: center;
-    background-color: #000000;
-    color: rgb(218, 218, 218);
+    background-color: rgb(240, 240, 240);
+    color: black;
     padding: 0;
     margin: 0;
 }
 
-h1
+header
 {
-    text-align: center;
-    font-family: 'Comic Sans (server-side)';
-    font-weight: bold;
-    font-size: 200%;
-    color: rgb(231, 231, 231);
+    overflow-x: auto;
+    white-space: nowrap;
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 100%;
+    background-color: white;
+    padding: 20px;
+    text-align: left;
+    font-family: sans-serif;
+    font-weight: normal;
+    font-size: 150%;
+    color: black;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    height: 70px;
 }
 
-h2,h3,h4
+a
 {
-    font-family: 'Comic Sans (server-side)';
-    padding-left: 10px;
-    padding-right: 15px;
-    color: rgb(224, 224, 224);
-    margin-bottom: 0;
-    margin-top: 35px;
-    display: block;
-    border-radius: 3px;
-    background-color: rgb(156, 75, 75);
+    text-decoration: none;
+    color: inherit;
+}
+
+a:hover
+{
+    text-decoration: underline;
+}
+
+hr
+{
+    width: 100%;
+    border: none;
+    border-bottom: 3px solid rgb(240, 240, 240);
 }
 
 img
@@ -51,21 +52,108 @@ img
     display: block;
     margin-top: 20px;
     margin-bottom: 20px;
+    margin: 45px;
     margin-left: auto;
     margin-right: auto;
-    border-radius: 3px;
-    border: 3px solid rgb(121, 158, 137);
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    max-width: 100%;
 }
 
-.container
+#main-container
 {
-    padding: 25px;
-    background-color: #aca38a;
-    color: rgb(31, 31, 31);
-    display: inline-block;
+    position: relative;
+    z-index: 0;
+    display: flex;
+}
+
+#side-panel
+{
+    background-color: white;
+    flex-basis: 310px;
+    text-align: left;
+    padding: 30px;
+}
+
+#side-panel ul
+{
+    list-style-type: none;
+    padding-left: 0;
+    padding: 0;
+    margin: 0;
+}
+
+#side-panel li,
+#side-panel li a
+{
+    padding-bottom: 4px;
+    padding-top: 4px;
+}
+
+#help-topics
+{
+    padding: 0;
+    background-color: transparent;
+    color: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
-    max-width: 670px;
+    height: calc(100vh - 70px); /* Minus the height of the header.*/
     text-align: left;
     position: relative;
     z-index: 0;
+    margin: auto;
+    overflow-y: scroll;
+}
+
+.help-topic
+{
+    max-width: 900px;
+    box-sizing: border-box;
+    padding: 30px;
+    background-color: white;
+    margin-top: 20px;
+    width: 100%;
+    border-radius: 10px;
+}
+
+.help-topic:last-child
+{
+    margin-bottom: 20px;
+}
+
+.help-topic p:last-of-type
+{
+    margin-bottom: 0;
+}
+
+
+.help-topic h1,
+.help-topic h2,
+.help-topic h3,
+.help-topic h4
+{
+    font-size: 100%;
+    font-weight: bold;
+    font-family: sans-serif;
+    color: black;
+    padding: 0;
+    margin: 0;
+}
+
+@media only screen and (max-width: 1300px)
+{
+    .help-topic
+    {
+        max-width: 95%;
+    }
+}
+
+@media only screen and (max-width: 850px)
+{
+    #side-panel
+    {
+        display: none;
+    }
 }
