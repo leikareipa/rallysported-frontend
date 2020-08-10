@@ -1,12 +1,13 @@
 :root
 {
     --header-height: 60px;
+    --side-panel-width: 330px;
+    --content-margin: 20px;
 }
 
 body
 {
     font-family: sans-serif;
-    overflow-y: hidden;
     text-align: center;
     align-content: center;
     background-color: rgb(240, 240, 240);
@@ -19,7 +20,9 @@ header
 {
     overflow-x: auto;
     white-space: nowrap;
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
     z-index: 1;
     box-sizing: border-box;
     width: 100%;
@@ -55,8 +58,8 @@ hr
 img
 {
     display: block;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: var(--content-margin);
+    margin-bottom: var(--content-margin);
     margin: 45px;
     margin-left: auto;
     margin-right: auto;
@@ -67,6 +70,15 @@ img
 
 #main-container
 {
+    position: absolute;
+    top: var(--header-height);
+    width: 100%;
+    z-index: 0;
+    display: flex;
+}
+
+#help-container
+{
     position: relative;
     z-index: 0;
     display: flex;
@@ -74,62 +86,85 @@ img
 
 #side-panel
 {
-    position: relative;
+    box-sizing: border-box;
+    position: fixed;
+    top: var(--header-height);
+    left: 10%;
     background-color: white;
-    flex-basis: 310px;
+    width: var(--side-panel-width);
     text-align: left;
     padding: 30px;
-    margin: 20px;
+    margin-top: var(--content-margin);
     margin-right: 0;
     border-radius: 10px;
+    height: calc(100% - 100px);
+    overflow-y: auto;
 }
 
 #side-panel ul
 {
+    counter-reset: line;
     list-style-type: none;
-    padding-left: 0;
     padding: 0;
     margin: 0;
+    margin-top: 16px;
 }
 
-#side-panel li,
+#side-panel li
+{
+    counter-increment: line;
+    padding-bottom: 4px;
+    padding-top: 4px;
+}
+
 #side-panel li a
 {
     padding-bottom: 4px;
     padding-top: 4px;
 }
 
+#side-panel li::before
+{
+    content: counter(line) ". ";
+}
+
+#side-panel li:first-of-type
+{
+    padding-top: 0;
+}
+
 #help-topics
 {
+    margin: var(--content-margin);
+    width: 100%;
+    max-width: 45%;
+    min-width: 850px;
     padding: 0;
     background-color: transparent;
     color: black;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
-    height: calc(100vh - var(--header-height));
     text-align: left;
     position: relative;
+    left: calc(10% + var(--side-panel-width));
+    top: 0;
     z-index: 0;
-    margin: auto;
-    overflow-y: scroll;
 }
 
 .help-topic
 {
-    max-width: 900px;
     box-sizing: border-box;
     padding: 30px;
     background-color: white;
-    margin-top: 20px;
     width: 100%;
     border-radius: 10px;
 }
 
-.help-topic:last-child
+.help-topic + .topic-anchor
 {
-    margin-bottom: 20px;
+    /* Vertically separate help topics from each other.*/
+    margin-top: var(--content-margin);
 }
 
 .help-topic p:last-of-type
@@ -137,11 +172,11 @@ img
     margin-bottom: 0;
 }
 
-
 .help-topic h1,
 .help-topic h2,
 .help-topic h3,
-.help-topic h4
+.help-topic h4,
+#side-panel h2
 {
     font-size: 100%;
     font-weight: bold;
@@ -151,18 +186,69 @@ img
     margin: 0;
 }
 
-@media only screen and (max-width: 1300px)
+.topic-anchor
 {
-    .help-topic
+    visibility: hidden;
+    position: relative;
+
+    /* Vertically align the help topic anchor with the help topics side panel.*/
+    top: calc(-1 * var(--header-height) - var(--content-margin));
+}
+
+@media only screen and (max-width: 1500px)
+{
+    #side-panel
     {
-        max-width: 95%;
+        left: var(--content-margin);
+    }
+
+    #help-topics
+    {
+        left: calc(var(--content-margin) + var(--side-panel-width));
+        width: calc(100% - 60px - var(--side-panel-width));
+        min-width: initial;
+        max-width: initial;
     }
 }
 
-@media only screen and (max-width: 850px)
+@media only screen and (max-width: 1300px)
+{
+    :root
+    {
+        --side-panel-width: 265px;
+    }
+}
+
+@media only screen and (max-width: 1000px)
 {
     #side-panel
     {
         display: none;
+    }
+
+    #help-topics
+    {
+        left: 0;
+        width: 100%;
+    }
+}
+
+@media only screen and (max-width: 600px)
+{
+    :root
+    {
+        --content-margin: 5px;
+    }
+
+    #help-topics
+    {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .help-topic
+    {
+        border-radius: 0;
+        padding: 15px;
     }
 }
