@@ -55,19 +55,6 @@ hr
     border-bottom: 3px solid rgb(240, 240, 240);
 }
 
-img
-{
-    display: block;
-    margin-top: var(--content-margin);
-    margin-bottom: var(--content-margin);
-    margin: 45px;
-    margin-left: auto;
-    margin-right: auto;
-    border-radius: 6px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    max-width: 100%;
-}
-
 #main-container
 {
     position: absolute;
@@ -170,6 +157,31 @@ img
 .help-topic p:last-of-type
 {
     margin-bottom: 0;
+}
+
+.help-topic img
+{
+    display: block;
+    margin-top: var(--content-margin);
+    margin-bottom: var(--content-margin);
+    margin: 45px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    max-width: 100%;
+}
+
+.help-topic > table img
+{
+    all: initial;
+}
+
+.help-topic > table
+{
+    margin: auto;
+    margin-top: var(--content-margin);
+    margin-bottom: var(--content-margin);
 }
 
 .help-topic h1,
