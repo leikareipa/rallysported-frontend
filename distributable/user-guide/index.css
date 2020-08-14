@@ -60,7 +60,7 @@ hr
     position: absolute;
     top: var(--header-height);
     width: 100%;
-    z-index: 0;
+    z-index: -1;
     display: flex;
 }
 
@@ -75,6 +75,7 @@ hr
 {
     box-sizing: border-box;
     position: fixed;
+    z-index: 0;
     top: var(--header-height);
     left: 10%;
     background-color: white;

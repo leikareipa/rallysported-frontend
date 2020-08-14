@@ -218,7 +218,7 @@ helpTopics["Keyboard controls"] = `
     </p>
 `;
 
-helpTopics["Loading in tracks"] = `
+helpTopics["Loading a track"] = `
     <p>
         There are two ways to load a track into RallySportED-js: URL parameter and
         file-dragging.
@@ -244,7 +244,7 @@ helpTopics["Loading in tracks"] = `
     <img src="img/project-zip.png">
 `;
 
-helpTopics["Saving tracks"] = `
+helpTopics["Saving a track"] = `
     <p>
         You can find an option at the top left corner of the RallySportED-js page to
         download a copy of the current track. The download will be in the form of a ZIP
