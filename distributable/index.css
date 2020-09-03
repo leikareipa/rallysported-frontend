@@ -336,3 +336,33 @@ body
         right: 45px;
     }
 }
+
+@media only screen and (max-width: 850px)
+{
+    #html-ui
+    {
+        flex-direction: column;
+        text-align: left;
+    }
+
+    #html-ui > #button-bar
+    {
+        margin-left: 0;
+        margin-top: 6px;
+    }
+}
+
+@media only screen and (max-width: 550px)
+{
+    #html-ui
+    {
+        flex-direction: column;
+        text-align: left;
+    }
+
+    #html-ui > #button-bar
+    {
+        /* TODO: Instead of hiding, show the button bar as an expanding menu button or the like.*/
+        display: none;
+    }
+}

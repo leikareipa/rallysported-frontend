@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (29 July 2020 13:03:17 UTC)
+// VERSION: live (03 September 2020 10:47:33 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6756,12 +6756,28 @@ return;
 Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 if (uiComponents) // Once the UI components have finished async loading...
 {
+// If there's enough horizontal space... (This assumes that the active PALA
+// is drawn on the right side of the screen and to the left of the track's
+// minimap, and that on the left side of the screen is the HTML UI).
+if (Rsed.visual.canvas.domElement.clientWidth > 650)
+{
 uiComponents.activePala.update(sceneSettings);
 uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 4);
+}
+// If there's enough horizontal space...
+if (Rsed.visual.canvas.domElement.clientWidth > 550)
+{
 uiComponents.footerInfo.update(sceneSettings);
 uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
+}
+// If there's enough horizontal space... (This assumes that the minimap is
+// drawn on the right side of the screen and that on the left side is the
+// HTML UI.)
+if (Rsed.visual.canvas.domElement.clientWidth > 550)
+{
 uiComponents.minimap.update(sceneSettings);
 uiComponents.minimap.draw((Rsed.visual.canvas.width - 4), 4);
+}
 if (sceneSettings.showPalatPane)
 {
 uiComponents.palatPane.update(sceneSettings);
