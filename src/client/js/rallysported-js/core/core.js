@@ -155,7 +155,7 @@ Rsed.core = (function()
         // A crude test for whether the user's device might not have mouse/keyboard available.
         if (browserInfo.isMobile)
         {
-            Rsed.ui.popup_notification("Mobile user? Note that this app requires a mouse and keyboard!",
+            Rsed.ui.popup_notification("For best results, this app requires a mouse, keyboard, and a non-small screen!",
             {
                 timeoutMs: 7000,
             });

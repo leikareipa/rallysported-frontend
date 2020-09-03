@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (03 September 2020 10:47:33 UTC)
+// VERSION: live (03 September 2020 14:52:18 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4728,7 +4728,7 @@ Rsed.throw_if_not_type("number", args.timeoutMs);
 Rsed.throw_if_not_type("string", args.notificationType);
 const popupElement = document.createElement("div");
 popupElement.classList.add("popup-notification", "animation-popup-slide-in", args.notificationType);
-popupElement.appendChild(document.createTextNode(string));
+popupElement.innerHTML = `<i class="far fa-fw fa-lg fa-comment"></i> ${string}`;
 document.getElementById("popup-notification-container").appendChild(popupElement);
 const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
 const publicInterface =
@@ -7640,7 +7640,7 @@ timeoutMs: 10000,
 // A crude test for whether the user's device might not have mouse/keyboard available.
 if (browserInfo.isMobile)
 {
-Rsed.ui.popup_notification("Mobile user? Note that this app requires a mouse and keyboard!",
+Rsed.ui.popup_notification("For best results, this app requires a mouse, keyboard, and a non-small screen!",
 {
 timeoutMs: 7000,
 });

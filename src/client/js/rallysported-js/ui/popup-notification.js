@@ -29,7 +29,7 @@ Rsed.ui.popup_notification = function(string = "", args = {})
 
     const popupElement = document.createElement("div");
     popupElement.classList.add("popup-notification", "animation-popup-slide-in", args.notificationType);
-    popupElement.appendChild(document.createTextNode(string));
+    popupElement.innerHTML = `<i class="far fa-fw fa-lg fa-comment"></i> ${string}`;
     document.getElementById("popup-notification-container").appendChild(popupElement);
 
     const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));

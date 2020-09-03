@@ -229,17 +229,18 @@ body
 
 #popup-notification-container
 {
-    width: 300px;
+    width: 360px;
     height: auto;
-    position: fixed;
+    position: absolute;
     bottom: 50px;
-    right: 100px;
+    right: 50px;
     display: flex;
     flex-direction: column;
 }
 
 #popup-notification-container .popup-notification
 {
+    box-sizing: border-box;
     width: 100%;
     height: auto;
     padding: 20px;
@@ -248,7 +249,6 @@ body
     border-radius: 20px 0 20px 20px;
     word-wrap: break-word;
     color: black;
-    background-color: gold;
     box-shadow: 0 5px 10px -4px black;
 }
 
@@ -259,7 +259,7 @@ body
     padding: 17px;
     margin-left: 20px;
     font-size: 90%;
-    opacity: 0.9;
+    filter: brightness(0.87);
 }
 
 #popup-notification-container > .popup-notification:first-child
@@ -269,7 +269,7 @@ body
 
 #popup-notification-container > .popup-notification:only-child
 {
-    border-radius: 20px 0 20px 20px;
+    border-radius: 20px;
 }
 
 #popup-notification-container .popup-notification.warning
@@ -318,22 +318,12 @@ body
     100% { opacity: 1; transform: translateX(0px); }
 }
 
-
-@media only screen and (max-width: 1500px)
+@media only screen and (max-width: 1300px)
 {
     #popup-notification-container
     {
-        right: 120px;
-        bottom: 40px;
-    }
-}
-
-@media only screen and (max-width: 1100px)
-{
-    #popup-notification-container
-    {
-        bottom: 0px;
-        right: 45px;
+        bottom: 30px;
+        right: 30px;
     }
 }
 
@@ -350,6 +340,24 @@ body
         margin-left: 0;
         margin-top: 6px;
     }
+
+    #popup-notification-container
+    {
+        bottom: 10px;
+        right: 10px;
+    }
+}
+
+@media only screen and (max-width: 600px)
+{
+    #popup-notification-container
+    {
+        bottom: 10px;
+        position: absolute;
+        right: 50%;
+        transform: translateX(50%);
+        width: 90%;
+    }
 }
 
 @media only screen and (max-width: 550px)
@@ -364,5 +372,25 @@ body
     {
         /* TODO: Instead of hiding, show the button bar as an expanding menu button or the like.*/
         display: none;
+    }
+}
+
+@media only screen and (max-width: 450px)
+{
+    #popup-notification-container
+    {
+        border-radius: 0;
+        bottom: 0;
+        right: 0;
+        transform: none;
+        width: 100%;
+    }
+
+    #popup-notification-container > .popup-notification,
+    #popup-notification-container > .popup-notification:not(:last-child),
+    #popup-notification-container > .popup-notification:first-child,
+    #popup-notification-container > .popup-notification:only-child
+    {
+        border-radius: 0;
     }
 }
