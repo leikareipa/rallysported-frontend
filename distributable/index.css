@@ -171,9 +171,9 @@ body
     text-decoration: underline;
 }
 
-/* For dropdown menus. Adapted from https://www.w3schools.com/howto/howto_js_dropdown.asp. */
 .dropdown-menu
 {
+    font-family: sans-serif;
     cursor: pointer;
     text-align: left;
     position: absolute;
@@ -243,7 +243,7 @@ body
     width: 100%;
     height: auto;
     padding: 20px;
-    text-align: center;
+    text-align: left;
     margin-top: 8px;
     border-radius: 20px 0 20px 20px;
     word-wrap: break-word;
