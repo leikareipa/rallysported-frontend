@@ -13,8 +13,8 @@
 		{"propId":9,"name":"large billboard"},
 		{"propId":10,"name":"small billboard"},
 		{"propId":11,"name":"house"},
-		{"propId":12,"name":"pole no. 1"},
-		{"propId":13,"name":"pole no .2"},
+		{"propId":12,"name":"pole no.1"},
+		{"propId":13,"name":"pole no.2"},
 		{"propId":14,"name":"finish (normal)"},
 		{"propId":15,"name":"finish (arch)"}
 	],
