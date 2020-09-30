@@ -57,7 +57,7 @@ Rsed.core = (function()
         {
             Rsed.assert && ((typeof args.project !== "undefined") &&
                             (typeof args.project.dataLocality !== "undefined") &&
-                            (typeof args.project.dataIdentifier !== "undefined"))
+                            (typeof args.project.contentId !== "undefined"))
                         || Rsed.throw("Missing startup parameters for launching RallySportED.");
 
             coreIsRunning = false;
@@ -166,7 +166,7 @@ Rsed.core = (function()
     {
         Rsed.assert && ((typeof args.project !== "undefined") &&
                         (typeof args.project.dataLocality !== "undefined") &&
-                        (typeof args.project.dataIdentifier !== "undefined"))
+                        (typeof args.project.contentId !== "undefined"))
                     || Rsed.throw("Missing required arguments for loading a project.");
 
         project = Rsed.project.placeholder;

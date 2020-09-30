@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (03 September 2020 14:52:18 UTC)
+// VERSION: live (30 September 2020 11:33:49 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2453,7 +2453,7 @@ return ((typeof projectData.meta !== "undefined") &&
 async function fetch_project_data()
 {
 Rsed.assert && ((typeof projectArgs.dataLocality !== "undefined") &&
-(typeof projectArgs.dataIdentifier !== "undefined"))
+(typeof projectArgs.contentId !== "undefined"))
 || Rsed.throw("Missing required parameters for loading a project.");
 const projectData = (projectArgs.dataLocality === "server-rsc")?  (await fetch_project_data_from_rsc_server())[0] :
 (projectArgs.dataLocality === "server-rsed")? (await fetch_project_data_from_rsed_server())[0] :
@@ -2462,9 +2462,9 @@ Rsed.throw("Unknown locality for project data.");
 return projectData;
 async function fetch_project_data_from_local_zip_file()
 {
-Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
+Rsed.assert && (typeof projectArgs.contentId !== "undefined")
 || Rsed.throw("Missing required parameters for loading a client-side project.");
-const zip = await (new JSZip()).loadAsync(projectArgs.dataIdentifier);
+const zip = await (new JSZip()).loadAsync(projectArgs.contentId);
 // The zip file is expected to contain a project's .DTA and .$FT (manifesto) files.
 let manifestoFile = null;
 let dtaFile = null;
@@ -2546,11 +2546,11 @@ return projectData;
 // hosts the original tracks from the Rally-Sport demo.
 async function fetch_project_data_from_rsed_server()
 {
-Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
+Rsed.assert && (typeof projectArgs.contentId !== "undefined")
 || Rsed.throw("Missing required parameters for loading project data.");
 const trackName = (()=>
 {
-switch (projectArgs.dataIdentifier)
+switch (projectArgs.contentId)
 {
 case "demoa": return "demo-1";
 case "demob": return "demo-2";
@@ -2578,11 +2578,11 @@ return response.json();
 // server hosts custom, user-made tracks.
 async function fetch_project_data_from_rsc_server()
 {
-Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
+Rsed.assert && (typeof projectArgs.contentId !== "undefined")
 || Rsed.throw("Missing required parameters for loading a server-side project.");
 // Request the track's data in JSON format from the Rally-Sport Content
 // server. The data will be provided in the response body.
-return fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.dataIdentifier}&json=true`)
+return fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.contentId}&json=true`)
 .then(response=>
 {
 if (response.status !== 200)
@@ -5509,43 +5509,47 @@ project:
 // ("server-rsed"), from Rally-Sport Content's server ("server-rsc"), or provided
 // by the client (e.g. via file drag onto the browser).
 dataLocality: "server-rsed", // | "server-rsc" | "client"
-// A property uniquely identifying this project's data. For server-side projects,
-// this will be a Rally-Sport Content track resource ID, and for client-side data
-// a file reference.
-dataIdentifier: "demod",
+// An identifier for this project's data. For server-side projects, this will be
+// e.g. a Rally-Sport Content track resource ID, and for client-side data a file
+// reference.
+contentId: "demod",
 }
 };
 // Parse any parameters the user supplied on the address line.
 {
 const params = new URLSearchParams(window.location.search);
-// The user can use the "track" parameter to specify which track to load. Otherwise,
-// we'll load one of the Rally-Sport demo tracks.
-if (!params.has("track"))
+// The "track" and "content" parameters specify which track the user wants to load.
+// Generally, the "track" parameter is used to load the game's original demo tracks,
+// while the "content" parameter is used to load tracks (and, in the future, other
+// content, like cars) from the Rally-Sport Content server.
+const contentId = (params.get("content") || params.get("track") || null);
+// If no content identifier was provided, we'll append a default one.
+if (!contentId)
 {
 params.append("track", "demod");
 window.location.search = params.toString();
+return;
 }
 else
 {
-const trackID = params.get("track");
 // Give the input a sanity check.
-if ((trackID.length > 20) ||
-!(/^[0-9a-zA-Z-.]+$/.test(trackID)))
+if ((contentId.length > 20) ||
+!(/^[0-9a-zA-Z-.]+$/.test(contentId)))
 {
-Rsed.throw("Invalid track identifier.");
+Rsed.throw("Invalid content identifier.");
 return;
 }
 // The RallySportED-js server hosts the original Rally-Sport demo tracks.
-if (["demoa", "demob", "democ", "demod", "demoe", "demof", "demog", "demoh"].includes(trackID))
+if (["demoa", "demob", "democ", "demod", "demoe", "demof", "demog", "demoh"].includes(contentId))
 {
 rsedStartupArgs.project.dataLocality = "server-rsed";
 }
-// The Rally-Sport Content server hosts custom (non-original) Rally-Sport tracks.
+// The Rally-Sport Content server hosts custom Rally-Sport content.
 else
 {
 rsedStartupArgs.project.dataLocality = "server-rsc";
 }
-rsedStartupArgs.project.dataIdentifier = trackID;
+rsedStartupArgs.project.contentId = contentId;
 }
 }
 // The app doesn't need to be run if we're just testing its units.
@@ -5773,7 +5777,7 @@ project:
 {
 editMode: "local",
 dataLocality: "client",
-dataIdentifier: zipFile,
+contentId: zipFile,
 }
 });
 // Clear the address bar's parameters to reflect the fact that the user has loaded a local
@@ -7565,7 +7569,7 @@ start: async function(args = {})
 {
 Rsed.assert && ((typeof args.project !== "undefined") &&
 (typeof args.project.dataLocality !== "undefined") &&
-(typeof args.project.dataIdentifier !== "undefined"))
+(typeof args.project.contentId !== "undefined"))
 || Rsed.throw("Missing startup parameters for launching RallySportED.");
 coreIsRunning = false;
 // Hide the UI while we load up the project's data etc.
@@ -7650,7 +7654,7 @@ async function load_project(args = {})
 {
 Rsed.assert && ((typeof args.project !== "undefined") &&
 (typeof args.project.dataLocality !== "undefined") &&
-(typeof args.project.dataIdentifier !== "undefined"))
+(typeof args.project.contentId !== "undefined"))
 || Rsed.throw("Missing required arguments for loading a project.");
 project = Rsed.project.placeholder;
 Rsed.ui.undoStack.reset();

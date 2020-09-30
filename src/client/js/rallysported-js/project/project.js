@@ -302,7 +302,7 @@ Rsed.project = async function(projectArgs = {})
     async function fetch_project_data()
     {
         Rsed.assert && ((typeof projectArgs.dataLocality !== "undefined") &&
-                        (typeof projectArgs.dataIdentifier !== "undefined"))
+                        (typeof projectArgs.contentId !== "undefined"))
                     || Rsed.throw("Missing required parameters for loading a project.");
 
         const projectData = (projectArgs.dataLocality === "server-rsc")?  (await fetch_project_data_from_rsc_server())[0] :
@@ -314,10 +314,10 @@ Rsed.project = async function(projectArgs = {})
 
         async function fetch_project_data_from_local_zip_file()
         {
-            Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
+            Rsed.assert && (typeof projectArgs.contentId !== "undefined")
                         || Rsed.throw("Missing required parameters for loading a client-side project.");
 
-            const zip = await (new JSZip()).loadAsync(projectArgs.dataIdentifier);
+            const zip = await (new JSZip()).loadAsync(projectArgs.contentId);
 
             // The zip file is expected to contain a project's .DTA and .$FT (manifesto) files.
             let manifestoFile = null;
@@ -417,12 +417,12 @@ Rsed.project = async function(projectArgs = {})
         // hosts the original tracks from the Rally-Sport demo.
         async function fetch_project_data_from_rsed_server()
         {
-            Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
+            Rsed.assert && (typeof projectArgs.contentId !== "undefined")
                         || Rsed.throw("Missing required parameters for loading project data.");
 
             const trackName = (()=>
             {
-                switch (projectArgs.dataIdentifier)
+                switch (projectArgs.contentId)
                 {
                     case "demoa": return "demo-1";
                     case "demob": return "demo-2";
@@ -453,12 +453,12 @@ Rsed.project = async function(projectArgs = {})
         // server hosts custom, user-made tracks.
         async function fetch_project_data_from_rsc_server()
         {
-            Rsed.assert && (typeof projectArgs.dataIdentifier !== "undefined")
+            Rsed.assert && (typeof projectArgs.contentId !== "undefined")
                         || Rsed.throw("Missing required parameters for loading a server-side project.");
 
             // Request the track's data in JSON format from the Rally-Sport Content
             // server. The data will be provided in the response body.
-            return fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.dataIdentifier}&json=true`)
+            return fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.contentId}&json=true`)
                    .then(response=>
                    {
                        if (response.status !== 200)

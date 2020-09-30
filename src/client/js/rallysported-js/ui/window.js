@@ -29,10 +29,10 @@ window.onload = function(event)
             // by the client (e.g. via file drag onto the browser).
             dataLocality: "server-rsed", // | "server-rsc" | "client"
 
-            // A property uniquely identifying this project's data. For server-side projects,
-            // this will be a Rally-Sport Content track resource ID, and for client-side data
-            // a file reference.
-            dataIdentifier: "demod",
+            // An identifier for this project's data. For server-side projects, this will be
+            // e.g. a Rally-Sport Content track resource ID, and for client-side data a file
+            // reference.
+            contentId: "demod",
         }
     };
     
@@ -40,37 +40,43 @@ window.onload = function(event)
     {
         const params = new URLSearchParams(window.location.search);
 
-        // The user can use the "track" parameter to specify which track to load. Otherwise,
-        // we'll load one of the Rally-Sport demo tracks.
-        if (!params.has("track"))
+        // The "track" and "content" parameters specify which track the user wants to load.
+        // Generally, the "track" parameter is used to load the game's original demo tracks,
+        // while the "content" parameter is used to load tracks (and, in the future, other
+        // content, like cars) from the Rally-Sport Content server.
+        const contentId = (params.get("content") || params.get("track") || null);
+
+        // If no content identifier was provided, we'll append a default one.
+        if (!contentId)
         {
             params.append("track", "demod");
             window.location.search = params.toString();
+
+            return;
         }
         else
         {
-            const trackID = params.get("track");
-
             // Give the input a sanity check.
-            if ((trackID.length > 20) ||
-                !(/^[0-9a-zA-Z-.]+$/.test(trackID)))
+            if ((contentId.length > 20) ||
+                !(/^[0-9a-zA-Z-.]+$/.test(contentId)))
             {
-                Rsed.throw("Invalid track identifier.");
+                Rsed.throw("Invalid content identifier.");
+
                 return;
             }
 
             // The RallySportED-js server hosts the original Rally-Sport demo tracks.
-            if (["demoa", "demob", "democ", "demod", "demoe", "demof", "demog", "demoh"].includes(trackID))
+            if (["demoa", "demob", "democ", "demod", "demoe", "demof", "demog", "demoh"].includes(contentId))
             {
                 rsedStartupArgs.project.dataLocality = "server-rsed";
             }
-            // The Rally-Sport Content server hosts custom (non-original) Rally-Sport tracks.
+            // The Rally-Sport Content server hosts custom Rally-Sport content.
             else
             {
                 rsedStartupArgs.project.dataLocality = "server-rsc";
             }
 
-            rsedStartupArgs.project.dataIdentifier = trackID;
+            rsedStartupArgs.project.contentId = contentId;
         }
     }
 
@@ -353,7 +359,7 @@ window.drop_handler = function(event)
         {
             editMode: "local",
             dataLocality: "client",
-            dataIdentifier: zipFile,
+            contentId: zipFile,
         }
     });
 
