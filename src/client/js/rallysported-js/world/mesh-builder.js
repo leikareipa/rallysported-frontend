@@ -181,7 +181,7 @@ Rsed.world.meshBuilder = (function()
                             color: Rngon.color_rgba(255, 255, 255),
                             texture: billboardTexture,
                             textureMapping: "ortho",
-                            hasSolidFill: true,
+                            hasFill: true,
                             hasWireframe: false,
                             auxiliary:
                             {
@@ -263,6 +263,7 @@ Rsed.world.meshBuilder = (function()
                     textureMapping: "ortho",
                     wireframeColor: Rsed.visual.palette.color_at_idx(args.solidProps? "black" : "lightgray"),
                     hasWireframe: (args.solidProps? args.includeWireframe : true),
+                    hasFill: args.solidProps,
                     auxiliary:
                     {
                         mousePickId: Rsed.ui.mouse_picking_element("prop",
