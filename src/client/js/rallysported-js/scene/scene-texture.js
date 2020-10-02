@@ -124,18 +124,20 @@ Rsed.scenes["texture"] = (function()
                 {
                     for (let i = 0; i < (renderWidth * renderHeight); i++)
                     {
-                        const u = fragmentBuffer[i].textureU;
-                        const v = fragmentBuffer[i].textureV;
+                        const u = (typeof fragmentBuffer[i].textureUScaled == undefined)
+                                  ? undefined
+                                  : Math.max(0, Math.min((texture.width - 1), fragmentBuffer[i].textureUScaled));
 
-                        textureMousePickBuffer[i] = {
-                            u: ((typeof u === "undefined")? undefined : ~~(u * texture.width)),
-                            v: ((typeof v === "undefined")? undefined : ~~(v * texture.height)),
-                        };
+                        const v = (typeof fragmentBuffer[i].textureVScaled == undefined)
+                                  ? undefined
+                                  : Math.max(0, Math.min((texture.height - 1), fragmentBuffer[i].textureVScaled));
+
+                        textureMousePickBuffer[i] = {u, v};
 
                         // Reset the fragment buffer as we go along, since the renderer doesn't at the
                         // time of writing this clear the fragment buffer at the beginning of each frame.
-                        fragmentBuffer[i].textureU = undefined;
-                        fragmentBuffer[i].textureV = undefined;
+                        fragmentBuffer[i].textureUScaled = undefined;
+                        fragmentBuffer[i].textureVScaled = undefined;
                     }
                 },
             });
