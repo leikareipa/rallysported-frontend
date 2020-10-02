@@ -3,10 +3,6 @@
  * 
  * Software: RallySportED-js
  * 
- * A stripped-down version of the retro n-gon renderer's polygon filler.
- * Includes only the features required by RallySportED-js, helping to
- * boost FPS.
- * 
  */
 
 "use strict";
@@ -29,15 +25,17 @@ let numRightVerts = 0;
 let numLeftEdges = 0;
 let numRightEdges = 0;
 
-// Rasterizes into the internal pixel buffer all n-gons currently stored in the
-// internal n-gon cache.
+// A stripped-down version of the retro n-gon renderer's polygon filler. Includes
+// only the features required by RallySportED-js, helping to boost FPS.
+//
+// For the original function, see Rngon.ngon_filler().
 //
 // Note: Consider this the inner render loop; it may contain ugly things like
 // code repetition for the benefit of performance. If you'd like to refactor the
 // code, please benchmark its effects on performance first - maintaining or
 // improving performance would be great, losing performance would be bad.
 //
-Rngon.ngon_filler = function(auxiliaryBuffers = [])
+Rsed.minimal_rngon_filler = function(auxiliaryBuffers = [])
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const renderWidth = Rngon.internalState.pixelBuffer.width;

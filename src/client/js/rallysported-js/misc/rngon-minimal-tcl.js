@@ -2,23 +2,21 @@
  * 2019, 2020 Tarpeeksi Hyvae Soft
  *
  * Software: RallySportED-js
- * 
- * A stripped-down version of the retro n-gon renderer's polygon transformer.
- * Includes only the features required by RallySportED-js, helping to boost
- * FPS.
  *
  */
 
 "use strict";
 
-// Applies lighting to the given n-gons, and transforms them into screen space
-// for rendering. The processed n-gons are stored in the internal n-gon cache.
-Rngon.ngon_transform_and_light = function(ngons = [],
-                                          objectMatrix = [],
-                                          cameraMatrix = [],
-                                          projectionMatrix = [],
-                                          screenSpaceMatrix = [],
-                                          cameraPos)
+// A stripped-down version of the retro n-gon renderer's polygon transformer. Includes
+// only the features required by RallySportED-js, helping to boost FPS.
+//
+// For the original function, see Rngon.ngon_transform_and_light().
+Rsed.minimal_rngon_tcl = function(ngons = [],
+                                  objectMatrix = [],
+                                  cameraMatrix = [],
+                                  projectionMatrix = [],
+                                  screenSpaceMatrix = [],
+                                  cameraPos)
 {
     const ngonCache = Rngon.internalState.ngonCache;
     const clipSpaceMatrix = Rngon.matrix44.multiply(projectionMatrix, cameraMatrix);

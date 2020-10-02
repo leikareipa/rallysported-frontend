@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (30 September 2020 15:10:36 UTC)
+// VERSION: live (02 October 2020 15:07:04 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -10,9 +10,9 @@
 //	./src/client/js/jszip/jszip.min.js
 //	./src/client/js/filesaver/FileSaver.min.js
 //	./src/client/js/retro-ngon/rngon.cat.js
-//	./src/client/js/retro-ngon/minimal/ngon-fill.js
-//	./src/client/js/retro-ngon/minimal/transform-and-light.js
 //	./src/client/js/rallysported-js/rallysported.js
+//	./src/client/js/rallysported-js/misc/rngon-minimal-fill.js
+//	./src/client/js/rallysported-js/misc/rngon-minimal-tcl.js
 //	./src/client/js/rallysported-js/project/project.js
 //	./src/client/js/rallysported-js/project/hitable.js
 //	./src/client/js/rallysported-js/misc/constants.js
@@ -73,7 +73,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 (function(a,b){if("function"==typeof define&&define.amd)define([],b);else if("undefined"!=typeof exports)b();else{b(),a.FileSaver={exports:{}}.exports}})(this,function(){"use strict";function b(a,b){return"undefined"==typeof b?b={autoBom:!1}:"object"!=typeof b&&(console.warn("Deprecated: Expected third argument to be a object"),b={autoBom:!b}),b.autoBom&&/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a.type)?new Blob(["\uFEFF",a],{type:a.type}):a}function c(b,c,d){var e=new XMLHttpRequest;e.open("GET",b),e.responseType="blob",e.onload=function(){a(e.response,c,d)},e.onerror=function(){console.error("could not download file")},e.send()}function d(a){var b=new XMLHttpRequest;b.open("HEAD",a,!1);try{b.send()}catch(a){}return 200<=b.status&&299>=b.status}function e(a){try{a.dispatchEvent(new MouseEvent("click"))}catch(c){var b=document.createEvent("MouseEvents");b.initMouseEvent("click",!0,!0,window,0,0,0,80,20,!1,!1,!1,!1,0,null),a.dispatchEvent(b)}}var f="object"==typeof window&&window.window===window?window:"object"==typeof self&&self.self===self?self:"object"==typeof global&&global.global===global?global:void 0,a=f.saveAs||("object"!=typeof window||window!==f?function(){}:"download"in HTMLAnchorElement.prototype?function(b,g,h){var i=f.URL||f.webkitURL,j=document.createElement("a");g=g||b.name||"download",j.download=g,j.rel="noopener","string"==typeof b?(j.href=b,j.origin===location.origin?e(j):d(j.href)?c(b,g,h):e(j,j.target="_blank")):(j.href=i.createObjectURL(b),setTimeout(function(){i.revokeObjectURL(j.href)},4E4),setTimeout(function(){e(j)},0))}:"msSaveOrOpenBlob"in navigator?function(f,g,h){if(g=g||f.name||"download","string"!=typeof f)navigator.msSaveOrOpenBlob(b(f,h),g);else if(d(f))c(f,g,h);else{var i=document.createElement("a");i.href=f,i.target="_blank",setTimeout(function(){e(i)})}}:function(a,b,d,e){if(e=e||open("","_blank"),e&&(e.document.title=e.document.body.innerText="downloading..."),"string"==typeof a)return c(a,b,d);var g="application/octet-stream"===a.type,h=/constructor/i.test(f.HTMLElement)||f.safari,i=/CriOS\/[\d]+/.test(navigator.userAgent);if((i||g&&h)&&"object"==typeof FileReader){var j=new FileReader;j.onloadend=function(){var a=j.result;a=i?a:a.replace(/^data:[^;]*;/,"data:attachment/file;"),e?e.location.href=a:location=a,e=null},j.readAsDataURL(a)}else{var k=f.URL||f.webkitURL,l=k.createObjectURL(a);e?e.location=l:location.href=l,e=null,setTimeout(function(){k.revokeObjectURL(l)},4E4)}});f.saveAs=a.saveAs=a,"undefined"!=typeof module&&(module.exports=a)});
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (30 September 2020 14:59:21 UTC)
+// VERSION: beta live (02 October 2020 14:45:30 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -88,10 +88,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 //	./js/retro-ngon/line-draw.js
 //	./js/retro-ngon/matrix44.js
 //	./js/retro-ngon/ngon-fill.js
+//	./js/retro-ngon/transform-and-light.js
 //	./js/retro-ngon/render.js
 //	./js/retro-ngon/render-async.js
 //	./js/retro-ngon/render-shared.js
-//	./js/retro-ngon/transform-and-light.js
 //	./js/retro-ngon/texture.js
 //	./js/retro-ngon/surface.js
 /////////////////////////////////////////////////
@@ -143,6 +143,22 @@ console.log("Retro n-gon: " + string);
 // based on settings requested by the user.
 Rngon.internalState =
 {
+// A function that transforms, clips, and lights the given n-gons. The end
+// result should be n-gons in screen-space coordinates placed into the internal
+// n-gon cache.
+//
+// For the default implementation, see transform-and-light.js.
+transform: (ngons = [],
+objectMatrix = [],
+cameraMatrix = [],
+projectionMatrix = [],
+screenSpaceMatrix = [],
+cameraPos)=>{},
+// A function that rasterizes the n-gons that're currently in the internal n-gon
+// cache.
+//
+// For the default implementation, see ngon-fill.js.
+rasterize: ()=>{},
 // Whether to require pixels to pass a depth test before being allowed on screen.
 useDepthBuffer: false,
 depthBuffer: {width:1, height:1, data:new Array(1), clearValue:Infinity},
@@ -1516,11 +1532,11 @@ material.hasWireframe)
 {
 for (let l = 1; l < numLeftVerts; l++)
 {
-Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n);
+Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
 }
 for (let r = 1; r < numRightVerts; r++)
 {
-Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n);
+Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
 }
 }
 }
@@ -1567,383 +1583,6 @@ pixels: Rngon.ngon_filler.stipple_patterns[i].pixels.map(p=>Number(!p)),
 });
 }
 }
-}
-/*
-* Tarpeeksi Hyvae Soft 2019 /
-* Retro n-gon renderer
-*
-*/
-"use strict";
-// Renders the given meshes onto a DOM <canvas> element by the given id. The
-// <canvas> element must already exist.
-Rngon.render = function(canvasElementId,
-meshes = [Rngon.mesh()],
-options = {})
-{
-const renderCallInfo = Rngon.renderShared.setup_render_call_info();
-options = Object.freeze({
-...Rngon.renderShared.defaultRenderOptions,
-...options
-});
-Rngon.renderShared.initialize_internal_render_state(options);
-// Render a single frame onto the target <canvas> element.
-{
-const renderSurface = Rngon.surface(canvasElementId, options);
-// We'll render either always or only when the render canvas is in view,
-// depending on whether the user asked us for the latter option.
-if (renderSurface &&
-(!options.hibernateWhenNotOnScreen || renderSurface.is_in_view()))
-{
-renderSurface.display_meshes(meshes);
-renderCallInfo.renderWidth = renderSurface.width;
-renderCallInfo.renderHeight = renderSurface.height;
-renderCallInfo.numNgonsRendered = Rngon.internalState.ngonCache.count;
-}
-}
-renderCallInfo.totalRenderTimeMs = (performance.now() - renderCallInfo.totalRenderTimeMs);
-return renderCallInfo;
-};
-/*
-* 2020 Tarpeeksi Hyvae Soft
-*
-* Software: Retro n-gon renderer
-*
-*/
-"use strict";
-// Renders a single frame of the given meshes into an off-screen buffer (no
-// dependency on the DOM, unlike Rngon.render() which renders into a <canvas>).
-//
-// The rendering is non-blocking and will be performed in a Worker thread.
-//
-// Returns a Promise that resolves with the following object:
-//
-//     {
-//         image: <the rendered image as an ImageData object>,
-//         renderWidth: <width of the rendered image>,
-//         renderHeight: <height of the rendered image>,
-//         totalRenderTimeMs: <number of milliseconds taken by the rendering>,
-//     }
-//
-// On error, the Promise rejects with a string describing the error in plain language.
-//
-Rngon.render_async = function(meshes = [Rngon.mesh()],
-options = {},
-rngonUrl = null)
-{
-return new Promise((resolve, reject)=>
-{
-// Spawn a new render worker with the render_worker() function as its body.
-const workerThread = new Worker(URL.createObjectURL(new Blob([`(${render_worker.toString()})()`],
-{
-type: 'text/javascript',
-})));
-// Listen for messages from the worker.
-workerThread.onmessage = (message)=>
-{
-// For now, we assume that the worker will only send one message: either that
-// it's finished rendering, or that something went wrong. So once we've received
-// this first message, the worker has done its thing, and we can terminate it.
-workerThread.terminate();
-message = message.data;
-if (typeof message.type !== "string")
-{
-reject("A render worker sent an invalid message.");
-return;
-}
-switch (message.type)
-{
-case "rendering-finished":
-{
-// Remove properties that we don't need to report back.
-delete message.type;
-resolve(message);
-break;
-}
-case "error":
-{
-reject(`A render worker reported the following error: ${message.errorText}`);
-break;
-}
-default:
-{
-reject("A render worker sent an unrecognized message.");
-break;
-}
-}
-}
-if (rngonUrl === null)
-{
-rngonUrl = Array.from(document.getElementsByTagName("script")).filter(e=>e.src.endsWith("rngon.cat.js"))[0].src;
-}
-// Tell the worker to render the given meshes.
-workerThread.postMessage({
-type: "render",
-meshes,
-options,
-rngonUrl,
-});
-});
-// The function we'll run as a Worker thread to perform the rendering.
-//
-// To ask this function to render an array of Rngon.mesh() objects into an off-screen
-// pixel buffer, post to it the following message, via postMessage():
-//
-//     {
-//         type: "render",
-//         meshes: [<your mesh array>],
-//         options: {<options to Rngon.render()},
-//         rngonUrl: `${window.location.origin}/distributable/rngon.cat.js`,
-//     }
-//
-// On successful completion of the rendering, the function will respond with the
-// following message, via postMessage():
-//
-//     {
-//         type: "rendering-finished",
-//         image: <the rendered image as an ImageData object>,
-//         renderWidth: <width of the rendered image>,
-//         renderHeight: <height of the rendered image>,
-//         totalRenderTimeMs: <number of milliseconds taken by the rendering>,
-//     }
-//
-// On error, the function will respond with the following message, via postMessage():
-//
-//     {
-//         type: "error",
-//         errorText: <a string describing the error in plain language>,
-//     }
-//
-function render_worker()
-{
-onmessage = (message)=>
-{
-message = message.data;
-if (typeof message.type !== "string")
-{
-postMessage({
-type: "error",
-errorText: "A render worker received an invalid message.",
-});
-return;
-}
-switch (message.type)
-{
-// Render the meshes provided in the message, and in return postMessage() the
-// resulting pixel buffer.
-case "render":
-{
-try
-{
-importScripts(message.rngonUrl);
-render(message.meshes, message.options);
-}
-catch (error)
-{
-postMessage({
-type: "error",
-errorText: error.message,
-});
-}
-break;
-}
-default:
-{
-postMessage({
-type: "error",
-errorText: "Received an unrecognized message.",
-});
-break;
-}
-}
-};
-// Renders the given meshes into the internal pixel buffer, Rngon.internalState.pixelBuffer.
-function render(meshes, renderOptions)
-{
-if (!Array.isArray(meshes))
-{
-Rngon.throw("Expected meshes to be provided in an array.");
-return;
-}
-const renderCallInfo = Rngon.renderShared.setup_render_call_info();
-const options = Object.freeze({
-...Rngon.renderShared.defaultRenderOptions,
-...renderOptions,
-});
-Rngon.renderShared.initialize_internal_render_state(options);
-// Disable the use of window.alert() while inside a Worker.
-Rngon.internalState.allowWindowAlert = false;
-// Render a single frame.
-{
-const renderSurface = Rngon.surface(null, options);
-if (renderSurface)
-{
-renderSurface.display_meshes(meshes);
-renderCallInfo.renderWidth = options.width;
-renderCallInfo.renderHeight = options.height;
-renderCallInfo.numNgonsRendered = Rngon.internalState.ngonCache.count;
-renderCallInfo.image = Rngon.internalState.pixelBuffer;
-}
-else
-{
-Rngon.throw("Failed to initialize the render surface.");
-return;
-}
-}
-renderCallInfo.totalRenderTimeMs = (performance.now() - renderCallInfo.totalRenderTimeMs);
-postMessage({
-...renderCallInfo,
-type: "rendering-finished",
-});
-return;
-}
-return;
-}
-}
-/*
-* Tarpeeksi Hyvae Soft 2019 /
-* Retro n-gon renderer
-*
-*/
-"use strict";
-// Functionality that may be shared between different implementations of Rngon.render()
-// and perhaps called by other subsystems, like Rngon.surface().
-Rngon.renderShared = {
-// The 'options' object is a reference to or copy of the options passed to render().
-initialize_internal_render_state: function(options = {})
-{
-const state = Rngon.internalState;
-state.vertex_shader_function = options.vertexShaderFunction;
-state.useDepthBuffer = (options.useDepthBuffer == true);
-state.showGlobalWireframe = (options.globalWireframe == true);
-state.applyViewportClipping = (options.clipToViewport == true);
-state.lights = options.lights;
-state.farPlaneDistance = options.farPlane;
-state.useVertexShaders = (options.vertexShaderFunction !== null);
-state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
-options.perspectiveCorrectInterpolation) == true);
-state.usePixelShaders = ((options.shaderFunction || // <- Name in pre-beta.3.
-options.pixelShaderFunction) !== null);
-state.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
-options.pixelShaderFunction);
-return;
-},
-// Creates or resizes the n-gon cache to fit at least the number of n-gons contained
-// in the given array of meshes.
-prepare_ngon_cache: function(meshes = [])
-{
-Rngon.assert && (meshes instanceof Array)
-|| Rngon.throw("Invalid arguments to n-gon cache initialization.");
-const ngonCache = Rngon.internalState.ngonCache;
-const sceneNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
-if (!ngonCache ||
-!ngonCache.ngons.length ||
-(ngonCache.ngons.length < sceneNgonCount))
-{
-const lengthDelta = (sceneNgonCount - ngonCache.ngons.length);
-ngonCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
-}
-ngonCache.count = 0;
-return;
-},
-// Sorts all vertices in the n-gon cache by their Z coordinate.
-depth_sort_ngon_cache: function(depthSortinMode = "")
-{
-const ngons = Rngon.internalState.ngonCache.ngons;
-switch (depthSortinMode)
-{
-case "none": break;
-// Painter's algorithm. Sort back-to-front; i.e. so that n-gons furthest from the camera
-// will be first in the list.
-case "painter":
-{
-ngons.sort((ngonA, ngonB)=>
-{
-// Separate inactive n-gons (which are to be ignored when rendering the current
-// frame) from the n-gons we're intended to render.
-const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
-const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
-return ((a === b)? 0 : ((a < b)? 1 : -1));
-});
-break;
-}
-// Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
-// list. When used together with depth buffering, allows for early rejection of occluded
-// pixels during rasterization.
-case "painter-reverse":
-default:
-{
-ngons.sort((ngonA, ngonB)=>
-{
-// Separate inactive n-gons (which are to be ignored when rendering the current
-// frame) from the n-gons we're intended to render.
-const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
-const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
-return ((a === b)? 0 : ((a > b)? 1 : -1));
-});
-break;
-}
-}
-return;
-},
-// Marks any non-power-of-two affine-mapped faces in the n-gon cache as using the
-// non-power-of-two affine texture mapper. This needs to be done since the default
-// affine mapper expects textures to be power-of-two.
-mark_npot_textures_in_ngon_cache: function()
-{
-for (let i = 0; i < Rngon.internalState.ngonCache.count; i++)
-{
-const ngon = Rngon.internalState.ngonCache.ngons[i];
-if (ngon.material.texture &&
-ngon.material.textureMapping === "affine")
-{
-let widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
-let heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
-if (ngon.material.texture.width === 0) widthIsPOT = false;
-if (ngon.material.texture.height === 0) heightIsPOT = false;
-if (!widthIsPOT || !heightIsPOT)
-{
-ngon.material.textureMapping = "affine-npot";
-}
-}
-}
-return;
-},
-defaultRenderOptions: Object.freeze(
-{
-cameraPosition: Rngon.vector3(0, 0, 0),
-cameraDirection: Rngon.vector3(0, 0, 0),
-pixelShaderFunction: null, // If null, all pixel shader functionality will be disabled.
-vertexShaderFunction: null, // If null, all vertex shader functionality will be disabled.
-scale: 1,
-fov: 43,
-nearPlane: 1,
-farPlane: 1000,
-depthSort: "", // An empty string will make the renderer use its default depth sort option.
-useDepthBuffer: true,
-clipToViewport: true,
-globalWireframe: false,
-hibernateWhenNotOnScreen: true,
-perspectiveCorrectInterpolation: false,
-auxiliaryBuffers: [],
-lights: [],
-width: 640, // Used by render_async() only.
-height: 480, // Used by render_async() only.
-}),
-// Returns an object containing the properties - and their defualt starting values -
-// that a call to render() should return.
-setup_render_call_info: function()
-{
-return {
-renderWidth: 0,
-renderHeight: 0,
-// The total count of n-gons rendered. May be smaller than the number of n-gons
-// originally submitted for rendering, due to visibility culling etc. performed
-// during the rendering process.
-numNgonsRendered: 0,
-// The total time this call to render() took, in milliseconds.
-totalRenderTimeMs: performance.now(),
-};
-},
 }
 /*
 * Tarpeeksi Hyvae Soft 2019 /
@@ -2195,6 +1834,396 @@ return;
 *
 */
 "use strict";
+// Renders the given meshes onto a DOM <canvas> element by the given id. The
+// <canvas> element must already exist.
+Rngon.render = function(canvasElementId,
+meshes = [Rngon.mesh()],
+options = {})
+{
+const renderCallInfo = Rngon.renderShared.setup_render_call_info();
+options = Object.freeze({
+...Rngon.renderShared.defaultRenderOptions,
+...options
+});
+Rngon.renderShared.initialize_internal_render_state(options);
+// Render a single frame onto the target <canvas> element.
+{
+const renderSurface = Rngon.surface(canvasElementId, options);
+// We'll render either always or only when the render canvas is in view,
+// depending on whether the user asked us for the latter option.
+if (renderSurface &&
+(!options.hibernateWhenNotOnScreen || renderSurface.is_in_view()))
+{
+renderSurface.display_meshes(meshes);
+renderCallInfo.renderWidth = renderSurface.width;
+renderCallInfo.renderHeight = renderSurface.height;
+renderCallInfo.numNgonsRendered = Rngon.internalState.ngonCache.count;
+}
+}
+renderCallInfo.totalRenderTimeMs = (performance.now() - renderCallInfo.totalRenderTimeMs);
+return renderCallInfo;
+};
+/*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: Retro n-gon renderer
+*
+*/
+"use strict";
+// Renders a single frame of the given meshes into an off-screen buffer (no
+// dependency on the DOM, unlike Rngon.render() which renders into a <canvas>).
+//
+// The rendering is non-blocking and will be performed in a Worker thread.
+//
+// Returns a Promise that resolves with the following object:
+//
+//     {
+//         image: <the rendered image as an ImageData object>,
+//         renderWidth: <width of the rendered image>,
+//         renderHeight: <height of the rendered image>,
+//         totalRenderTimeMs: <number of milliseconds taken by the rendering>,
+//     }
+//
+// On error, the Promise rejects with a string describing the error in plain language.
+//
+Rngon.render_async = function(meshes = [Rngon.mesh()],
+options = {},
+rngonUrl = null)
+{
+options = {
+...options,
+...Rngon.renderShared.asyncRenderOptionOverrides,
+};
+return new Promise((resolve, reject)=>
+{
+// Spawn a new render worker with the render_worker() function as its body.
+const workerThread = new Worker(URL.createObjectURL(new Blob([`(${render_worker.toString()})()`],
+{
+type: 'text/javascript',
+})));
+// Listen for messages from the worker.
+workerThread.onmessage = (message)=>
+{
+// For now, we assume that the worker will only send one message: either that
+// it's finished rendering, or that something went wrong. So once we've received
+// this first message, the worker has done its thing, and we can terminate it.
+workerThread.terminate();
+message = message.data;
+if (typeof message.type !== "string")
+{
+reject("A render worker sent an invalid message.");
+return;
+}
+switch (message.type)
+{
+case "rendering-finished":
+{
+// Remove properties that we don't need to report back.
+delete message.type;
+resolve(message);
+break;
+}
+case "error":
+{
+reject(`A render worker reported the following error: ${message.errorText}`);
+break;
+}
+default:
+{
+reject("A render worker sent an unrecognized message.");
+break;
+}
+}
+}
+if (rngonUrl === null)
+{
+rngonUrl = Array.from(document.getElementsByTagName("script")).filter(e=>e.src.endsWith("rngon.cat.js"))[0].src;
+}
+// Tell the worker to render the given meshes.
+workerThread.postMessage({
+type: "render",
+meshes,
+options,
+rngonUrl,
+});
+});
+// The function we'll run as a Worker thread to perform the rendering.
+//
+// To ask this function to render an array of Rngon.mesh() objects into an off-screen
+// pixel buffer, post to it the following message, via postMessage():
+//
+//     {
+//         type: "render",
+//         meshes: [<your mesh array>],
+//         options: {<options to Rngon.render()},
+//         rngonUrl: `${window.location.origin}/distributable/rngon.cat.js`,
+//     }
+//
+// On successful completion of the rendering, the function will respond with the
+// following message, via postMessage():
+//
+//     {
+//         type: "rendering-finished",
+//         image: <the rendered image as an ImageData object>,
+//         renderWidth: <width of the rendered image>,
+//         renderHeight: <height of the rendered image>,
+//         totalRenderTimeMs: <number of milliseconds taken by the rendering>,
+//     }
+//
+// On error, the function will respond with the following message, via postMessage():
+//
+//     {
+//         type: "error",
+//         errorText: <a string describing the error in plain language>,
+//     }
+//
+function render_worker()
+{
+onmessage = (message)=>
+{
+message = message.data;
+if (typeof message.type !== "string")
+{
+postMessage({
+type: "error",
+errorText: "A render worker received an invalid message.",
+});
+return;
+}
+switch (message.type)
+{
+// Render the meshes provided in the message, and in return postMessage() the
+// resulting pixel buffer.
+case "render":
+{
+try
+{
+importScripts(message.rngonUrl);
+render(message.meshes, message.options);
+}
+catch (error)
+{
+postMessage({
+type: "error",
+errorText: error.message,
+});
+}
+break;
+}
+default:
+{
+postMessage({
+type: "error",
+errorText: "Received an unrecognized message.",
+});
+break;
+}
+}
+};
+// Renders the given meshes into the internal pixel buffer, Rngon.internalState.pixelBuffer.
+function render(meshes, renderOptions)
+{
+if (!Array.isArray(meshes))
+{
+Rngon.throw("Expected meshes to be provided in an array.");
+return;
+}
+const renderCallInfo = Rngon.renderShared.setup_render_call_info();
+const options = Object.freeze({
+...Rngon.renderShared.defaultRenderOptions,
+...renderOptions,
+});
+Rngon.renderShared.initialize_internal_render_state(options);
+// Disable the use of window.alert() while inside a Worker.
+Rngon.internalState.allowWindowAlert = false;
+// Render a single frame.
+{
+const renderSurface = Rngon.surface(null, options);
+if (renderSurface)
+{
+renderSurface.display_meshes(meshes);
+renderCallInfo.renderWidth = options.width;
+renderCallInfo.renderHeight = options.height;
+renderCallInfo.numNgonsRendered = Rngon.internalState.ngonCache.count;
+renderCallInfo.image = Rngon.internalState.pixelBuffer;
+}
+else
+{
+Rngon.throw("Failed to initialize the render surface.");
+return;
+}
+}
+renderCallInfo.totalRenderTimeMs = (performance.now() - renderCallInfo.totalRenderTimeMs);
+postMessage({
+...renderCallInfo,
+type: "rendering-finished",
+});
+return;
+}
+return;
+}
+}
+/*
+* Tarpeeksi Hyvae Soft 2019 /
+* Retro n-gon renderer
+*
+*/
+"use strict";
+// Functionality that may be shared between different implementations of Rngon.render()
+// and perhaps called by other subsystems, like Rngon.surface().
+Rngon.renderShared = {
+// The 'options' object is a reference to or copy of the options passed to render().
+initialize_internal_render_state: function(options = {})
+{
+const state = Rngon.internalState;
+state.useDepthBuffer = (options.useDepthBuffer == true);
+state.showGlobalWireframe = (options.globalWireframe == true);
+state.applyViewportClipping = (options.clipToViewport == true);
+state.lights = options.lights;
+state.farPlaneDistance = options.farPlane;
+state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
+options.perspectiveCorrectInterpolation) == true);
+state.vertex_shader_function = options.vertexShaderFunction;
+state.useVertexShaders = (options.vertexShaderFunction !== null);
+state.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
+options.pixelShaderFunction);
+state.usePixelShaders = (state.pixel_shader_function !== null);
+state.rasterizer = (options.ngonRasterizerFunction || Rngon.ngon_filler);
+state.transform_clip_lighter = (options.ngonTransformClipLighterFunction || Rngon.ngon_transform_and_light);
+return;
+},
+// Creates or resizes the n-gon cache to fit at least the number of n-gons contained
+// in the given array of meshes.
+prepare_ngon_cache: function(meshes = [])
+{
+Rngon.assert && (meshes instanceof Array)
+|| Rngon.throw("Invalid arguments to n-gon cache initialization.");
+const ngonCache = Rngon.internalState.ngonCache;
+const sceneNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
+if (!ngonCache ||
+!ngonCache.ngons.length ||
+(ngonCache.ngons.length < sceneNgonCount))
+{
+const lengthDelta = (sceneNgonCount - ngonCache.ngons.length);
+ngonCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
+}
+ngonCache.count = 0;
+return;
+},
+// Sorts all vertices in the n-gon cache by their Z coordinate.
+depth_sort_ngon_cache: function(depthSortinMode = "")
+{
+const ngons = Rngon.internalState.ngonCache.ngons;
+switch (depthSortinMode)
+{
+case "none": break;
+// Painter's algorithm. Sort back-to-front; i.e. so that n-gons furthest from the camera
+// will be first in the list.
+case "painter":
+{
+ngons.sort((ngonA, ngonB)=>
+{
+// Separate inactive n-gons (which are to be ignored when rendering the current
+// frame) from the n-gons we're intended to render.
+const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
+const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
+return ((a === b)? 0 : ((a < b)? 1 : -1));
+});
+break;
+}
+// Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
+// list. When used together with depth buffering, allows for early rejection of occluded
+// pixels during rasterization.
+case "painter-reverse":
+default:
+{
+ngons.sort((ngonA, ngonB)=>
+{
+// Separate inactive n-gons (which are to be ignored when rendering the current
+// frame) from the n-gons we're intended to render.
+const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
+const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
+return ((a === b)? 0 : ((a > b)? 1 : -1));
+});
+break;
+}
+}
+return;
+},
+// Marks any non-power-of-two affine-mapped faces in the n-gon cache as using the
+// non-power-of-two affine texture mapper. This needs to be done since the default
+// affine mapper expects textures to be power-of-two.
+mark_npot_textures_in_ngon_cache: function()
+{
+for (let i = 0; i < Rngon.internalState.ngonCache.count; i++)
+{
+const ngon = Rngon.internalState.ngonCache.ngons[i];
+if (ngon.material.texture &&
+ngon.material.textureMapping === "affine")
+{
+let widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
+let heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
+if (ngon.material.texture.width === 0) widthIsPOT = false;
+if (ngon.material.texture.height === 0) heightIsPOT = false;
+if (!widthIsPOT || !heightIsPOT)
+{
+ngon.material.textureMapping = "affine-npot";
+}
+}
+}
+return;
+},
+// (See the root README.md for documentation on these parameters.)
+defaultRenderOptions: Object.freeze({
+cameraPosition: Rngon.vector3(0, 0, 0),
+cameraDirection: Rngon.vector3(0, 0, 0),
+pixelShaderFunction: null, // If null, all pixel shader functionality will be disabled.
+vertexShaderFunction: null, // If null, all vertex shader functionality will be disabled.
+scale: 1,
+fov: 43,
+nearPlane: 1,
+farPlane: 1000,
+depthSort: "", // An empty string will make the renderer use its default depth sort option.
+useDepthBuffer: true,
+clipToViewport: true,
+globalWireframe: false,
+hibernateWhenNotOnScreen: true,
+perspectiveCorrectInterpolation: false,
+auxiliaryBuffers: [],
+lights: [],
+width: 640, // Used by render_async() only.
+height: 480, // Used by render_async() only.
+ngonRasterizerFunction: null, // If null, defaults to Rngon.ngon_filler.
+ngonTransformClipLighterFunction: null, // If null, defaults to Rngon.ngon_transform_and_light.
+}),
+// Options that will be overridden with these values when calling render_async();
+// i.e. to ignore the values supplied by the user.
+asyncRenderOptionOverrides: Object.freeze({
+ngonRasterizerFunction: null, // This feature is not supported by render_async().
+ngonTransformClipLighterFunction: null, // This feature is not supported by render_async().
+}),
+// Returns an object containing the properties - and their defualt starting values -
+// that a call to render() should return.
+setup_render_call_info: function()
+{
+return {
+renderWidth: 0,
+renderHeight: 0,
+// The total count of n-gons rendered. May be smaller than the number of n-gons
+// originally submitted for rendering, due to visibility culling etc. performed
+// during the rendering process.
+numNgonsRendered: 0,
+// The total time this call to render() took, in milliseconds.
+totalRenderTimeMs: performance.now(),
+};
+},
+}
+/*
+* Tarpeeksi Hyvae Soft 2019 /
+* Retro n-gon renderer
+*
+*/
+"use strict";
 // A 32-bit texture.
 Rngon.texture_rgba = function(data = {})
 {
@@ -2391,10 +2420,9 @@ this.wipe();
 // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
 {
 Rngon.renderShared.prepare_ngon_cache(meshes);
-// Transform the n-gons into screen space.
 for (const mesh of meshes)
 {
-Rngon.ngon_transform_and_light(mesh.ngons,
+Rngon.internalState.transform_clip_lighter(mesh.ngons,
 Rngon.mesh.object_space_matrix(mesh),
 cameraMatrix,
 perspectiveMatrix,
@@ -2407,7 +2435,7 @@ Rngon.renderShared.depth_sort_ngon_cache(options.depthSort);
 // Render the n-gons from the n-gon cache. The rendering will go into the
 // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
 {
-Rngon.ngon_filler(options.auxiliaryBuffers);
+Rngon.internalState.rasterizer(options.auxiliaryBuffers);
 if (Rngon.internalState.usePixelShaders)
 {
 const args = {
@@ -2550,13 +2578,84 @@ surfaceHeight: height,
 }
 }
 /*
+* Most recent known filename: js/rallysported.js
+*
+* Tarpeeksi Hyvae Soft 2018 /
+* RallySportED-js
+*
+*/
+"use strict";
+// Top-level namespace for RallySportED.
+const Rsed = {};
+// Various small utility functions and the like.
+{
+// Defined 'true' to allow for the conveniency of named in-place assertions,
+// e.g. Rsed.assert && (x === 1) || Rsed.throw("X wasn't 1.").
+// Note that setting this to 'false' won't disable assertions - for that,
+// you'll want to search/replace "Rsed.assert &&" with "Rsed.assert ||"
+// and keep this set to 'true'. The comparison against Rsed.assert may still
+// be done, though (I guess depending on the JS engine's ability to optimize).
+Object.defineProperty(Rsed, "assert", {value:true, writable:false});
+// Generates a version 4 UUID and returns it as a string. Adapted with
+// superficial modifications from https://stackoverflow.com/a/2117523,
+// which is based on https://gist.github.com/jed/982883.
+Rsed.generate_uuid4_string = ()=>
+{
+return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+}
+Rsed.throw = (errMessage = "")=>
+{
+if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
+Rsed.ui.popup_notification(`Error: ${errMessage}`, {notificationType:"error", timeoutMs:0});
+console.error("RallySportED error: " + errMessage);
+throw new Error("RallySportED error: " + errMessage);
+}
+Rsed.alert = (message = "")=>
+{
+console.warn("RallySportED: " + message);
+Rsed.ui.popup_notification(message);
+}
+Rsed.log = (message = "")=>
+{
+console.log("RallySportED: " + message);
+}
+Rsed.throw_if_undefined = (...properties)=>
+{
+for (const property of properties)
+{
+if (typeof property === "undefined")
+{
+Rsed.throw("A required property is undefined.");
+}
+}
+return;
+}
+Rsed.throw_if_not_type = (typeName, ...properties)=>
+{
+for (const property of properties)
+{
+const isOfType = (()=>
+{
+switch (typeName)
+{
+case "array": return Array.isArray(property);
+default: return (typeof property === typeName);
+}
+})();
+if (!isOfType)
+{
+Rsed.throw(`A property is of the wrong type; expected "${typeName}".`);
+}
+}
+return;
+}
+Rsed.lerp = (x = 0, y = 0, interval = 0)=>(x + (interval * (y - x)));
+Rsed.clamp = (value = 0, min = 0, max = 1)=>Math.min(Math.max(value, min), max);
+}
+/*
 * 2019, 2020 Tarpeeksi Hyvae Soft
 *
 * Software: RallySportED-js
-*
-* A stripped-down version of the retro n-gon renderer's polygon filler.
-* Includes only the features required by RallySportED-js, helping to
-* boost FPS.
 *
 */
 "use strict";
@@ -2574,15 +2673,17 @@ let numLeftVerts = 0;
 let numRightVerts = 0;
 let numLeftEdges = 0;
 let numRightEdges = 0;
-// Rasterizes into the internal pixel buffer all n-gons currently stored in the
-// internal n-gon cache.
+// A stripped-down version of the retro n-gon renderer's polygon filler. Includes
+// only the features required by RallySportED-js, helping to boost FPS.
+//
+// For the original function, see Rngon.ngon_filler().
 //
 // Note: Consider this the inner render loop; it may contain ugly things like
 // code repetition for the benefit of performance. If you'd like to refactor the
 // code, please benchmark its effects on performance first - maintaining or
 // improving performance would be great, losing performance would be bad.
 //
-Rngon.ngon_filler = function(auxiliaryBuffers = [])
+Rsed.minimal_rngon_filler = function(auxiliaryBuffers = [])
 {
 const pixelBuffer = Rngon.internalState.pixelBuffer.data;
 const renderWidth = Rngon.internalState.pixelBuffer.width;
@@ -2788,16 +2889,14 @@ return;
 * 2019, 2020 Tarpeeksi Hyvae Soft
 *
 * Software: RallySportED-js
-* 
-* A stripped-down version of the retro n-gon renderer's polygon transformer.
-* Includes only the features required by RallySportED-js, helping to boost
-* FPS.
 *
 */
 "use strict";
-// Applies lighting to the given n-gons, and transforms them into screen space
-// for rendering. The processed n-gons are stored in the internal n-gon cache.
-Rngon.ngon_transform_and_light = function(ngons = [],
+// A stripped-down version of the retro n-gon renderer's polygon transformer. Includes
+// only the features required by RallySportED-js, helping to boost FPS.
+//
+// For the original function, see Rngon.ngon_transform_and_light().
+Rsed.minimal_rngon_tcl = function(ngons = [],
 objectMatrix = [],
 cameraMatrix = [],
 projectionMatrix = [],
@@ -2868,81 +2967,6 @@ for (let i = ngonCache.count; i < ngonCache.ngons.length; i++)
 ngonCache.ngons[i].isActive = false;
 }
 return;
-}
-/*
-* Most recent known filename: js/rallysported.js
-*
-* Tarpeeksi Hyvae Soft 2018 /
-* RallySportED-js
-*
-*/
-"use strict";
-// Top-level namespace for RallySportED.
-const Rsed = {};
-// Various small utility functions and the like.
-{
-// Defined 'true' to allow for the conveniency of named in-place assertions,
-// e.g. Rsed.assert && (x === 1) || Rsed.throw("X wasn't 1.").
-// Note that setting this to 'false' won't disable assertions - for that,
-// you'll want to search/replace "Rsed.assert &&" with "Rsed.assert ||"
-// and keep this set to 'true'. The comparison against Rsed.assert may still
-// be done, though (I guess depending on the JS engine's ability to optimize).
-Object.defineProperty(Rsed, "assert", {value:true, writable:false});
-// Generates a version 4 UUID and returns it as a string. Adapted with
-// superficial modifications from https://stackoverflow.com/a/2117523,
-// which is based on https://gist.github.com/jed/982883.
-Rsed.generate_uuid4_string = ()=>
-{
-return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
-}
-Rsed.throw = (errMessage = "")=>
-{
-if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
-Rsed.ui.popup_notification(`Error: ${errMessage}`, {notificationType:"error", timeoutMs:0});
-console.error("RallySportED error: " + errMessage);
-throw new Error("RallySportED error: " + errMessage);
-}
-Rsed.alert = (message = "")=>
-{
-console.warn("RallySportED: " + message);
-Rsed.ui.popup_notification(message);
-}
-Rsed.log = (message = "")=>
-{
-console.log("RallySportED: " + message);
-}
-Rsed.throw_if_undefined = (...properties)=>
-{
-for (const property of properties)
-{
-if (typeof property === "undefined")
-{
-Rsed.throw("A required property is undefined.");
-}
-}
-return;
-}
-Rsed.throw_if_not_type = (typeName, ...properties)=>
-{
-for (const property of properties)
-{
-const isOfType = (()=>
-{
-switch (typeName)
-{
-case "array": return Array.isArray(property);
-default: return (typeof property === typeName);
-}
-})();
-if (!isOfType)
-{
-Rsed.throw(`A property is of the wrong type; expected "${typeName}".`);
-}
-}
-return;
-}
-Rsed.lerp = (x = 0, y = 0, interval = 0)=>(x + (interval * (y - x)));
-Rsed.clamp = (value = 0, min = 0, max = 1)=>Math.min(Math.max(value, min), max);
 }
 /*
 * Most recent known filename: js/project/project.js
@@ -7570,6 +7594,8 @@ clipToViewport: true,
 depthSort: "painter",
 useDepthBuffer: false,
 auxiliaryBuffers: [{buffer:Rsed.visual.canvas.mousePickingBuffer, property:"mousePickId"}],
+ngonRasterizerFunction: Rsed.minimal_rngon_filler,
+ngonTransformClipLighterFunction: Rsed.minimal_rngon_tcl,
 });
 // If the rendering was resized since the previous frame...
 if ((renderInfo.renderWidth !== Rsed.visual.canvas.width ||

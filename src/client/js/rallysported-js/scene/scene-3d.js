@@ -143,6 +143,8 @@ Rsed.scenes["3d"] = (function()
                 depthSort: "painter",
                 useDepthBuffer: false,
                 auxiliaryBuffers: [{buffer:Rsed.visual.canvas.mousePickingBuffer, property:"mousePickId"}],
+                ngonRasterizerFunction: Rsed.minimal_rngon_filler,
+                ngonTransformClipLighterFunction: Rsed.minimal_rngon_tcl,
             });
 
             // If the rendering was resized since the previous frame...
