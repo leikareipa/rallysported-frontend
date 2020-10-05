@@ -307,12 +307,12 @@ Rsed.project = async function(projectArgs = {})
 
         const projectData = (projectArgs.dataLocality === "server-rsc")?  (await fetch_project_data_from_rsc_server())[0] :
                             (projectArgs.dataLocality === "server-rsed")? (await fetch_project_data_from_rsed_server())[0] :
-                            (projectArgs.dataLocality === "client")?      await fetch_project_data_from_local_zip_file() :
+                            (projectArgs.dataLocality === "client")?       await load_project_data_from_zip_file() :
                             Rsed.throw("Unknown locality for project data.");
 
         return projectData;
 
-        async function fetch_project_data_from_local_zip_file()
+        async function load_project_data_from_zip_file()
         {
             Rsed.assert && (typeof projectArgs.contentId !== "undefined")
                         || Rsed.throw("Missing required parameters for loading a client-side project.");
@@ -325,29 +325,16 @@ Rsed.project = async function(projectArgs = {})
 
             let projectDirName = "undefined";
 
-            // Parse the zip file's contents to extract the project's data. The data are expected as
-            // .DTA and .$FT files inside a folder named according to the name of the project (the
-            // folder name must be ASCII A-Z only and with a maximum of eight characters, to maintain
-            // compatibility with the DOS version of RallySportED).
+            // Parse the zip file's contents and extract the project's data.
             {
-                const files = [];
-                const dirs = [];
+                const files = Object.values(zip.files).reduce((files, e)=>(e.dir? files : files.concat(e)), []);
 
-                // Compile a list of files and directories in side the zip file.
-                zip.forEach((path, entry)=>
-                {
-                    if (entry.dir)
-                    {
-                        dirs.push(entry);
-                    }
-                    else files.push(entry);
-                });
+                Rsed.assert && (files.length === 3)
+                            || Rsed.throw("The given project zip file is malformed. Please re-export it and try again.");
 
-                Rsed.assert && (dirs.length === 1)
-                            || Rsed.throw("A project zip file must contain exactly one directory, under which the project's " +
-                                          ".DTA and .$FT files are found.");
-
-                projectDirName = dirs[0].name.slice(0, -1).toLowerCase();
+                // File names are expected in the form "XXXX/YYYY.ZZZ", where XXXX is the project
+                // name.
+                projectDirName = files[0].name.slice(0, files[0].name.indexOf("/")).toLowerCase();
 
                 // Find the project's $FT and DTA files inside the zip file.
                 {
@@ -377,7 +364,7 @@ Rsed.project = async function(projectArgs = {})
                     });
 
                     Rsed.assert && (manifestoFile && dtaFile)
-                                || Rsed.throw("The given project zip file was missing the required .DTA and/or .$FT files.")
+                                || Rsed.throw("The given project zip file is malformed. Please re-export it and try again.")
                 }
             }
             
@@ -436,17 +423,14 @@ Rsed.project = async function(projectArgs = {})
                 }
             })();
 
-            return fetch(`./client/assets/tracks/${trackName}.json`)
-                   .then(response=>
-                   {
-                       if (response.status !== 200)
-                       {
-                           throw "Failed to fetch project data from the RallySportED-js server.";
-                       }
-    
-                       return response.json();
-                   })
-                   .catch(error=>{ Rsed.throw(error); });
+            const serverResponse = await fetch(`./client/assets/tracks/${trackName}.json`);
+
+            if (serverResponse.status !== 200)
+            {
+                Rngon.throw("Failed to fetch project data from the RallySportED-js server.");
+            }
+
+            return serverResponse.json();
         }
 
         // Loads the project's data from the Rally-Sport Content server. This
@@ -456,19 +440,14 @@ Rsed.project = async function(projectArgs = {})
             Rsed.assert && (typeof projectArgs.contentId !== "undefined")
                         || Rsed.throw("Missing required parameters for loading a server-side project.");
 
-            // Request the track's data in JSON format from the Rally-Sport Content
-            // server. The data will be provided in the response body.
-            return fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.contentId}&json=true`)
-                   .then(response=>
-                   {
-                       if (response.status !== 200)
-                       {
-                           throw "Failed to fetch track data from the Rally-Sport Content server.";
-                       }
-    
-                       return response.json();
-                   })
-                   .catch(error=>{ Rsed.throw(error); });
+            const serverResponse = await fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.contentId}&json=true`);
+
+            if (serverResponse.status !== 200)
+            {
+                Rngon.throw("Failed to fetch project data from the RallySportED-js server.");
+            }
+
+            return serverResponse.json();
         }
     }
 
