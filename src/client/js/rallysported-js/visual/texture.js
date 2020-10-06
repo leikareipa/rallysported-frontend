@@ -129,6 +129,7 @@ Rsed.visual.texture = function(args = {})
         indices: args.indices,
         mipLevels: mipmaps,
         set_pixel_at: args.set_pixel_at,
+        args,
     });
 
     return publicInterface;

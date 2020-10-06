@@ -259,7 +259,17 @@ Rsed.scenes["3d"] = (function()
 
                 if (!isNaN(newHeight))
                 {
-                    Rsed.core.current_project().maasto.bulldoze(newHeight);
+                    for (let y = 0; y < Rsed.core.current_project().maasto.height; y++)
+                    {
+                        for (let x = 0; x < Rsed.core.current_project().maasto.width; x++)
+                        {
+                            Rsed.ui.assetMutator.user_edit("maasto", {
+                                command: "set-height",
+                                target: {x, y},
+                                data: newHeight,
+                            });
+                        }
+                    }
                 }
 
                 Rsed.ui.inputState.set_key_down("l", false);
@@ -324,12 +334,14 @@ Rsed.scenes["3d"] = (function()
                     if (Rsed.ui.inputState.left_mouse_button_down() &&
                         Rsed.ui.inputState.left_mouse_click_modifiers().includes("shift"))
                     {
-                        Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
-                                                                       Rsed.core.current_project().props.id_for_name("tree"),
-                                                                       {
-                                                                           x: (hover.groundTileX * Rsed.constants.groundTileSize),
-                                                                           z: (hover.groundTileY * Rsed.constants.groundTileSize),
-                                                                       });
+                        Rsed.ui.assetMutator.user_edit("prop", {
+                            command: "add",
+                            target: Rsed.core.current_project().props.id_for_name("tree"),
+                            data: {
+                                x: (hover.groundTileX * Rsed.constants.groundTileSize),
+                                z: (hover.groundTileY * Rsed.constants.groundTileSize),
+                            },
+                        });
 
                         Rsed.ui.inputState.reset_mouse_hover();
                         Rsed.ui.inputState.reset_mouse_grab();
@@ -374,7 +386,10 @@ Rsed.scenes["3d"] = (function()
                         // Remove the selected prop.
                         if (Rsed.ui.inputState.left_mouse_click_modifiers().includes("shift"))
                         {
-                            Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), hover.propTrackIdx);
+                            Rsed.ui.assetMutator.user_edit("prop", {
+                                command: "remove",
+                                target: hover.propTrackIdx,
+                            });
 
                             Rsed.ui.inputState.reset_mouse_hover();
                             Rsed.ui.inputState.reset_mouse_grab();
@@ -401,12 +416,14 @@ Rsed.scenes["3d"] = (function()
                                     y: (Rsed.ui.inputState.mouse_pos().y - prevMousePos.y),
                                 }
 
-                                Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
-                                                                       grab.propTrackIdx,
-                                                                       {
-                                                                           x: (mousePosDelta.x * 1.5),
-                                                                           z: (mousePosDelta.y * 2.5),
-                                                                       });
+                                Rsed.ui.assetMutator.user_edit("prop", {
+                                    command: "move",
+                                    target: grab.propTrackIdx,
+                                    data: {
+                                        x: (mousePosDelta.x * 1.5),
+                                        z: (mousePosDelta.y * 2.5),
+                                    },
+                                });
                             }
                         }
                     }

@@ -174,12 +174,12 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
             pixels: pixels,
             indices: dataSlice,
             flipped: "no",
-            args: args,
+            assetId: palaId,
+            assetType: "palat",
             set_pixel_at: function(x = 0, y = 0, newColorIdx = 0)
             {
                 const texelIdx = (x + y * palaWidth);
 
-                Rsed.ui.undoStack.mark_dirty_texture("palat", palaId);
                 data[dataIdx + texelIdx] = newColorIdx;
 
                 // Regenerate this texture to incorporate the changes we've made to the

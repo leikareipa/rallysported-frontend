@@ -65,8 +65,7 @@ Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Arra
             {
                 return;
             }
-
-            Rsed.ui.undoStack.mark_dirty_ground_tile(x, y);
+            
             [data[idx], data[idx+1]] = [...integer_height_as_two_bytes(newHeight)];
         },
 

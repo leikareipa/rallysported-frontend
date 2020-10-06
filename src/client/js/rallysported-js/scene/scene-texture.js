@@ -257,7 +257,15 @@ Rsed.scenes["texture"] = (function()
                 // Note: Changing a pixel in the texture causes the texture to be regenerated,
                 // so we need to update our reference to it. (The new reference is returned
                 // from the pixel-setting function.)
-                texture = texture.set_pixel_at(pickElement.u, pickElement.v, sceneSettings.selectedColorIdx);
+                texture = Rsed.ui.assetMutator.user_edit("texture", {
+                    command: "set-pixel",
+                    target: {
+                        texture,
+                        u: pickElement.u,
+                        v: pickElement.v,
+                    },
+                    data: sceneSettings.selectedColorIdx,
+                });
             }
         }
         else if (Rsed.ui.inputState.mouse_wheel_scroll())

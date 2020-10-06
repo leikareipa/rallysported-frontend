@@ -34,14 +34,17 @@ Rsed.ui.htmlUI = (function()
             activate_prop: function(name = "")
             {
                 if (!Rsed.ui.inputState.current_mouse_hover() ||
-                        Rsed.ui.inputState.current_mouse_hover().type !== "prop")
+                    Rsed.ui.inputState.current_mouse_hover().type !== "prop")
                 {
                     return;
                 }
 
-                Rsed.core.current_project().props.change_prop_type(Rsed.core.current_project().track_id(),
-                                                                    Rsed.ui.inputState.current_mouse_hover().propTrackIdx,
-                                                                    Rsed.core.current_project().props.id_for_name(name));
+                Rsed.ui.assetMutator.user_edit("prop", {
+                    command: "set-type",
+                    target: Rsed.ui.inputState.current_mouse_hover().propTrackIdx,
+                    data: Rsed.core.current_project().props.id_for_name(name),
+                });
+
                 window.close_dropdowns();
 
                 return;
@@ -51,8 +54,8 @@ Rsed.ui.htmlUI = (function()
             {
                 this.trackName = Rsed.core.current_project().name;
                 this.propList = Rsed.core.current_project().props.names()
-                                            .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
-                                            .map(propName=>({propName}));
+                                         .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
+                                         .map(propName=>({propName}));
 
                 return;
             }

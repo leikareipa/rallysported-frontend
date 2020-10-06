@@ -59,7 +59,6 @@ Rsed.track.varimaa = function(varimaaWidth = 0, varimaaHeight = 0, data = Uint8A
                 return;
             }
 
-            Rsed.ui.undoStack.mark_dirty_ground_tile(x, y);
             data[idx] = newPalaIdx;
         },
     };

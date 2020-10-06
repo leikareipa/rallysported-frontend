@@ -171,10 +171,12 @@ Rsed.core = (function()
 
         project = Rsed.project.placeholder;
 
-        Rsed.ui.undoStack.reset();
-            
+        /// TODO: Disable undo/redo while the project loads.
+
         Rsed.world.camera.reset_camera_position();
 
         project = await Rsed.project(args.project);
+
+        Rsed.ui.undoStack.reset();
     }
 })();

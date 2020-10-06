@@ -427,7 +427,7 @@ Rsed.project = async function(projectArgs = {})
 
             if (serverResponse.status !== 200)
             {
-                Rngon.throw("Failed to fetch project data from the RallySportED-js server.");
+                Rsed.throw("Failed to fetch project data from the RallySportED-js server.");
             }
 
             return serverResponse.json();
@@ -444,7 +444,7 @@ Rsed.project = async function(projectArgs = {})
 
             if (serverResponse.status !== 200)
             {
-                Rngon.throw("Failed to fetch project data from the RallySportED-js server.");
+                Rsed.throw("Failed to fetch project data from the RallySportED-js server.");
             }
 
             return serverResponse.json();

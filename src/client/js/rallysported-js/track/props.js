@@ -197,7 +197,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 ...delta,
             };
 
-            Rsed.ui.undoStack.mark_dirty_props();
             currentLocation.x = clamped_to_prop_margins(currentLocation.x + delta.x);
             currentLocation.y = (currentLocation.y + delta.y);
             currentLocation.z = clamped_to_prop_margins(currentLocation.z + delta.z);
@@ -227,7 +226,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 return;
             }
 
-            Rsed.ui.undoStack.mark_dirty_props();
             trackPropLocations[trackId].locations.splice(propIdx, 1);
         },
 
@@ -253,7 +251,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 ...location,
             }
 
-            Rsed.ui.undoStack.mark_dirty_props();
             trackPropLocations[trackId].locations[propIdx].x = location.x;
             trackPropLocations[trackId].locations[propIdx].y = location.y;
             trackPropLocations[trackId].locations[propIdx].z = location.z;
@@ -271,7 +268,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (newPropCount <= trackPropLocations[trackId].locations.length))
                         || Rsed.throw("Trying to set a new prop count out of bounds.");
 
-            Rsed.ui.undoStack.mark_dirty_props();
             trackPropLocations[trackId].locations.length = newPropCount;
         },
 
@@ -286,7 +282,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (newPropCount <= Rsed.constants.maxPropCount))
                         || Rsed.throw("Trying to set a new prop count out of bounds.");
 
-            Rsed.ui.undoStack.mark_dirty_props();
             trackPropLocations[trackId].locations = new Array(newPropCount).fill().map(e=>({x:0, y:0, z:0, propId: 0}));
         },
 
@@ -296,7 +291,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (trackId <= 7))
                         || Rsed.throw("Querying a track out of bounds.");
 
-            Rsed.ui.undoStack.mark_dirty_props();
             trackPropLocations[trackId].locations.length = 0;
         },
 
@@ -310,7 +304,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                             (propIdx < trackPropLocations[trackId].locations.length))
                         || Rsed.throw("Querying a prop location out of bounds.");
 
-            Rsed.ui.undoStack.mark_dirty_props();
             trackPropLocations[trackId].locations[propIdx].propId = newPropId;
         },
 
@@ -346,7 +339,6 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
                 ...location,
             }
 
-            Rsed.ui.undoStack.mark_dirty_props();
             trackPropLocations[trackId].locations.push(
             {
                 propId: newPropId,
@@ -401,13 +393,14 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
             pixels: pixels,
             indices: indices,
             flipped: "no",
+            assetId: idx,
+            assetType: "props",
             set_pixel_at: function(x = 0, y = 0, newColorIdx = 0)
             {
                 const texelIdx = ((textureRects[idx].rect.topLeft.x + x) +
                                   (textureRects[idx].rect.topLeft.y + y) *
                                   textureAtlasWidth);
 
-                Rsed.ui.undoStack.mark_dirty_texture("props", idx);
                 textureAtlas[texelIdx] = newColorIdx;
 
                 // Regenerate this texture to incorporate the changes we've made to the

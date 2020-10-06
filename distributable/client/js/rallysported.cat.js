@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (05 October 2020 19:06:14 UTC)
+// VERSION: live (06 October 2020 11:17:34 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -27,6 +27,7 @@
 //	./src/client/js/rallysported-js/track/palat.js
 //	./src/client/js/rallysported-js/track/props.js
 //	./src/client/js/rallysported-js/ui/ui.js
+//	./src/client/js/rallysported-js/ui/asset-mutator.js
 //	./src/client/js/rallysported-js/ui/undo-stack.js
 //	./src/client/js/rallysported-js/ui/html.js
 //	./src/client/js/rallysported-js/ui/popup-notification.js
@@ -3321,7 +3322,7 @@ default: Rsed.throw("Unknown track name.");
 const serverResponse = await fetch(`./client/assets/tracks/${trackName}.json`);
 if (serverResponse.status !== 200)
 {
-Rngon.throw("Failed to fetch project data from the RallySportED-js server.");
+Rsed.throw("Failed to fetch project data from the RallySportED-js server.");
 }
 return serverResponse.json();
 }
@@ -3334,7 +3335,7 @@ Rsed.assert && (typeof projectArgs.contentId !== "undefined")
 const serverResponse = await fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.contentId}&json=true`);
 if (serverResponse.status !== 200)
 {
-Rngon.throw("Failed to fetch project data from the RallySportED-js server.");
+Rsed.throw("Failed to fetch project data from the RallySportED-js server.");
 }
 return serverResponse.json();
 }
@@ -4105,6 +4106,7 @@ pixels: args.pixels,
 indices: args.indices,
 mipLevels: mipmaps,
 set_pixel_at: args.set_pixel_at,
+args,
 });
 return publicInterface;
 }
@@ -4447,7 +4449,6 @@ if ((idx < 0) || (idx >= data.byteLength))
 {
 return;
 }
-Rsed.ui.undoStack.mark_dirty_ground_tile(x, y);
 data[idx] = newPalaIdx;
 },
 };
@@ -4505,7 +4506,6 @@ if ((idx < 0) || (idx >= data.byteLength))
 {
 return;
 }
-Rsed.ui.undoStack.mark_dirty_ground_tile(x, y);
 [data[idx], data[idx+1]] = [...integer_height_as_two_bytes(newHeight)];
 },
 // Reset all height values in the heightmap to the specified height.
@@ -4712,11 +4712,11 @@ height: palaHeight,
 pixels: pixels,
 indices: dataSlice,
 flipped: "no",
-args: args,
+assetId: palaId,
+assetType: "palat",
 set_pixel_at: function(x = 0, y = 0, newColorIdx = 0)
 {
 const texelIdx = (x + y * palaWidth);
-Rsed.ui.undoStack.mark_dirty_texture("palat", palaId);
 data[dataIdx + texelIdx] = newColorIdx;
 // Regenerate this texture to incorporate the changes we've made to the
 // master data array.
@@ -4893,7 +4893,6 @@ delta =
 ...{x:0,y:0,z:0},
 ...delta,
 };
-Rsed.ui.undoStack.mark_dirty_props();
 currentLocation.x = clamped_to_prop_margins(currentLocation.x + delta.x);
 currentLocation.y = (currentLocation.y + delta.y);
 currentLocation.z = clamped_to_prop_margins(currentLocation.z + delta.z);
@@ -4917,7 +4916,6 @@ Rsed.alert("The finish line can't be removed.");
 Rsed.ui.inputState.reset_mouse_buttons_state();
 return;
 }
-Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations.splice(propIdx, 1);
 },
 // Assigns a new location to the propIdx'th prop on the given track.
@@ -4939,7 +4937,6 @@ z: trackPropLocations[trackId].locations[propIdx].z,
 },
 ...location,
 }
-Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations[propIdx].x = location.x;
 trackPropLocations[trackId].locations[propIdx].y = location.y;
 trackPropLocations[trackId].locations[propIdx].z = location.z;
@@ -4954,7 +4951,6 @@ Rsed.assert && ((trackId >= 0) &&
 Rsed.assert && ((newPropCount >= 1) &&
 (newPropCount <= trackPropLocations[trackId].locations.length))
 || Rsed.throw("Trying to set a new prop count out of bounds.");
-Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations.length = newPropCount;
 },
 // Set the number of props on the given track. For RallySportED Loader v.5.
@@ -4966,7 +4962,6 @@ Rsed.assert && ((trackId >= 0) &&
 Rsed.assert && ((newPropCount >= 1) &&
 (newPropCount <= Rsed.constants.maxPropCount))
 || Rsed.throw("Trying to set a new prop count out of bounds.");
-Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations = new Array(newPropCount).fill().map(e=>({x:0, y:0, z:0, propId: 0}));
 },
 reset_count: (trackId = 0)=>
@@ -4974,7 +4969,6 @@ reset_count: (trackId = 0)=>
 Rsed.assert && ((trackId >= 0) &&
 (trackId <= 7))
 || Rsed.throw("Querying a track out of bounds.");
-Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations.length = 0;
 },
 change_prop_type: (trackId = 0, propIdx = 0, newPropId = 0)=>
@@ -4985,7 +4979,6 @@ Rsed.assert && ((trackId >= 0) &&
 Rsed.assert && ((propIdx >= 0) &&
 (propIdx < trackPropLocations[trackId].locations.length))
 || Rsed.throw("Querying a prop location out of bounds.");
-Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations[propIdx].propId = newPropId;
 },
 num_props_on_track: (trackId = 0)=>
@@ -5015,7 +5008,6 @@ z: 0,
 },
 ...location,
 }
-Rsed.ui.undoStack.mark_dirty_props();
 trackPropLocations[trackId].locations.push(
 {
 propId: newPropId,
@@ -5063,12 +5055,13 @@ height,
 pixels: pixels,
 indices: indices,
 flipped: "no",
+assetId: idx,
+assetType: "props",
 set_pixel_at: function(x = 0, y = 0, newColorIdx = 0)
 {
 const texelIdx = ((textureRects[idx].rect.topLeft.x + x) +
 (textureRects[idx].rect.topLeft.y + y) *
 textureAtlasWidth);
-Rsed.ui.undoStack.mark_dirty_texture("props", idx);
 textureAtlas[texelIdx] = newColorIdx;
 // Regenerate this texture to incorporate the changes we've made to the
 // master data array.
@@ -5112,6 +5105,130 @@ return response.json();
 */
 "use strict";
 Rsed.ui = {};
+/*
+* Most recent known filename: js/ui/asset-mutator.js
+*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+// A layer that sits between the user and the game assets (heightmap, tilemap, textures,
+// etc.), registering and routing all commands from the user to modify those assets. This
+// is to ensure that all user-initiated modifications are inserted into the undo/redo
+// stack, transmitted through the network in shared editing mode, etc.
+//
+// WARNING: If a particular mutation of asset is not available via this layer, the user
+// should not be allowed to perform it even if the asset object itself provides a direct
+// function for that mutation. For instance, the layer doesn't provide a way to set the
+// number of track props even though it could be done via project.props.set_count(); so
+// the user should instead be made to act via the layer's "add" and "remove" prop actions,
+// or the layer should be expanded to allow specific manipulation of the prop count.
+Rsed.ui.assetMutator = (function()
+{
+const publicInterface = {
+// Call this function when the user requests (e.g. via the UI) to perform a
+// mutation on an asset - e.g. to paint the tilemap, alter the heightmap, etc.
+//
+// 'assetType' identifies which class of asset is to be edited. Valid values
+// are "maasto" (heightmap), "varimaa" (tilemap), "texture", and "prop".
+//
+// 'editAction' defines the action to be performed on the asset; being an
+// object of the following form:
+//
+//   {
+//       command: A string enumerator identifying the edit action to be performed wrt. the asset
+//       target: A property identifying the specific instance of asset to be acted in regard to
+//       data: A payload associated with the action - e.g. a new height value to modify the heightmap with
+//   }
+//
+// You can find which 'editAction' parameters are valid for a given class of
+// asset by inspecting the applicator functions.
+user_edit: (assetType = "", editAction = {})=>
+{
+if (!Object.keys(applicators).includes(assetType))
+{
+Rsed.throw("Unknown asset type.");
+}
+return applicators[assetType](Rsed.core.current_project(), editAction);
+}
+}
+// For each class of asset, a function that applies a user-requested mutation on
+// the asset.
+const applicators = {
+"maasto": (project, edit)=>
+{
+Rsed.ui.undoStack.mark_dirty_ground_tile(edit.target.x, edit.target.y);
+switch (edit.command)
+{
+case "set-height":
+{
+project.maasto.set_tile_value_at(edit.target.x, edit.target.y, edit.data);
+break;
+}
+default: Rsed.throw("Unknown edit action."); break;
+}
+},
+"varimaa": (project, edit)=>
+{
+Rsed.ui.undoStack.mark_dirty_ground_tile(edit.target.x, edit.target.y);
+switch (edit.command)
+{
+case "set-tile":
+{
+project.varimaa.set_tile_value_at(edit.target.x, edit.target.y, edit.data);
+break;
+}
+default: Rsed.throw("Unknown edit action."); break;
+}
+},
+"texture": (project, edit)=>
+{
+Rsed.ui.undoStack.mark_dirty_texture(edit.target.texture.args.assetType, edit.target.texture.args.assetId);
+switch (edit.command)
+{
+case "set-pixel":
+{
+// Returns the new modified texture.
+return edit.target.texture.set_pixel_at(edit.target.u, edit.target.v, edit.data);
+}
+default: Rsed.throw("Unknown edit action."); break;
+}
+},
+"prop": (project, edit)=>
+{
+const trackId = project.track_id();
+const propIdx = edit.target;
+Rsed.ui.undoStack.mark_dirty_props();
+switch (edit.command)
+{
+case "move":
+{
+project.props.move(trackId, propIdx, edit.data);
+break;
+}
+case "remove":
+{
+project.props.remove(trackId, propIdx);
+break;
+}
+case "set-type":
+{
+project.props.change_prop_type(trackId, propIdx, edit.data);
+break;
+}
+case "add":
+{
+project.props.add_location(trackId, propIdx, edit.data);
+break;
+}
+default: Rsed.throw("Unknown edit action."); break;
+}
+}
+}
+return publicInterface;
+})();
 /*
 * Most recent known filename: js/ui/undo-stack.js
 *
@@ -5417,9 +5534,11 @@ Rsed.ui.inputState.current_mouse_hover().type !== "prop")
 {
 return;
 }
-Rsed.core.current_project().props.change_prop_type(Rsed.core.current_project().track_id(),
-Rsed.ui.inputState.current_mouse_hover().propTrackIdx,
-Rsed.core.current_project().props.id_for_name(name));
+Rsed.ui.assetMutator.user_edit("prop", {
+command: "set-type",
+target: Rsed.ui.inputState.current_mouse_hover().propTrackIdx,
+data: Rsed.core.current_project().props.id_for_name(name),
+});
 window.close_dropdowns();
 return;
 },
@@ -6030,19 +6149,29 @@ avgHeight += targetProject.maasto.tile_at(tileX+1, tileZ-1);
 avgHeight += targetProject.maasto.tile_at(tileX-1, tileZ+1);
 avgHeight += targetProject.maasto.tile_at(tileX-1, tileZ-1);
 avgHeight /= 8;
-targetProject.maasto.set_tile_value_at(tileX, tileZ,
-Math.floor(((avgHeight + targetProject.maasto.tile_at(tileX, tileZ) * 7) / 8)));
+Rsed.ui.assetMutator.user_edit("maasto",{
+command: "set-height",
+target: {x: tileX, y: tileZ},
+data: Math.floor(((avgHeight + targetProject.maasto.tile_at(tileX, tileZ) * 7) / 8)),
+});
 }
 else
 {
-targetProject.maasto.set_tile_value_at(tileX, tileZ,
-(targetProject.maasto.tile_at(tileX, tileZ) + value));
+Rsed.ui.assetMutator.user_edit("maasto", {
+command: "set-height",
+target: {x: tileX, y: tileZ},
+data: (targetProject.maasto.tile_at(tileX, tileZ) + value),
+});
 }
 break;
 }
 case this.brushAction.changePala:
 {
-targetProject.varimaa.set_tile_value_at(tileX, tileZ, value);
+Rsed.ui.assetMutator.user_edit("varimaa", {
+command: "set-tile",
+target: {x: tileX, y: tileZ},
+data: value,
+});
 break;
 }
 default: Rsed.throw("Unknown brush action.");
@@ -7666,7 +7795,17 @@ if (Rsed.ui.inputState.key_down("l"))
 const newHeight = parseInt(window.prompt("Level the terrain to a height of..."), 10);
 if (!isNaN(newHeight))
 {
-Rsed.core.current_project().maasto.bulldoze(newHeight);
+for (let y = 0; y < Rsed.core.current_project().maasto.height; y++)
+{
+for (let x = 0; x < Rsed.core.current_project().maasto.width; x++)
+{
+Rsed.ui.assetMutator.user_edit("maasto", {
+command: "set-height",
+target: {x, y},
+data: newHeight,
+});
+}
+}
 }
 Rsed.ui.inputState.set_key_down("l", false);
 }
@@ -7720,11 +7859,13 @@ if (hover.type !== "ground") break;
 if (Rsed.ui.inputState.left_mouse_button_down() &&
 Rsed.ui.inputState.left_mouse_click_modifiers().includes("shift"))
 {
-Rsed.core.current_project().props.add_location(Rsed.core.current_project().track_id(),
-Rsed.core.current_project().props.id_for_name("tree"),
-{
+Rsed.ui.assetMutator.user_edit("prop", {
+command: "add",
+target: Rsed.core.current_project().props.id_for_name("tree"),
+data: {
 x: (hover.groundTileX * Rsed.constants.groundTileSize),
 z: (hover.groundTileY * Rsed.constants.groundTileSize),
+},
 });
 Rsed.ui.inputState.reset_mouse_hover();
 Rsed.ui.inputState.reset_mouse_grab();
@@ -7761,7 +7902,10 @@ if (Rsed.ui.inputState.left_mouse_button_down())
 // Remove the selected prop.
 if (Rsed.ui.inputState.left_mouse_click_modifiers().includes("shift"))
 {
-Rsed.core.current_project().props.remove(Rsed.core.current_project().track_id(), hover.propTrackIdx);
+Rsed.ui.assetMutator.user_edit("prop", {
+command: "remove",
+target: hover.propTrackIdx,
+});
 Rsed.ui.inputState.reset_mouse_hover();
 Rsed.ui.inputState.reset_mouse_grab();
 }
@@ -7784,11 +7928,13 @@ const mousePosDelta =
 x: (Rsed.ui.inputState.mouse_pos().x - prevMousePos.x),
 y: (Rsed.ui.inputState.mouse_pos().y - prevMousePos.y),
 }
-Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
-grab.propTrackIdx,
-{
+Rsed.ui.assetMutator.user_edit("prop", {
+command: "move",
+target: grab.propTrackIdx,
+data: {
 x: (mousePosDelta.x * 1.5),
 z: (mousePosDelta.y * 2.5),
+},
 });
 }
 }
@@ -8257,7 +8403,15 @@ if (pickElement &&
 // Note: Changing a pixel in the texture causes the texture to be regenerated,
 // so we need to update our reference to it. (The new reference is returned
 // from the pixel-setting function.)
-texture = texture.set_pixel_at(pickElement.u, pickElement.v, sceneSettings.selectedColorIdx);
+texture = Rsed.ui.assetMutator.user_edit("texture", {
+command: "set-pixel",
+target: {
+texture,
+u: pickElement.u,
+v: pickElement.v,
+},
+data: sceneSettings.selectedColorIdx,
+});
 }
 }
 else if (Rsed.ui.inputState.mouse_wheel_scroll())
@@ -8406,8 +8560,9 @@ Rsed.assert && ((typeof args.project !== "undefined") &&
 (typeof args.project.contentId !== "undefined"))
 || Rsed.throw("Missing required arguments for loading a project.");
 project = Rsed.project.placeholder;
-Rsed.ui.undoStack.reset();
+/// TODO: Disable undo/redo while the project loads.
 Rsed.world.camera.reset_camera_position();
 project = await Rsed.project(args.project);
+Rsed.ui.undoStack.reset();
 }
 })();

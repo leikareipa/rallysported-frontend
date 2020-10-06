@@ -60,21 +60,31 @@ Rsed.ui.groundBrush = (function()
                                 avgHeight += targetProject.maasto.tile_at(tileX-1, tileZ+1);
                                 avgHeight += targetProject.maasto.tile_at(tileX-1, tileZ-1);
                                 avgHeight /= 8;
-                                    
-                                targetProject.maasto.set_tile_value_at(tileX, tileZ,
-                                                                       Math.floor(((avgHeight + targetProject.maasto.tile_at(tileX, tileZ) * 7) / 8)));
+
+                                Rsed.ui.assetMutator.user_edit("maasto",{
+                                    command: "set-height",
+                                    target: {x: tileX, y: tileZ},
+                                    data: Math.floor(((avgHeight + targetProject.maasto.tile_at(tileX, tileZ) * 7) / 8)),
+                                });
                             }
                             else
                             {
-                                targetProject.maasto.set_tile_value_at(tileX, tileZ,
-                                                                       (targetProject.maasto.tile_at(tileX, tileZ) + value));
+                                Rsed.ui.assetMutator.user_edit("maasto", {
+                                    command: "set-height",
+                                    target: {x: tileX, y: tileZ},
+                                    data: (targetProject.maasto.tile_at(tileX, tileZ) + value),
+                                });
                             }
 
                             break;
                         }
                         case this.brushAction.changePala:
                         {
-                            targetProject.varimaa.set_tile_value_at(tileX, tileZ, value);
+                            Rsed.ui.assetMutator.user_edit("varimaa", {
+                                command: "set-tile",
+                                target: {x: tileX, y: tileZ},
+                                data: value,
+                            });
 
                             break;
                         }
