@@ -93,19 +93,56 @@ body
     background-image: linear-gradient(rgb(170, 170, 170), rgb(133, 133, 133));
 }
 
+#html-ui .button:hover
+{
+    background-color: rgba(255, 255, 255, 0.4);
+    background-image: linear-gradient(rgb(190, 190, 190), rgb(133, 133, 133));
+}
+
+#html-ui .button:active
+{
+    border-bottom: none;
+    background-image: linear-gradient(rgb(133, 133, 133), rgb(190, 190, 190));
+}
+
 #html-ui .button > a
 {
     color: inherit;
     text-decoration: none;
 }
 
-#html-ui .button.disabled
+#html-ui .button.stream
 {
-    cursor: not-allowed;
+    color: inherit;
+}
+
+#html-ui .button.stream.disabled .fas
+{
     color: lightgray;
-    background-image: none;
-    border-bottom: none;
-    text-decoration: line-through wavy rgba(0, 0, 0, 0.3);
+}
+
+#html-ui .button.stream.enabled
+{
+    color: lightgreen;
+}
+
+#html-ui .button.stream.initializing
+{
+    color: lightgray;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#html-ui .button.stream.waiting:hover
+{
+    background-color: inherit;
+    background-image: inherit;
+}
+
+#html-ui .button.stream.waiting:active
+{
+    border-bottom: inherit;
+    background-image: inherit;
 }
 
 #html-ui .button.left
@@ -124,18 +161,6 @@ body
 {
     border-radius: 0 10px 10px 0;
     padding: 0 15px 0 10px;
-}
-
-#html-ui .button.enabled:hover
-{
-    background-color: rgba(255, 255, 255, 0.4);
-    background-image: linear-gradient(rgb(190, 190, 190), rgb(133, 133, 133));
-}
-
-#html-ui .button.enabled:active
-{
-    border-bottom: none;
-    background-image: linear-gradient(rgb(133, 133, 133), rgb(190, 190, 190));
 }
 
 #html-ui .disclaimer

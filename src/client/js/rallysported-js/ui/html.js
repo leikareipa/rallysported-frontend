@@ -26,6 +26,10 @@ Rsed.ui.htmlUI = (function()
 
             // Whether the UI should be displayed or kept invisible at this time.
             uiVisible: false,
+
+            streamStatus: "disabled",
+
+            streamViewerCount: 0,
         },
         methods:
         {
@@ -58,25 +62,31 @@ Rsed.ui.htmlUI = (function()
                                          .map(propName=>({propName}));
 
                 return;
-            }
+            },
         }
     });
 
-    const publicInterface = {};
-    {
-        publicInterface.refresh = function()
+    const publicInterface = {
+        refresh: function()
         {
             uiContainer.refresh();
+        },
 
-            return;
-        };
-
-        publicInterface.set_visible = function(isVisible)
+        set_visible: function(isVisible)
         {
             uiContainer.uiVisible = isVisible;
+        },
 
-            return;
-        };
-    }
+        set_stream_status: function(status)
+        {
+            uiContainer.streamStatus = status;
+        },
+
+        set_stream_viewer_count: function(num)
+        {
+            uiContainer.streamViewerCount = num;
+        }
+    };
+
     return publicInterface;
 })();

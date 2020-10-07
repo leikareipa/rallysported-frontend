@@ -17,23 +17,39 @@
 
             <div id="button-bar">
 
-                <div class="button left enabled"
+                <div class="button left"
                      title="Download this track"
                      onclick="Rsed.core.current_project().save_to_disk();">
                     Download
                 </div>
 
-                <a class="button middle enabled"
+                <a class="button middle"
                    title="View RallySportED's user guide"
                    href="./user-guide/" target="_blank" rel="noopener">
                     Help
                 </a>
 
-                <a class="button right enabled"
-                     title="See tracks made by others"
+                <a class="button middle"
+                     title="Browse tracks made by others"
                      href="/rallysport-content/tracks/" target="_blank" rel="noopener">
-                    More tracks
+                    Tracks
                 </a>
+
+                <div class="button right stream"
+                     :class="streamStatus"
+                     title="Stream"
+                     :onclick="(streamStatus == 'disabled')
+                               ? 'Rsed.stream.start();'
+                               : 'Rsed.stream.stop();'"></a>
+                    <i class="fas fa-fw fa-sm"
+                       :class="(streamStatus == 'enabled')
+                               ? 'fa-circle'
+                               : (streamStatus == 'initializing')
+                                 ? 'fa-spin fa-spinner'
+                                 : 'fa-play-circle'"></i>
+                    {{streamStatus == "enabled"? "Streaming" : "Stream"}}
+                    {{streamStatus == "enabled"? `(${streamViewerCount})` : ""}}
+                </div>
 
             </div>
             
@@ -51,6 +67,7 @@
 
         <div id="popup-notification-container"></div>
 
+        <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
         <script src="./client/js/rallysported.cat.js" defer></script>
     </body>

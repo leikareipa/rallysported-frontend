@@ -1,5 +1,6 @@
 stats.php
 /misc/
+/distributable/node_modules/
 *.inc
 
 # Symlinks in local repo.

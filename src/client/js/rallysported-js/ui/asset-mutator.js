@@ -47,6 +47,8 @@ Rsed.ui.assetMutator = (function()
                 Rsed.throw("Unknown asset type.");
             }
 
+            Rsed.stream.user_edit(assetType, editAction);
+
             return applicators[assetType](Rsed.core.current_project(), editAction);
         }
     }

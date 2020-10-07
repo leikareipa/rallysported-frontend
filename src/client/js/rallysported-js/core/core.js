@@ -69,6 +69,11 @@ Rsed.core = (function()
 
             await load_project(args);
 
+            if (args.stream.id)
+            {
+                Rsed.stream.start("viewer", args.stream.id);
+            }
+
             Rsed.ui.htmlUI.refresh();
             Rsed.ui.htmlUI.set_visible(true);
 

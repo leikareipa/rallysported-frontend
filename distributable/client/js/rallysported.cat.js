@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (06 October 2020 11:17:34 UTC)
+// VERSION: live (07 October 2020 21:35:19 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -13,6 +13,7 @@
 //	./src/client/js/rallysported-js/rallysported.js
 //	./src/client/js/rallysported-js/misc/rngon-minimal-fill.js
 //	./src/client/js/rallysported-js/misc/rngon-minimal-tcl.js
+//	./src/client/js/rallysported-js/misc/uuidgen.js
 //	./src/client/js/rallysported-js/project/project.js
 //	./src/client/js/rallysported-js/project/hitable.js
 //	./src/client/js/rallysported-js/misc/constants.js
@@ -48,6 +49,7 @@
 //	./src/client/js/rallysported-js/scene/scene-3d.js
 //	./src/client/js/rallysported-js/scene/scene-tilemap.js
 //	./src/client/js/rallysported-js/scene/scene-texture.js
+//	./src/client/js/rallysported-js/streamer/streamer.js
 //	./src/client/js/rallysported-js/core/core.js
 /////////////////////////////////////////////////
 /*!
@@ -2969,6 +2971,14 @@ ngonCache.ngons[i].isActive = false;
 }
 return;
 }
+"use strict";
+// Generates a version 4 UUID and returns it as a string. Adapted with
+// superficial modifications from https://stackoverflow.com/a/2117523,
+// which is based on https://gist.github.com/jed/982883.
+function generate_uuid_v4()
+{
+return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+}
 /*
 * Most recent known filename: js/project/project.js
 *
@@ -5151,6 +5161,7 @@ if (!Object.keys(applicators).includes(assetType))
 {
 Rsed.throw("Unknown asset type.");
 }
+Rsed.stream.user_edit(assetType, editAction);
 return applicators[assetType](Rsed.core.current_project(), editAction);
 }
 }
@@ -5522,6 +5533,8 @@ trackName: "",
 propList: [],
 // Whether the UI should be displayed or kept invisible at this time.
 uiVisible: false,
+streamStatus: "disabled",
+streamViewerCount: 0,
 },
 methods:
 {
@@ -5549,22 +5562,27 @@ this.propList = Rsed.core.current_project().props.names()
 .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
 .map(propName=>({propName}));
 return;
-}
+},
 }
 });
-const publicInterface = {};
-{
-publicInterface.refresh = function()
+const publicInterface = {
+refresh: function()
 {
 uiContainer.refresh();
-return;
-};
-publicInterface.set_visible = function(isVisible)
+},
+set_visible: function(isVisible)
 {
 uiContainer.uiVisible = isVisible;
-return;
-};
+},
+set_stream_status: function(status)
+{
+uiContainer.streamStatus = status;
+},
+set_stream_viewer_count: function(num)
+{
+uiContainer.streamViewerCount = num;
 }
+};
 return publicInterface;
 })();
 /*
@@ -6388,6 +6406,11 @@ dataLocality: "server-rsed", // | "server-rsc" | "client"
 // e.g. a Rally-Sport Content track resource ID, and for client-side data a file
 // reference.
 contentId: "demod",
+},
+// If the user is joining a stream, its information will be filled in here.
+stream:
+{
+id: null,
 }
 };
 // Parse any parameters the user supplied on the address line.
@@ -6425,6 +6448,10 @@ else
 rsedStartupArgs.project.dataLocality = "server-rsc";
 }
 rsedStartupArgs.project.contentId = contentId;
+if (params.has("stream"))
+{
+rsedStartupArgs.stream.id = params.get("stream");
+}
 }
 }
 // The app doesn't need to be run if we're just testing its units.
@@ -8423,6 +8450,265 @@ return;
 }
 })();
 /*
+* Most recent known filename: js/streamer/streamer.js
+*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software RallySportED-js
+*
+*/
+"use strict";
+// Streams the user's edits to viewers via PeerJS/WebRTC.
+Rsed.stream = (function()
+{
+// Either Rsed.stream.streamer or Rsed.stream.viewer.
+let stream = null;
+let connectionCheckInterval = null;
+// Functions callable by the stream objects to inform RallySportED of
+// various events.
+const signalsFns = {
+signal_stream_status: function(status = "unknown")
+{
+Rsed.ui.htmlUI.set_stream_status(status);
+},
+// Call this to signal to RallySportED that the stream has ended.
+signal_stream_closed: function()
+{
+signalsFns.signal_stream_status("disabled");
+clearInterval(connectionCheckInterval);
+connectionCheckInterval = null;
+// Remove the stream id from the address bar.
+/// TODO: A less brute force implementation.
+const basePath = `//${location.host}${location.pathname}`;
+window.history.replaceState({}, document.title, basePath);
+return;
+},
+// Call this to signal to RallySportED that the stream has started.
+signal_stream_open: function(id)
+{
+signalsFns.signal_stream_status("enabled");
+// Replace the URL bar's contents to give the user a link they can
+// share to others to join the stream.
+/// TODO: A less brute force implementation.
+const basePath = `//${location.host}${location.pathname}?stream=${id}`;
+window.history.replaceState({}, document.title, basePath);
+// Periodically refresh our list of open connections.
+connectionCheckInterval = setInterval(()=>{
+Rsed.ui.htmlUI.set_stream_viewer_count(stream.num_connections());
+}, 2000);
+},
+signal_stream_error: function(error)
+{
+Rsed.ui.popup_notification(`Broadcast: "${error}"`,
+{
+notificationType: "error",
+});
+return;
+},
+};
+const publicInterface = {
+start: function(role = "streamer", proposedId = Rsed.stream.generate_random_stream_id())
+{
+// Don't allow a stream to be started more than once.
+if (stream)
+{
+return;
+}
+stream = Rsed.stream[role](proposedId, signalsFns);
+stream.start();
+return;
+},
+stop: function()
+{
+if (!stream)
+{
+return;
+}
+stream.stop();
+stream = null;
+return;
+},
+// If this is a streamer, streams the given user edit action.
+user_edit: function(assetType = "", editAction = {})
+{
+if (!stream)
+{
+return;
+}
+stream.send_data({assetType, editAction});
+return;
+},
+get role()
+{
+return stream.role;
+},
+};
+return publicInterface;
+// A streamer id that will be used by viewers to connect to the stream.
+function make_streamer_id()
+{
+return generate_uuid_v4().replace(/-/g, "");
+}
+})();
+Rsed.stream.peerJsServerConfig = {
+host: "localhost",
+port: 9000,
+path: "./",
+};
+// Returns a random id that can be used as the id for a stream (either
+// a streamer or a viewer stream).
+Rsed.stream.generate_random_stream_id = function()
+{
+return generate_uuid_v4().replace(/-/g, "");
+}
+// A streamer accepts connections from viewers and sends data to them.
+Rsed.stream.streamer = function(streamId, signalFns)
+{
+// The viewers viewing this stream.
+const connections = [];
+// PeerJS's Peer() object.
+let peer = null;
+// Gets called when a new viewer connects to this stream.
+function handle_new_viewer(newConnection)
+{
+connections.push(newConnection);
+return;
+}
+const publicInterface = {
+role: "streamer",
+num_connections: function()
+{
+const currentConnections = connections.filter(s=>s.open);
+connections.length = 0;
+for (const conn of currentConnections)
+{
+connections.push(conn);
+}
+return connections.length;
+},
+// Sends the given data to our viewers.
+send_data: function(data = {})
+{
+Rsed.throw_if_not_type("object", data);
+const packet = JSON.stringify(data);
+for (const connection of connections)
+{
+connection.send(packet);
+}
+return;
+},
+receive_data: function()
+{
+/// Streamers don't receive data.
+return;
+},
+start: function()
+{
+if (status.active)
+{
+Rsed.ui.popup_notification("The stream is already active.");
+return;
+}
+signalFns.signal_stream_status("initializing");
+peer = new Peer(streamId, Rsed.stream.peerJsServerConfig);
+peer.on("close", signalFns.signal_stream_closed);
+peer.on("error", (error)=>
+{
+publicInterface.stop();
+signalFns.signal_stream_error(error);
+});
+peer.on("open", (id)=>
+{
+if (id != streamId)
+{
+signalFns.stop_stream();
+Rsed.ui.popup_notification(`Broadcast: Received an invalid ID from the peer server.`,
+{
+notificationType: "error",
+});
+return;
+}
+peer.on("connection", handle_new_viewer);
+signalFns.signal_stream_open(id);
+});
+},
+stop: function()
+{
+peer.destroy();
+}
+};
+return publicInterface;
+};
+// A viewer connects to a streamer and receives data from it.
+Rsed.stream.viewer = function(streamId, signalFns)
+{
+// Our connection to the stream we're viewing.
+let connection = null;
+// PeerJS's Peer() object.
+let peer = null;
+const publicInterface = {
+role: "viewer",
+num_connections: function()
+{
+if (!connection.open)
+{
+connection = null;
+}
+// If we lost the connection to the streamer.
+if (!connection)
+{
+this.stop();
+}
+return Number(connection !== null);
+},
+send_data: function(data)
+{
+/// Viewers don't send data.
+return;
+},
+// Receive and process data from the streamer.
+receive_data: function(data)
+{
+data = JSON.parse(data);
+Rsed.ui.assetMutator.user_edit(data.assetType, data.editAction);
+return;
+},
+// Connects this viewer to a streamer.
+start: function()
+{
+signalFns.signal_stream_status("initializing");
+peer = new Peer(Rsed.stream.generate_random_stream_id(), Rsed.stream.peerJsServerConfig);
+peer.on("error", (error)=>
+{
+publicInterface.stop();
+signalFns.signal_stream_error(error);
+});
+peer.on("close", signalFns.signal_stream_closed);
+peer.on("open", ()=>
+{
+// Attempt to connect to the given stream.
+connection = peer.connect(streamId);
+connection.on("disconnect", signalFns.signal_stream_closed);
+connection.on("data", publicInterface.receive_data);
+connection.on("error", (error)=>
+{
+this.stop();
+signalFns.signal_stream_error(error);
+});
+connection.on("open", ()=>
+{
+signalFns.signal_stream_open(streamId);
+});
+});
+},
+stop: function()
+{
+peer.destroy();
+}
+};
+return publicInterface;
+};
+/*
 * Most recent known filename: js/core/core.js
 *
 * Tarpeeksi Hyvae Soft 2018 /
@@ -8479,6 +8765,10 @@ coreIsRunning = false;
 Rsed.ui.htmlUI.set_visible(false);
 verify_browser_compatibility();
 await load_project(args);
+if (args.stream.id)
+{
+Rsed.stream.start("viewer", args.stream.id);
+}
 Rsed.ui.htmlUI.refresh();
 Rsed.ui.htmlUI.set_visible(true);
 coreIsRunning = true;

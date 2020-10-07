@@ -33,6 +33,12 @@ window.onload = function(event)
             // e.g. a Rally-Sport Content track resource ID, and for client-side data a file
             // reference.
             contentId: "demod",
+        },
+
+        // If the user is joining a stream, its information will be filled in here.
+        stream:
+        {
+            id: null,
         }
     };
     
@@ -77,6 +83,11 @@ window.onload = function(event)
             }
 
             rsedStartupArgs.project.contentId = contentId;
+
+            if (params.has("stream"))
+            {
+                rsedStartupArgs.stream.id = params.get("stream");
+            }
         }
     }
 
