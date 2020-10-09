@@ -15,6 +15,13 @@
 /// might otherwise fall through the dropdown menu.
 let RSED_DROPDOWN_ACTIVATED = false;
 
+window.onunload = function()
+{
+    Rsed.stream.stop();
+
+    return;
+};
+
 // Parses any address bar parameters, then launches RallySportED.
 window.onload = function(event)
 {
