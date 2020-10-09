@@ -19,7 +19,7 @@
 
                 <div class="button left"
                      title="Download this track"
-                     onclick="Rsed.core.current_project().save_to_disk();">
+                     onclick="Rsed.core.current_project().download_as_zip();">
                     Download
                 </div>
 
@@ -41,14 +41,14 @@
                      :onclick="(streamStatus == 'disabled')
                                ? 'Rsed.stream.start();'
                                : 'Rsed.stream.stop();'"></a>
-                    <i class="fas fa-fw fa-sm"
+                    <i class="fas fa-fw"
                        :class="(streamStatus == 'enabled')
-                               ? 'fa-circle'
+                               ? 'fa-eye'
                                : (streamStatus == 'initializing')
                                  ? 'fa-spin fa-spinner'
-                                 : 'fa-play-circle'"></i>
+                                 : 'fa-eye-slash'"></i>
                     {{streamStatus == "enabled"? "Streaming" : "Stream"}}
-                    {{streamStatus == "enabled"? `(${streamViewerCount})` : ""}}
+                    {{streamStatus == "enabled"? ` (${streamViewerCount})` : ""}}
                 </div>
 
             </div>
