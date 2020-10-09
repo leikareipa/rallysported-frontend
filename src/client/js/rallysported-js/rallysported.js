@@ -49,6 +49,14 @@ const Rsed = {};
         console.log("RallySportED: " + message);
     }
 
+    Rsed.throw_if = (condition, messageIfFalse)=>
+    {
+        if (!condition)
+        {
+            Rsed.throw(messageIfFalse)
+        }
+    }
+
     Rsed.throw_if_undefined = (...properties)=>
     {
         for (const property of properties)
