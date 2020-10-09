@@ -165,6 +165,27 @@ Rsed.project = async function(projectArgs = {})
             return trackId;
         },
 
+        // Returns the project's current data as a JSON string in RallySportED-js's
+        // JSON track format.
+        json: function()
+        {
+            // Encode the container's data in Base64.
+            const view = new Uint8Array(projectDataContainer.dataBuffer);
+            const string = view.reduce((data, byte)=>(data + String.fromCharCode(byte)), "");
+            const containerInBase64 = btoa(string);
+            
+            return JSON.stringify({
+                container: containerInBase64,
+                manifesto: updated_manifesto_string(),
+                meta: {
+                    internalName: publicInterface.internalName,
+                    displayName: publicInterface.name,
+                    width: publicInterface.maasto.width,
+                    height: publicInterface.maasto.height,
+                },
+            });
+        },
+
         // Bundles the project's data files into a .zip, and has the browser initiate a 'download' of it.
         save_to_disk: async()=>
         {
