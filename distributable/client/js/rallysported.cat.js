@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (09 October 2020 14:47:06 UTC)
+// VERSION: live (09 October 2020 16:49:35 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8592,11 +8592,18 @@ return stream.role;
 };
 return publicInterface;
 })();
-Rsed.stream.peerJsServerConfig = {
+Rsed.stream.localhostPeerJsServerConfig = {
 host: "localhost",
 port: 9000,
 path: "./",
 };
+Rsed.stream.herokuPeerJsServerConfig = {
+secure: true,
+host: "peerjs-tarpeeksihyvaesoft.herokuapp.com",
+port: 443,
+};
+// The configuration that will be used for PeerJS's Peer().
+Rsed.stream.peerJsServerConfig = Rsed.stream.herokuPeerJsServerConfig;
 // Returns a random id that can be used as the id for a stream (either
 // a streamer or a viewer stream).
 Rsed.stream.generate_random_stream_id = function()
@@ -8794,7 +8801,7 @@ peer.on("close", ()=>signalFns.signal_stream_closed(streamId));
 peer.on("open", ()=>
 {
 // Attempt to connect to the given stream.
-streamer = peer.connect(streamId);
+streamer = peer.connect(streamId, {reliable: true});
 streamer.on("disconnect", signalFns.signal_stream_closed);
 streamer.on("data", publicInterface.receive);
 streamer.on("error", (error)=>
@@ -8810,6 +8817,11 @@ signalFns.signal_stream_open(streamId);
 },
 stop: function()
 {
+if (!streamer)
+{
+Rsed.log("Attempted to close a connection to a stream that we weren't connected to. Ignoring this.");
+return;
+}
 streamer.close();
 streamer = null;
 peer.destroy();

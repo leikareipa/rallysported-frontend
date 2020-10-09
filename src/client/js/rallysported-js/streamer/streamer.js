@@ -136,11 +136,20 @@ Rsed.stream = (function()
     return publicInterface;
 })();
 
-Rsed.stream.peerJsServerConfig = {
+Rsed.stream.localhostPeerJsServerConfig = {
     host: "localhost",
     port: 9000,
     path: "./",
 };
+
+Rsed.stream.herokuPeerJsServerConfig = {
+    secure: true,
+    host: "peerjs-tarpeeksihyvaesoft.herokuapp.com",
+    port: 443,
+};
+
+// The configuration that will be used for PeerJS's Peer().
+Rsed.stream.peerJsServerConfig = Rsed.stream.herokuPeerJsServerConfig;
 
 // Returns a random id that can be used as the id for a stream (either
 // a streamer or a viewer stream).
@@ -380,7 +389,7 @@ Rsed.stream.viewer = function(streamId, signalFns)
             peer.on("open", ()=>
             {
                 // Attempt to connect to the given stream.
-                streamer = peer.connect(streamId);
+                streamer = peer.connect(streamId, {reliable: true});
                 streamer.on("disconnect", signalFns.signal_stream_closed);
                 streamer.on("data", publicInterface.receive);
                 streamer.on("error", (error)=>
@@ -397,6 +406,12 @@ Rsed.stream.viewer = function(streamId, signalFns)
 
         stop: function()
         {
+            if (!streamer)
+            {
+                Rsed.log("Attempted to close a connection to a stream that we weren't connected to. Ignoring this.");
+                return;
+            }
+
             streamer.close();
             streamer = null;
 
