@@ -25,31 +25,11 @@ window.onunload = function()
 // Parses any address bar parameters, then launches RallySportED.
 window.onload = function(event)
 {
-    // The default start-up parameters to provide to RallySportED when we launch it. These may
-    // be modified by the user via address parameters, which we parse for in the code below.
-    const rsedStartupArgs =
-    {
-        project:
-        {
-            // Whether the project's data files will be loaded from RallySportED-js's server
-            // ("server-rsed"), from Rally-Sport Content's server ("server-rsc"), or provided
-            // by the client (e.g. via file drag onto the browser).
-            dataLocality: "server-rsed", // | "server-rsc" | "client"
-
-            // An identifier for this project's data. For server-side projects, this will be
-            // e.g. a Rally-Sport Content track resource ID, and for client-side data a file
-            // reference.
-            contentId: "demod",
-        },
-
-        // If the user is joining a stream, its information will be filled in here.
-        stream:
-        {
-            id: null,
-        }
-    };
+    // We'll modify RallySportED-js's default startup arguments with parameters
+    // the user provided via the address bar.
+    const rsedStartupArgs = Rsed.core.default_startup_args();
     
-    // Parse any parameters the user supplied on the address line.
+    // Parse the user-supplied URL parameters.
     {
         const params = new URLSearchParams(window.location.search);
 
@@ -371,15 +351,14 @@ window.drop_handler = function(event)
         return;
     }
 
-    Rsed.core.start(
-    {
+    // Launch RallySportED-js with the dropped-in project's data.
+    Rsed.core.start(Rsed.core.startup_args({
         project:
         {
-            editMode: "local",
             dataLocality: "client",
             contentId: zipFile,
         }
-    });
+    }));
 
     // Clear the address bar's parameters to reflect the fact that the user has loaded a local
     // track resource instead of specifying a server-side resource via the address bar.

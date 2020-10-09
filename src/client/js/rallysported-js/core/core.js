@@ -52,6 +52,42 @@ Rsed.core = (function()
         fps_counter_enabled: ()=>fpsCounterEnabled,
         browser_info: ()=>browserInfo,
 
+        // A convenience function that appends the given object's properties to the
+        // default RallySportED-js startup arguments, and returns that amalgamation.
+        startup_args: function(customArgs = {})
+        {
+            const defaultArgs = publicInterface.default_startup_args();
+
+            return {
+                ...defaultArgs,
+                ...customArgs,
+            };
+        },
+
+        default_startup_args: function()
+        {
+            return {
+                project:
+                {
+                    // Whether the project's data files will be loaded from RallySportED-js's server
+                    // ("server-rsed"), from Rally-Sport Content's server ("server-rsc"), or provided
+                    // by the client (e.g. via file drag onto the browser).
+                    dataLocality: "server-rsed", // | "server-rsc" | "client"
+        
+                    // An identifier for this project's data. For server-side projects, this will be
+                    // e.g. a Rally-Sport Content track resource ID, and for client-side data a file
+                    // reference.
+                    contentId: "demod",
+                },
+        
+                // If the user is joining a stream, its information will be filled in here.
+                stream:
+                {
+                    id: null,
+                }
+            }
+        },    
+
         // Starts up RallySportED with the given project to edit.
         start: async function(args = {})
         {
