@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (07 October 2020 21:35:19 UTC)
+// VERSION: live (09 October 2020 14:47:06 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2592,12 +2592,14 @@ surfaceHeight: height,
 const Rsed = {};
 // Various small utility functions and the like.
 {
-// Defined 'true' to allow for the conveniency of named in-place assertions,
-// e.g. Rsed.assert && (x === 1) || Rsed.throw("X wasn't 1.").
+// For inline assertions, e.g.:
+//
+//   Rsed.assert && (x === 1)
+//               || Rsed.throw("X wasn't 1.").
+//
 // Note that setting this to 'false' won't disable assertions - for that,
 // you'll want to search/replace "Rsed.assert &&" with "Rsed.assert ||"
-// and keep this set to 'true'. The comparison against Rsed.assert may still
-// be done, though (I guess depending on the JS engine's ability to optimize).
+// and keep this set to 'true'.
 Object.defineProperty(Rsed, "assert", {value:true, writable:false});
 // Generates a version 4 UUID and returns it as a string. Adapted with
 // superficial modifications from https://stackoverflow.com/a/2117523,
@@ -2621,6 +2623,13 @@ Rsed.ui.popup_notification(message);
 Rsed.log = (message = "")=>
 {
 console.log("RallySportED: " + message);
+}
+Rsed.throw_if = (condition, messageIfTrue)=>
+{
+if (condition)
+{
+Rsed.throw(messageIfTrue)
+}
 }
 Rsed.throw_if_undefined = (...properties)=>
 {
@@ -3117,18 +3126,33 @@ Rsed.assert && (trackId !== null)
 || Rsed.throw("Attempting to access a project's track id before it has been set.");
 return trackId;
 },
-// Bundles the project's data files into a .zip, and has the browser initiate a 'download' of it.
-save_to_disk: async()=>
+// Returns the project's current data as a JSON string in RallySportED-js's
+// JSON track format.
+json: function()
 {
-const dstFilename = projectData.meta.internalName.toUpperCase();
-Rsed.log(`Saving project "${projectData.meta.displayName}" into ${dstFilename}.ZIP.`);
-// In case something goes wrong and an error gets thrown in some function while saving,
-// we want to catch it here rather than letting the entire app go down, so as to give
-// the user a chance to re-try.
-try
+// Encode the container's data in Base64.
+const view = new Uint8Array(projectDataContainer.dataBuffer);
+const string = view.reduce((data, byte)=>(data + String.fromCharCode(byte)), "");
+const containerInBase64 = btoa(string);
+return JSON.stringify({
+container: containerInBase64,
+manifesto: updated_manifesto_string(),
+meta: {
+internalName: publicInterface.internalName,
+displayName: publicInterface.name,
+width: publicInterface.maasto.width,
+height: publicInterface.maasto.height,
+},
+});
+},
+// Returns a promise that resolves with the project's current data as a JSZip zip
+// blob. In case of error, the promise rejects with an error string (and/or whatever
+// JSZip rejects with).
+zip: async function(compressionLevel = 1)
 {
-// The default HITABLE.TXT file (which holds Rally-Sport's top lap times) is stored
-// locally in a zip file. We'll need to deflate its data into an array.
+const projectNameInZip = publicInterface.internalName.toUpperCase();
+// The default HITABLE.TXT file (which holds Rally-Sport's top lap times) is
+// stored locally in a zip file. We'll need to deflate its data into an array.
 const hitable = await (async()=>
 {
 const zipFile = await (new JSZip()).loadAsync(Rsed.project.hitableZip);
@@ -3137,15 +3161,32 @@ return (hitableFile? hitableFile.async("arraybuffer") : null);
 })();
 if (!hitable)
 {
-throw "Cannot access HITABLE.TXT";
+reject("Failed to find HITABLE.TXT.")
 }
-const dstZip = new JSZip();
-dstZip.file(`${dstFilename}/${dstFilename}.DTA`, projectDataContainer.dataBuffer);
-dstZip.file(`${dstFilename}/${dstFilename}.$FT`, updated_manifesto_string());
-dstZip.file(`${dstFilename}/HITABLE.TXT`, hitable);
-dstZip.generateAsync({type:"blob", compression:"DEFLATE", compressionOptions:{level:1}})
-.then((blob)=>saveAs(blob, (`${dstFilename}.ZIP`)))
-.catch((error)=>Rsed.throw(`Error while saving: ${error}.`));
+const zip = new JSZip();
+zip.file(`${projectNameInZip}/${projectNameInZip}.DTA`, projectDataContainer.dataBuffer);
+zip.file(`${projectNameInZip}/${projectNameInZip}.$FT`, updated_manifesto_string());
+zip.file(`${projectNameInZip}/HITABLE.TXT`, hitable);
+return zip.generateAsync({
+type: "blob",
+compression: "DEFLATE",
+compressionOptions: {
+level: compressionLevel,
+},
+});
+},
+// Initiates a browser download of the project's current data as a ZIP file.
+download_as_zip: async()=>
+{
+const filename = `${publicInterface.internalName.toUpperCase()}.ZIP`;
+Rsed.log(`Saving project "${projectData.meta.displayName}" into ${filename}.`);
+// In case something goes wrong and an error gets thrown in some function while saving,
+// we want to catch it here rather than letting the entire app go down, so as to give
+// the user a chance to re-try.
+try
+{
+const zipBlob = await publicInterface.zip();
+saveAs(zipBlob, filename); // From FileSaver.js.
 }
 catch (error)
 {
@@ -3230,18 +3271,22 @@ return ((typeof projectData.meta !== "undefined") &&
 //
 async function fetch_project_data()
 {
-Rsed.assert && ((typeof projectArgs.dataLocality !== "undefined") &&
-(typeof projectArgs.contentId !== "undefined"))
-|| Rsed.throw("Missing required parameters for loading a project.");
-const projectData = (projectArgs.dataLocality === "server-rsc")?  (await fetch_project_data_from_rsc_server())[0] :
-(projectArgs.dataLocality === "server-rsed")? (await fetch_project_data_from_rsed_server())[0] :
-(projectArgs.dataLocality === "client")?       await load_project_data_from_zip_file() :
-Rsed.throw("Unknown locality for project data.");
+Rsed.throw_if_undefined(projectArgs.dataLocality);
+const projectData = await (async()=>
+{
+switch (projectArgs.dataLocality)
+{
+case "server-rsc": return (await fetch_project_data_from_rsc_server())[0];
+case "server-rsed": return (await fetch_project_data_from_rsed_server())[0];
+case "client": return await load_project_data_from_zip_file();
+case "inline": return Promise.resolve(projectArgs.data);
+default: Rsed.throw("Unrecognized project data locality."); break;
+}
+})();
 return projectData;
 async function load_project_data_from_zip_file()
 {
-Rsed.assert && (typeof projectArgs.contentId !== "undefined")
-|| Rsed.throw("Missing required parameters for loading a client-side project.");
+Rsed.throw_if_undefined(projectArgs.contentId);
 const zip = await (new JSZip()).loadAsync(projectArgs.contentId);
 // The zip file is expected to contain a project's .DTA and .$FT (manifesto) files.
 let manifestoFile = null;
@@ -3312,8 +3357,7 @@ return projectData;
 // hosts the original tracks from the Rally-Sport demo.
 async function fetch_project_data_from_rsed_server()
 {
-Rsed.assert && (typeof projectArgs.contentId !== "undefined")
-|| Rsed.throw("Missing required parameters for loading project data.");
+Rsed.throw_if_undefined(projectArgs.contentId);
 const trackName = (()=>
 {
 switch (projectArgs.contentId)
@@ -3340,8 +3384,7 @@ return serverResponse.json();
 // server hosts custom, user-made tracks.
 async function fetch_project_data_from_rsc_server()
 {
-Rsed.assert && (typeof projectArgs.contentId !== "undefined")
-|| Rsed.throw("Missing required parameters for loading a server-side project.");
+Rsed.throw_if_undefined(projectArgs.contentId);
 const serverResponse = await fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.contentId}&json=true`);
 if (serverResponse.status !== 200)
 {
@@ -5161,7 +5204,7 @@ if (!Object.keys(applicators).includes(assetType))
 {
 Rsed.throw("Unknown asset type.");
 }
-Rsed.stream.user_edit(assetType, editAction);
+Rsed.stream.send_packet("user-edit", {assetType, editAction});
 return applicators[assetType](Rsed.core.current_project(), editAction);
 }
 }
@@ -6389,33 +6432,28 @@ return publicInterface;
 /// receiving mouse events in the meantime, so there won't be accidental terrain edits etc. that
 /// might otherwise fall through the dropdown menu.
 let RSED_DROPDOWN_ACTIVATED = false;
+window.onunload = function()
+{
+Rsed.stream.stop();
+return;
+};
 // Parses any address bar parameters, then launches RallySportED.
 window.onload = function(event)
 {
-// The default start-up parameters to provide to RallySportED when we launch it. These may
-// be modified by the user via address parameters, which we parse for in the code below.
-const rsedStartupArgs =
-{
-project:
-{
-// Whether the project's data files will be loaded from RallySportED-js's server
-// ("server-rsed"), from Rally-Sport Content's server ("server-rsc"), or provided
-// by the client (e.g. via file drag onto the browser).
-dataLocality: "server-rsed", // | "server-rsc" | "client"
-// An identifier for this project's data. For server-side projects, this will be
-// e.g. a Rally-Sport Content track resource ID, and for client-side data a file
-// reference.
-contentId: "demod",
-},
-// If the user is joining a stream, its information will be filled in here.
-stream:
-{
-id: null,
-}
-};
-// Parse any parameters the user supplied on the address line.
+// We'll modify RallySportED-js's default startup arguments with parameters
+// the user provided via the address bar.
+const rsedStartupArgs = Rsed.core.default_startup_args();
+// Parse the user-supplied URL parameters.
 {
 const params = new URLSearchParams(window.location.search);
+// If the user requests to view a stream, we just need to start the stream.
+// Once the user joins the stream as a viewer, they'll receive the track's
+// data and RallySportED-js will be started at that point.
+if (params.has("stream"))
+{
+Rsed.stream.start("viewer", params.get("stream"));
+return;
+}
 // The "track" and "content" parameters specify which track the user wants to load.
 // Generally, the "track" parameter is used to load the game's original demo tracks,
 // while the "content" parameter is used to load tracks (and, in the future, other
@@ -6448,10 +6486,6 @@ else
 rsedStartupArgs.project.dataLocality = "server-rsc";
 }
 rsedStartupArgs.project.contentId = contentId;
-if (params.has("stream"))
-{
-rsedStartupArgs.stream.id = params.get("stream");
-}
 }
 }
 // The app doesn't need to be run if we're just testing its units.
@@ -6673,15 +6707,14 @@ if (!zipFile)
 Rsed.log("The drop contained no RallySportED zip files. Ignoring it.");
 return;
 }
-Rsed.core.start(
-{
+// Launch RallySportED-js with the dropped-in project's data.
+Rsed.core.start(Rsed.core.startup_args({
 project:
 {
-editMode: "local",
 dataLocality: "client",
 contentId: zipFile,
 }
-});
+}));
 // Clear the address bar's parameters to reflect the fact that the user has loaded a local
 // track resource instead of specifying a server-side resource via the address bar.
 const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
@@ -8472,9 +8505,10 @@ signal_stream_status: function(status = "unknown")
 Rsed.ui.htmlUI.set_stream_status(status);
 },
 // Call this to signal to RallySportED that the stream has ended.
-signal_stream_closed: function()
+signal_stream_closed: function(streamId)
 {
 signalsFns.signal_stream_status("disabled");
+Rsed.log(`Left stream ${streamId}.`);
 clearInterval(connectionCheckInterval);
 connectionCheckInterval = null;
 // Remove the stream id from the address bar.
@@ -8484,16 +8518,18 @@ window.history.replaceState({}, document.title, basePath);
 return;
 },
 // Call this to signal to RallySportED that the stream has started.
-signal_stream_open: function(id)
+signal_stream_open: function(streamId)
 {
 signalsFns.signal_stream_status("enabled");
+Rsed.log(`Joined stream ${streamId}.`);
 // Replace the URL bar's contents to give the user a link they can
 // share to others to join the stream.
 /// TODO: A less brute force implementation.
-const basePath = `//${location.host}${location.pathname}?stream=${id}`;
+const basePath = `//${location.host}${location.pathname}?stream=${streamId}`;
 window.history.replaceState({}, document.title, basePath);
 // Periodically refresh our list of open connections.
-connectionCheckInterval = setInterval(()=>{
+connectionCheckInterval = setInterval(()=>
+{
 Rsed.ui.htmlUI.set_stream_viewer_count(stream.num_connections());
 }, 2000);
 },
@@ -8509,11 +8545,7 @@ return;
 const publicInterface = {
 start: function(role = "streamer", proposedId = Rsed.stream.generate_random_stream_id())
 {
-// Don't allow a stream to be started more than once.
-if (stream)
-{
-return;
-}
+Rsed.throw_if(stream, "Attempting to start a new stream before closing the existing one.");
 stream = Rsed.stream[role](proposedId, signalsFns);
 stream.start();
 return;
@@ -8528,14 +8560,29 @@ stream.stop();
 stream = null;
 return;
 },
-// If this is a streamer, streams the given user edit action.
-user_edit: function(assetType = "", editAction = {})
+// Encapsulates the given data into an object that is then streamed to the
+// current viewers (if 'dstViewer' is null) or to a specific viewer (as identified
+// by 'dstViewer').
+//
+// The 'what' argument is a string that identifies the type of data encapsulated
+// - valid values are "track-project-data" ('data' is expected to contain a track's
+// entire data: container, manifesto, and metadata), and "user-edit" ('data' is
+// expected to contain the arguments for a call to Rsed.ui.assetMutator.user_edit()).
+send_packet: function(what = "", data, dstViewer = null)
 {
 if (!stream)
 {
 return;
 }
-stream.send_data({assetType, editAction});
+const packet =  {
+header: {
+what,
+creatorId: stream.id,
+createdOn: Date.now(),
+},
+data,
+};
+stream.send(packet, dstViewer);
 return;
 },
 get role()
@@ -8544,11 +8591,6 @@ return stream.role;
 },
 };
 return publicInterface;
-// A streamer id that will be used by viewers to connect to the stream.
-function make_streamer_id()
-{
-return generate_uuid_v4().replace(/-/g, "");
-}
 })();
 Rsed.stream.peerJsServerConfig = {
 host: "localhost",
@@ -8560,48 +8602,82 @@ path: "./",
 Rsed.stream.generate_random_stream_id = function()
 {
 return generate_uuid_v4().replace(/-/g, "");
-}
+};
 // A streamer accepts connections from viewers and sends data to them.
 Rsed.stream.streamer = function(streamId, signalFns)
 {
-// The viewers viewing this stream.
-const connections = [];
+const viewers = [];
+// Maximum number of simultaneous viewers of this streamer's stream.
+const maxNumViewers = 100;
 // PeerJS's Peer() object.
 let peer = null;
 // Gets called when a new viewer connects to this stream.
-function handle_new_viewer(newConnection)
+function handle_new_viewer(newViewer)
 {
-connections.push(newConnection);
+if (viewers.length > maxNumViewers)
+{
+/// TODO: Send the viewer an error message.
+newViewer.close();
+return;
+}
+// Wait until the connection is fully open for streaming, then send
+// the new viewer a copy of the current track's full data.
+let startTime = Date.now();
+const waitTimeoutMs = 5000; // Number of milliseconds to wait, at most.
+const timeBetweenAttemptsMs = 500;
+const timer = setInterval(()=>
+{
+if (newViewer.open)
+{
+clearInterval(timer);
+Rsed.stream.send_packet("project-data",
+Rsed.core.current_project().json(),
+newViewer);
+viewers.push(newViewer);
+}
+else if ((Date.now() - startTime) > waitTimeoutMs)
+{
+newViewer.close();
+clearInterval(timer);
+}
+}, timeBetweenAttemptsMs);
 return;
 }
 const publicInterface = {
 role: "streamer",
 num_connections: function()
 {
-const currentConnections = connections.filter(s=>s.open);
-connections.length = 0;
-for (const conn of currentConnections)
+// Cull away viewers whose connection is not currently open.
+const openViewers = viewers.filter(viewer=>
 {
-connections.push(conn);
+if (!viewer.open)
+{
+viewer.close();
+return false;
 }
-return connections.length;
+return true;
+}, []);
+viewers.splice(0, Infinity, ...openViewers);
+return viewers.length;
 },
-// Sends the given data to our viewers.
-send_data: function(data = {})
+// Sends the given data to the streamer's viewers.
+send: function(data, dstViewer)
 {
-Rsed.throw_if_not_type("object", data);
-const packet = JSON.stringify(data);
-for (const connection of connections)
+if (dstViewer)
 {
-connection.send(packet);
+dstViewer.send(data);
+}
+else
+{
+for (const viewer of viewers)
+{
+viewer.send(data);
+}
 }
 return;
 },
-receive_data: function()
-{
-/// Streamers don't receive data.
-return;
-},
+// Streamers don't receive data, they just ignore requests to do so.
+receive: function(){},
 start: function()
 {
 if (status.active)
@@ -8611,7 +8687,7 @@ return;
 }
 signalFns.signal_stream_status("initializing");
 peer = new Peer(streamId, Rsed.stream.peerJsServerConfig);
-peer.on("close", signalFns.signal_stream_closed);
+peer.on("close", ()=>signalFns.signal_stream_closed(streamId));
 peer.on("error", (error)=>
 {
 publicInterface.stop();
@@ -8634,8 +8710,17 @@ signalFns.signal_stream_open(id);
 },
 stop: function()
 {
-peer.destroy();
+for (const viewer of viewers)
+{
+viewer.close();
 }
+viewers.length = 0;
+peer.destroy();
+},
+get id()
+{
+return (peer? peer.id : undefined);
+},
 };
 return publicInterface;
 };
@@ -8643,34 +8728,56 @@ return publicInterface;
 Rsed.stream.viewer = function(streamId, signalFns)
 {
 // Our connection to the stream we're viewing.
-let connection = null;
+let streamer = null;
 // PeerJS's Peer() object.
 let peer = null;
 const publicInterface = {
 role: "viewer",
 num_connections: function()
 {
-if (!connection.open)
-{
-connection = null;
-}
 // If we lost the connection to the streamer.
-if (!connection)
+if (streamer &&
+!streamer.open)
 {
 this.stop();
 }
-return Number(connection !== null);
+return Number(streamer !== null);
 },
-send_data: function(data)
+// Viewers don't send data, they just ignore requests to do so.
+send: function(){},
+// Receive and process a packet of data from the streamer.
+receive: function(packet)
 {
-/// Viewers don't send data.
-return;
+switch (packet.header.what)
+{
+case "user-edit":
+{
+Rsed.ui.assetMutator.user_edit(packet.data.assetType, packet.data.editAction);
+break;
+}
+// We expect packet.data to be a string containing the stream project's data
+// in RallySportED-js's JSON format.
+case "project-data":
+{
+try
+{
+const projectData = JSON.parse(packet.data);
+Rsed.core.start(Rsed.core.startup_args({
+stream: packet.header.creatorId,
+project: {
+dataLocality: "inline",
+data: projectData,
 },
-// Receive and process data from the streamer.
-receive_data: function(data)
+}));
+}
+catch (error)
 {
-data = JSON.parse(data);
-Rsed.ui.assetMutator.user_edit(data.assetType, data.editAction);
+Rsed.throw(`Failed to sync with the stream: ${error}`);
+}
+}
+// We'll fully ignore any unknown packets.
+default: break;
+}
 return;
 },
 // Connects this viewer to a streamer.
@@ -8683,19 +8790,19 @@ peer.on("error", (error)=>
 publicInterface.stop();
 signalFns.signal_stream_error(error);
 });
-peer.on("close", signalFns.signal_stream_closed);
+peer.on("close", ()=>signalFns.signal_stream_closed(streamId));
 peer.on("open", ()=>
 {
 // Attempt to connect to the given stream.
-connection = peer.connect(streamId);
-connection.on("disconnect", signalFns.signal_stream_closed);
-connection.on("data", publicInterface.receive_data);
-connection.on("error", (error)=>
+streamer = peer.connect(streamId);
+streamer.on("disconnect", signalFns.signal_stream_closed);
+streamer.on("data", publicInterface.receive);
+streamer.on("error", (error)=>
 {
 this.stop();
 signalFns.signal_stream_error(error);
 });
-connection.on("open", ()=>
+streamer.on("open", ()=>
 {
 signalFns.signal_stream_open(streamId);
 });
@@ -8703,8 +8810,14 @@ signalFns.signal_stream_open(streamId);
 },
 stop: function()
 {
+streamer.close();
+streamer = null;
 peer.destroy();
-}
+},
+get id()
+{
+return (peer? peer.id : undefined);
+},
 };
 return publicInterface;
 };
@@ -8753,22 +8866,44 @@ is_running: ()=>coreIsRunning,
 renderer_fps: ()=>programFPS,
 fps_counter_enabled: ()=>fpsCounterEnabled,
 browser_info: ()=>browserInfo,
+// A convenience function that appends the given object's properties to the
+// default RallySportED-js startup arguments, and returns that amalgamation.
+startup_args: function(customArgs = {})
+{
+const defaultArgs = publicInterface.default_startup_args();
+return {
+...defaultArgs,
+...customArgs,
+};
+},
+default_startup_args: function()
+{
+return {
+project:
+{
+// Whether the project's data files will be loaded from RallySportED-js's server
+// ("server-rsed"), from Rally-Sport Content's server ("server-rsc"), or provided
+// by the client (e.g. via file drag onto the browser).
+dataLocality: "server-rsed", // | "server-rsc" | "client"
+// An identifier for this project's data. For server-side projects, this will be
+// e.g. a Rally-Sport Content track resource ID, and for client-side data a file
+// reference.
+contentId: "demod",
+},
+// If the user is viewing a stream, its id will be set here.
+stream: null,
+}
+},
 // Starts up RallySportED with the given project to edit.
 start: async function(args = {})
 {
-Rsed.assert && ((typeof args.project !== "undefined") &&
-(typeof args.project.dataLocality !== "undefined") &&
-(typeof args.project.contentId !== "undefined"))
-|| Rsed.throw("Missing startup parameters for launching RallySportED.");
+Rsed.throw_if_not_type("object", args);
+Rsed.throw_if_undefined(args.project);
 coreIsRunning = false;
 // Hide the UI while we load up the project's data etc.
 Rsed.ui.htmlUI.set_visible(false);
 verify_browser_compatibility();
-await load_project(args);
-if (args.stream.id)
-{
-Rsed.stream.start("viewer", args.stream.id);
-}
+await load_project(args.project);
 Rsed.ui.htmlUI.refresh();
 Rsed.ui.htmlUI.set_visible(true);
 coreIsRunning = true;
@@ -8843,16 +8978,12 @@ timeoutMs: 7000,
 });
 }
 }
-async function load_project(args = {})
+async function load_project(projectMeta)
 {
-Rsed.assert && ((typeof args.project !== "undefined") &&
-(typeof args.project.dataLocality !== "undefined") &&
-(typeof args.project.contentId !== "undefined"))
-|| Rsed.throw("Missing required arguments for loading a project.");
 project = Rsed.project.placeholder;
 /// TODO: Disable undo/redo while the project loads.
 Rsed.world.camera.reset_camera_position();
-project = await Rsed.project(args.project);
+project = await Rsed.project(projectMeta);
 Rsed.ui.undoStack.reset();
 }
 })();

@@ -33,6 +33,16 @@ window.onload = function(event)
     {
         const params = new URLSearchParams(window.location.search);
 
+        // If the user requests to view a stream, we just need to start the stream.
+        // Once the user joins the stream as a viewer, they'll receive the track's
+        // data and RallySportED-js will be started at that point.
+        if (params.has("stream"))
+        {
+            Rsed.stream.start("viewer", params.get("stream"));
+            
+            return;
+        }
+
         // The "track" and "content" parameters specify which track the user wants to load.
         // Generally, the "track" parameter is used to load the game's original demo tracks,
         // while the "content" parameter is used to load tracks (and, in the future, other
@@ -70,11 +80,6 @@ window.onload = function(event)
             }
 
             rsedStartupArgs.project.contentId = contentId;
-
-            if (params.has("stream"))
-            {
-                rsedStartupArgs.stream.id = params.get("stream");
-            }
         }
     }
 

@@ -80,21 +80,16 @@ Rsed.core = (function()
                     contentId: "demod",
                 },
         
-                // If the user is joining a stream, its information will be filled in here.
-                stream:
-                {
-                    id: null,
-                }
+                // If the user is viewing a stream, its id will be set here.
+                stream: null,
             }
         },    
 
         // Starts up RallySportED with the given project to edit.
         start: async function(args = {})
         {
-            Rsed.assert && ((typeof args.project !== "undefined") &&
-                            (typeof args.project.dataLocality !== "undefined") &&
-                            (typeof args.project.contentId !== "undefined"))
-                        || Rsed.throw("Missing startup parameters for launching RallySportED.");
+            Rsed.throw_if_not_type("object", args);
+            Rsed.throw_if_undefined(args.project);
 
             coreIsRunning = false;
 
@@ -103,12 +98,7 @@ Rsed.core = (function()
 
             verify_browser_compatibility();
 
-            await load_project(args);
-
-            if (args.stream.id)
-            {
-                Rsed.stream.start("viewer", args.stream.id);
-            }
+            await load_project(args.project);
 
             Rsed.ui.htmlUI.refresh();
             Rsed.ui.htmlUI.set_visible(true);
@@ -203,20 +193,15 @@ Rsed.core = (function()
         }
     }
 
-    async function load_project(args = {})
+    async function load_project(projectMeta)
     {
-        Rsed.assert && ((typeof args.project !== "undefined") &&
-                        (typeof args.project.dataLocality !== "undefined") &&
-                        (typeof args.project.contentId !== "undefined"))
-                    || Rsed.throw("Missing required arguments for loading a project.");
-
         project = Rsed.project.placeholder;
 
         /// TODO: Disable undo/redo while the project loads.
 
         Rsed.world.camera.reset_camera_position();
 
-        project = await Rsed.project(args.project);
+        project = await Rsed.project(projectMeta);
 
         Rsed.ui.undoStack.reset();
     }

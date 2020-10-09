@@ -26,9 +26,11 @@ Rsed.stream = (function()
         },
 
         // Call this to signal to RallySportED that the stream has ended.
-        signal_stream_closed: function()
+        signal_stream_closed: function(streamId)
         {
             signalsFns.signal_stream_status("disabled");
+
+            Rsed.log(`Left stream ${streamId}.`);
 
             clearInterval(connectionCheckInterval);
             connectionCheckInterval = null;
@@ -42,18 +44,21 @@ Rsed.stream = (function()
         },
 
         // Call this to signal to RallySportED that the stream has started.
-        signal_stream_open: function(id)
+        signal_stream_open: function(streamId)
         {
             signalsFns.signal_stream_status("enabled");
+
+            Rsed.log(`Joined stream ${streamId}.`);
 
             // Replace the URL bar's contents to give the user a link they can
             // share to others to join the stream.
             /// TODO: A less brute force implementation.
-            const basePath = `//${location.host}${location.pathname}?stream=${id}`;
+            const basePath = `//${location.host}${location.pathname}?stream=${streamId}`;
             window.history.replaceState({}, document.title, basePath);
 
             // Periodically refresh our list of open connections.
-            connectionCheckInterval = setInterval(()=>{
+            connectionCheckInterval = setInterval(()=>
+            {
                 Rsed.ui.htmlUI.set_stream_viewer_count(stream.num_connections());
             }, 2000);
         },
@@ -72,11 +77,7 @@ Rsed.stream = (function()
     const publicInterface = {
         start: function(role = "streamer", proposedId = Rsed.stream.generate_random_stream_id())
         {
-            // Don't allow a stream to be started more than once.
-            if (stream)
-            {
-                return;
-            }
+            Rsed.throw_if(stream, "Attempting to start a new stream before closing the existing one.");
 
             stream = Rsed.stream[role](proposedId, signalsFns);
             stream.start();
@@ -97,15 +98,31 @@ Rsed.stream = (function()
             return;
         },
 
-        // If this is a streamer, streams the given user edit action.
-        user_edit: function(assetType = "", editAction = {})
+        // Encapsulates the given data into an object that is then streamed to the
+        // current viewers (if 'dstViewer' is null) or to a specific viewer (as identified
+        // by 'dstViewer').
+        //
+        // The 'what' argument is a string that identifies the type of data encapsulated
+        // - valid values are "track-project-data" ('data' is expected to contain a track's
+        // entire data: container, manifesto, and metadata), and "user-edit" ('data' is
+        // expected to contain the arguments for a call to Rsed.ui.assetMutator.user_edit()).
+        send_packet: function(what = "", data, dstViewer = null)
         {
             if (!stream)
             {
                 return;
             }
 
-            stream.send_data({assetType, editAction});
+            const packet =  {
+                header: {
+                    what,
+                    creatorId: stream.id,
+                    createdOn: Date.now(),
+                },
+                data,
+            };
+
+            stream.send(packet, dstViewer);
 
             return;
         },
@@ -117,12 +134,6 @@ Rsed.stream = (function()
     };
 
     return publicInterface;
-
-    // A streamer id that will be used by viewers to connect to the stream.
-    function make_streamer_id()
-    {
-        return generate_uuid_v4().replace(/-/g, "");
-    }
 })();
 
 Rsed.stream.peerJsServerConfig = {
@@ -136,21 +147,54 @@ Rsed.stream.peerJsServerConfig = {
 Rsed.stream.generate_random_stream_id = function()
 {
     return generate_uuid_v4().replace(/-/g, "");
-}
+};
 
 // A streamer accepts connections from viewers and sends data to them.
 Rsed.stream.streamer = function(streamId, signalFns)
 {
-    // The viewers viewing this stream.
-    const connections = [];
+    const viewers = [];
+
+    // Maximum number of simultaneous viewers of this streamer's stream.
+    const maxNumViewers = 100;
 
     // PeerJS's Peer() object.
     let peer = null;
 
     // Gets called when a new viewer connects to this stream.
-    function handle_new_viewer(newConnection)
+    function handle_new_viewer(newViewer)
     {
-        connections.push(newConnection);
+        if (viewers.length > maxNumViewers)
+        {
+            /// TODO: Send the viewer an error message.
+
+            newViewer.close();
+
+            return;
+        }
+
+        // Wait until the connection is fully open for streaming, then send
+        // the new viewer a copy of the current track's full data.
+        let startTime = Date.now();
+        const waitTimeoutMs = 5000; // Number of milliseconds to wait, at most.
+        const timeBetweenAttemptsMs = 500;
+        const timer = setInterval(()=>
+        {
+            if (newViewer.open)
+            {
+                clearInterval(timer);
+
+                Rsed.stream.send_packet("project-data",
+                                        Rsed.core.current_project().json(),
+                                        newViewer);
+
+                viewers.push(newViewer);
+            }
+            else if ((Date.now() - startTime) > waitTimeoutMs)
+            {
+                newViewer.close();
+                clearInterval(timer);
+            }
+        }, timeBetweenAttemptsMs);
 
         return;
     }
@@ -160,37 +204,43 @@ Rsed.stream.streamer = function(streamId, signalFns)
 
         num_connections: function()
         {
-            const currentConnections = connections.filter(s=>s.open);
-
-            connections.length = 0;
-            for (const conn of currentConnections)
+            // Cull away viewers whose connection is not currently open.
+            const openViewers = viewers.filter(viewer=>
             {
-                connections.push(conn);
-            }
+                if (!viewer.open)
+                {
+                    viewer.close();
+                    return false;
+                }
 
-            return connections.length;
+                return true;
+            }, []);
+
+            viewers.splice(0, Infinity, ...openViewers);
+
+            return viewers.length;
         },
 
-        // Sends the given data to our viewers.
-        send_data: function(data = {})
+        // Sends the given data to the streamer's viewers.
+        send: function(data, dstViewer)
         {
-            Rsed.throw_if_not_type("object", data);
-
-            const packet = JSON.stringify(data);
-
-            for (const connection of connections)
+            if (dstViewer)
             {
-                connection.send(packet);
+                dstViewer.send(data);
+            }
+            else
+            {
+                for (const viewer of viewers)
+                {
+                    viewer.send(data);
+                }
             }
 
             return;
         },
 
-        receive_data: function()
-        {
-            /// Streamers don't receive data.
-            return;
-        },
+        // Streamers don't receive data, they just ignore requests to do so.
+        receive: function(){},
 
         start: function()
         {
@@ -199,11 +249,11 @@ Rsed.stream.streamer = function(streamId, signalFns)
                 Rsed.ui.popup_notification("The stream is already active.");
                 return;
             }
-    
+
             signalFns.signal_stream_status("initializing");
     
             peer = new Peer(streamId, Rsed.stream.peerJsServerConfig);
-            peer.on("close", signalFns.signal_stream_closed);
+            peer.on("close", ()=>signalFns.signal_stream_closed(streamId));
             peer.on("error", (error)=>
             {
                 publicInterface.stop();
@@ -231,8 +281,20 @@ Rsed.stream.streamer = function(streamId, signalFns)
 
         stop: function()
         {
+            for (const viewer of viewers)
+            {
+                viewer.close();
+            }
+
+            viewers.length = 0;
+
             peer.destroy();
-        }
+        },
+
+        get id()
+        {
+            return (peer? peer.id : undefined);
+        },
     };
 
     return publicInterface;
@@ -242,7 +304,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
 Rsed.stream.viewer = function(streamId, signalFns)
 {
     // Our connection to the stream we're viewing.
-    let connection = null;
+    let streamer = null;
 
     // PeerJS's Peer() object.
     let peer = null;
@@ -252,32 +314,53 @@ Rsed.stream.viewer = function(streamId, signalFns)
 
         num_connections: function()
         {
-            if (!connection.open)
-            {
-                connection = null;
-            }
-
             // If we lost the connection to the streamer.
-            if (!connection)
+            if (streamer &&
+                !streamer.open)
             {
                 this.stop();
             }
 
-            return Number(connection !== null);
+            return Number(streamer !== null);
         },
 
-        send_data: function(data)
-        {
-            /// Viewers don't send data.
-            return;
-        },
+        // Viewers don't send data, they just ignore requests to do so.
+        send: function(){},
 
-        // Receive and process data from the streamer.
-        receive_data: function(data)
+        // Receive and process a packet of data from the streamer.
+        receive: function(packet)
         {
-            data = JSON.parse(data);
+            switch (packet.header.what)
+            {
+                case "user-edit":
+                {
+                    Rsed.ui.assetMutator.user_edit(packet.data.assetType, packet.data.editAction);
+                    break;
+                }
+                // We expect packet.data to be a string containing the stream project's data
+                // in RallySportED-js's JSON format.
+                case "project-data":
+                {
+                    try
+                    {
+                        const projectData = JSON.parse(packet.data);
 
-            Rsed.ui.assetMutator.user_edit(data.assetType, data.editAction);
+                        Rsed.core.start(Rsed.core.startup_args({
+                            stream: packet.header.creatorId, 
+                            project: {
+                                dataLocality: "inline",
+                                data: projectData,
+                            },
+                        }));
+                    }
+                    catch (error)
+                    {
+                        Rsed.throw(`Failed to sync with the stream: ${error}`);
+                    }
+                }
+                // We'll fully ignore any unknown packets.
+                default: break;
+            }
 
             return;
         },
@@ -293,19 +376,19 @@ Rsed.stream.viewer = function(streamId, signalFns)
                 publicInterface.stop();
                 signalFns.signal_stream_error(error);
             });
-            peer.on("close", signalFns.signal_stream_closed);
+            peer.on("close", ()=>signalFns.signal_stream_closed(streamId));
             peer.on("open", ()=>
             {
                 // Attempt to connect to the given stream.
-                connection = peer.connect(streamId);
-                connection.on("disconnect", signalFns.signal_stream_closed);
-                connection.on("data", publicInterface.receive_data);
-                connection.on("error", (error)=>
+                streamer = peer.connect(streamId);
+                streamer.on("disconnect", signalFns.signal_stream_closed);
+                streamer.on("data", publicInterface.receive);
+                streamer.on("error", (error)=>
                 {
                     this.stop();
                     signalFns.signal_stream_error(error);
                 });
-                connection.on("open", ()=>
+                streamer.on("open", ()=>
                 {
                     signalFns.signal_stream_open(streamId);
                 });
@@ -314,8 +397,16 @@ Rsed.stream.viewer = function(streamId, signalFns)
 
         stop: function()
         {
+            streamer.close();
+            streamer = null;
+
             peer.destroy();
-        }
+        },
+
+        get id()
+        {
+            return (peer? peer.id : undefined);
+        },
     };
 
     return publicInterface;

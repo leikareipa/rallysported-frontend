@@ -39,7 +39,7 @@ Rsed.project = async function(projectArgs = {})
     // contents of the .DTA file as a Base64-encoded string; and projectData.manifesto the
     // contents of the .$FT file as a plain string.
     const projectData = await fetch_project_data();
-
+    
     Rsed.assert && ((typeof projectData.container !== "undefined") &&
                     (typeof projectData.manifesto !== "undefined") &&
                     (typeof projectData.meta !== "undefined") &&
@@ -337,21 +337,25 @@ Rsed.project = async function(projectArgs = {})
     //
     async function fetch_project_data()
     {
-        Rsed.assert && ((typeof projectArgs.dataLocality !== "undefined") &&
-                        (typeof projectArgs.contentId !== "undefined"))
-                    || Rsed.throw("Missing required parameters for loading a project.");
+        Rsed.throw_if_undefined(projectArgs.dataLocality);
 
-        const projectData = (projectArgs.dataLocality === "server-rsc")?  (await fetch_project_data_from_rsc_server())[0] :
-                            (projectArgs.dataLocality === "server-rsed")? (await fetch_project_data_from_rsed_server())[0] :
-                            (projectArgs.dataLocality === "client")?       await load_project_data_from_zip_file() :
-                            Rsed.throw("Unknown locality for project data.");
+        const projectData = await (async()=>
+        {
+            switch (projectArgs.dataLocality)
+            {
+                case "server-rsc": return (await fetch_project_data_from_rsc_server())[0];
+                case "server-rsed": return (await fetch_project_data_from_rsed_server())[0];
+                case "client": return await load_project_data_from_zip_file();
+                case "inline": return Promise.resolve(projectArgs.data);
+                default: Rsed.throw("Unrecognized project data locality."); break;
+            }
+        })();
 
         return projectData;
 
         async function load_project_data_from_zip_file()
         {
-            Rsed.assert && (typeof projectArgs.contentId !== "undefined")
-                        || Rsed.throw("Missing required parameters for loading a client-side project.");
+            Rsed.throw_if_undefined(projectArgs.contentId);
 
             const zip = await (new JSZip()).loadAsync(projectArgs.contentId);
 
@@ -440,9 +444,8 @@ Rsed.project = async function(projectArgs = {})
         // hosts the original tracks from the Rally-Sport demo.
         async function fetch_project_data_from_rsed_server()
         {
-            Rsed.assert && (typeof projectArgs.contentId !== "undefined")
-                        || Rsed.throw("Missing required parameters for loading project data.");
-
+            Rsed.throw_if_undefined(projectArgs.contentId);
+            
             const trackName = (()=>
             {
                 switch (projectArgs.contentId)
@@ -473,8 +476,7 @@ Rsed.project = async function(projectArgs = {})
         // server hosts custom, user-made tracks.
         async function fetch_project_data_from_rsc_server()
         {
-            Rsed.assert && (typeof projectArgs.contentId !== "undefined")
-                        || Rsed.throw("Missing required parameters for loading a server-side project.");
+            Rsed.throw_if_undefined(projectArgs.contentId);
 
             const serverResponse = await fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.contentId}&json=true`);
 
