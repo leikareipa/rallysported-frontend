@@ -1,10 +1,12 @@
 # RallySportED-js
-A version of [RallySportED](https://github.com/leikareipa/rallysported/)'s track editor for browsers. You can find it running live [here](https://www.tarpeeksihyvaesoft.com/rallysported/).
+A version of [RallySportED](https://github.com/leikareipa/rallysported/)'s track editor for browsers.
 
-### Features
-- Create and edit Rally-Sport tracks in your browser
-- Genuine olden software-rendered 3d graphics
-- Vanilla JavaScript (+ a bit of Vue for the UI)
+You can find RallySportED-js running live on the web [here](https://www.tarpeeksihyvaesoft.com/rallysported/).
+
+## Features
+- Create and edit tracks for Rally-Sport in your browser
+- Genuine olden software-rendered 3D graphics
+- Vanilla JavaScript with a bit of Vue for the UI
 
 ![](images/screenshots/beta.6/yleiso-ek.png)
 
