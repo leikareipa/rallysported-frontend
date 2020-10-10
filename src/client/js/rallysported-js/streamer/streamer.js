@@ -154,7 +154,9 @@ Rsed.stream.peerJsServerConfig = Rsed.stream.herokuPeerJsServerConfig;
 // a streamer or a viewer stream).
 Rsed.stream.generate_random_stream_id = function()
 {
-    return generate_uuid_v4().replace(/-/g, "");
+    const id = generate_uuid_v4().replace(/-/g, "");
+
+    return id.substring(0, 12);
 };
 
 // A streamer accepts connections from viewers and sends data to them.
@@ -163,7 +165,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
     const viewers = [];
 
     // Maximum number of simultaneous viewers of this streamer's stream.
-    const maxNumViewers = 100;
+    const maxNumViewers = 1000;
 
     // PeerJS's Peer() object.
     let peer = null;
