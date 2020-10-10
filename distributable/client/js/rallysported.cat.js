@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (10 October 2020 14:26:45 UTC)
+// VERSION: live (10 October 2020 23:54:11 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5637,7 +5637,7 @@ return publicInterface;
 *
 */
 "use strict";
-// Opens a self-closing popup notification on RallySportED's page.
+// Opens a self-closing popup notification in RallySportED's DOM.
 Rsed.ui.popup_notification = function(string = "", args = {})
 {
 Rsed.throw_if_not_type("string", string);
@@ -8542,10 +8542,7 @@ Rsed.ui.htmlUI.set_stream_viewer_count(stream.num_connections());
 },
 signal_stream_error: function(error)
 {
-Rsed.ui.popup_notification(`Stream: "${error}"`,
-{
-notificationType: "error",
-});
+Rsed.alert(`Stream: ${error}`);
 return;
 },
 };
@@ -8715,7 +8712,7 @@ start: function()
 {
 if (status.active)
 {
-Rsed.ui.popup_notification("The stream is already active.");
+Rsed.log("Attempted to start a new stream while an existing stream was still active. Ignoring this.");
 return;
 }
 signalFns.signal_stream_status("initializing");
@@ -8730,11 +8727,8 @@ peer.on("open", (id)=>
 {
 if (id != streamId)
 {
+Rsed.alert("Stream: Received an invalid ID from the peer server.");
 signalFns.stop_stream();
-Rsed.ui.popup_notification(`Stream: Received an invalid ID from the peer server.`,
-{
-notificationType: "error",
-});
 return;
 }
 peer.on("connection", handle_new_viewer);

@@ -111,7 +111,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
         {
             if (status.active)
             {
-                Rsed.ui.popup_notification("The stream is already active.");
+                Rsed.log("Attempted to start a new stream while an existing stream was still active. Ignoring this.");
                 return;
             }
 
@@ -128,12 +128,9 @@ Rsed.stream.streamer = function(streamId, signalFns)
             {
                 if (id != streamId)
                 {
+                    Rsed.alert("Stream: Received an invalid ID from the peer server.");
+                    
                     signalFns.stop_stream();
-                
-                    Rsed.ui.popup_notification(`Stream: Received an invalid ID from the peer server.`,
-                    {
-                        notificationType: "error",
-                    });
     
                     return;
                 }

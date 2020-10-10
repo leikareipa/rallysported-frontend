@@ -68,10 +68,7 @@ Rsed.stream = (function()
 
         signal_stream_error: function(error)
         {
-            Rsed.ui.popup_notification(`Stream: "${error}"`,
-            {
-                notificationType: "error",
-            });
+            Rsed.alert(`Stream: ${error}`);
 
             return;
         },
