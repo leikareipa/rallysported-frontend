@@ -9,7 +9,10 @@
 
 "use strict";
 
-// Streams the user's edits to viewers via PeerJS/WebRTC.
+// A one-to-many network where viewers are connected to a streamer who sends them
+// data. For a client to take part in this network, it will call Rsed.stream.start()
+// with a role it wishes to take - either a "viewer" (Rsed.stream.viewer) or a
+// "streamer" (Rsed.stream.streamer).
 Rsed.stream = (function()
 {
     // Either Rsed.stream.streamer or Rsed.stream.viewer.
@@ -75,6 +78,9 @@ Rsed.stream = (function()
     };
 
     const publicInterface = {
+        // If 'role' is "streamer", 'proposedId' is the id with which viewers can
+        // connect to the stream. If 'role' is "viewer", 'proposedId' is the id of 
+        // the streamer that the viewer wants to connect to.
         start: function(role = "streamer", proposedId = Rsed.stream.generate_random_stream_id())
         {
             if (stream)

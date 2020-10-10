@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (10 October 2020 13:29:59 UTC)
+// VERSION: live (10 October 2020 14:26:45 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8495,7 +8495,10 @@ return;
 *
 */
 "use strict";
-// Streams the user's edits to viewers via PeerJS/WebRTC.
+// A one-to-many network where viewers are connected to a streamer who sends them
+// data. For a client to take part in this network, it will call Rsed.stream.start()
+// with a role it wishes to take - either a "viewer" (Rsed.stream.viewer) or a
+// "streamer" (Rsed.stream.streamer).
 Rsed.stream = (function()
 {
 // Either Rsed.stream.streamer or Rsed.stream.viewer.
@@ -8547,6 +8550,9 @@ return;
 },
 };
 const publicInterface = {
+// If 'role' is "streamer", 'proposedId' is the id with which viewers can
+// connect to the stream. If 'role' is "viewer", 'proposedId' is the id of
+// the streamer that the viewer wants to connect to.
 start: function(role = "streamer", proposedId = Rsed.stream.generate_random_stream_id())
 {
 if (stream)
@@ -8625,7 +8631,9 @@ return id.substring(0, 12);
 *
 */
 "use strict";
-// A streamer accepts connections from viewers and sends data to them.
+// Streamer is an Rsed.stream() role in a one-to-many network. Clients who are streamers
+// accept connections from viewers and send (stream) data to them. Data doesn't flow from
+// viewers to streamers, however.
 Rsed.stream.streamer = function(streamId, signalFns)
 {
 const viewers = [];
@@ -8670,6 +8678,8 @@ role: "streamer",
 num_connections: function()
 {
 // Cull away viewers whose connection is not currently open.
+/// TODO: Put this in a separate function, since it's weird that a
+/// a call to num_connections() would have this side effect.
 const openViewers = viewers.filter(viewer=>
 {
 if (!viewer.open)
@@ -8682,24 +8692,25 @@ return true;
 viewers.splice(0, Infinity, ...openViewers);
 return viewers.length;
 },
-// Sends the given data to the streamer's viewers.
-send: function(data, dstViewer)
+// Sends the given data packet to the current viewers.
+send: function(packet, dstViewer)
 {
 if (dstViewer)
 {
-dstViewer.send(data);
+dstViewer.send(packet);
 }
 else
 {
 for (const viewer of viewers)
 {
-viewer.send(data);
+viewer.send(packet);
 }
 }
 return;
 },
 // Streamers don't receive data, they just ignore requests to do so.
 receive: function(){},
+// Start streaming.
 start: function()
 {
 if (status.active)
@@ -8730,6 +8741,7 @@ peer.on("connection", handle_new_viewer);
 signalFns.signal_stream_open(publicInterface.role, id);
 });
 },
+// End the stream. All viewers will be kicked off.
 stop: function()
 {
 for (const viewer of viewers)
@@ -8755,15 +8767,20 @@ return publicInterface;
 *
 */
 "use strict";
-// A viewer connects to a streamer and receives data from it.
+// Viewer is an Rsed.stream() role in a one-to-many network. Clients who are viewers
+// connect to a streamer and receive data from them. Data doesn't flow from viewers
+// to streamers, however.
 Rsed.stream.viewer = function(streamId, signalFns)
 {
-// Our connection to the stream we're viewing.
+// The streamer we're viewing.
 let streamer = null;
 // PeerJS's Peer() object.
 let peer = null;
 const publicInterface = {
 role: "viewer",
+// How many streamers this viewer is connected to.
+/// TODO: Put this in a separate function, since it's weird that a
+/// a call to num_connections() would have this side effect.
 num_connections: function()
 {
 // If we lost the connection to the streamer.

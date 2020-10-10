@@ -9,10 +9,12 @@
 
 "use strict";
 
-// A viewer connects to a streamer and receives data from it.
+// Viewer is an Rsed.stream() role in a one-to-many network. Clients who are viewers
+// connect to a streamer and receive data from them. Data doesn't flow from viewers
+// to streamers, however.
 Rsed.stream.viewer = function(streamId, signalFns)
 {
-    // Our connection to the stream we're viewing.
+    // The streamer we're viewing.
     let streamer = null;
 
     // PeerJS's Peer() object.
@@ -21,6 +23,9 @@ Rsed.stream.viewer = function(streamId, signalFns)
     const publicInterface = {
         role: "viewer",
 
+        // How many streamers this viewer is connected to.
+        /// TODO: Put this in a separate function, since it's weird that a
+        /// a call to num_connections() would have this side effect.
         num_connections: function()
         {
             // If we lost the connection to the streamer.

@@ -9,7 +9,9 @@
 
 "use strict";
 
-// A streamer accepts connections from viewers and sends data to them.
+// Streamer is an Rsed.stream() role in a one-to-many network. Clients who are streamers
+// accept connections from viewers and send (stream) data to them. Data doesn't flow from
+// viewers to streamers, however.
 Rsed.stream.streamer = function(streamId, signalFns)
 {
     const viewers = [];
@@ -65,6 +67,8 @@ Rsed.stream.streamer = function(streamId, signalFns)
         num_connections: function()
         {
             // Cull away viewers whose connection is not currently open.
+            /// TODO: Put this in a separate function, since it's weird that a
+            /// a call to num_connections() would have this side effect.
             const openViewers = viewers.filter(viewer=>
             {
                 if (!viewer.open)
@@ -81,18 +85,18 @@ Rsed.stream.streamer = function(streamId, signalFns)
             return viewers.length;
         },
 
-        // Sends the given data to the streamer's viewers.
-        send: function(data, dstViewer)
+        // Sends the given data packet to the current viewers.
+        send: function(packet, dstViewer)
         {
             if (dstViewer)
             {
-                dstViewer.send(data);
+                dstViewer.send(packet);
             }
             else
             {
                 for (const viewer of viewers)
                 {
-                    viewer.send(data);
+                    viewer.send(packet);
                 }
             }
 
@@ -102,6 +106,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
         // Streamers don't receive data, they just ignore requests to do so.
         receive: function(){},
 
+        // Start streaming.
         start: function()
         {
             if (status.active)
@@ -139,6 +144,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
             });
         },
 
+        // End the stream. All viewers will be kicked off.
         stop: function()
         {
             for (const viewer of viewers)
