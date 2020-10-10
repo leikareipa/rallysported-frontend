@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/streamer/streamer.js
+ * Most recent known filename: js/stream/stream.js
  *
  * 2020 Tarpeeksi Hyvae Soft
  * 

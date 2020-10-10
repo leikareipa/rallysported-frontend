@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (10 October 2020 04:26:11 UTC)
+// VERSION: live (10 October 2020 13:18:05 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -49,7 +49,7 @@
 //	./src/client/js/rallysported-js/scene/scene-3d.js
 //	./src/client/js/rallysported-js/scene/scene-tilemap.js
 //	./src/client/js/rallysported-js/scene/scene-texture.js
-//	./src/client/js/rallysported-js/streamer/streamer.js
+//	./src/client/js/rallysported-js/stream/stream.js
 //	./src/client/js/rallysported-js/core/core.js
 /////////////////////////////////////////////////
 /*!

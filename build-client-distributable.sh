@@ -49,7 +49,7 @@ SOURCE_FILES=("$SRC_DIRECTORY/jszip/jszip.min.js"
               "$SRC_DIRECTORY/rallysported-js/scene/scene-3d.js"
               "$SRC_DIRECTORY/rallysported-js/scene/scene-tilemap.js"
               "$SRC_DIRECTORY/rallysported-js/scene/scene-texture.js"
-              "$SRC_DIRECTORY/rallysported-js/streamer/streamer.js"
+              "$SRC_DIRECTORY/rallysported-js/stream/stream.js"
               "$SRC_DIRECTORY/rallysported-js/core/core.js")
 
 echo "// WHAT: Concatenated JavaScript source files" > "$DST_DIRECTORY/$DST_FILENAME"
