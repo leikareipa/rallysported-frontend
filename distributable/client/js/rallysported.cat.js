@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (10 October 2020 13:18:05 UTC)
+// VERSION: live (10 October 2020 13:29:59 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -50,6 +50,8 @@
 //	./src/client/js/rallysported-js/scene/scene-tilemap.js
 //	./src/client/js/rallysported-js/scene/scene-texture.js
 //	./src/client/js/rallysported-js/stream/stream.js
+//	./src/client/js/rallysported-js/stream/streamer.js
+//	./src/client/js/rallysported-js/stream/viewer.js
 //	./src/client/js/rallysported-js/core/core.js
 /////////////////////////////////////////////////
 /*!
@@ -8485,11 +8487,11 @@ return;
 }
 })();
 /*
-* Most recent known filename: js/streamer/streamer.js
+* Most recent known filename: js/stream/stream.js
 *
 * 2020 Tarpeeksi Hyvae Soft
 *
-* Software RallySportED-js
+* Software: RallySportED-js
 *
 */
 "use strict";
@@ -8608,13 +8610,21 @@ port: 443,
 };
 // The configuration that will be used for PeerJS's Peer().
 Rsed.stream.peerJsServerConfig = Rsed.stream.herokuPeerJsServerConfig;
-// Returns a random id that can be used as the id for a stream (either
-// a streamer or a viewer stream).
+// Returns a random id that can be used as the id of a peer in a stream.
 Rsed.stream.generate_random_stream_id = function()
 {
 const id = generate_uuid_v4().replace(/-/g, "");
 return id.substring(0, 12);
 };
+/*
+* Most recent known filename: js/stream/streamer.js
+*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
 // A streamer accepts connections from viewers and sends data to them.
 Rsed.stream.streamer = function(streamId, signalFns)
 {
@@ -8736,6 +8746,15 @@ return (peer? peer.id : undefined);
 };
 return publicInterface;
 };
+/*
+* Most recent known filename: js/stream/viewer.js
+*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
 // A viewer connects to a streamer and receives data from it.
 Rsed.stream.viewer = function(streamId, signalFns)
 {
