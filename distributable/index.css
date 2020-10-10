@@ -116,12 +116,13 @@ body
     color: inherit;
 }
 
-#html-ui .button.stream.disabled .fas
+#html-ui .button.stream .fas
 {
     color: lightgray;
 }
 
-#html-ui .button.stream.enabled
+#html-ui .button.stream.streamer,
+#html-ui .button.stream.streamer .fas
 {
     color: white;
 }

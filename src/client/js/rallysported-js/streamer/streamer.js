@@ -44,9 +44,9 @@ Rsed.stream = (function()
         },
 
         // Call this to signal to RallySportED that the stream has started.
-        signal_stream_open: function(streamId)
+        signal_stream_open: function(role, streamId)
         {
-            signalsFns.signal_stream_status("enabled");
+            signalsFns.signal_stream_status(role);
 
             Rsed.log(`Joined stream ${streamId}.`);
 
@@ -77,7 +77,10 @@ Rsed.stream = (function()
     const publicInterface = {
         start: function(role = "streamer", proposedId = Rsed.stream.generate_random_stream_id())
         {
-            Rsed.throw_if(stream, "Attempting to start a new stream before closing the existing one.");
+            if (stream)
+            {
+                stream.stop();
+            }
 
             stream = Rsed.stream[role](proposedId, signalsFns);
             stream.start();
@@ -285,7 +288,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
 
                 peer.on("connection", handle_new_viewer);
     
-                signalFns.signal_stream_open(id);
+                signalFns.signal_stream_open(publicInterface.role, id);
             });
         },
 
@@ -395,7 +398,7 @@ Rsed.stream.viewer = function(streamId, signalFns)
                 });
                 streamer.on("open", ()=>
                 {
-                    signalFns.signal_stream_open(streamId);
+                    signalFns.signal_stream_open(publicInterface.role, streamId);
                 });
             });
         },

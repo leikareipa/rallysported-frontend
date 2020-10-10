@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (10 October 2020 00:55:58 UTC)
+// VERSION: live (10 October 2020 03:22:40 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8517,9 +8517,9 @@ window.history.replaceState({}, document.title, basePath);
 return;
 },
 // Call this to signal to RallySportED that the stream has started.
-signal_stream_open: function(streamId)
+signal_stream_open: function(role, streamId)
 {
-signalsFns.signal_stream_status("enabled");
+signalsFns.signal_stream_status(role);
 Rsed.log(`Joined stream ${streamId}.`);
 // Replace the URL bar's contents to give the user a link they can
 // share to others to join the stream.
@@ -8544,7 +8544,10 @@ return;
 const publicInterface = {
 start: function(role = "streamer", proposedId = Rsed.stream.generate_random_stream_id())
 {
-Rsed.throw_if(stream, "Attempting to start a new stream before closing the existing one.");
+if (stream)
+{
+stream.stop();
+}
 stream = Rsed.stream[role](proposedId, signalsFns);
 stream.start();
 return;
@@ -8711,7 +8714,7 @@ notificationType: "error",
 return;
 }
 peer.on("connection", handle_new_viewer);
-signalFns.signal_stream_open(id);
+signalFns.signal_stream_open(publicInterface.role, id);
 });
 },
 stop: function()
@@ -8805,7 +8808,7 @@ signalFns.signal_stream_error(error);
 });
 streamer.on("open", ()=>
 {
-signalFns.signal_stream_open(streamId);
+signalFns.signal_stream_open(publicInterface.role, streamId);
 });
 });
 },

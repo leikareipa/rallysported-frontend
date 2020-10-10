@@ -30,30 +30,31 @@
                 </a>
 
                 <a id="rsc-button"
-                   class="button right"
+                   class="button middle"
                    title="Browse tracks made by others"
                    href="/rallysport-content/tracks/" target="_blank" rel="noopener">
                     Tracks
                 </a>
 
                 <div id="stream-button"
-                     style="display: none;"
                      class="button right stream"
                      :class="streamStatus"
-                     title="Host this track's data from your machine to people online"
-                     :onclick="(streamStatus == 'disabled')
-                               ? 'Rsed.stream.start();'
-                               : 'Rsed.stream.stop();'"></a>
+                     title="Host this track's data from your browser to people online"
+                     :onclick="((streamStatus == 'streamer')
+                                ? 'Rsed.stream.stop();'
+                                : 'Rsed.stream.start();')"></a>
+
                     <i class="fas fa-fw"
-                       :class="(streamStatus == 'enabled')
-                               ? 'fa-project-diagram'
-                               : (streamStatus == 'initializing')
-                                 ? 'fa-spin fa-spinner'
-                                 : 'fa-project-diagram'"></i>
-                    {{streamStatus == "enabled"? "Serving" :
-                      streamStatus == "initializing"? "Hold on..." : 
-                     "Serve"}}
-                    {{streamStatus == "enabled"? ` (${streamViewerCount})` : ""}}
+                       :class="((streamStatus == 'initializing')
+                                ? 'fa-spin fa-spinner'
+                                : 'fa-project-diagram')"></i>
+
+                    {{(streamStatus == "streamer")
+                      ? `Hosting (${streamViewerCount})`
+                      : (streamStatus == "initializing")
+                        ? "Hold on..."
+                        : "Host"}}
+
                 </div>
 
             </div>
