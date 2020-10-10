@@ -36,9 +36,9 @@ window.onload = function(event)
         // If the user requests to view a stream, we just need to start the stream.
         // Once the user joins the stream as a viewer, they'll receive the track's
         // data and RallySportED-js will be started at that point.
-        if (params.has("stream"))
+        if (params.has("transientServer"))
         {
-            Rsed.stream.start("viewer", params.get("stream"));
+            Rsed.stream.start("viewer", params.get("transientServer"));
             
             return;
         }

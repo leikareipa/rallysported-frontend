@@ -40,17 +40,19 @@
                      style="display: none;"
                      class="button right stream"
                      :class="streamStatus"
-                     title="Stream"
+                     title="Host this track for others to see"
                      :onclick="(streamStatus == 'disabled')
                                ? 'Rsed.stream.start();'
                                : 'Rsed.stream.stop();'"></a>
                     <i class="fas fa-fw"
                        :class="(streamStatus == 'enabled')
-                               ? 'fa-eye'
+                               ? 'fa-server'
                                : (streamStatus == 'initializing')
                                  ? 'fa-spin fa-spinner'
-                                 : 'fa-eye-slash'"></i>
-                    {{streamStatus == "enabled"? "Streaming" : "Stream"}}
+                                 : 'fa-server'"></i>
+                    {{streamStatus == "enabled"? "Serving" :
+                      streamStatus == "initializing"? "Hold on..." : 
+                     "Serve"}}
                     {{streamStatus == "enabled"? ` (${streamViewerCount})` : ""}}
                 </div>
 

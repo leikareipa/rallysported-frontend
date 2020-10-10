@@ -53,7 +53,7 @@ Rsed.stream = (function()
             // Replace the URL bar's contents to give the user a link they can
             // share to others to join the stream.
             /// TODO: A less brute force implementation.
-            const basePath = `//${location.host}${location.pathname}?stream=${streamId}`;
+            const basePath = `//${location.host}${location.pathname}?transientServer=${streamId}`;
             window.history.replaceState({}, document.title, basePath);
 
             // Periodically refresh our list of open connections.
@@ -65,7 +65,7 @@ Rsed.stream = (function()
 
         signal_stream_error: function(error)
         {
-            Rsed.ui.popup_notification(`Broadcast: "${error}"`,
+            Rsed.ui.popup_notification(`Stream: "${error}"`,
             {
                 notificationType: "error",
             });
@@ -104,8 +104,7 @@ Rsed.stream = (function()
         //
         // The 'what' argument is a string that identifies the type of data encapsulated
         // - valid values are "track-project-data" ('data' is expected to contain a track's
-        // entire data: container, manifesto, and metadata), and "user-edit" ('data' is
-        // expected to contain the arguments for a call to Rsed.ui.assetMutator.user_edit()).
+        // entire data: container, manifesto, and metadata).
         send_packet: function(what = "", data, dstViewer = null)
         {
             if (!stream)
@@ -274,7 +273,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
                 {
                     signalFns.stop_stream();
                 
-                    Rsed.ui.popup_notification(`Broadcast: Received an invalid ID from the peer server.`,
+                    Rsed.ui.popup_notification(`Stream: Received an invalid ID from the peer server.`,
                     {
                         notificationType: "error",
                     });
@@ -341,11 +340,6 @@ Rsed.stream.viewer = function(streamId, signalFns)
         {
             switch (packet.header.what)
             {
-                case "user-edit":
-                {
-                    Rsed.ui.assetMutator.user_edit(packet.data.assetType, packet.data.editAction);
-                    break;
-                }
                 // We expect packet.data to be a string containing the stream project's data
                 // in RallySportED-js's JSON format.
                 case "project-data":

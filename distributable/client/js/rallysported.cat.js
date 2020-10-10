@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (09 October 2020 16:49:35 UTC)
+// VERSION: live (10 October 2020 00:41:33 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5204,7 +5204,6 @@ if (!Object.keys(applicators).includes(assetType))
 {
 Rsed.throw("Unknown asset type.");
 }
-Rsed.stream.send_packet("user-edit", {assetType, editAction});
 return applicators[assetType](Rsed.core.current_project(), editAction);
 }
 }
@@ -6449,9 +6448,9 @@ const params = new URLSearchParams(window.location.search);
 // If the user requests to view a stream, we just need to start the stream.
 // Once the user joins the stream as a viewer, they'll receive the track's
 // data and RallySportED-js will be started at that point.
-if (params.has("stream"))
+if (params.has("transientServer"))
 {
-Rsed.stream.start("viewer", params.get("stream"));
+Rsed.stream.start("viewer", params.get("transientServer"));
 return;
 }
 // The "track" and "content" parameters specify which track the user wants to load.
@@ -8525,7 +8524,7 @@ Rsed.log(`Joined stream ${streamId}.`);
 // Replace the URL bar's contents to give the user a link they can
 // share to others to join the stream.
 /// TODO: A less brute force implementation.
-const basePath = `//${location.host}${location.pathname}?stream=${streamId}`;
+const basePath = `//${location.host}${location.pathname}?transientServer=${streamId}`;
 window.history.replaceState({}, document.title, basePath);
 // Periodically refresh our list of open connections.
 connectionCheckInterval = setInterval(()=>
@@ -8535,7 +8534,7 @@ Rsed.ui.htmlUI.set_stream_viewer_count(stream.num_connections());
 },
 signal_stream_error: function(error)
 {
-Rsed.ui.popup_notification(`Broadcast: "${error}"`,
+Rsed.ui.popup_notification(`Stream: "${error}"`,
 {
 notificationType: "error",
 });
@@ -8566,8 +8565,7 @@ return;
 //
 // The 'what' argument is a string that identifies the type of data encapsulated
 // - valid values are "track-project-data" ('data' is expected to contain a track's
-// entire data: container, manifesto, and metadata), and "user-edit" ('data' is
-// expected to contain the arguments for a call to Rsed.ui.assetMutator.user_edit()).
+// entire data: container, manifesto, and metadata).
 send_packet: function(what = "", data, dstViewer = null)
 {
 if (!stream)
@@ -8705,7 +8703,7 @@ peer.on("open", (id)=>
 if (id != streamId)
 {
 signalFns.stop_stream();
-Rsed.ui.popup_notification(`Broadcast: Received an invalid ID from the peer server.`,
+Rsed.ui.popup_notification(`Stream: Received an invalid ID from the peer server.`,
 {
 notificationType: "error",
 });
@@ -8757,11 +8755,6 @@ receive: function(packet)
 {
 switch (packet.header.what)
 {
-case "user-edit":
-{
-Rsed.ui.assetMutator.user_edit(packet.data.assetType, packet.data.editAction);
-break;
-}
 // We expect packet.data to be a string containing the stream project's data
 // in RallySportED-js's JSON format.
 case "project-data":
