@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (10 October 2020 03:22:40 UTC)
+// VERSION: live (10 October 2020 04:26:11 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6714,10 +6714,13 @@ dataLocality: "client",
 contentId: zipFile,
 }
 }));
+if (Rsed.stream.role !== "streamer")
+{
 // Clear the address bar's parameters to reflect the fact that the user has loaded a local
 // track resource instead of specifying a server-side resource via the address bar.
 const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
 window.history.replaceState({}, document.title, basePath);
+}
 return;
 }
 /*
@@ -8588,7 +8591,7 @@ return;
 },
 get role()
 {
-return stream.role;
+return (stream? stream.role : null);
 },
 };
 return publicInterface;

@@ -365,10 +365,13 @@ window.drop_handler = function(event)
         }
     }));
 
-    // Clear the address bar's parameters to reflect the fact that the user has loaded a local
-    // track resource instead of specifying a server-side resource via the address bar.
-    const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
-    window.history.replaceState({}, document.title, basePath);
+    if (Rsed.stream.role !== "streamer")
+    {
+        // Clear the address bar's parameters to reflect the fact that the user has loaded a local
+        // track resource instead of specifying a server-side resource via the address bar.
+        const basePath = (window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1));
+        window.history.replaceState({}, document.title, basePath);
+    }
 
     return;
 }

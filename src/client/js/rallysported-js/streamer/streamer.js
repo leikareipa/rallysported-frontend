@@ -131,7 +131,7 @@ Rsed.stream = (function()
 
         get role()
         {
-            return stream.role;
+            return (stream? stream.role : null);
         },
     };
 
