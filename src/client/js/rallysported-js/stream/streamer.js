@@ -16,50 +16,11 @@ Rsed.stream.streamer = function(streamId, signalFns)
 {
     const viewers = [];
 
-    // Maximum number of simultaneous viewers of this streamer's stream.
+    // Maximum number of simultaneous viewers.
     const maxNumViewers = 1000;
 
     // PeerJS's Peer() object.
     let peer = null;
-
-    // Gets called when a new viewer connects to this stream.
-    function handle_new_viewer(newViewer)
-    {
-        if (viewers.length > maxNumViewers)
-        {
-            /// TODO: Send the viewer an error message.
-
-            newViewer.close();
-
-            return;
-        }
-
-        // Wait until the connection is fully open for streaming, then send
-        // the new viewer a copy of the current track's full data.
-        let startTime = Date.now();
-        const waitTimeoutMs = 5000; // Number of milliseconds to wait, at most.
-        const timeBetweenAttemptsMs = 500;
-        const timer = setInterval(()=>
-        {
-            if (newViewer.open)
-            {
-                clearInterval(timer);
-
-                Rsed.stream.send_packet("project-data",
-                                        Rsed.core.current_project().json(),
-                                        newViewer);
-
-                viewers.push(newViewer);
-            }
-            else if ((Date.now() - startTime) > waitTimeoutMs)
-            {
-                newViewer.close();
-                clearInterval(timer);
-            }
-        }, timeBetweenAttemptsMs);
-
-        return;
-    }
 
     const publicInterface = {
         role: "streamer",
@@ -86,7 +47,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
         },
 
         // Sends the given data packet to the current viewers.
-        send: function(packet, dstViewer)
+        send: function(packet, dstViewer = null)
         {
             if (dstViewer)
             {
@@ -129,7 +90,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
                 if (id != streamId)
                 {
                     Rsed.alert("Stream: Received an invalid ID from the peer server.");
-                    
+
                     signalFns.stop_stream();
     
                     return;
@@ -161,4 +122,50 @@ Rsed.stream.streamer = function(streamId, signalFns)
     };
 
     return publicInterface;
+
+    // Gets called when a new viewer connects to this stream.
+    function handle_new_viewer(newViewer)
+    {
+        if (viewers.length > maxNumViewers)
+        {
+            /// TODO: Send the viewer an error message.
+
+            newViewer.close();
+
+            return;
+        }
+
+        // Wait until the connection is fully open for streaming, then send
+        // the new viewer a copy of the current project's full data.
+        let startTime = Date.now();
+        const waitTimeoutMs = 5000; // Number of milliseconds to wait, at most.
+        const timeBetweenAttemptsMs = 500;
+        const timer = setInterval(()=>
+        {
+            // If the stream has been closed.
+            if (!peer)
+            {
+                clearInterval(timer);
+                return;
+            }
+            
+            if (newViewer.open)
+            {
+                clearInterval(timer);
+
+                Rsed.stream.send_packet("project-data",
+                                        Rsed.core.current_project().json(),
+                                        newViewer);
+
+                viewers.push(newViewer);
+            }
+            else if ((Date.now() - startTime) > waitTimeoutMs)
+            {
+                newViewer.close();
+                clearInterval(timer);
+            }
+        }, timeBetweenAttemptsMs);
+
+        return;
+    }
 };

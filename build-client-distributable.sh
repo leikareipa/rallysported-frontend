@@ -50,6 +50,7 @@ SOURCE_FILES=("$SRC_DIRECTORY/jszip/jszip.min.js"
               "$SRC_DIRECTORY/rallysported-js/scene/scene-tilemap.js"
               "$SRC_DIRECTORY/rallysported-js/scene/scene-texture.js"
               "$SRC_DIRECTORY/rallysported-js/stream/stream.js"
+              "$SRC_DIRECTORY/rallysported-js/stream/server.js"
               "$SRC_DIRECTORY/rallysported-js/stream/streamer.js"
               "$SRC_DIRECTORY/rallysported-js/stream/viewer.js"
               "$SRC_DIRECTORY/rallysported-js/core/core.js")

@@ -68,18 +68,21 @@ Rsed.stream = (function()
 
         signal_stream_error: function(error)
         {
-            Rsed.alert(`Stream: ${error}`);
+            Rsed.alert(`${error}`);
 
             return;
         },
     };
 
     const publicInterface = {
-        // If 'role' is "streamer", 'proposedId' is the id with which viewers can
-        // connect to the stream. If 'role' is "viewer", 'proposedId' is the id of 
+        // If 'role' is "streamer" or "server", 'proposedId' is the id with which viewers
+        // can connect to the stream. If 'role' is "viewer", 'proposedId' is the id of 
         // the streamer that the viewer wants to connect to.
-        start: function(role = "streamer", proposedId = Rsed.stream.generate_random_stream_id())
+        start: function(role = null, proposedId = Rsed.stream.generate_random_stream_id())
         {
+            Rsed.throw_if(!role, "A role must be specified for stream.start().");
+            Rsed.throw_if(!Rsed.stream[role], `Unknown stream role "${role}".`);
+
             if (stream)
             {
                 stream.stop();
@@ -110,7 +113,8 @@ Rsed.stream = (function()
         //
         // The 'what' argument is a string that identifies the type of data encapsulated
         // - valid values are "track-project-data" ('data' is expected to contain a track's
-        // entire data: container, manifesto, and metadata).
+        // entire data: container, manifesto, and metadata), and "user-edit" ('data' is
+        // expected to contain the arguments for a call to Rsed.ui.assetMutator.user_edit()).
         send_packet: function(what = "", data, dstViewer = null)
         {
             if (!stream)

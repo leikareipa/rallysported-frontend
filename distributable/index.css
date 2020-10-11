@@ -122,7 +122,9 @@ body
 }
 
 #html-ui .button.stream.streamer,
-#html-ui .button.stream.streamer .fas
+#html-ui .button.stream.server,
+#html-ui .button.stream.streamer .fas,
+#html-ui .button.stream.server .fas
 {
     color: white;
 }

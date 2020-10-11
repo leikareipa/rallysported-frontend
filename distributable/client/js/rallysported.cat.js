@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 02:03:40 UTC)
+// VERSION: live (11 October 2020 14:10:46 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -50,6 +50,7 @@
 //	./src/client/js/rallysported-js/scene/scene-tilemap.js
 //	./src/client/js/rallysported-js/scene/scene-texture.js
 //	./src/client/js/rallysported-js/stream/stream.js
+//	./src/client/js/rallysported-js/stream/server.js
 //	./src/client/js/rallysported-js/stream/streamer.js
 //	./src/client/js/rallysported-js/stream/viewer.js
 //	./src/client/js/rallysported-js/core/core.js
@@ -5652,6 +5653,7 @@ uiContainer.streamViewerCount = num;
 },
 display_blue_screen: function(errorMessage = "")
 {
+uiContainer.uiVisible = false;
 document.getElementById("blue-screen").style.display = "flex";
 document.querySelector("#blue-screen #error-description").innerHTML = errorMessage;
 },
@@ -6756,7 +6758,8 @@ dataLocality: "client",
 contentId: zipFile,
 }
 }));
-if (Rsed.stream.role !== "streamer")
+if ((Rsed.stream.role !== "server") && /// TODO: Instead of checking these roles individually, we could have a flag
+(Rsed.stream.role !== "streamer")) /// in Rsed.stream that indicates whether this stream is a receiver or sender.
 {
 // Clear the address bar's parameters to reflect the fact that the user has loaded a local
 // track resource instead of specifying a server-side resource via the address bar.
@@ -8582,16 +8585,18 @@ Rsed.ui.htmlUI.set_stream_viewer_count(stream.num_connections());
 },
 signal_stream_error: function(error)
 {
-Rsed.alert(`Stream: ${error}`);
+Rsed.alert(`${error}`);
 return;
 },
 };
 const publicInterface = {
-// If 'role' is "streamer", 'proposedId' is the id with which viewers can
-// connect to the stream. If 'role' is "viewer", 'proposedId' is the id of
+// If 'role' is "streamer" or "server", 'proposedId' is the id with which viewers
+// can connect to the stream. If 'role' is "viewer", 'proposedId' is the id of
 // the streamer that the viewer wants to connect to.
-start: function(role = "streamer", proposedId = Rsed.stream.generate_random_stream_id())
+start: function(role = null, proposedId = Rsed.stream.generate_random_stream_id())
 {
+Rsed.throw_if(!role, "A role must be specified for stream.start().");
+Rsed.throw_if(!Rsed.stream[role], `Unknown stream role "${role}".`);
 if (stream)
 {
 stream.stop();
@@ -8616,7 +8621,8 @@ return;
 //
 // The 'what' argument is a string that identifies the type of data encapsulated
 // - valid values are "track-project-data" ('data' is expected to contain a track's
-// entire data: container, manifesto, and metadata).
+// entire data: container, manifesto, and metadata), and "user-edit" ('data' is
+// expected to contain the arguments for a call to Rsed.ui.assetMutator.user_edit()).
 send_packet: function(what = "", data, dstViewer = null)
 {
 if (!stream)
@@ -8660,6 +8666,124 @@ const id = generate_uuid_v4().replace(/-/g, "");
 return id.substring(0, 12);
 };
 /*
+* Most recent known filename: js/stream/server.js
+*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+// Server is an Rsed.stream() role in a one-to-many network. Clients who are servers
+// accept connections from viewers, sending them the server client's current project
+// data and then closing the connection.
+Rsed.stream.server = function(streamId, signalFns)
+{
+let numViewersServed = 0;
+// PeerJS's Peer() object.
+let peer = null;
+const publicInterface = {
+role: "server",
+num_connections: function()
+{
+return numViewersServed;
+},
+// Sends the given data packet to the given viewer.
+send: function(packet, dstViewer = null)
+{
+Rsed.throw_if(!dstViewer, "A destination is required for stream.server.send().");
+dstViewer.send(packet);
+return;
+},
+// Servers don't receive data, they just ignore requests to do so.
+receive: function(){},
+// Start serving.
+start: function()
+{
+numViewersServed = 0;
+if (status.active)
+{
+Rsed.log("Attempted to start a new server stream while an existing stream was still active. Ignoring this.");
+return;
+}
+signalFns.signal_stream_status("initializing");
+peer = new Peer(streamId, Rsed.stream.peerJsServerConfig);
+peer.on("close", ()=>signalFns.signal_stream_closed(streamId));
+peer.on("error", (error)=>
+{
+publicInterface.stop();
+signalFns.signal_stream_error(error);
+});
+peer.on("open", (id)=>
+{
+if (id != streamId)
+{
+Rsed.alert("Stream: Received an invalid ID from the peer server.");
+signalFns.stop_stream();
+return;
+}
+peer.on("connection", handle_new_viewer);
+signalFns.signal_stream_open(publicInterface.role, id);
+});
+},
+// End the serving.
+stop: function()
+{
+peer.destroy();
+},
+get id()
+{
+return (peer? peer.id : undefined);
+},
+};
+return publicInterface;
+// Gets called when a new viewer connects to this server.
+function handle_new_viewer(newViewer)
+{
+// Wait until the connection is fully open, then send the new viewer a copy
+// of the current project's full data.
+let startTime = Date.now();
+const connectionWaitTimeoutMs = 10000;
+const dataReceptionWaitTimeoutMs = 30000;
+const timeBetweenAttemptsMs = 500;
+const timer = setInterval(()=>
+{
+// If the stream has been closed.
+if (!peer)
+{
+clearInterval(timer);
+return;
+}
+if (newViewer.open)
+{
+clearInterval(timer);
+Rsed.stream.send_packet("project-data",
+Rsed.core.current_project().json(),
+newViewer);
+numViewersServed++;
+// Give the viewer a bit of time to receive the data, then close
+// their connection to us.
+/// TODO: Should we instead have bidirectional streaming, i.e. the
+/// viewer sending the server confirmation when they've received
+/// the data? Maybe.
+setTimeout(()=>
+{
+if (newViewer)
+{
+newViewer.close();
+}
+}, dataReceptionWaitTimeoutMs);
+}
+else if ((Date.now() - startTime) > connectionWaitTimeoutMs)
+{
+newViewer.close();
+clearInterval(timer);
+}
+}, timeBetweenAttemptsMs);
+return;
+}
+};
+/*
 * Most recent known filename: js/stream/streamer.js
 *
 * 2020 Tarpeeksi Hyvae Soft
@@ -8675,41 +8799,9 @@ Rsed.stream.streamer = function(streamId, signalFns)
 {
 const viewers = [];
 // Maximum number of simultaneous viewers.
-const maxNumViewers = 100;
+const maxNumViewers = 1000;
 // PeerJS's Peer() object.
 let peer = null;
-// Gets called when a new viewer connects to this stream.
-function handle_new_viewer(newViewer)
-{
-if (viewers.length > maxNumViewers)
-{
-/// TODO: Send the viewer an error message.
-newViewer.close();
-return;
-}
-// Wait until the connection is fully open for streaming, then send
-// the new viewer a copy of the current track's full data.
-let startTime = Date.now();
-const waitTimeoutMs = 5000; // Number of milliseconds to wait, at most.
-const timeBetweenAttemptsMs = 500;
-const timer = setInterval(()=>
-{
-if (newViewer.open)
-{
-clearInterval(timer);
-Rsed.stream.send_packet("project-data",
-Rsed.core.current_project().json(),
-newViewer);
-viewers.push(newViewer);
-}
-else if ((Date.now() - startTime) > waitTimeoutMs)
-{
-newViewer.close();
-clearInterval(timer);
-}
-}, timeBetweenAttemptsMs);
-return;
-}
 const publicInterface = {
 role: "streamer",
 num_connections: function()
@@ -8730,7 +8822,7 @@ viewers.splice(0, Infinity, ...openViewers);
 return viewers.length;
 },
 // Sends the given data packet to the current viewers.
-send: function(packet, dstViewer)
+send: function(packet, dstViewer = null)
 {
 if (dstViewer)
 {
@@ -8791,6 +8883,44 @@ return (peer? peer.id : undefined);
 },
 };
 return publicInterface;
+// Gets called when a new viewer connects to this stream.
+function handle_new_viewer(newViewer)
+{
+if (viewers.length > maxNumViewers)
+{
+/// TODO: Send the viewer an error message.
+newViewer.close();
+return;
+}
+// Wait until the connection is fully open for streaming, then send
+// the new viewer a copy of the current project's full data.
+let startTime = Date.now();
+const waitTimeoutMs = 5000; // Number of milliseconds to wait, at most.
+const timeBetweenAttemptsMs = 500;
+const timer = setInterval(()=>
+{
+// If the stream has been closed.
+if (!peer)
+{
+clearInterval(timer);
+return;
+}
+if (newViewer.open)
+{
+clearInterval(timer);
+Rsed.stream.send_packet("project-data",
+Rsed.core.current_project().json(),
+newViewer);
+viewers.push(newViewer);
+}
+else if ((Date.now() - startTime) > waitTimeoutMs)
+{
+newViewer.close();
+clearInterval(timer);
+}
+}, timeBetweenAttemptsMs);
+return;
+}
 };
 /*
 * Most recent known filename: js/stream/viewer.js
@@ -8806,24 +8936,16 @@ return publicInterface;
 // to streamers, however.
 Rsed.stream.viewer = function(streamId, signalFns)
 {
-// The streamer we're viewing.
-let streamer = null;
+// The stream we're viewing.
+let srcStream = null;
 // PeerJS's Peer() object.
 let peer = null;
 const publicInterface = {
 role: "viewer",
 // How many streamers this viewer is connected to.
-/// TODO: Put this in a separate function, since it's weird that a
-/// a call to num_connections() would have this side effect.
 num_connections: function()
 {
-// If we lost the connection to the streamer.
-if (streamer &&
-!streamer.open)
-{
-this.stop();
-}
-return Number(streamer !== null);
+return Number(srcStream !== null);
 },
 // Viewers don't send data, they just ignore requests to do so.
 send: function(){},
@@ -8832,7 +8954,15 @@ receive: function(packet)
 {
 switch (packet.header.what)
 {
-// We expect packet.data to be a string containing the stream project's data
+// A streamer client has edited a track asset and wants us to replicate
+// those edits on our client. Expects packet.data to contain the data
+// for a call to Rsed.ui.assetMutator.user_edit().
+case "user-edit":
+{
+Rsed.ui.assetMutator.user_edit(packet.data.assetType, packet.data.editAction);
+break;
+}
+// Expects packet.data to be a string containing the stream project's data
 // in RallySportED-js's JSON format.
 case "project-data":
 {
@@ -8851,13 +8981,14 @@ catch (error)
 {
 Rsed.throw(`Failed to sync with the stream: ${error}`);
 }
+break;
 }
 // We'll fully ignore any unknown packets.
 default: break;
 }
 return;
 },
-// Connects this viewer to a streamer.
+// Connects this viewer to a stream.
 start: function()
 {
 signalFns.signal_stream_status("initializing");
@@ -8867,19 +8998,22 @@ peer.on("error", (error)=>
 publicInterface.stop();
 signalFns.signal_stream_error(error);
 });
-peer.on("close", ()=>signalFns.signal_stream_closed(streamId));
+peer.on("close", ()=>
+{
+signalFns.signal_stream_closed(streamId);
+});
 peer.on("open", ()=>
 {
 // Attempt to connect to the given stream.
-streamer = peer.connect(streamId, {reliable: true});
-streamer.on("disconnect", signalFns.signal_stream_closed);
-streamer.on("data", publicInterface.receive);
-streamer.on("error", (error)=>
+srcStream = peer.connect(streamId, {reliable: true});
+srcStream.on("close", publicInterface.stop);
+srcStream.on("data", publicInterface.receive);
+srcStream.on("error", (error)=>
 {
-this.stop();
+publicInterface.stop();
 signalFns.signal_stream_error(error);
 });
-streamer.on("open", ()=>
+srcStream.on("open", ()=>
 {
 signalFns.signal_stream_open(publicInterface.role, streamId);
 });
@@ -8887,13 +9021,13 @@ signalFns.signal_stream_open(publicInterface.role, streamId);
 },
 stop: function()
 {
-if (!streamer)
+if (!srcStream)
 {
 Rsed.log("Attempted to close a connection to a stream that we weren't connected to. Ignoring this.");
 return;
 }
-streamer.close();
-streamer = null;
+srcStream.close();
+srcStream = null;
 peer.destroy();
 },
 get id()

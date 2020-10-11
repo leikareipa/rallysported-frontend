@@ -90,6 +90,8 @@ Rsed.ui.htmlUI = (function()
 
         display_blue_screen: function(errorMessage = "")
         {
+            uiContainer.uiVisible = false;
+            
             document.getElementById("blue-screen").style.display = "flex";
             document.querySelector("#blue-screen #error-description").innerHTML = errorMessage;
         },

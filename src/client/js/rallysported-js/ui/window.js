@@ -365,7 +365,8 @@ window.drop_handler = function(event)
         }
     }));
 
-    if (Rsed.stream.role !== "streamer")
+    if ((Rsed.stream.role !== "server") && /// TODO: Instead of checking these roles individually, we could have a flag
+        (Rsed.stream.role !== "streamer")) /// in Rsed.stream that indicates whether this stream is a receiver or sender.
     {
         // Clear the address bar's parameters to reflect the fact that the user has loaded a local
         // track resource instead of specifying a server-side resource via the address bar.
