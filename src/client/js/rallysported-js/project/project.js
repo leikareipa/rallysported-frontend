@@ -466,10 +466,17 @@ Rsed.project = async function(projectArgs = {})
 
             if (serverResponse.status !== 200)
             {
-                Rsed.throw("Failed to fetch project data from the RallySportED-js server.");
+                Rsed.throw("Failed to fetch data from the RallySportED-js server.");
             }
 
-            return serverResponse.json();
+            try
+            {
+                return await serverResponse.json();
+            }
+            catch (error)
+            {
+                Rsed.throw("Received malformed JSON from the RallySportED-js server.");
+            }
         }
 
         // Loads the project's data from the Rally-Sport Content server. This
@@ -482,10 +489,17 @@ Rsed.project = async function(projectArgs = {})
 
             if (serverResponse.status !== 200)
             {
-                Rsed.throw("Failed to fetch project data from the RallySportED-js server.");
+                Rsed.throw("Failed to fetch data from the Rally-Sport Content server.");
             }
 
-            return serverResponse.json();
+            try
+            {
+                return await serverResponse.json()
+            }
+            catch (error)
+            {
+                Rsed.throw("Received malformed JSON from the Rally-Sport Content server.");
+            }
         }
     }
 

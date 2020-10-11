@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 01:42:38 UTC)
+// VERSION: live (11 October 2020 02:03:40 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3386,9 +3386,16 @@ default: Rsed.throw("Unknown track name.");
 const serverResponse = await fetch(`./client/assets/tracks/${trackName}.json`);
 if (serverResponse.status !== 200)
 {
-Rsed.throw("Failed to fetch project data from the RallySportED-js server.");
+Rsed.throw("Failed to fetch data from the RallySportED-js server.");
 }
-return serverResponse.json();
+try
+{
+return await serverResponse.json();
+}
+catch (error)
+{
+Rsed.throw("Received malformed JSON from the RallySportED-js server.");
+}
 }
 // Loads the project's data from the Rally-Sport Content server. This
 // server hosts custom, user-made tracks.
@@ -3398,9 +3405,16 @@ Rsed.throw_if_undefined(projectArgs.contentId);
 const serverResponse = await fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.contentId}&json=true`);
 if (serverResponse.status !== 200)
 {
-Rsed.throw("Failed to fetch project data from the RallySportED-js server.");
+Rsed.throw("Failed to fetch data from the Rally-Sport Content server.");
 }
-return serverResponse.json();
+try
+{
+return await serverResponse.json()
+}
+catch (error)
+{
+Rsed.throw("Received malformed JSON from the Rally-Sport Content server.");
+}
 }
 }
 function apply_manifesto()
