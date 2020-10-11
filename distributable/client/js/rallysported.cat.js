@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 15:00:16 UTC)
+// VERSION: live (11 October 2020 15:21:05 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -9008,6 +9008,7 @@ peer.on("error", (error)=>
 {
 publicInterface.stop();
 signalFns.signal_stream_error(error);
+Rsed.throw(`Stream ${error}`);
 });
 peer.on("close", ()=>
 {
@@ -9023,6 +9024,7 @@ srcStream.on("error", (error)=>
 {
 publicInterface.stop();
 signalFns.signal_stream_error(error);
+Rsed.throw(`Stream ${error}`);
 });
 srcStream.on("open", ()=>
 {

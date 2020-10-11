@@ -87,6 +87,7 @@ Rsed.stream.viewer = function(streamId, signalFns)
             {
                 publicInterface.stop();
                 signalFns.signal_stream_error(error);
+                Rsed.throw(`Stream ${error}`);
             });
             peer.on("close", ()=>
             {
@@ -103,6 +104,7 @@ Rsed.stream.viewer = function(streamId, signalFns)
                 {
                     publicInterface.stop();
                     signalFns.signal_stream_error(error);
+                    Rsed.throw(`Stream ${error}`);
                 });
                 srcStream.on("open", ()=>
                 {
