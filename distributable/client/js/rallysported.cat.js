@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 15:58:35 UTC)
+// VERSION: live (11 October 2020 22:57:58 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -79,7 +79,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 (function(a,b){if("function"==typeof define&&define.amd)define([],b);else if("undefined"!=typeof exports)b();else{b(),a.FileSaver={exports:{}}.exports}})(this,function(){"use strict";function b(a,b){return"undefined"==typeof b?b={autoBom:!1}:"object"!=typeof b&&(console.warn("Deprecated: Expected third argument to be a object"),b={autoBom:!b}),b.autoBom&&/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a.type)?new Blob(["\uFEFF",a],{type:a.type}):a}function c(b,c,d){var e=new XMLHttpRequest;e.open("GET",b),e.responseType="blob",e.onload=function(){a(e.response,c,d)},e.onerror=function(){console.error("could not download file")},e.send()}function d(a){var b=new XMLHttpRequest;b.open("HEAD",a,!1);try{b.send()}catch(a){}return 200<=b.status&&299>=b.status}function e(a){try{a.dispatchEvent(new MouseEvent("click"))}catch(c){var b=document.createEvent("MouseEvents");b.initMouseEvent("click",!0,!0,window,0,0,0,80,20,!1,!1,!1,!1,0,null),a.dispatchEvent(b)}}var f="object"==typeof window&&window.window===window?window:"object"==typeof self&&self.self===self?self:"object"==typeof global&&global.global===global?global:void 0,a=f.saveAs||("object"!=typeof window||window!==f?function(){}:"download"in HTMLAnchorElement.prototype?function(b,g,h){var i=f.URL||f.webkitURL,j=document.createElement("a");g=g||b.name||"download",j.download=g,j.rel="noopener","string"==typeof b?(j.href=b,j.origin===location.origin?e(j):d(j.href)?c(b,g,h):e(j,j.target="_blank")):(j.href=i.createObjectURL(b),setTimeout(function(){i.revokeObjectURL(j.href)},4E4),setTimeout(function(){e(j)},0))}:"msSaveOrOpenBlob"in navigator?function(f,g,h){if(g=g||f.name||"download","string"!=typeof f)navigator.msSaveOrOpenBlob(b(f,h),g);else if(d(f))c(f,g,h);else{var i=document.createElement("a");i.href=f,i.target="_blank",setTimeout(function(){e(i)})}}:function(a,b,d,e){if(e=e||open("","_blank"),e&&(e.document.title=e.document.body.innerText="downloading..."),"string"==typeof a)return c(a,b,d);var g="application/octet-stream"===a.type,h=/constructor/i.test(f.HTMLElement)||f.safari,i=/CriOS\/[\d]+/.test(navigator.userAgent);if((i||g&&h)&&"object"==typeof FileReader){var j=new FileReader;j.onloadend=function(){var a=j.result;a=i?a:a.replace(/^data:[^;]*;/,"data:attachment/file;"),e?e.location.href=a:location=a,e=null},j.readAsDataURL(a)}else{var k=f.URL||f.webkitURL,l=k.createObjectURL(a);e?e.location=l:location.href=l,e=null,setTimeout(function(){k.revokeObjectURL(l)},4E4)}});f.saveAs=a.saveAs=a,"undefined"!=typeof module&&(module.exports=a)});
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (02 October 2020 15:33:39 UTC)
+// VERSION: beta live (11 October 2020 21:09:34 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -108,7 +108,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 "use strict";
 // Top-level namespace for the retro n-gon renderer.
-const Rngon = {};
+const Rngon = {
+version: {family:"beta",major:"5",minor:"0",dev:true}
+};
 // Various small utility functions and the like.
 {
 // Defined 'true' to allow for the conveniency of named in-place assertions,
@@ -757,8 +759,23 @@ clip_on_axis("z", -1);
 return;
 function clip_on_axis(axis, factor)
 {
-if (ngon.vertices.length < 2)
+if (!ngon.vertices.length)
 {
+return;
+}
+if (ngon.vertices.length == 1)
+{
+// If the point is fully inside the viewport, allow it to stay.
+if (( ngon.vertices[0].x <= ngon.vertices[0].w) &&
+(-ngon.vertices[0].x <= ngon.vertices[0].w) &&
+( ngon.vertices[0].y <= ngon.vertices[0].w) &&
+(-ngon.vertices[0].y <= ngon.vertices[0].w) &&
+( ngon.vertices[0].z <= ngon.vertices[0].w) &&
+(-ngon.vertices[0].z <= ngon.vertices[0].w))
+{
+return;
+}
+ngon.vertices.length = 0;
 return;
 }
 let prevVertex = ngon.vertices[ngon.vertices.length - ((ngon.vertices.length == 2)? 2 : 1)];
@@ -1121,7 +1138,9 @@ continue;
 // Rasterize a point.
 if (ngon.vertices.length === 1)
 {
-const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
+const x = Math.min((renderWidth - 1), Math.max(0, Math.round(ngon.vertices[0].x)));
+const y = Math.min((renderHeight - 1), Math.max(0, Math.round(ngon.vertices[0].y)));
+const idx = ((x + y * renderWidth) * 4);
 const depthBufferIdx = (idx / 4);
 const depth = (ngon.vertices[0].z / Rngon.internalState.farPlaneDistance);
 const shade = (material.renderVertexShade? ngon.vertices[0].shade : 1);
@@ -2351,6 +2370,24 @@ pixels: pixelArray,
 mipLevels: mipmaps,
 };
 return publicInterface;
+}
+// Returns a new texture whose data are a deep copy of the given texture.
+Rngon.texture_rgba.deep_copy = function(texture)
+{
+const copiedPixels = new Array(texture.width * texture.height * 4);
+for (let i = 0; i< (texture.width * texture.height); i++)
+{
+copiedPixels[i*4+0] = texture.pixels[i].red;
+copiedPixels[i*4+1] = texture.pixels[i].green;
+copiedPixels[i*4+2] = texture.pixels[i].blue;
+copiedPixels[i*4+3] = texture.pixels[i].alpha;
+}
+return Rngon.texture_rgba({
+width: texture.width,
+height: texture.height,
+pixels: copiedPixels,
+needsFlip: false,
+});
 }
 // Returns a Promise of a texture whose data is loaded from the given file. The actual
 // texture is returned once the data has been loaded.
@@ -9136,6 +9173,44 @@ contentId: "demod",
 stream: null,
 }
 },
+// Renders a spinner until the core starts up.
+render_loading_animation: function()
+{
+const targetScale = 500;
+let currentScale = 25;
+(function render_loop(frameCount = 0)
+{
+if (Rsed.core &&
+Rsed.core.is_running())
+{
+return;
+}
+if (frameCount >= 10)
+{
+const shade = Math.min(250, (168 + (frameCount / 2)));
+currentScale = Rsed.lerp(currentScale, targetScale, 0.0001);
+const meshes = new Array(100).fill().map((p, idx)=>
+{
+const point = Rngon.ngon([Rngon.vertex((0.5 / idx), 0, 0)],
+{
+color: Rngon.color_rgba(shade, shade, shade),
+});
+const mesh = Rngon.mesh([point],
+{
+rotation: Rngon.rotation_vector(0, 0, ((500 + frameCount * idx) / 30)),
+scaling: Rngon.scaling_vector(currentScale, currentScale, currentScale)
+});
+return mesh;
+});
+Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), meshes,
+{
+cameraPosition: Rngon.translation_vector(0, 0, -8),
+scale: 0.5,
+});
+}
+window.requestAnimationFrame(()=>render_loop(frameCount + 1));
+})();
+},
 // Starts up RallySportED with the given project to edit.
 start: async function(args = {})
 {
@@ -9185,6 +9260,7 @@ currentScene.refresh_tilemap_view();
 return;
 },
 }
+publicInterface.render_loading_animation();
 return publicInterface;
 // Called once per frame to orchestrate program flow.
 function tick(timestamp = 0, frameDeltaMs = 0)

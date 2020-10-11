@@ -83,7 +83,54 @@ Rsed.core = (function()
                 // If the user is viewing a stream, its id will be set here.
                 stream: null,
             }
-        },    
+        },
+
+        // Renders a spinner until the core starts up.
+        render_loading_animation: function()
+        {
+            const targetScale = 500;
+            let currentScale = 25;
+
+            (function render_loop(frameCount = 0)
+            {
+                if (Rsed.core &&
+                    Rsed.core.is_running())
+                {
+                    return;
+                }
+
+                if (frameCount >= 10)
+                {
+                    const shade = Math.min(250, (168 + (frameCount / 2)));
+
+                    currentScale = Rsed.lerp(currentScale, targetScale, 0.0001);
+
+                    const meshes = new Array(100).fill().map((p, idx)=>
+                    {
+                        const point = Rngon.ngon([Rngon.vertex((0.5 / idx), 0, 0)],
+                        {
+                            color: Rngon.color_rgba(shade, shade, shade),
+                        });
+
+                        const mesh = Rngon.mesh([point],
+                        {
+                            rotation: Rngon.rotation_vector(0, 0, ((500 + frameCount * idx) / 30)),
+                            scaling: Rngon.scaling_vector(currentScale, currentScale, currentScale)
+                        });
+
+                        return mesh;
+                    });
+                    
+                    Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), meshes,
+                    {
+                        cameraPosition: Rngon.translation_vector(0, 0, -8),
+                        scale: 0.5,
+                    });
+                }
+
+                window.requestAnimationFrame(()=>render_loop(frameCount + 1));
+            })();
+        },
 
         // Starts up RallySportED with the given project to edit.
         start: async function(args = {})
@@ -149,6 +196,8 @@ Rsed.core = (function()
             return;
         },
     }
+
+    publicInterface.render_loading_animation();
 
     return publicInterface;
 
