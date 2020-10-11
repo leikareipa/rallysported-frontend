@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (02 October 2020 15:33:39 UTC)
+// VERSION: beta live (11 October 2020 21:09:34 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -32,7 +32,9 @@
 "use strict";
 
 // Top-level namespace for the retro n-gon renderer.
-const Rngon = {};
+const Rngon = {
+    version: {family:"beta",major:"5",minor:"0",dev:true}
+};
 
 // Various small utility functions and the like.
 {
@@ -780,8 +782,26 @@ Rngon.ngon.clip_to_viewport = function(ngon)
 
     function clip_on_axis(axis, factor)
     {
-        if (ngon.vertices.length < 2)
+        if (!ngon.vertices.length)
         {
+            return;
+        }
+
+        if (ngon.vertices.length == 1)
+        {
+            // If the point is fully inside the viewport, allow it to stay.
+            if (( ngon.vertices[0].x <= ngon.vertices[0].w) &&
+                (-ngon.vertices[0].x <= ngon.vertices[0].w) &&
+                ( ngon.vertices[0].y <= ngon.vertices[0].w) &&
+                (-ngon.vertices[0].y <= ngon.vertices[0].w) &&
+                ( ngon.vertices[0].z <= ngon.vertices[0].w) &&
+                (-ngon.vertices[0].z <= ngon.vertices[0].w))
+            {
+                return;
+            }
+
+            ngon.vertices.length = 0;
+
             return;
         }
 
@@ -1202,7 +1222,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         // Rasterize a point.
         if (ngon.vertices.length === 1)
         {
-            const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
+            const x = Math.min((renderWidth - 1), Math.max(0, Math.round(ngon.vertices[0].x)));
+            const y = Math.min((renderHeight - 1), Math.max(0, Math.round(ngon.vertices[0].y)));
+            const idx = ((x + y * renderWidth) * 4);
             const depthBufferIdx = (idx / 4);
             
             const depth = (ngon.vertices[0].z / Rngon.internalState.farPlaneDistance);
@@ -2662,6 +2684,28 @@ Rngon.texture_rgba = function(data = {})
     };
     
     return publicInterface;
+}
+
+
+// Returns a new texture whose data are a deep copy of the given texture.
+Rngon.texture_rgba.deep_copy = function(texture)
+{
+    const copiedPixels = new Array(texture.width * texture.height * 4);
+
+    for (let i = 0; i< (texture.width * texture.height); i++)
+    {
+        copiedPixels[i*4+0] = texture.pixels[i].red;
+        copiedPixels[i*4+1] = texture.pixels[i].green;
+        copiedPixels[i*4+2] = texture.pixels[i].blue;
+        copiedPixels[i*4+3] = texture.pixels[i].alpha;
+    }
+
+    return Rngon.texture_rgba({
+       width: texture.width,
+       height: texture.height,
+       pixels: copiedPixels,
+       needsFlip: false,
+    });
 }
 
 // Returns a Promise of a texture whose data is loaded from the given file. The actual
