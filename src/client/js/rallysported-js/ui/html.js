@@ -8,9 +8,10 @@
 
 "use strict";
 
-// Provides functionality to manage RallySportED-js's HTML UI.
+// Provides functionality to manage RallySportED-js's HTML (Vue) UI.
 //
-// Note: This will likely be rewritten in the near future.
+// Note: This will likely be rewritten in the near future. Vue is a bit
+// of a bolt-on in this project at the moment.
 //
 Rsed.ui.htmlUI = (function()
 {
@@ -27,8 +28,8 @@ Rsed.ui.htmlUI = (function()
             // Whether the UI should be displayed or kept invisible at this time.
             uiVisible: false,
 
+            // For Rsed.stream().
             streamStatus: "disabled",
-
             streamViewerCount: 0,
         },
         methods:
@@ -85,7 +86,13 @@ Rsed.ui.htmlUI = (function()
         set_stream_viewer_count: function(num)
         {
             uiContainer.streamViewerCount = num;
-        }
+        },
+
+        display_blue_screen: function(errorMessage = "")
+        {
+            document.getElementById("blue-screen").style.display = "flex";
+            document.querySelector("#blue-screen #error-description").innerHTML = errorMessage;
+        },
     };
 
     return publicInterface;

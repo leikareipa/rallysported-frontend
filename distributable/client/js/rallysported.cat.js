@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 00:40:46 UTC)
+// VERSION: live (11 October 2020 01:42:38 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2610,14 +2610,20 @@ Rsed.generate_uuid4_string = ()=>
 {
 return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
 }
-Rsed.throw = (errMessage = "")=>
+Rsed.throw = (fatalErrorMessage = "")=>
 {
 if (Rsed && Rsed.core)
 {
-Rsed.core.panic(errMessage);
+Rsed.core.panic(fatalErrorMessage);
 }
-Rsed.ui.popup_notification(`${errMessage}`, {notificationType:"fatal", timeoutMs:0});
-throw new Error("RallySportED error: " + errMessage);
+else
+{
+Rsed.ui.popup_notification(`${fatalErrorMessage}`, {
+notificationType: "fatal",
+timeoutMs: 0,
+});
+}
+throw new Error("RallySportED error: " + fatalErrorMessage);
 }
 Rsed.alert = (message = "")=>
 {
@@ -5563,9 +5569,10 @@ return publicInterface;
 *
 */
 "use strict";
-// Provides functionality to manage RallySportED-js's HTML UI.
+// Provides functionality to manage RallySportED-js's HTML (Vue) UI.
 //
-// Note: This will likely be rewritten in the near future.
+// Note: This will likely be rewritten in the near future. Vue is a bit
+// of a bolt-on in this project at the moment.
 //
 Rsed.ui.htmlUI = (function()
 {
@@ -5579,6 +5586,7 @@ trackName: "",
 propList: [],
 // Whether the UI should be displayed or kept invisible at this time.
 uiVisible: false,
+// For Rsed.stream().
 streamStatus: "disabled",
 streamViewerCount: 0,
 },
@@ -5627,7 +5635,12 @@ uiContainer.streamStatus = status;
 set_stream_viewer_count: function(num)
 {
 uiContainer.streamViewerCount = num;
-}
+},
+display_blue_screen: function(errorMessage = "")
+{
+document.getElementById("blue-screen").style.display = "flex";
+document.querySelector("#blue-screen #error-description").innerHTML = errorMessage;
+},
 };
 return publicInterface;
 })();
@@ -8647,8 +8660,8 @@ return id.substring(0, 12);
 Rsed.stream.streamer = function(streamId, signalFns)
 {
 const viewers = [];
-// Maximum number of simultaneous viewers of this streamer's stream.
-const maxNumViewers = 1000;
+// Maximum number of simultaneous viewers.
+const maxNumViewers = 100;
 // PeerJS's Peer() object.
 let peer = null;
 // Gets called when a new viewer connects to this stream.
@@ -8964,14 +8977,13 @@ Rsed.ui.htmlUI.set_visible(true);
 coreIsRunning = true;
 tick();
 },
-// Terminate RallySporED with an error message.
+// Something went fatally wrong and the app can't recover from it. All that's
+// left to do is to shut everything down and ask the user to reload.
 panic: function(errorMessage)
 {
-//renderer.indicate_error(errorMessage);
-//renderer.remove_callbacks();
-Rsed.ui.htmlUI.set_visible(false);
+Rsed.ui.htmlUI.display_blue_screen(errorMessage);
 coreIsRunning = false;
-this.run = ()=>{};
+publicInterface.start = ()=>{}; // Prevent restarting from code.
 },
 current_project: function()
 {

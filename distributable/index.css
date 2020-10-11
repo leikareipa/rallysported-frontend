@@ -300,6 +300,43 @@ body
     color: white;
 }
 
+#blue-screen
+{
+    cursor: initial;
+    display: none; /* Will be displayed when a fatal error occurs.*/
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: gray;
+    color: rgb(210, 210, 210);
+}
+
+#blue-screen > *
+{
+    transform: translateY(-20vh);
+}
+
+#blue-screen h1
+{
+    font-size: 200%;
+    font-weight: bold;
+}
+
+#blue-screen #error-description
+{
+    font-size: 100%;
+    color: white;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+#blue-screen #error-description::before
+{
+    content: "Error: ";
+}
+
 [v-cloak]
 {
     display: none !important;

@@ -107,14 +107,13 @@ Rsed.core = (function()
             tick();
         },
 
-        // Terminate RallySporED with an error message.
+        // Something went fatally wrong and the app can't recover from it. All that's
+        // left to do is to shut everything down and ask the user to reload.
         panic: function(errorMessage)
         {
-            //renderer.indicate_error(errorMessage);
-            //renderer.remove_callbacks();
-            Rsed.ui.htmlUI.set_visible(false);
+            Rsed.ui.htmlUI.display_blue_screen(errorMessage);
             coreIsRunning = false;
-            this.run = ()=>{};
+            publicInterface.start = ()=>{}; // Prevent restarting from code.
         },
 
         current_project: function()

@@ -12,7 +12,19 @@
         <title>RallySportED-js (web-beta.8~dev)</title>
     </head>
     <body>
+        <div id="blue-screen">
+
+            <h1>
+                <i class="fas fa-fw fa-otter"></i>
+                That failed. Maybe reloading fixes it?
+            </h1>
+
+            <div id="error-description">sad</div>
+
+        </div>
+
         <div id="html-ui" v-if="uiVisible" v-cloak>
+
             <span id="track-name-display">&ldquo;{{trackName.length? trackName : ""}}&rdquo;</span>
 
             <div id="button-bar">
