@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 22:57:58 UTC)
+// VERSION: live (11 October 2020 23:06:59 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6523,6 +6523,8 @@ return;
 // Parses any address bar parameters, then launches RallySportED.
 window.onload = function(event)
 {
+// The app doesn't need to be run if we're just testing its units.
+if (Rsed.unitTestRun) return;
 // We'll modify RallySportED-js's default startup arguments with parameters
 // the user provided via the address bar.
 const rsedStartupArgs = Rsed.core.default_startup_args();
@@ -6571,8 +6573,6 @@ rsedStartupArgs.project.dataLocality = "server-rsc";
 rsedStartupArgs.project.contentId = contentId;
 }
 }
-// The app doesn't need to be run if we're just testing its units.
-if (Rsed.unitTestRun) return;
 Rsed.core.start(rsedStartupArgs);
 return;
 }

@@ -25,6 +25,9 @@ window.onunload = function()
 // Parses any address bar parameters, then launches RallySportED.
 window.onload = function(event)
 {
+    // The app doesn't need to be run if we're just testing its units.
+    if (Rsed.unitTestRun) return;
+
     // We'll modify RallySportED-js's default startup arguments with parameters
     // the user provided via the address bar.
     const rsedStartupArgs = Rsed.core.default_startup_args();
@@ -82,9 +85,6 @@ window.onload = function(event)
             rsedStartupArgs.project.contentId = contentId;
         }
     }
-
-    // The app doesn't need to be run if we're just testing its units.
-    if (Rsed.unitTestRun) return;
 
     Rsed.core.start(rsedStartupArgs);
 
