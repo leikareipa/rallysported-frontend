@@ -51,7 +51,11 @@
                 <div id="stream-button"
                      class="button right stream"
                      :class="streamStatus"
-                     title="Host this track's data from your browser to people online"
+                     :title="((streamStatus == 'disabled')
+                              ? `Host this track's data from your browser to people online`
+                              : (streamStatus == 'initializing')
+                                ? `Setting up...`
+                                : `Downloads: ${streamViewerCount}`)"
                      :onclick="((streamStatus == 'disabled')
                                 ? `Rsed.stream.start('server');`
                                 : 'Rsed.stream.stop()')"></a>
@@ -62,10 +66,10 @@
                                 : 'fa-project-diagram')"></i>
 
                     {{(streamStatus == "server")
-                      ? `Hosting (${streamViewerCount})`
+                      ? `Serving (${streamViewerCount})`
                       : (streamStatus == "initializing")
                         ? "Hold on..."
-                        : "Host"}}
+                        : "Serve"}}
 
                 </div>
 
