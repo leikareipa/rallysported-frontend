@@ -30,7 +30,9 @@ Rsed.stream.server = function(streamId, signalFns)
         // Sends the given data packet to the given viewer.
         send: function(packet, dstViewer = null)
         {
+            Rsed.throw_if_not_type("object", packet,  packet.header);
             Rsed.throw_if(!dstViewer, "A destination is required for stream.server.send().");
+            Rsed.throw_if((packet.header.what !== "project-data"), "A stream server can only send packets marked as \"project-data\".");
 
             dstViewer.send(packet);
 

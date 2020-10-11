@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 14:10:46 UTC)
+// VERSION: live (11 October 2020 14:44:42 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8691,7 +8691,9 @@ return numViewersServed;
 // Sends the given data packet to the given viewer.
 send: function(packet, dstViewer = null)
 {
+Rsed.throw_if_not_type("object", packet,  packet.header);
 Rsed.throw_if(!dstViewer, "A destination is required for stream.server.send().");
+Rsed.throw_if((packet.header.what !== "project-data"), "A stream server can only send packets marked as \"project-data\".");
 dstViewer.send(packet);
 return;
 },
