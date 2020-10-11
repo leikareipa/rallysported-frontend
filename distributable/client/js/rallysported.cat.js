@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 15:21:05 UTC)
+// VERSION: live (11 October 2020 15:43:53 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8566,20 +8566,27 @@ clearInterval(connectionCheckInterval);
 connectionCheckInterval = null;
 // Remove the stream id from the address bar.
 /// TODO: A less brute force implementation.
+if (stream.role !== "viewer")
+{
 const basePath = `//${location.host}${location.pathname}`;
 window.history.replaceState({}, document.title, basePath);
+}
 return;
 },
 // Call this to signal to RallySportED that the stream has started.
 signal_stream_open: function(role, streamId)
 {
+Rsed.throw_if(!stream, "stream.signal_stream_open() called on a closed stream.");
 signalsFns.signal_stream_status(role);
 Rsed.log(`Joined stream ${streamId}.`);
 // Replace the URL bar's contents to give the user a link they can
 // share to others to join the stream.
 /// TODO: A less brute force implementation.
+if (stream.role !== "viewer")
+{
 const basePath = `//${location.host}${location.pathname}?transientServer=${streamId}`;
 window.history.replaceState({}, document.title, basePath);
+}
 // Periodically refresh our list of open connections.
 connectionCheckInterval = setInterval(()=>
 {

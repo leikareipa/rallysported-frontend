@@ -40,8 +40,11 @@ Rsed.stream = (function()
 
             // Remove the stream id from the address bar.
             /// TODO: A less brute force implementation.
-            const basePath = `//${location.host}${location.pathname}`;
-            window.history.replaceState({}, document.title, basePath);
+            if (stream.role !== "viewer")
+            {
+                const basePath = `//${location.host}${location.pathname}`;
+                window.history.replaceState({}, document.title, basePath);
+            }
 
             return;
         },
@@ -49,6 +52,8 @@ Rsed.stream = (function()
         // Call this to signal to RallySportED that the stream has started.
         signal_stream_open: function(role, streamId)
         {
+            Rsed.throw_if(!stream, "stream.signal_stream_open() called on a closed stream.");
+
             signalsFns.signal_stream_status(role);
 
             Rsed.log(`Joined stream ${streamId}.`);
@@ -56,8 +61,11 @@ Rsed.stream = (function()
             // Replace the URL bar's contents to give the user a link they can
             // share to others to join the stream.
             /// TODO: A less brute force implementation.
-            const basePath = `//${location.host}${location.pathname}?transientServer=${streamId}`;
-            window.history.replaceState({}, document.title, basePath);
+            if (stream.role !== "viewer")
+            {
+                const basePath = `//${location.host}${location.pathname}?transientServer=${streamId}`;
+                window.history.replaceState({}, document.title, basePath);
+            }
 
             // Periodically refresh our list of open connections.
             connectionCheckInterval = setInterval(()=>
