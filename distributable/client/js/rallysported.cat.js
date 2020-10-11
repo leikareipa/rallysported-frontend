@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 14:44:42 UTC)
+// VERSION: live (11 October 2020 15:00:16 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3201,7 +3201,9 @@ saveAs(zipBlob, filename); // From FileSaver.js.
 }
 catch (error)
 {
-Rsed.alert(`Failed to save the project: ${error}`);
+Rsed.ui.popup_notification(`Failed to save the project: ${error}`, {
+notificationType: "error",
+});
 }
 return;
 }
@@ -5676,7 +5678,7 @@ Rsed.throw_if_not_type("object", args);
 args =
 {
 ...{
-notificationType: "warning", // | "fatal"
+notificationType: "warning", // | "error" | "fatal"
 timeoutMs: 6000,
 },
 ...args
@@ -5689,6 +5691,7 @@ const meta = "fa-fw";
 switch (args.notificationType)
 {
 case "warning": return `${meta} fas fa-exclamation-circle`;
+case "error": return `${meta} fas fa-otter`;
 case "fatal": return `${meta} fas fa-otter`;
 default: return `${meta} fas far fa-comment`;
 }
@@ -8585,7 +8588,9 @@ Rsed.ui.htmlUI.set_stream_viewer_count(stream.num_connections());
 },
 signal_stream_error: function(error)
 {
-Rsed.alert(`${error}`);
+Rsed.ui.popup_notification(`Stream ${error}`, {
+notificationType: "error",
+});
 return;
 },
 };
@@ -8720,7 +8725,9 @@ peer.on("open", (id)=>
 {
 if (id != streamId)
 {
-Rsed.alert("Stream: Received an invalid ID from the peer server.");
+Rsed.ui.popup_notification("Stream: Received an invalid ID from the peer server.", {
+notificationType: "error",
+});
 signalFns.stop_stream();
 return;
 }
@@ -8861,7 +8868,9 @@ peer.on("open", (id)=>
 {
 if (id != streamId)
 {
-Rsed.alert("Stream: Received an invalid ID from the peer server.");
+Rsed.ui.popup_notification("Stream Error: Received an invalid ID from the peer server.", {
+notificationType: "error",
+});
 signalFns.stop_stream();
 return;
 }

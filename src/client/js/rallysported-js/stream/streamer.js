@@ -89,7 +89,9 @@ Rsed.stream.streamer = function(streamId, signalFns)
             {
                 if (id != streamId)
                 {
-                    Rsed.alert("Stream: Received an invalid ID from the peer server.");
+                    Rsed.ui.popup_notification("Stream Error: Received an invalid ID from the peer server.", {
+                        notificationType: "error",
+                    });
 
                     signalFns.stop_stream();
     

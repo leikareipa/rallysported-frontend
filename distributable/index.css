@@ -260,7 +260,7 @@ body
     box-sizing: border-box;
     width: 100%;
     height: auto;
-    padding: 20px;
+    padding: 30px;
     text-align: left;
     margin-top: 8px;
     border-radius: 20px 0 20px 20px;
@@ -295,8 +295,16 @@ body
     background-color: white;
 }
 
+#popup-notification-container .popup-notification.error
+{
+    padding: 40px; /* More padding than in a non-error popup.*/
+    color: black;
+    background-color: white;
+}
+
 #popup-notification-container .popup-notification.fatal
 {
+    padding: 40px; /* More padding than in a non-error popup.*/
     background-color: black;
     border: 1px solid white;
     color: white;

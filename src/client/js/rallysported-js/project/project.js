@@ -240,7 +240,9 @@ Rsed.project = async function(projectArgs = {})
             }
             catch (error)
             {
-                Rsed.alert(`Failed to save the project: ${error}`);
+                Rsed.ui.popup_notification(`Failed to save the project: ${error}`, {
+                    notificationType: "error",
+                });
             }
 
             return;

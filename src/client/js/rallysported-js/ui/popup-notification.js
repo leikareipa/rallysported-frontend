@@ -17,7 +17,7 @@ Rsed.ui.popup_notification = function(string = "", args = {})
     args =
     {
         ...{
-            notificationType: "warning", // | "fatal"
+            notificationType: "warning", // | "error" | "fatal"
             timeoutMs: 6000,
         },
         ...args
@@ -33,6 +33,7 @@ Rsed.ui.popup_notification = function(string = "", args = {})
         switch (args.notificationType)
         {
             case "warning": return `${meta} fas fa-exclamation-circle`;
+            case "error": return `${meta} fas fa-otter`;
             case "fatal": return `${meta} fas fa-otter`;
             default: return `${meta} fas far fa-comment`;
         }
