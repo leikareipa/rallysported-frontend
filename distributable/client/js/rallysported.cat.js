@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 15:43:53 UTC)
+// VERSION: live (11 October 2020 15:58:35 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8556,6 +8556,7 @@ const signalsFns = {
 signal_stream_status: function(status = "unknown")
 {
 Rsed.ui.htmlUI.set_stream_status(status);
+Rsed.ui.htmlUI.set_stream_viewer_count(stream.num_connections());
 },
 // Call this to signal to RallySportED that the stream has ended.
 signal_stream_closed: function(streamId)
@@ -8833,7 +8834,7 @@ viewer.close();
 return false;
 }
 return true;
-}, []);
+});
 viewers.splice(0, Infinity, ...openViewers);
 return viewers.length;
 },
@@ -9009,6 +9010,11 @@ return;
 // Connects this viewer to a stream.
 start: function()
 {
+if (srcStream)
+{
+Rsed.log("Attempted to start viewing a stream while already viewing another stream.");
+publicInterface.stop();
+}
 signalFns.signal_stream_status("initializing");
 peer = new Peer(Rsed.stream.generate_random_stream_id(), Rsed.stream.peerJsServerConfig);
 peer.on("error", (error)=>

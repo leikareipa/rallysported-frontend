@@ -39,7 +39,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
                 }
 
                 return true;
-            }, []);
+            });
 
             viewers.splice(0, Infinity, ...openViewers);
 

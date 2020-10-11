@@ -26,6 +26,7 @@ Rsed.stream = (function()
         signal_stream_status: function(status = "unknown")
         {
             Rsed.ui.htmlUI.set_stream_status(status);
+            Rsed.ui.htmlUI.set_stream_viewer_count(stream.num_connections());
         },
 
         // Call this to signal to RallySportED that the stream has ended.

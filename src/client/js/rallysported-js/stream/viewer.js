@@ -79,6 +79,12 @@ Rsed.stream.viewer = function(streamId, signalFns)
         // Connects this viewer to a stream.
         start: function()
         {
+            if (srcStream)
+            {
+                Rsed.log("Attempted to start viewing a stream while already viewing another stream.");
+                publicInterface.stop();
+            }
+
             signalFns.signal_stream_status("initializing");
 
             peer = new Peer(Rsed.stream.generate_random_stream_id(), Rsed.stream.peerJsServerConfig);
