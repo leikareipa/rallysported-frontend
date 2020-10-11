@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 00:00:59 UTC)
+// VERSION: live (11 October 2020 00:40:46 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5646,8 +5646,7 @@ Rsed.throw_if_not_type("string", string);
 Rsed.throw_if_not_type("object", args);
 args =
 {
-...
-{
+...{
 notificationType: "warning", // | "fatal"
 timeoutMs: 6000,
 },
@@ -5655,9 +5654,21 @@ timeoutMs: 6000,
 }
 Rsed.throw_if_not_type("number", args.timeoutMs);
 Rsed.throw_if_not_type("string", args.notificationType);
+const faIcon = (()=>
+{
+const meta = "fa-fw";
+switch (args.notificationType)
+{
+case "warning": return `${meta} fas fa-exclamation-circle`;
+case "fatal": return `${meta} fas fa-otter`;
+default: return `${meta} fas far fa-comment`;
+}
+})();
 const popupElement = document.createElement("div");
 popupElement.classList.add("popup-notification", "animation-popup-slide-in", args.notificationType);
-popupElement.innerHTML = `<i class="far fa-fw fa-lg fa-comment"></i> ${string}`;
+popupElement.innerHTML = `<i class="far fa-fw fa-lg ${faIcon}"></i>
+${args.notificationType == "fatal"? "Fatal:" : ""}
+${string}`;
 document.getElementById("popup-notification-container").appendChild(popupElement);
 const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
 const publicInterface =

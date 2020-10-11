@@ -296,7 +296,7 @@ body
 #popup-notification-container .popup-notification.fatal
 {
     background-color: black;
-    border: 1px dashed white;
+    border: 1px solid white;
     color: white;
 }
 
