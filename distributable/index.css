@@ -302,7 +302,11 @@ body
 
 #blue-screen
 {
-    cursor: initial;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99999; /* Above everything else.*/
+    cursor: initial; /* Remove RallySportED-js's own cursor graphic.*/
     display: none; /* Will be displayed when a fatal error occurs.*/
     flex-direction: column;
     justify-content: center;
