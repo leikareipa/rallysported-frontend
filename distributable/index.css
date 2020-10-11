@@ -293,7 +293,7 @@ body
     background-color: white;
 }
 
-#popup-notification-container .popup-notification.error
+#popup-notification-container .popup-notification.fatal
 {
     background-color: black;
     border: 1px dashed white;

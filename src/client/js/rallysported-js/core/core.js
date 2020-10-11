@@ -176,10 +176,9 @@ Rsed.core = (function()
         // RallySportED-js projects are exported (saved) via JSZip using Blobs.
         if (!JSZip.support.blob)
         {
-            Rsed.ui.popup_notification("This browser does not support saving projects to disk!",
+            Rsed.ui.popup_notification("This browser doesn't support saving projects to disk!",
             {
-                notificationType: "error",
-                timeoutMs: 10000,
+                notificationType: "warning",
             });
         }
 

@@ -33,10 +33,13 @@ const Rsed = {};
     
     Rsed.throw = (errMessage = "")=>
     {
-        if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
+        if (Rsed && Rsed.core)
+        {
+            Rsed.core.panic(errMessage);
+        }
+        
+        Rsed.ui.popup_notification(`${errMessage}`, {notificationType:"fatal", timeoutMs:0});
 
-        Rsed.ui.popup_notification(`Error: ${errMessage}`, {notificationType:"error", timeoutMs:0});
-        console.error("RallySportED error: " + errMessage);
         throw new Error("RallySportED error: " + errMessage);
     }
 

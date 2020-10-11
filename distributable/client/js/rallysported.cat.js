@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (10 October 2020 23:54:11 UTC)
+// VERSION: live (11 October 2020 00:00:59 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2612,9 +2612,11 @@ return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>(c ^ crypto.getRandomVa
 }
 Rsed.throw = (errMessage = "")=>
 {
-if (Rsed && Rsed.core) Rsed.core.panic(errMessage);
-Rsed.ui.popup_notification(`Error: ${errMessage}`, {notificationType:"error", timeoutMs:0});
-console.error("RallySportED error: " + errMessage);
+if (Rsed && Rsed.core)
+{
+Rsed.core.panic(errMessage);
+}
+Rsed.ui.popup_notification(`${errMessage}`, {notificationType:"fatal", timeoutMs:0});
 throw new Error("RallySportED error: " + errMessage);
 }
 Rsed.alert = (message = "")=>
@@ -5646,7 +5648,7 @@ args =
 {
 ...
 {
-notificationType: "warning", // | "error"
+notificationType: "warning", // | "fatal"
 timeoutMs: 6000,
 },
 ...args
@@ -6473,7 +6475,7 @@ else
 if ((contentId.length > 20) ||
 !(/^[0-9a-zA-Z-.]+$/.test(contentId)))
 {
-Rsed.throw("Invalid content identifier.");
+Rsed.throw("Invalid track identifier.");
 return;
 }
 // The RallySportED-js server hosts the original Rally-Sport demo tracks.
@@ -9005,10 +9007,9 @@ function verify_browser_compatibility()
 // RallySportED-js projects are exported (saved) via JSZip using Blobs.
 if (!JSZip.support.blob)
 {
-Rsed.ui.popup_notification("This browser does not support saving projects to disk!",
+Rsed.ui.popup_notification("This browser doesn't support saving projects to disk!",
 {
-notificationType: "error",
-timeoutMs: 10000,
+notificationType: "warning",
 });
 }
 // A crude test for whether the user's device might not have mouse/keyboard available.

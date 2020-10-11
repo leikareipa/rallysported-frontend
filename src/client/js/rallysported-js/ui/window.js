@@ -63,7 +63,7 @@ window.onload = function(event)
             if ((contentId.length > 20) ||
                 !(/^[0-9a-zA-Z-.]+$/.test(contentId)))
             {
-                Rsed.throw("Invalid content identifier.");
+                Rsed.throw("Invalid track identifier.");
 
                 return;
             }

@@ -18,7 +18,7 @@ Rsed.ui.popup_notification = function(string = "", args = {})
     {
         ...
         {
-            notificationType: "warning", // | "error"
+            notificationType: "warning", // | "fatal"
             timeoutMs: 6000,
         },
         ...args
