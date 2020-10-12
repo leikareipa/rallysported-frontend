@@ -13,6 +13,9 @@ Rsed.core = (function()
     // Set to true while the core is running (e.g. as a result of calling start()).
     let coreIsRunning = false;
 
+    // Set to true when core.panic() is called.
+    let corePanicked = false;
+
     // The number of frames per second being generated.
     let programFPS = 0;
 
@@ -93,8 +96,8 @@ Rsed.core = (function()
 
             (function render_loop(frameCount = 170)
             {
-                if (Rsed.core &&
-                    Rsed.core.is_running())
+                if (coreIsRunning ||
+                    corePanicked)
                 {
                     return;
                 }
@@ -159,7 +162,10 @@ Rsed.core = (function()
         panic: function(errorMessage)
         {
             Rsed.ui.htmlUI.display_blue_screen(errorMessage);
+
             coreIsRunning = false;
+            corePanicked = true;
+
             publicInterface.start = ()=>{}; // Prevent restarting from code.
         },
 
