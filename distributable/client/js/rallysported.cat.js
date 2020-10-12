@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (12 October 2020 21:37:09 UTC)
+// VERSION: live (12 October 2020 22:03:34 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8678,7 +8678,13 @@ return;
 // - valid values are "track-project-data" ('data' is expected to contain a track's
 // entire data: container, manifesto, and metadata), and "user-edit" ('data' is
 // expected to contain the arguments for a call to Rsed.ui.assetMutator.user_edit()).
-send_packet: function(what = "", data, dstViewer = null)
+//
+// 'headerExtra' allows the caller to insert additional parameters to the header,
+// or to overwrite the default parameters.
+send_packet: function(what = "",
+data,
+dstViewer = null,
+headerExtra = {})
 {
 if (!stream)
 {
@@ -8689,6 +8695,8 @@ header: {
 what,
 creatorId: stream.id,
 createdOn: Date.now(),
+keepAlive: true,
+...headerExtra,
 },
 data,
 };
@@ -8705,7 +8713,9 @@ if ((typeof packet !== "object") ||
 (typeof packet.header !== "object") ||
 (typeof packet.header.what === "undefined") ||
 (typeof packet.header.creatorId === "undefined") ||
-(typeof packet.header.createdOn !== "number"))
+(typeof packet.header.createdOn !== "number") ||
+(typeof packet.header.keepAlive !== "boolean") ||
+(typeof packet.data === "undefined"))
 {
 return false;
 }
@@ -8763,8 +8773,10 @@ return numViewersServed;
 send: function(packet, dstViewer = null)
 {
 Rsed.throw_if_not_type("object", packet,  packet.header);
-Rsed.throw_if(!dstViewer, "A destination is required for stream.server.send().");
-Rsed.throw_if((packet.header.what !== "project-data"), "A stream server can only send packets marked as \"project-data\".");
+Rsed.throw_if(!dstViewer,
+"A destination is required for stream.server.send().");
+Rsed.throw_if(!["project-data"].includes(packet.header.what),
+"A stream server can't send this type of packet.");
 dstViewer.send(packet);
 return;
 },
@@ -8834,16 +8846,20 @@ if (newViewer.open)
 clearInterval(timer);
 Rsed.stream.send_packet("project-data",
 Rsed.core.current_project().json(),
-newViewer);
+newViewer,
+{
+keepAlive: false,
+});
 numViewersServed++;
-// Give the viewer a bit of time to receive the data, then close
-// their connection to us.
+// Give the viewer a bit of time to receive the data, then, if they
+// haven't yet done so themselves, close their connection to us.
 /// TODO: Should we instead have bidirectional streaming, i.e. the
 /// viewer sending the server confirmation when they've received
 /// the data? Maybe.
 setTimeout(()=>
 {
-if (newViewer)
+if (newViewer &&
+newViewer.open)
 {
 newViewer.close();
 }
@@ -9034,8 +9050,17 @@ if (!Rsed.stream.is_validly_formed_packet(packet))
 {
 return;
 }
+if (!packet.header.keepAlive)
+{
+publicInterface.stop();
+}
 switch (packet.header.what)
 {
+case "request-to-disconnect":
+{
+publicInterface.stop();
+break;
+}
 // A streamer client has edited a track asset and wants us to replicate
 // those edits on our client. Expects packet.data to contain the data
 // for a call to Rsed.ui.assetMutator.user_edit().

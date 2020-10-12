@@ -31,8 +31,12 @@ Rsed.stream.server = function(streamId, signalFns)
         send: function(packet, dstViewer = null)
         {
             Rsed.throw_if_not_type("object", packet,  packet.header);
-            Rsed.throw_if(!dstViewer, "A destination is required for stream.server.send().");
-            Rsed.throw_if((packet.header.what !== "project-data"), "A stream server can only send packets marked as \"project-data\".");
+            
+            Rsed.throw_if(!dstViewer,
+                          "A destination is required for stream.server.send().");
+
+            Rsed.throw_if(!["project-data"].includes(packet.header.what),
+                          "A stream server can't send this type of packet.");
 
             dstViewer.send(packet);
 
@@ -119,18 +123,22 @@ Rsed.stream.server = function(streamId, signalFns)
 
                 Rsed.stream.send_packet("project-data",
                                         Rsed.core.current_project().json(),
-                                        newViewer);
+                                        newViewer,
+                                        {
+                                            keepAlive: false,
+                                        });
 
                 numViewersServed++;
 
-                // Give the viewer a bit of time to receive the data, then close
-                // their connection to us.
+                // Give the viewer a bit of time to receive the data, then, if they
+                // haven't yet done so themselves, close their connection to us.
                 /// TODO: Should we instead have bidirectional streaming, i.e. the
                 /// viewer sending the server confirmation when they've received
                 /// the data? Maybe.
                 setTimeout(()=>
                 {
-                    if (newViewer)
+                    if (newViewer &&
+                        newViewer.open)
                     {
                         newViewer.close();
                     }

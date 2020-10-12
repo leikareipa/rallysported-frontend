@@ -126,7 +126,13 @@ Rsed.stream = (function()
         // - valid values are "track-project-data" ('data' is expected to contain a track's
         // entire data: container, manifesto, and metadata), and "user-edit" ('data' is
         // expected to contain the arguments for a call to Rsed.ui.assetMutator.user_edit()).
-        send_packet: function(what = "", data, dstViewer = null)
+        //
+        // 'headerExtra' allows the caller to insert additional parameters to the header,
+        // or to overwrite the default parameters.
+        send_packet: function(what = "",
+                              data,
+                              dstViewer = null,
+                              headerExtra = {})
         {
             if (!stream)
             {
@@ -138,6 +144,8 @@ Rsed.stream = (function()
                     what,
                     creatorId: stream.id,
                     createdOn: Date.now(),
+                    keepAlive: true,
+                    ...headerExtra,
                 },
                 data,
             };
@@ -159,6 +167,7 @@ Rsed.stream = (function()
                 (typeof packet.header.what === "undefined") ||
                 (typeof packet.header.creatorId === "undefined") ||
                 (typeof packet.header.createdOn !== "number") ||
+                (typeof packet.header.keepAlive !== "boolean") ||
                 (typeof packet.data === "undefined"))
             {
                 return false;

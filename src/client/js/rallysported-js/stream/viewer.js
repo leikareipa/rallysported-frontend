@@ -40,9 +40,20 @@ Rsed.stream.viewer = function(streamId, signalFns)
             {
                 return;
             }
+            
+            if (!packet.header.keepAlive)
+            {
+                publicInterface.stop();
+            }
 
             switch (packet.header.what)
             {
+                case "request-to-disconnect":
+                {
+                    publicInterface.stop();
+                    break;
+                }
+
                 // A streamer client has edited a track asset and wants us to replicate
                 // those edits on our client. Expects packet.data to contain the data
                 // for a call to Rsed.ui.assetMutator.user_edit().
