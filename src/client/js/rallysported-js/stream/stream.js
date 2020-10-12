@@ -203,7 +203,14 @@ Rsed.stream.peerJsServerConfig = Rsed.stream.herokuPeerJsServerConfig;
 // Returns a random id that can be used as the id of a peer in a stream.
 Rsed.stream.generate_random_stream_id = function()
 {
-    const id = generate_uuid_v4().replace(/-/g, "");
+    const alphaSrc = ["a", "c", "d", "e", "h", "k", "n", "s", "u"];
+    const numericSrc = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
-    return id.substring(0, 12);
+    const alphanumeric = [..."000111000"].map(v=>
+    {
+        const src = ((v == "0")? alphaSrc : numericSrc);
+        return src[Math.floor(Math.random() * src.length)];
+    });
+
+    return alphanumeric.join("");
 };

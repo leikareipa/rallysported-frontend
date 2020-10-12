@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (12 October 2020 22:03:34 UTC)
+// VERSION: live (12 October 2020 22:59:37 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8743,8 +8743,14 @@ Rsed.stream.peerJsServerConfig = Rsed.stream.herokuPeerJsServerConfig;
 // Returns a random id that can be used as the id of a peer in a stream.
 Rsed.stream.generate_random_stream_id = function()
 {
-const id = generate_uuid_v4().replace(/-/g, "");
-return id.substring(0, 12);
+const alphaSrc = ["a", "c", "d", "e", "h", "k", "n", "s", "u"];
+const numericSrc = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+const alphanumeric = [..."000111000"].map(v=>
+{
+const src = ((v == "0")? alphaSrc : numericSrc);
+return src[Math.floor(Math.random() * src.length)];
+});
+return alphanumeric.join("");
 };
 /*
 * Most recent known filename: js/stream/server.js
@@ -8806,7 +8812,7 @@ if (id != streamId)
 Rsed.ui.popup_notification("Stream: Received an invalid ID from the peer server.", {
 notificationType: "error",
 });
-signalFns.stop_stream();
+publicInterface.stop();
 return;
 }
 peer.on("connection", handle_new_viewer);
@@ -8953,7 +8959,7 @@ if (id != streamId)
 Rsed.ui.popup_notification("Stream Error: Received an invalid ID from the peer server.", {
 notificationType: "error",
 });
-signalFns.stop_stream();
+publicInterface.stop();
 return;
 }
 peer.on("connection", handle_new_viewer);
