@@ -35,6 +35,12 @@ Rsed.stream.viewer = function(streamId, signalFns)
         // Receive and process a packet of data from the streamer.
         receive: function(packet)
         {
+            // Ignore malformed packets.
+            if (!Rsed.stream.is_validly_formed_packet(packet))
+            {
+                return;
+            }
+
             switch (packet.header.what)
             {
                 // A streamer client has edited a track asset and wants us to replicate
@@ -46,6 +52,7 @@ Rsed.stream.viewer = function(streamId, signalFns)
 
                     break;
                 }
+
                 // Expects packet.data to be a string containing the stream project's data
                 // in RallySportED-js's JSON format.
                 case "project-data":

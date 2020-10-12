@@ -133,7 +133,7 @@ Rsed.stream = (function()
                 return;
             }
 
-            const packet =  {
+            const packet = {
                 header: {
                     what,
                     creatorId: stream.id,
@@ -142,9 +142,29 @@ Rsed.stream = (function()
                 data,
             };
 
+            Rsed.throw_if(!publicInterface.is_validly_formed_packet(packet),
+                          "stream.send_packet() has created a malformed stream packet.");
+
             stream.send(packet, dstViewer);
 
             return;
+        },
+
+        // Returns true if the given stream packet is validly formed (contains the
+        // required parameters, etc.); false otherwise.
+        is_validly_formed_packet: function(packet)
+        {
+            if ((typeof packet !== "object") ||
+                (typeof packet.header !== "object") ||
+                (typeof packet.header.what === "undefined") ||
+                (typeof packet.header.creatorId === "undefined") ||
+                (typeof packet.header.createdOn !== "number") ||
+                (typeof packet.data === "undefined"))
+            {
+                return false;
+            }
+
+            return true;
         },
 
         get role()

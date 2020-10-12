@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (12 October 2020 13:43:45 UTC)
+// VERSION: live (12 October 2020 21:37:09 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8684,7 +8684,7 @@ if (!stream)
 {
 return;
 }
-const packet =  {
+const packet = {
 header: {
 what,
 creatorId: stream.id,
@@ -8692,8 +8692,24 @@ createdOn: Date.now(),
 },
 data,
 };
+Rsed.throw_if(!publicInterface.is_validly_formed_packet(packet),
+"stream.send_packet() has created a malformed stream packet.");
 stream.send(packet, dstViewer);
 return;
+},
+// Returns true if the given stream packet is validly formed (contains the
+// required parameters, etc.); false otherwise.
+is_validly_formed_packet: function(packet)
+{
+if ((typeof packet !== "object") ||
+(typeof packet.header !== "object") ||
+(typeof packet.header.what === "undefined") ||
+(typeof packet.header.creatorId === "undefined") ||
+(typeof packet.header.createdOn !== "number"))
+{
+return false;
+}
+return true;
 },
 get role()
 {
@@ -9013,6 +9029,11 @@ send: function(){},
 // Receive and process a packet of data from the streamer.
 receive: function(packet)
 {
+// Ignore malformed packets.
+if (!Rsed.stream.is_validly_formed_packet(packet))
+{
+return;
+}
 switch (packet.header.what)
 {
 // A streamer client has edited a track asset and wants us to replicate
