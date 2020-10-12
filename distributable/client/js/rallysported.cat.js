@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (11 October 2020 23:06:59 UTC)
+// VERSION: live (12 October 2020 00:21:59 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5692,6 +5692,11 @@ uiContainer.streamViewerCount = num;
 },
 display_blue_screen: function(errorMessage = "")
 {
+if ((typeof errorMessage !== "string") ||
+!errorMessage.length)
+{
+errorMessage = "Unspecified error";
+}
 uiContainer.uiVisible = false;
 document.getElementById("blue-screen").style.display = "flex";
 document.querySelector("#blue-screen #error-description").innerHTML = errorMessage;

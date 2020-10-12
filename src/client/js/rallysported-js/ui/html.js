@@ -90,6 +90,12 @@ Rsed.ui.htmlUI = (function()
 
         display_blue_screen: function(errorMessage = "")
         {
+            if ((typeof errorMessage !== "string") ||
+                !errorMessage.length)
+            {
+                errorMessage = "Unspecified error";
+            }
+            
             uiContainer.uiVisible = false;
             
             document.getElementById("blue-screen").style.display = "flex";
