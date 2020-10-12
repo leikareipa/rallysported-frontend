@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (12 October 2020 03:39:19 UTC)
+// VERSION: live (12 October 2020 11:35:29 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -9183,7 +9183,7 @@ stream: null,
 // Renders a spinner until the core starts up.
 render_loading_animation: function()
 {
-const targetScale = 0;
+const targetScale = 2000;
 let currentScale = 25;
 (function render_loop(frameCount = 170)
 {
@@ -9194,7 +9194,7 @@ return;
 }
 if (frameCount >= 180)
 {
-const shade = Math.min(220, (168 + ((frameCount - 180) / 2)));
+const shade = Math.max(0, (168 - ((frameCount - 180) / 1)));
 currentScale = Rsed.lerp(currentScale, targetScale, 0.0001);
 const meshes = new Array(100).fill().map((p, idx)=>
 {
@@ -9204,14 +9204,14 @@ color: Rngon.color_rgba(shade, shade, shade),
 });
 const mesh = Rngon.mesh([point],
 {
-rotation: Rngon.rotation_vector(0, 0, ((500 + frameCount * idx) / 30)),
+rotation: Rngon.rotation_vector(70, 0, ((500 + frameCount * idx) / 30)),
 scaling: Rngon.scaling_vector(currentScale, currentScale, currentScale)
 });
 return mesh;
 });
 Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), meshes,
 {
-cameraPosition: Rngon.translation_vector(0, 0, -8),
+cameraPosition: Rngon.translation_vector(0, 0, -14),
 scale: 0.25,
 });
 }
