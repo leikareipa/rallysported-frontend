@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (12 October 2020 22:59:37 UTC)
+// VERSION: live (12 October 2020 23:05:37 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -13,7 +13,6 @@
 //	./src/client/js/rallysported-js/rallysported.js
 //	./src/client/js/rallysported-js/misc/rngon-minimal-fill.js
 //	./src/client/js/rallysported-js/misc/rngon-minimal-tcl.js
-//	./src/client/js/rallysported-js/misc/uuidgen.js
 //	./src/client/js/rallysported-js/project/project.js
 //	./src/client/js/rallysported-js/project/hitable.js
 //	./src/client/js/rallysported-js/misc/constants.js
@@ -3027,14 +3026,6 @@ for (let i = ngonCache.count; i < ngonCache.ngons.length; i++)
 ngonCache.ngons[i].isActive = false;
 }
 return;
-}
-"use strict";
-// Generates a version 4 UUID and returns it as a string. Adapted with
-// superficial modifications from https://stackoverflow.com/a/2117523,
-// which is based on https://gist.github.com/jed/982883.
-function generate_uuid_v4()
-{
-return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
 }
 /*
 * Most recent known filename: js/project/project.js
