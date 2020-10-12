@@ -88,10 +88,10 @@ Rsed.core = (function()
         // Renders a spinner until the core starts up.
         render_loading_animation: function()
         {
-            const targetScale = 500;
+            const targetScale = 0;
             let currentScale = 25;
 
-            (function render_loop(frameCount = 0)
+            (function render_loop(frameCount = 170)
             {
                 if (Rsed.core &&
                     Rsed.core.is_running())
@@ -99,15 +99,15 @@ Rsed.core = (function()
                     return;
                 }
 
-                if (frameCount >= 10)
+                if (frameCount >= 180)
                 {
-                    const shade = Math.min(250, (168 + (frameCount / 2)));
+                    const shade = Math.min(220, (168 + ((frameCount - 180) / 2)));
 
                     currentScale = Rsed.lerp(currentScale, targetScale, 0.0001);
 
                     const meshes = new Array(100).fill().map((p, idx)=>
                     {
-                        const point = Rngon.ngon([Rngon.vertex((0.5 / idx), 0, 0)],
+                        const point = Rngon.ngon([Rngon.vertex((idx / 5000), 0, 0)],
                         {
                             color: Rngon.color_rgba(shade, shade, shade),
                         });
@@ -124,7 +124,7 @@ Rsed.core = (function()
                     Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), meshes,
                     {
                         cameraPosition: Rngon.translation_vector(0, 0, -8),
-                        scale: 0.5,
+                        scale: 0.25,
                     });
                 }
 
