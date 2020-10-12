@@ -93,7 +93,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
                         notificationType: "error",
                     });
 
-                    signalFns.stop_stream();
+                    publicInterface.stop();
     
                     return;
                 }
