@@ -55,7 +55,7 @@ Rsed.core = (function()
         fps_counter_enabled: ()=>fpsCounterEnabled,
         browser_info: ()=>browserInfo,
 
-        appName: "RallySportED-js",
+        appName: "RallySportED",
 
         // A convenience function that appends the given object's properties to the
         // default RallySportED-js startup arguments, and returns that amalgamation.
