@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (13 October 2020 18:26:31 UTC)
+// VERSION: live (13 October 2020 23:32:27 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6685,7 +6685,7 @@ if ( Rsed.ui.inputState.current_mouse_hover() &&
 const mousePos = Rsed.ui.inputState.mouse_pos();
 const propDropdown = document.getElementById("prop-dropdown");
 propDropdown.style.left = `${mousePos.x + 32}px`;
-propDropdown.style.top = `${mousePos.y - 155}px`;
+propDropdown.style.top = `${mousePos.y - 140}px`;
 propDropdown.classList.toggle("show");
 RSED_DROPDOWN_ACTIVATED = true;
 }

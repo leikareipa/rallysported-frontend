@@ -175,7 +175,7 @@ window.oncontextmenu = function(event)
         const propDropdown = document.getElementById("prop-dropdown");
 
         propDropdown.style.left = `${mousePos.x + 32}px`;
-        propDropdown.style.top = `${mousePos.y - 155}px`;
+        propDropdown.style.top = `${mousePos.y - 140}px`;
         propDropdown.classList.toggle("show");
 
         RSED_DROPDOWN_ACTIVATED = true;
