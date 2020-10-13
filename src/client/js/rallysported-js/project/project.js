@@ -47,7 +47,7 @@ Rsed.project = async function(projectArgs = {})
                     (typeof projectData.meta.displayName !== "undefined"))
                 || Rsed.throw("Missing required project data.");
 
-    Rsed.assert && is_valid_project_base_name()
+    Rsed.assert && is_valid_project_name(projectData.meta.internalName)
                 || Rsed.throw(`Invalid project base name "${projectData.meta.internalName}".`);
 
     Rsed.assert && ((projectData.meta.width > 0) &&
@@ -145,9 +145,6 @@ Rsed.project = async function(projectArgs = {})
     const publicInterface = Object.freeze(
     {
         isPlaceholder: false,
-        name: projectData.meta.displayName,
-        internalName: projectData.meta.internalName,
-        track_checkpoint: ()=>(trackCheckpoints[0] || {x:0,y:0}),
         maasto,
         varimaa,
         palat,
@@ -157,12 +154,50 @@ Rsed.project = async function(projectArgs = {})
         palatId,
         loaderVersion,
 
-        track_id: ()=>
+        get name()
+        {
+            return projectData.meta.displayName;
+        },
+
+        get internalName()
+        {
+            return projectData.meta.internalName;
+        },
+
+        rename: function(newName = undefined)
+        {
+            if (typeof newName == "undefined")
+            {
+                newName = window.prompt("Enter a new name for this track", publicInterface.internalName);
+            }
+
+            newName = newName.toLowerCase();
+
+            if (!is_valid_project_name(newName))
+            {
+                /// TODO: Error message.
+
+                return;
+            }
+
+            Rsed.log(`Renaming project ${publicInterface.name} to ${newName}`);
+
+            projectData.meta.displayName = projectData.meta.internalName = newName;
+
+            Rsed.ui.htmlUI.refresh();
+        },
+
+        track_id: function()
         {
             Rsed.assert && (trackId !== null)
                         || Rsed.throw("Attempting to access a project's track id before it has been set.");
 
             return trackId;
+        },
+
+        track_checkpoint: function()
+        {
+            return (trackCheckpoints[0] || {x:0,y:0});
         },
 
         // Returns the project's current data as a JSON string in RallySportED-js's
@@ -311,18 +346,13 @@ Rsed.project = async function(projectArgs = {})
         return updatedManifesto;
     }
 
-    // Returns true if the project's base name is valid; false otherwise. The base name is the name
-    // with which the project's files will be saved to disk; e.g. if the base name is "test", the
-    // project's files will be "test.dta" and "test.$ft".
-    function is_valid_project_base_name()
+    // Returns true if the given string is a valid RallySportED-js project name.
+    function is_valid_project_name(name)
     {
-        // The base filename must be between 1 and 8 characters long, and the string must consist
-        // of ASCII A-Z characters only.
-        return ((typeof projectData.meta !== "undefined") &&
-                (typeof projectData.meta.internalName !== "undefined") &&
-                (projectData.meta.internalName.length >= 1) &&
-                (projectData.meta.internalName.length <= 8) &&
-                /^[a-zA-Z]+$/.test(projectData.meta.internalName));
+        return ((typeof name == "string") &&
+                (name.length >= 1) &&
+                (name.length <= 8) &&
+                /^[a-zA-Z]+$/.test(name));
     }
 
     // Returns the data (container file, manifesto file, and certain metadata) of the

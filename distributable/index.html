@@ -32,21 +32,37 @@
                 <div class="button left"
                      title="Download this track"
                      onclick="Rsed.core.current_project().download_as_zip();">
+
+                    <i class="fas fa-download"></i>
                     Download
+
                 </div>
 
                 <a class="button middle"
-                   title="View RallySportED's user guide"
+                   title="View RallySportED-js's user guide"
                    href="./user-guide/" target="_blank" rel="noopener">
+
                     Help
+
                 </a>
 
                 <a id="rsc-button"
                    class="button middle"
                    title="Browse tracks made by others"
                    href="/rallysport-content/tracks/" target="_blank" rel="noopener">
+
                     Tracks
+
                 </a>
+
+                <div class="button left"
+                     title="Change this track's name"
+                     onclick="Rsed.core.current_project().rename();">
+
+                    <i class="fas fa-tag"></i>
+                    Rename
+
+                </div>
 
                 <div id="stream-button"
                      class="button right stream"
@@ -60,7 +76,7 @@
                                 ? `Rsed.stream.start('server');`
                                 : 'Rsed.stream.stop()')"></a>
 
-                    <i class="fas fa-fw"
+                    <i class="fas"
                        :class="((streamStatus == 'initializing')
                                 ? 'fa-spin fa-spinner'
                                 : 'fa-project-diagram')"></i>
