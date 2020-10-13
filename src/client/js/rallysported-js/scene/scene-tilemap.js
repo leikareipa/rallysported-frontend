@@ -128,22 +128,22 @@ Rsed.scenes["tilemap"] = (function()
             if (uiComponents) // Once the UI components have finished async loading...
             {
                 uiComponents.activePala.update(sceneSettings);
-                uiComponents.activePala.draw((Rsed.visual.canvas.width - 20), 4);
+                uiComponents.activePala.draw((Rsed.visual.canvas.width - 20), 11);
 
                 if (sceneSettings.showPalatPane)
                 {
                     uiComponents.palatPane.update(sceneSettings);
-                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 24);
+                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 31);
                 }
 
                 if (Rsed.core.fps_counter_enabled())
                 {
                     uiComponents.fpsIndicator.update(sceneSettings);
-                    uiComponents.fpsIndicator.draw(4, 15);
+                    uiComponents.fpsIndicator.draw(3, 10);
                 }
             }
 
-            Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
+            Rsed.ui.draw.string(`Track size: ${Rsed.core.current_project().maasto.width},${Rsed.core.current_project().maasto.width}`,
                                 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
                                 ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
 

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (12 October 2020 23:05:37 UTC)
+// VERSION: live (13 October 2020 12:49:42 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5668,6 +5668,9 @@ const publicInterface = {
 refresh: function()
 {
 uiContainer.refresh();
+const capitalizedTrackName = (Rsed.core.current_project().name[0].toUpperCase() +
+Rsed.core.current_project().name.slice(1));
+document.title = `${capitalizedTrackName} - ${Rsed.core.appName}`;
 },
 set_visible: function(isVisible)
 {
@@ -5723,18 +5726,25 @@ const faIcon = (()=>
 const meta = "fa-fw";
 switch (args.notificationType)
 {
-case "warning": return `${meta} fas fa-exclamation-circle`;
-case "error": return `${meta} fas fa-otter`;
+case "warning": return `${meta} fas fa-cat`;
+case "error": return `${meta} fas fa-spider`;
 case "fatal": return `${meta} fas fa-otter`;
 default: return `${meta} fas far fa-comment`;
 }
 })();
 const popupElement = document.createElement("div");
-popupElement.classList.add("popup-notification", "animation-popup-slide-in", args.notificationType);
-popupElement.innerHTML = `<i class="far fa-fw fa-lg ${faIcon}"></i>
-${args.notificationType == "fatal"? "Fatal:" : ""}
+const iconElement = document.createElement("i");
+const textContainer = document.createElement("div");
+iconElement.classList.add(...(`icon-element far ${faIcon}`.split(" ")));
+textContainer.classList.add("text-container");
+popupElement.classList.add("popup-notification",
+"animation-popup-slide-in",
+args.notificationType);
+textContainer.innerHTML = `${args.notificationType == "fatal"? "Fatal:" : ""}
 ${string}`;
-document.getElementById("popup-notification-container").appendChild(popupElement);
+popupElement.appendChild(iconElement);
+popupElement.appendChild(textContainer);
+document.getElementById("popup-notifications-container").appendChild(popupElement);
 const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
 const publicInterface =
 {
@@ -7776,39 +7786,26 @@ if ((Rsed.visual.canvas.width <= 0) ||
 return;
 }
 Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
-if (uiComponents) // Once the UI components have finished async loading...
+if (uiComponents) // Once the UI components have finished async loading.
 {
-// If there's enough horizontal space... (This assumes that the active PALA
-// is drawn on the right side of the screen and to the left of the track's
-// minimap, and that on the left side of the screen is the HTML UI).
 if (Rsed.visual.canvas.domElement.clientWidth > 650)
 {
 uiComponents.activePala.update(sceneSettings);
-uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 4);
-}
-// If there's enough horizontal space...
-if (Rsed.visual.canvas.domElement.clientWidth > 550)
-{
+uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 11);
 uiComponents.footerInfo.update(sceneSettings);
 uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
-}
-// If there's enough horizontal space... (This assumes that the minimap is
-// drawn on the right side of the screen and that on the left side is the
-// HTML UI.)
-if (Rsed.visual.canvas.domElement.clientWidth > 550)
-{
 uiComponents.minimap.update(sceneSettings);
-uiComponents.minimap.draw((Rsed.visual.canvas.width - 4), 4);
-}
+uiComponents.minimap.draw((Rsed.visual.canvas.width - 4), 11);
 if (sceneSettings.showPalatPane)
 {
 uiComponents.palatPane.update(sceneSettings);
-uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 40);
+uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 47);
+}
 }
 if (Rsed.core.fps_counter_enabled())
 {
 uiComponents.fpsIndicator.update(sceneSettings);
-uiComponents.fpsIndicator.draw(4, 15);
+uiComponents.fpsIndicator.draw(3, 10);
 }
 }
 Rsed.ui.draw.mouse_cursor();
@@ -8200,19 +8197,19 @@ Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 if (uiComponents) // Once the UI components have finished async loading...
 {
 uiComponents.activePala.update(sceneSettings);
-uiComponents.activePala.draw((Rsed.visual.canvas.width - 20), 4);
+uiComponents.activePala.draw((Rsed.visual.canvas.width - 20), 11);
 if (sceneSettings.showPalatPane)
 {
 uiComponents.palatPane.update(sceneSettings);
-uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 24);
+uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 31);
 }
 if (Rsed.core.fps_counter_enabled())
 {
 uiComponents.fpsIndicator.update(sceneSettings);
-uiComponents.fpsIndicator.draw(4, 15);
+uiComponents.fpsIndicator.draw(3, 10);
 }
 }
-Rsed.ui.draw.string("TRACK SIZE:" + Rsed.core.current_project().maasto.width + "," + Rsed.core.current_project().maasto.width,
+Rsed.ui.draw.string(`Track size: ${Rsed.core.current_project().maasto.width},${Rsed.core.current_project().maasto.width}`,
 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
 ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
 Rsed.ui.draw.mouse_cursor();
@@ -8384,11 +8381,11 @@ Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 if (uiComponents) // Once the UI components have finished async loading...
 {
 uiComponents.colorSelector.update(sceneSettings);
-uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 35), 4);
+uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 35), 11);
 if (Rsed.core.fps_counter_enabled())
 {
 uiComponents.fpsIndicator.update(sceneSettings);
-uiComponents.fpsIndicator.draw(4, 15);
+uiComponents.fpsIndicator.draw(3, 10);
 }
 }
 Rsed.ui.draw.mouse_cursor();
@@ -9195,6 +9192,7 @@ is_running: ()=>coreIsRunning,
 renderer_fps: ()=>programFPS,
 fps_counter_enabled: ()=>fpsCounterEnabled,
 browser_info: ()=>browserInfo,
+appName: "RallySportED-js",
 // A convenience function that appends the given object's properties to the
 // default RallySportED-js startup arguments, and returns that amalgamation.
 startup_args: function(customArgs = {})

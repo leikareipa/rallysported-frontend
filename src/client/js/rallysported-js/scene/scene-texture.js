@@ -61,12 +61,12 @@ Rsed.scenes["texture"] = (function()
             if (uiComponents) // Once the UI components have finished async loading...
             {
                 uiComponents.colorSelector.update(sceneSettings);
-                uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 35), 4);
+                uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 35), 11);
                 
                 if (Rsed.core.fps_counter_enabled())
                 {
                     uiComponents.fpsIndicator.update(sceneSettings);
-                    uiComponents.fpsIndicator.draw(4, 15);
+                    uiComponents.fpsIndicator.draw(3, 10);
                 }
             }
 

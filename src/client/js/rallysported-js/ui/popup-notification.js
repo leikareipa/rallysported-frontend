@@ -32,19 +32,30 @@ Rsed.ui.popup_notification = function(string = "", args = {})
 
         switch (args.notificationType)
         {
-            case "warning": return `${meta} fas fa-exclamation-circle`;
-            case "error": return `${meta} fas fa-otter`;
+            case "warning": return `${meta} fas fa-cat`;
+            case "error": return `${meta} fas fa-spider`;
             case "fatal": return `${meta} fas fa-otter`;
             default: return `${meta} fas far fa-comment`;
         }
     })();
 
     const popupElement = document.createElement("div");
-    popupElement.classList.add("popup-notification", "animation-popup-slide-in", args.notificationType);
-    popupElement.innerHTML = `<i class="far fa-fw fa-lg ${faIcon}"></i>
-                              ${args.notificationType == "fatal"? "Fatal:" : ""}
-                              ${string}`;
-    document.getElementById("popup-notification-container").appendChild(popupElement);
+    const iconElement = document.createElement("i");
+    const textContainer = document.createElement("div");
+    
+    iconElement.classList.add(...(`icon-element far ${faIcon}`.split(" ")));
+    textContainer.classList.add("text-container");
+    popupElement.classList.add("popup-notification",
+                               "animation-popup-slide-in",
+                               args.notificationType);
+
+    textContainer.innerHTML = `${args.notificationType == "fatal"? "Fatal:" : ""}
+                               ${string}`;
+
+    popupElement.appendChild(iconElement);
+    popupElement.appendChild(textContainer);
+
+    document.getElementById("popup-notifications-container").appendChild(popupElement);
 
     const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
 
