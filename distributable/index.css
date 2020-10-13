@@ -241,24 +241,9 @@ body
     border-bottom: 1px solid black;
 }
 
-#popup-notifications-container .popup-notification.warning
+#popup-notifications-container .popup-notification.error .text-container::before
 {
-    color: black;
-}
-
-#popup-notifications-container .popup-notification.error
-{
-    padding: 40px; /* More padding than in a non-error popup.*/
-    color: black;
-    background-color: white;
-}
-
-#popup-notifications-container .popup-notification.fatal
-{
-    padding: 40px; /* More padding than in a non-error popup.*/
-    background-color: black;
-    border: 1px solid white;
-    color: white;
+    content: "Error! ";
 }
 
 #blue-screen

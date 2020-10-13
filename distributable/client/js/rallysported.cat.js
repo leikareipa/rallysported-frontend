@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (13 October 2020 15:35:45 UTC)
+// VERSION: live (13 October 2020 16:06:25 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3158,22 +3158,30 @@ palatId,
 loaderVersion,
 get name()
 {
-return projectData.meta.displayName;
+const name = projectData.meta.internalName.toLowerCase();
+const capitalizedName = (name[0].toUpperCase() +
+name.slice(1));
+return capitalizedName;
 },
 get internalName()
 {
-return projectData.meta.internalName;
+return publicInterface.name;
 },
 rename: function(newName = undefined)
 {
-if (typeof newName == "undefined")
+if (typeof newName !== "string")
 {
-newName = window.prompt("Enter a new name for this track", publicInterface.internalName);
+if (!(newName = window.prompt("Enter a new name for this track", publicInterface.internalName)))
+{
+return;
+}
 }
 newName = newName.toLowerCase();
 if (!is_valid_project_name(newName))
 {
-/// TODO: Error message.
+Rsed.ui.popup_notification("A track name must be 1-8 characters from A-Z.", {
+notificationType: "error",
+});
 return;
 }
 Rsed.log(`Renaming project ${publicInterface.name} to ${newName}`);
@@ -5691,9 +5699,7 @@ uiContainer.refresh();
 if ((typeof Rsed.core.current_project().name == "string") &&
 Rsed.core.current_project().name.length)
 {
-const capitalizedTrackName = (Rsed.core.current_project().name[0].toUpperCase() +
-Rsed.core.current_project().name.slice(1));
-document.title = `${capitalizedTrackName} - ${Rsed.core.appName}`;
+document.title = `${Rsed.core.current_project().name} - ${Rsed.core.appName}`;
 }
 else
 {

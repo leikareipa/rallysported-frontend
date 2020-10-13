@@ -75,10 +75,7 @@ Rsed.ui.htmlUI = (function()
             if ((typeof Rsed.core.current_project().name == "string") &&
                 Rsed.core.current_project().name.length)
             {
-                const capitalizedTrackName = (Rsed.core.current_project().name[0].toUpperCase() +
-                                              Rsed.core.current_project().name.slice(1));
-
-                document.title = `${capitalizedTrackName} - ${Rsed.core.appName}`;
+                document.title = `${Rsed.core.current_project().name} - ${Rsed.core.appName}`;
             }
             else
             {

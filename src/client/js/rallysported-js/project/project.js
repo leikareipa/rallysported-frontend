@@ -156,26 +156,36 @@ Rsed.project = async function(projectArgs = {})
 
         get name()
         {
-            return projectData.meta.displayName;
+            const name = projectData.meta.internalName.toLowerCase();
+
+            const capitalizedName = (name[0].toUpperCase() +
+                                     name.slice(1));
+
+            return capitalizedName;
         },
 
         get internalName()
         {
-            return projectData.meta.internalName;
+            return publicInterface.name;
         },
 
         rename: function(newName = undefined)
         {
-            if (typeof newName == "undefined")
+            if (typeof newName !== "string")
             {
-                newName = window.prompt("Enter a new name for this track", publicInterface.internalName);
+                if (!(newName = window.prompt("Enter a new name for this track", publicInterface.internalName)))
+                {
+                    return;
+                }
             }
 
             newName = newName.toLowerCase();
 
             if (!is_valid_project_name(newName))
             {
-                /// TODO: Error message.
+                Rsed.ui.popup_notification("A track name must be 1-8 characters from A-Z.", {
+                    notificationType: "error",
+                });
 
                 return;
             }
