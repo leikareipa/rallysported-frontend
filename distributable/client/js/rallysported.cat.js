@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 October 2020 01:21:07 UTC)
+// VERSION: live (14 October 2020 01:37:01 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -7945,6 +7945,22 @@ Rsed.scenes["texture"].set_texture(mouseHover.texture);
 Rsed.core.set_scene("texture");
 Rsed.ui.inputState.set_key_down("t", false);
 }
+}
+if (Rsed.ui.inputState.key_down("arrowup") ||
+Rsed.ui.inputState.key_down("arrowdown"))
+{
+const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+if (mouseHover &&
+(mouseHover.type == "ground"))
+{
+const delta = (Rsed.ui.inputState.key_down("arrowup")? 1 : -1);
+Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
+delta,
+mouseHover.groundTileX,
+mouseHover.groundTileY);
+}
+Rsed.ui.inputState.set_key_down("arrowup", false);
+Rsed.ui.inputState.set_key_down("arrowdown", false);
 }
 if (Rsed.ui.inputState.key_down("w"))
 {

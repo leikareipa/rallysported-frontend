@@ -218,6 +218,26 @@ Rsed.scenes["3d"] = (function()
                 }
             }
 
+            if (Rsed.ui.inputState.key_down("arrowup") ||
+                Rsed.ui.inputState.key_down("arrowdown"))
+            {
+                const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+
+                if (mouseHover &&
+                    (mouseHover.type == "ground"))
+                {
+                    const delta = (Rsed.ui.inputState.key_down("arrowup")? 1 : -1);
+
+                    Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
+                                                               delta,
+                                                               mouseHover.groundTileX,
+                                                               mouseHover.groundTileY);
+                }
+
+                Rsed.ui.inputState.set_key_down("arrowup", false);
+                Rsed.ui.inputState.set_key_down("arrowdown", false);
+            }
+
             if (Rsed.ui.inputState.key_down("w"))
             {
                 sceneSettings.showWireframe = !sceneSettings.showWireframe;
