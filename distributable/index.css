@@ -82,8 +82,8 @@ body
 #html-ui .button-bar.right
 {
     border-left: 1px solid dimgray;
-    margin-left: 6px;
-    padding-left: 6px;
+    margin-left: 10px;
+    padding-left: 10px;
 }
 
 #html-ui .button
