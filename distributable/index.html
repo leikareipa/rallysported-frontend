@@ -25,7 +25,7 @@
 
         <div id="html-ui" v-if="uiVisible" v-cloak>
 
-            <span id="track-name-display">&ldquo;{{trackName.length? trackName : ""}}&rdquo;</span>
+            <span id="track-name-display">&ldquo;{{trackName}}&rdquo;</span>
 
             <div id="button-bar">
 
@@ -55,12 +55,12 @@
 
                 </a>
 
-                <div class="button left"
+                <div class="button middle"
                      title="Rename this track"
                      onclick="Rsed.core.current_project().rename();">
 
                     <i class="fas fa-tag"></i>
-                    Rename
+                    &ldquo;{{trackName}}&rdquo;
 
                 </div>
 
