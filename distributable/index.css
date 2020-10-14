@@ -74,10 +74,16 @@ body
     transform: translateY(1px);
 }
 
-#html-ui #button-bar
+#html-ui .button-bar
 {
     display: flex;
-    letter-spacing: 0px;
+}
+
+#html-ui .button-bar.right
+{
+    border-left: 1px solid dimgray;
+    margin-left: 6px;
+    padding-left: 6px;
 }
 
 #html-ui .button
@@ -334,9 +340,17 @@ body
     }
 }
 
-@media only screen and (max-width: 450px)
+@media only screen and (max-width: 550px)
 {
-    #html-ui #button-bar
+    #html-ui .button-bar.right
+    {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 350px)
+{
+    #html-ui .button-bar
     {
         display: none;
     }
