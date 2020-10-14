@@ -340,8 +340,10 @@ Rsed.scenes["3d"] = (function()
                     if (Rsed.ui.inputState.left_mouse_button_down() ||
                         Rsed.ui.inputState.right_mouse_button_down())
                     {
-                        // Left button raises, right button lowers.
-                        const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : -2);
+                        // Left button raises, right button lowers. Holding down Ctrl  reduces
+                        // the rate of change.
+                        const delta = ((Rsed.ui.inputState.left_mouse_button_down()? 2 : -2)
+                                       / (Rsed.ui.inputState.key_down("control")? 2 : 1));
                         
                         Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
                                                                    delta,

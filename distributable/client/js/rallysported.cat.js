@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (13 October 2020 23:32:27 UTC)
+// VERSION: live (14 October 2020 01:21:07 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8049,8 +8049,10 @@ break;
 if (Rsed.ui.inputState.left_mouse_button_down() ||
 Rsed.ui.inputState.right_mouse_button_down())
 {
-// Left button raises, right button lowers.
-const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : -2);
+// Left button raises, right button lowers. Holding down Ctrl  reduces
+// the rate of change.
+const delta = ((Rsed.ui.inputState.left_mouse_button_down()? 2 : -2)
+/ (Rsed.ui.inputState.key_down("control")? 2 : 1));
 Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
 delta,
 hover.groundTileX,
