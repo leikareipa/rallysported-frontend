@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (14 October 2020 01:37:01 UTC)
+// VERSION: live (16 October 2020 01:34:33 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3179,7 +3179,7 @@ return;
 newName = newName.toLowerCase();
 if (!is_valid_project_name(newName))
 {
-Rsed.ui.popup_notification("A track name must be 1-8 characters from A-Z.", {
+Rsed.ui.popup_notification("A track's name must be 1-8 characters from A-Z.", {
 notificationType: "error",
 });
 return;
@@ -4651,7 +4651,7 @@ for (let y = 0; y < maastoHeight; y++)
 {
 for (let x = 0; x < maastoWidth; x++)
 {
-this.set_tile_value_at(x, y, height);
+publicInterface.set_tile_value_at(x, y, height);
 }
 }
 }
@@ -6555,6 +6555,11 @@ return publicInterface;
 /// receiving mouse events in the meantime, so there won't be accidental terrain edits etc. that
 /// might otherwise fall through the dropdown menu.
 let RSED_DROPDOWN_ACTIVATED = false;
+window.onblur = function()
+{
+Rsed.ui.inputState.reset_keys();
+return;
+}
 window.onunload = function()
 {
 Rsed.stream.stop();
@@ -6861,8 +6866,8 @@ return;
 Rsed.ui.inputState = (function()
 {
 // For each key code, a boolean to indicate whether that key is current down. Note
-// that the key codes are stored as lowercase characters, so e.g. 69 is stored as "e".
-const keyboardState = [];
+// that the key codes are stored as uppercase characters, so e.g. 69 is stored as "E".
+const keyboardState = {};
 const mouseState =
 {
 // Which of the mouse buttons are currently down, and which modifiers were
@@ -7011,7 +7016,8 @@ return (mouseState.buttons.left || mouseState.buttons.right);
 key_down: function(key)
 {
 Rsed.throw_if_not_type("string", key);
-return Boolean(keyboardState[key.toUpperCase()]);
+return Boolean(keyboardState[key.toUpperCase()] &&
+keyboardState[key.toUpperCase()].isDown);
 },
 current_mouse_hover: function()
 {
@@ -7049,7 +7055,12 @@ this.set_key_down("altgraph", false);
 },
 reset_keys: function()
 {
-keyboardState.fill(false);
+for (const keyIdx of Object.keys(keyboardState))
+{
+clearTimeout(keyboardState[keyIdx].cooldown);
+clearInterval(keyboardState[keyIdx].repeat);
+keyboardState[keyIdx].isDown = false;
+}
 },
 reset_wheel_scroll: function()
 {
@@ -7072,6 +7083,9 @@ if (this.key_down("shift"))
 mouseState.wheel += delta;
 }
 },
+// Mark the current key as being or not being down. Note that when a key is
+// marked as being down, it'll keep firing (auto-repeating) until it's marked
+// as being not down.
 set_key_down: function(keyCode, isDown = false)
 {
 Rsed.throw_if_not_type("boolean", isDown);
@@ -7084,7 +7098,27 @@ case "number": return String.fromCharCode(keyCode).toUpperCase();
 default: Rsed.throw("Unknown variable type for key code."); return "unknown";
 }
 })();
-keyboardState[keyIdx] = isDown;
+keyboardState[keyIdx] = (keyboardState[keyIdx] || {});
+keyboardState[keyIdx].isDown = isDown;
+clearTimeout(keyboardState[keyIdx].cooldown);
+clearInterval(keyboardState[keyIdx].repeat);
+keyboardState[keyIdx].cooldown = null;
+keyboardState[keyIdx].repeat = null;
+if (isDown)
+{
+keyboardState[keyIdx].cooldown = setTimeout(()=>
+{
+keyboardState[keyIdx].repeat = setInterval(fire_key, 75);
+}, 250);
+}
+fire_key(false);
+function fire_key(isRepeat = true)
+{
+if (Rsed.core.current_scene())
+{
+Rsed.core.current_scene()[(isDown? "on_key_fire" : "on_key_release")](keyIdx, isRepeat);
+}
+}
 },
 set_mouse_pos: function(x = 0, y = 0)
 {
@@ -7756,6 +7790,8 @@ args =
 draw_mesh: ()=>{},
 draw_ui: ()=>{},
 handle_user_interaction: ()=>{},
+on_key_fire: ()=>{},
+on_key_release: ()=>{},
 },
 ...args
 };
@@ -7798,6 +7834,14 @@ showProps: true,
 // tile's actual texture.
 showHoverPala: false,
 }
+// In which direction(s) the camera is currently moving. This is affected
+// by e.g. user input.
+const cameraMovement = {
+up: false,
+down: false,
+left: false,
+right: false,
+};
 // Load UI components.
 let uiComponents = null;
 (async()=>
@@ -7812,6 +7856,148 @@ fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
 })();
 return Rsed.scene(
 {
+on_key_release: function(key)
+{
+function key_is(compared)
+{
+return (key.localeCompare(compared, undefined, {sensitivity: "accent"}) == 0);
+}
+if (key_is("s"))
+{
+cameraMovement.up = false;
+}
+else if (key_is("f"))
+{
+cameraMovement.down = false;
+}
+else if (key_is("e"))
+{
+cameraMovement.left = false;
+}
+else if (key_is("d"))
+{
+cameraMovement.right = false;
+}
+return;
+},
+on_key_fire: function(key, repeat = false)
+{
+function key_is(compared)
+{
+return (key.localeCompare(compared, undefined, {sensitivity: "accent"}) == 0);
+}
+if (key_is("s"))
+{
+cameraMovement.up = true;
+}
+else if (key_is("f"))
+{
+cameraMovement.down = true;
+}
+else if (key_is("e"))
+{
+cameraMovement.left = true;
+}
+else if (key_is("d"))
+{
+cameraMovement.right = true;
+}
+else if (key_is("a") && !repeat)
+{
+sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
+// Prevent a mouse click from acting on the ground behind the pane when the pane
+// is brought up, and on the pane when the pane has been removed.
+updateMouseHoverOnFrameFinish = true;
+}
+else if (key_is("z"))
+{
+if (Rsed.ui.inputState.key_down("control") &&
+Rsed.ui.inputState.key_down("shift"))
+{
+Rsed.ui.undoStack.redo();
+}
+else if (Rsed.ui.inputState.key_down("control"))
+{
+Rsed.ui.undoStack.undo();
+}
+}
+else if (key_is("y") &&
+Rsed.ui.inputState.key_down("control") )
+{
+Rsed.ui.undoStack.redo();
+}
+else if (key_is("q"))
+{
+Rsed.core.set_scene("tilemap");
+}
+else if (key_is("t"))
+{
+const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+if (mouseHover && mouseHover.texture)
+{
+Rsed.scenes["texture"].set_texture(mouseHover.texture);
+Rsed.core.set_scene("texture");
+}
+}
+else if (key_is("arrowup") ||
+key_is("arrowdown"))
+{
+const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+if (mouseHover && (mouseHover.type == "ground"))
+{
+const delta = (key_is("arrowup")? 1 : -1);
+Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
+delta,
+mouseHover.groundTileX,
+mouseHover.groundTileY);
+}
+}
+else if (key_is("w") && !repeat)
+{
+sceneSettings.showWireframe = !sceneSettings.showWireframe;
+}
+else if (key_is("g") && !repeat)
+{
+sceneSettings.showHoverPala = !sceneSettings.showHoverPala;
+}
+else if (key_is("l") && !repeat)
+{
+const newHeight = parseInt(window.prompt("Level the terrain to a height of..."), 10);
+if (!isNaN(newHeight))
+{
+for (let y = 0; y < Rsed.core.current_project().maasto.height; y++)
+{
+for (let x = 0; x < Rsed.core.current_project().maasto.width; x++)
+{
+Rsed.ui.assetMutator.user_edit("maasto", {
+command: "set-height",
+target: {x, y},
+data: newHeight,
+});
+}
+}
+}
+}
+else if (key_is("b") && !repeat)
+{
+sceneSettings.showProps = !sceneSettings.showProps;
+}
+else if (key_is(" ") && !repeat)
+{
+Rsed.ui.groundBrush.brushSmoothens = !Rsed.ui.groundBrush.brushSmoothens;
+}
+else
+{
+for (const brushSizeKey of ["1", "2", "3", "4", "5"])
+{
+if (key_is(brushSizeKey))
+{
+Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+}
+}
+}
+return;
+},
 draw_ui: function()
 {
 if ((Rsed.visual.canvas.width <= 0) ||
@@ -7856,6 +8042,9 @@ return;
 },
 draw_mesh: function()
 {
+Rsed.world.camera.move_camera((cameraMovement.up? -1 : cameraMovement.down? 1 : 0),
+0,
+(cameraMovement.left? -1 : cameraMovement.right? 1 : 0));
 const trackMesh = Rsed.world.meshBuilder.track_mesh(
 {
 cameraPos: Rsed.world.camera.position_floored(),
@@ -7890,136 +8079,12 @@ return;
 },
 handle_user_interaction: function()
 {
-handle_keyboard_input();
 handle_mouse_input();
 /// EXPERIMENTAL. Temporary testing of mobile controls.
 const touchDelta = Rsed.ui.inputState.get_touch_move_delta();
 Rsed.world.camera.move_camera(-touchDelta.x, 0, -touchDelta.y);
 },
 });
-function handle_keyboard_input()
-{
-// Handle keyboard input to move the camera.
-{
-const movement = {x:0, y:0, z:0};
-if (Rsed.ui.inputState.key_down("s")) movement.x += -1;
-if (Rsed.ui.inputState.key_down("f")) movement.x +=  1;
-if (Rsed.ui.inputState.key_down("e")) movement.z += -1;
-if (Rsed.ui.inputState.key_down("d")) movement.z +=  1;
-//movement.normalize(); /// TODO: Disabled for now, since diagonal movement is too jerky without the double movement speed.
-Rsed.world.camera.move_camera(movement.x, movement.y, movement.z);
-}
-// Handle keyboard input for one-off events, where the key press is registered
-// only once (no repeat).
-{
-if (Rsed.ui.inputState.key_down("z"))
-{
-if (Rsed.ui.inputState.key_down("control") &&
-Rsed.ui.inputState.key_down("shift"))
-{
-Rsed.ui.undoStack.redo();
-}
-else if (Rsed.ui.inputState.key_down("control"))
-{
-Rsed.ui.undoStack.undo();
-}
-Rsed.ui.inputState.set_key_down("z", false);
-}
-if (Rsed.ui.inputState.key_down("y") &&
-Rsed.ui.inputState.key_down("control") )
-{
-Rsed.ui.undoStack.redo();
-Rsed.ui.inputState.set_key_down("y", false);
-}
-if (Rsed.ui.inputState.key_down("q"))
-{
-Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
-Rsed.ui.inputState.set_key_down("q", false);
-}
-if (Rsed.ui.inputState.key_down("t"))
-{
-const mouseHover = Rsed.ui.inputState.current_mouse_hover();
-if (mouseHover && mouseHover.texture)
-{
-Rsed.scenes["texture"].set_texture(mouseHover.texture);
-Rsed.core.set_scene("texture");
-Rsed.ui.inputState.set_key_down("t", false);
-}
-}
-if (Rsed.ui.inputState.key_down("arrowup") ||
-Rsed.ui.inputState.key_down("arrowdown"))
-{
-const mouseHover = Rsed.ui.inputState.current_mouse_hover();
-if (mouseHover &&
-(mouseHover.type == "ground"))
-{
-const delta = (Rsed.ui.inputState.key_down("arrowup")? 1 : -1);
-Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
-delta,
-mouseHover.groundTileX,
-mouseHover.groundTileY);
-}
-Rsed.ui.inputState.set_key_down("arrowup", false);
-Rsed.ui.inputState.set_key_down("arrowdown", false);
-}
-if (Rsed.ui.inputState.key_down("w"))
-{
-sceneSettings.showWireframe = !sceneSettings.showWireframe;
-Rsed.ui.inputState.set_key_down("w", false);
-}
-if (Rsed.ui.inputState.key_down("g"))
-{
-sceneSettings.showHoverPala = !sceneSettings.showHoverPala;
-Rsed.ui.inputState.set_key_down("g", false);
-}
-if (Rsed.ui.inputState.key_down("a"))
-{
-sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
-Rsed.ui.inputState.set_key_down("a", false);
-// Prevent a mouse click from acting on the ground behind the pane when the pane
-// is brought up, and on the pane when the pane has been removed.
-updateMouseHoverOnFrameFinish = true;
-}
-if (Rsed.ui.inputState.key_down("l"))
-{
-const newHeight = parseInt(window.prompt("Level the terrain to a height of..."), 10);
-if (!isNaN(newHeight))
-{
-for (let y = 0; y < Rsed.core.current_project().maasto.height; y++)
-{
-for (let x = 0; x < Rsed.core.current_project().maasto.width; x++)
-{
-Rsed.ui.assetMutator.user_edit("maasto", {
-command: "set-height",
-target: {x, y},
-data: newHeight,
-});
-}
-}
-}
-Rsed.ui.inputState.set_key_down("l", false);
-}
-if (Rsed.ui.inputState.key_down("b"))
-{
-sceneSettings.showProps = !sceneSettings.showProps;
-Rsed.ui.inputState.set_key_down("b", false);
-}
-if (Rsed.ui.inputState.key_down(" "))
-{
-Rsed.ui.groundBrush.brushSmoothens = !Rsed.ui.groundBrush.brushSmoothens;
-Rsed.ui.inputState.set_key_down(" ", false);
-}
-for (const brushSizeKey of ["1", "2", "3", "4", "5"])
-{
-if (Rsed.ui.inputState.key_down(brushSizeKey))
-{
-Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
-Rsed.ui.inputState.set_key_down(brushSizeKey, false);
-}
-}
-}
-return;
-}
 function handle_mouse_input()
 {
 if (Rsed.ui.inputState.mouse_wheel_scroll())
@@ -8243,6 +8308,54 @@ wireframeColor: Rngon.color_rgba(255, 255, 0),
 tilemapMesh = Rngon.mesh([tilemapNgon]);
 return;
 },
+on_key_fire: function(key, repeat = false)
+{
+function key_is(compared)
+{
+return (key.localeCompare(compared, undefined, {sensitivity: "accent"}) == 0);
+}
+if (key_is("z"))
+{
+if (Rsed.ui.inputState.key_down("control") &&
+Rsed.ui.inputState.key_down("shift"))
+{
+Rsed.ui.undoStack.redo();
+scene.refresh_tilemap_view();
+}
+else if (Rsed.ui.inputState.key_down("control"))
+{
+Rsed.ui.undoStack.undo();
+scene.refresh_tilemap_view();
+}
+}
+else if (key_is("y") &&
+Rsed.ui.inputState.key_down("control") )
+{
+Rsed.ui.undoStack.redo();
+}
+else if (key_is("q"))
+{
+Rsed.core.set_scene("3d");
+}
+else if (key_is("a") && !repeat)
+{
+sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
+// Prevent a mouse click from acting on the ground behind the pane when the pane
+// is brought up, and on the pane when the pane has been removed.
+updateMouseHoverOnFrameFinish = true;
+}
+else
+{
+for (const brushSizeKey of ["1", "2", "3", "4", "5"])
+{
+if (key_is(brushSizeKey))
+{
+Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+}
+}
+}
+return;
+},
 draw_ui: function()
 {
 Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
@@ -8304,61 +8417,10 @@ return;
 },
 handle_user_interaction: function()
 {
-handle_keyboard_input();
 handle_mouse_input();
 },
 });
 return scene;
-function handle_keyboard_input()
-{
-// Handle keyboard input for one-off events, where the key press is registered
-// only once (no repeat).
-{
-if (Rsed.ui.inputState.key_down("z"))
-{
-if (Rsed.ui.inputState.key_down("control") &&
-Rsed.ui.inputState.key_down("shift"))
-{
-Rsed.ui.undoStack.redo();
-scene.refresh_tilemap_view();
-}
-else if (Rsed.ui.inputState.key_down("control"))
-{
-Rsed.ui.undoStack.undo();
-scene.refresh_tilemap_view();
-}
-Rsed.ui.inputState.set_key_down("z", false);
-}
-if (Rsed.ui.inputState.key_down("y") &&
-Rsed.ui.inputState.key_down("control") )
-{
-Rsed.ui.undoStack.redo();
-Rsed.ui.inputState.set_key_down("y", false);
-}
-if (Rsed.ui.inputState.key_down("q"))
-{
-Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
-Rsed.ui.inputState.set_key_down("q", false);
-}
-if (Rsed.ui.inputState.key_down("a"))
-{
-sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
-Rsed.ui.inputState.set_key_down("a", false);
-// Prevent a mouse click from acting on the ground behind the pane when the pane
-// is brought up, and on the pane when the pane has been removed.
-updateMouseHoverOnFrameFinish = true;
-}
-for (const brushSizeKey of ["1", "2", "3", "4", "5"])
-{
-if (Rsed.ui.inputState.key_down(brushSizeKey))
-{
-Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
-Rsed.ui.inputState.set_key_down(brushSizeKey, false);
-}
-}
-}
-return;
-}
 function handle_mouse_input()
 {
 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
@@ -8410,6 +8472,14 @@ const sceneSettings = {
 // Which color (index to Rally-Sport's palette) to paint with.
 selectedColorIdx: false,
 };
+// In which direction(s) the camera is currently moving. This is affected
+// by e.g. user input.
+const cameraMovement = {
+up: false,
+down: false,
+left: false,
+right: false,
+};
 // Load UI components.
 let uiComponents = null;
 (async()=>
@@ -8426,6 +8496,93 @@ const scene = Rsed.scene(
 set_texture: function(tex)
 {
 texture = tex;
+},
+on_key_release: function(key)
+{
+function key_is(compared)
+{
+return (key.localeCompare(compared, undefined, {sensitivity: "accent"}) == 0);
+}
+if (key_is("s"))
+{
+cameraMovement.up = false;
+}
+else if (key_is("f"))
+{
+cameraMovement.down = false;
+}
+else if (key_is("e"))
+{
+cameraMovement.left = false;
+}
+else if (key_is("d"))
+{
+cameraMovement.right = false;
+}
+return;
+},
+on_key_fire: function(key, repeat = false)
+{
+function key_is(compared)
+{
+return (key.localeCompare(compared, undefined, {sensitivity: "accent"}) == 0);
+}
+if (key_is("s"))
+{
+cameraMovement.up = true;
+}
+else if (key_is("f"))
+{
+cameraMovement.down = true;
+}
+else if (key_is("e"))
+{
+cameraMovement.left = true;
+}
+else if (key_is("d"))
+{
+cameraMovement.right = true;
+}
+else if (key_is("z"))
+{
+if (Rsed.ui.inputState.key_down("control") &&
+Rsed.ui.inputState.key_down("shift"))
+{
+Rsed.ui.undoStack.redo();
+}
+else if (Rsed.ui.inputState.key_down("control"))
+{
+Rsed.ui.undoStack.undo();
+}
+}
+else if (key_is("y") &&
+Rsed.ui.inputState.key_down("control") )
+{
+Rsed.ui.undoStack.redo();
+}
+else if (key_is("q"))
+{
+Rsed.core.set_scene("3d");
+Rsed.ui.inputState.set_key_down("q", false);
+}
+else if (key_is("a") && !repeat)
+{
+sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
+// Prevent a mouse click from acting on the ground behind the pane when the pane
+// is brought up, and on the pane when the pane has been removed.
+updateMouseHoverOnFrameFinish = true;
+}
+else
+{
+for (const brushSizeKey of ["1", "2", "3", "4", "5"])
+{
+if (key_is(brushSizeKey))
+{
+Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+}
+}
+}
+return;
 },
 draw_ui: function()
 {
@@ -8457,6 +8614,18 @@ draw_mesh: function()
 if (!texture)
 {
 return;
+}
+// Update the camera's position.
+{
+const direction = Rngon.vector3(0, 0, 0);
+const movementSpeed = 0.5;
+if (cameraMovement.left) direction.y += -1;
+if (cameraMovement.right) direction.y += 1;
+if (cameraMovement.up) direction.x += -1;
+if (cameraMovement.down) direction.x +=  1;
+Rngon.vector3.normalize(direction);
+textureUserOffsetX += (direction.x * movementSpeed);
+textureUserOffsetY += (direction.y * movementSpeed);
 }
 textureMousePickBuffer.length = 0;
 const textureNgon = Rngon.ngon([Rngon.vertex(0, 0, textureZoom, 0, 0),
@@ -8512,71 +8681,10 @@ return;
 },
 handle_user_interaction: function()
 {
-handle_keyboard_input();
 handle_mouse_input();
 },
 });
 return scene;
-function handle_keyboard_input()
-{
-// Handle keyboard input to move the texture.
-{
-const direction = Rngon.vector3(0, 0, 0);
-const movementSpeed = 0.5;
-if (Rsed.ui.inputState.key_down("s")) direction.x += -1;
-if (Rsed.ui.inputState.key_down("f")) direction.x +=  1;
-if (Rsed.ui.inputState.key_down("e")) direction.y += -1;
-if (Rsed.ui.inputState.key_down("d")) direction.y +=  1;
-Rngon.vector3.normalize(direction);
-textureUserOffsetX += (direction.x * movementSpeed);
-textureUserOffsetY += (direction.y * movementSpeed);
-}
-// Handle keyboard input for one-off events, where the key press is registered
-// only once (no repeat).
-{
-if (Rsed.ui.inputState.key_down("z"))
-{
-if (Rsed.ui.inputState.key_down("control") &&
-Rsed.ui.inputState.key_down("shift"))
-{
-Rsed.ui.undoStack.redo();
-}
-else if (Rsed.ui.inputState.key_down("control"))
-{
-Rsed.ui.undoStack.undo();
-}
-Rsed.ui.inputState.set_key_down("z", false);
-}
-if (Rsed.ui.inputState.key_down("y") &&
-Rsed.ui.inputState.key_down("control") )
-{
-Rsed.ui.undoStack.redo();
-Rsed.ui.inputState.set_key_down("y", false);
-}
-if (Rsed.ui.inputState.key_down("q"))
-{
-Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
-Rsed.ui.inputState.set_key_down("q", false);
-}
-if (Rsed.ui.inputState.key_down("a"))
-{
-sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
-Rsed.ui.inputState.set_key_down("a", false);
-// Prevent a mouse click from acting on the ground behind the pane when the pane
-// is brought up, and on the pane when the pane has been removed.
-updateMouseHoverOnFrameFinish = true;
-}
-for (const brushSizeKey of ["1", "2", "3", "4", "5"])
-{
-if (Rsed.ui.inputState.key_down(brushSizeKey))
-{
-Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
-Rsed.ui.inputState.set_key_down(brushSizeKey, false);
-}
-}
-}
-return;
-}
 function handle_mouse_input()
 {
 if (!texture)

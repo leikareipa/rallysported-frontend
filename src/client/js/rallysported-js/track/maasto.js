@@ -76,7 +76,7 @@ Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Arra
             {
                 for (let x = 0; x < maastoWidth; x++)
                 {
-                    this.set_tile_value_at(x, y, height);
+                    publicInterface.set_tile_value_at(x, y, height);
                 }
             }
         }

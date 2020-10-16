@@ -120,6 +120,58 @@ Rsed.scenes["tilemap"] = (function()
 
             return;
         },
+
+        on_key_fire: function(key, repeat = false)
+        {
+            function key_is(compared)
+            {
+                return (key.localeCompare(compared, undefined, {sensitivity: "accent"}) == 0);
+            }
+
+            if (key_is("z"))
+            {
+                if (Rsed.ui.inputState.key_down("control") &&
+                    Rsed.ui.inputState.key_down("shift"))
+                {
+                    Rsed.ui.undoStack.redo();
+                    scene.refresh_tilemap_view();
+                }
+                else if (Rsed.ui.inputState.key_down("control"))
+                {
+                    Rsed.ui.undoStack.undo();
+                    scene.refresh_tilemap_view();
+                }
+            }
+            else if (key_is("y") &&
+                     Rsed.ui.inputState.key_down("control") )
+            {
+                Rsed.ui.undoStack.redo();
+            }
+            else if (key_is("q"))
+            {
+                Rsed.core.set_scene("3d");
+            }
+            else if (key_is("a") && !repeat)
+            {
+                sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
+
+                // Prevent a mouse click from acting on the ground behind the pane when the pane
+                // is brought up, and on the pane when the pane has been removed.
+                updateMouseHoverOnFrameFinish = true;
+            }
+            else
+            {
+                for (const brushSizeKey of ["1", "2", "3", "4", "5"])
+                {
+                    if (key_is(brushSizeKey))
+                    {
+                        Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+                    }
+                }
+            }
+
+            return;
+        },
         
         draw_ui: function()
         {
@@ -196,71 +248,11 @@ Rsed.scenes["tilemap"] = (function()
 
         handle_user_interaction: function()
         {
-            handle_keyboard_input();
             handle_mouse_input();
         },
     });
 
     return scene;
-
-    function handle_keyboard_input()
-    {
-        // Handle keyboard input for one-off events, where the key press is registered
-        // only once (no repeat).
-        {
-            if (Rsed.ui.inputState.key_down("z"))
-            {
-                if (Rsed.ui.inputState.key_down("control") &&
-                    Rsed.ui.inputState.key_down("shift"))
-                {
-                    Rsed.ui.undoStack.redo();
-                    scene.refresh_tilemap_view();
-                }
-                else if (Rsed.ui.inputState.key_down("control"))
-                {
-                    Rsed.ui.undoStack.undo();
-                    scene.refresh_tilemap_view();
-                }
-
-                Rsed.ui.inputState.set_key_down("z", false);
-            }
-
-            if (Rsed.ui.inputState.key_down("y") &&
-                Rsed.ui.inputState.key_down("control") )
-            {
-                Rsed.ui.undoStack.redo();
-
-                Rsed.ui.inputState.set_key_down("y", false);
-            }
-            
-            if (Rsed.ui.inputState.key_down("q"))
-            {
-                Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
-                Rsed.ui.inputState.set_key_down("q", false);
-            }
-
-            if (Rsed.ui.inputState.key_down("a"))
-            {
-                sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
-                Rsed.ui.inputState.set_key_down("a", false);
-
-                // Prevent a mouse click from acting on the ground behind the pane when the pane
-                // is brought up, and on the pane when the pane has been removed.
-                updateMouseHoverOnFrameFinish = true;
-            }
-
-            for (const brushSizeKey of ["1", "2", "3", "4", "5"])
-            {
-                if (Rsed.ui.inputState.key_down(brushSizeKey))
-                {
-                    Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
-                    Rsed.ui.inputState.set_key_down(brushSizeKey, false);
-                }
-            }
-        }
-
-        return;
-    }
 
     function handle_mouse_input()
     {

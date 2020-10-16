@@ -183,7 +183,7 @@ Rsed.project = async function(projectArgs = {})
 
             if (!is_valid_project_name(newName))
             {
-                Rsed.ui.popup_notification("A track name must be 1-8 characters from A-Z.", {
+                Rsed.ui.popup_notification("A track's name must be 1-8 characters from A-Z.", {
                     notificationType: "error",
                 });
 

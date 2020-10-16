@@ -35,6 +35,15 @@ Rsed.scenes["texture"] = (function()
         selectedColorIdx: false,
     };
 
+    // In which direction(s) the camera is currently moving. This is affected
+    // by e.g. user input.
+    const cameraMovement = {
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+    };
+
     // Load UI components.
     let uiComponents = null;
     (async()=>
@@ -52,6 +61,100 @@ Rsed.scenes["texture"] = (function()
         set_texture: function(tex)
         {
             texture = tex;
+        },
+
+        on_key_release: function(key)
+        {
+            function key_is(compared)
+            {
+                return (key.localeCompare(compared, undefined, {sensitivity: "accent"}) == 0);
+            }
+
+            if (key_is("s"))
+            {
+                cameraMovement.up = false;
+            }
+            else if (key_is("f"))
+            {
+                cameraMovement.down = false;
+            }
+            else if (key_is("e"))
+            {
+                cameraMovement.left = false;
+            }
+            else if (key_is("d"))
+            {
+                cameraMovement.right = false;
+            }
+
+            return;
+        },
+
+        on_key_fire: function(key, repeat = false)
+        {
+            function key_is(compared)
+            {
+                return (key.localeCompare(compared, undefined, {sensitivity: "accent"}) == 0);
+            }
+
+            if (key_is("s"))
+            {
+                cameraMovement.up = true;
+            }
+            else if (key_is("f"))
+            {
+                cameraMovement.down = true;
+            }
+            else if (key_is("e"))
+            {
+                cameraMovement.left = true;
+            }
+            else if (key_is("d"))
+            {
+                cameraMovement.right = true;
+            }
+            else if (key_is("z"))
+            {
+                if (Rsed.ui.inputState.key_down("control") &&
+                    Rsed.ui.inputState.key_down("shift"))
+                {
+                    Rsed.ui.undoStack.redo();
+                }
+                else if (Rsed.ui.inputState.key_down("control"))
+                {
+                    Rsed.ui.undoStack.undo();
+                }
+            }
+            else if (key_is("y") &&
+                     Rsed.ui.inputState.key_down("control") )
+            {
+                Rsed.ui.undoStack.redo();
+            }
+            else if (key_is("q"))
+            {
+                Rsed.core.set_scene("3d");
+                Rsed.ui.inputState.set_key_down("q", false);
+            }
+            else if (key_is("a") && !repeat)
+            {
+                sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
+
+                // Prevent a mouse click from acting on the ground behind the pane when the pane
+                // is brought up, and on the pane when the pane has been removed.
+                updateMouseHoverOnFrameFinish = true;
+            }
+            else
+            {
+                for (const brushSizeKey of ["1", "2", "3", "4", "5"])
+                {
+                    if (key_is(brushSizeKey))
+                    {
+                        Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
+                    }
+                }
+            }
+
+            return;
         },
 
         draw_ui: function()
@@ -91,6 +194,21 @@ Rsed.scenes["texture"] = (function()
             if (!texture)
             {
                 return;
+            }
+
+            // Update the camera's position.
+            {
+                const direction = Rngon.vector3(0, 0, 0);
+                const movementSpeed = 0.5;
+
+                if (cameraMovement.left) direction.y += -1;
+                if (cameraMovement.right) direction.y += 1;
+                if (cameraMovement.up) direction.x += -1;
+                if (cameraMovement.down) direction.x +=  1;
+
+                Rngon.vector3.normalize(direction);
+                textureUserOffsetX += (direction.x * movementSpeed);
+                textureUserOffsetY += (direction.y * movementSpeed);
             }
             
             textureMousePickBuffer.length = 0;
@@ -157,84 +275,11 @@ Rsed.scenes["texture"] = (function()
 
         handle_user_interaction: function()
         {
-            handle_keyboard_input();
             handle_mouse_input();
         },
     });
 
     return scene;
-
-    function handle_keyboard_input()
-    {
-        // Handle keyboard input to move the texture.
-        {
-            const direction = Rngon.vector3(0, 0, 0);
-            const movementSpeed = 0.5;
-
-            if (Rsed.ui.inputState.key_down("s")) direction.x += -1;
-            if (Rsed.ui.inputState.key_down("f")) direction.x +=  1;
-            if (Rsed.ui.inputState.key_down("e")) direction.y += -1;
-            if (Rsed.ui.inputState.key_down("d")) direction.y +=  1;
-
-            Rngon.vector3.normalize(direction);
-            textureUserOffsetX += (direction.x * movementSpeed);
-            textureUserOffsetY += (direction.y * movementSpeed);
-        }
-
-        // Handle keyboard input for one-off events, where the key press is registered
-        // only once (no repeat).
-        {
-            if (Rsed.ui.inputState.key_down("z"))
-            {
-                if (Rsed.ui.inputState.key_down("control") &&
-                    Rsed.ui.inputState.key_down("shift"))
-                {
-                    Rsed.ui.undoStack.redo();
-                }
-                else if (Rsed.ui.inputState.key_down("control"))
-                {
-                    Rsed.ui.undoStack.undo();
-                }
-
-                Rsed.ui.inputState.set_key_down("z", false);
-            }
-
-            if (Rsed.ui.inputState.key_down("y") &&
-                Rsed.ui.inputState.key_down("control") )
-            {
-                Rsed.ui.undoStack.redo();
-
-                Rsed.ui.inputState.set_key_down("y", false);
-            }
-            
-            if (Rsed.ui.inputState.key_down("q"))
-            {
-                Rsed.core.set_scene((Rsed.core.current_scene() === Rsed.scenes["3d"])? "tilemap" : "3d");
-                Rsed.ui.inputState.set_key_down("q", false);
-            }
-
-            if (Rsed.ui.inputState.key_down("a"))
-            {
-                sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
-                Rsed.ui.inputState.set_key_down("a", false);
-
-                // Prevent a mouse click from acting on the ground behind the pane when the pane
-                // is brought up, and on the pane when the pane has been removed.
-                updateMouseHoverOnFrameFinish = true;
-            }
-
-            for (const brushSizeKey of ["1", "2", "3", "4", "5"])
-            {
-                if (Rsed.ui.inputState.key_down(brushSizeKey))
-                {
-                    Rsed.ui.groundBrush.set_brush_size((brushSizeKey == 5)? 8 : (brushSizeKey - 1));
-                    Rsed.ui.inputState.set_key_down(brushSizeKey, false);
-                }
-            }
-        }
-
-        return;
-    }
 
     function handle_mouse_input()
     {

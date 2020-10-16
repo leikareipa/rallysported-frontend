@@ -22,6 +22,8 @@ Rsed.scene = function(args = {})
             draw_mesh: ()=>{},
             draw_ui: ()=>{},
             handle_user_interaction: ()=>{},
+            on_key_fire: ()=>{},
+            on_key_release: ()=>{},
         },
         ...args
     };

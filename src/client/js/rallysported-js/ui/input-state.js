@@ -13,8 +13,8 @@
 Rsed.ui.inputState = (function()
 {
     // For each key code, a boolean to indicate whether that key is current down. Note
-    // that the key codes are stored as lowercase characters, so e.g. 69 is stored as "e".
-    const keyboardState = [];
+    // that the key codes are stored as uppercase characters, so e.g. 69 is stored as "E".
+    const keyboardState = {};
 
     const mouseState =
     {
@@ -193,7 +193,8 @@ Rsed.ui.inputState = (function()
         {
             Rsed.throw_if_not_type("string", key);
 
-            return Boolean(keyboardState[key.toUpperCase()]);
+            return Boolean(keyboardState[key.toUpperCase()] &&
+                           keyboardState[key.toUpperCase()].isDown);
         },
 
         current_mouse_hover: function()
@@ -239,7 +240,13 @@ Rsed.ui.inputState = (function()
 
         reset_keys: function()
         {
-            keyboardState.fill(false);
+            for (const keyIdx of Object.keys(keyboardState))
+            {
+                clearTimeout(keyboardState[keyIdx].cooldown);
+                clearInterval(keyboardState[keyIdx].repeat);
+
+                keyboardState[keyIdx].isDown = false;
+            }
         },
 
         reset_wheel_scroll: function()
@@ -267,6 +274,9 @@ Rsed.ui.inputState = (function()
             }
         },
         
+        // Mark the current key as being or not being down. Note that when a key is
+        // marked as being down, it'll keep firing (auto-repeating) until it's marked
+        // as being not down.
         set_key_down: function(keyCode, isDown = false)
         {
             Rsed.throw_if_not_type("boolean", isDown);
@@ -281,7 +291,31 @@ Rsed.ui.inputState = (function()
                 }
             })();
 
-            keyboardState[keyIdx] = isDown;
+            keyboardState[keyIdx] = (keyboardState[keyIdx] || {});
+            keyboardState[keyIdx].isDown = isDown;
+
+            clearTimeout(keyboardState[keyIdx].cooldown);
+            clearInterval(keyboardState[keyIdx].repeat);
+            keyboardState[keyIdx].cooldown = null;
+            keyboardState[keyIdx].repeat = null;
+
+            if (isDown)
+            {
+                keyboardState[keyIdx].cooldown = setTimeout(()=>
+                {
+                    keyboardState[keyIdx].repeat = setInterval(fire_key, 75);
+                }, 250);
+            }
+
+            fire_key(false);
+
+            function fire_key(isRepeat = true)
+            {
+                if (Rsed.core.current_scene())
+                {
+                    Rsed.core.current_scene()[(isDown? "on_key_fire" : "on_key_release")](keyIdx, isRepeat);
+                }
+            }
         },
 
         set_mouse_pos: function(x = 0, y = 0)
