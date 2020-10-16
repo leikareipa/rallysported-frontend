@@ -15,6 +15,13 @@
 /// might otherwise fall through the dropdown menu.
 let RSED_DROPDOWN_ACTIVATED = false;
 
+window.onblur = function()
+{
+    Rsed.ui.inputState.reset_keys();
+
+    return;
+}
+
 window.onunload = function()
 {
     Rsed.stream.stop();
