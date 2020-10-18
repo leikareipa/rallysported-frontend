@@ -11,7 +11,7 @@ You can find RallySportED-js running live on the web [here](https://www.tarpeeks
 ![](./images/screenshots/beta.8/yleiso-ek.png)
 
 # End-user's guide
-An end-user's guide is provided in the [rallysported-js/user-guide/](rallysported-js/user-guide/) directory; and hosted live [here](https://www.tarpeeksihyvaesoft.com/rallysported/user-guide/).
+An end-user's guide is provided in the [distributable/user-guide/](distributable/user-guide/)  directory; and hosted live [here](https://www.tarpeeksihyvaesoft.com/rallysported/user-guide/).
 
 The guide walks you through the steps to creating a new track and getting it up and running in Rally-Sport.
 
@@ -23,9 +23,9 @@ To set up RallySportED-js on your server, simply copy over the [distributable/](
 
 - You can rename the `distributable` directory however you want, but its internal structure should remain as-is.
 
-You should now be able to run RallySportED-js in a browser by navigating to where you placed the files on your server, such that [rallysported-js/index.html](rallysported-js/index.html) is served.
+You should now be able to run RallySportED-js in a browser by navigating to where you placed the files on your server, such that [distributable/index.html](distributable/index.html) is served.
 
-By default, the app will load Rally-Sport's track #4, from [rallysported-js/client/assets/tracks/demo-4.json](rallysported-js/client/assets/tracks/demo-4.json). For information on how to load a different track, see the [end user's guide](#end-users-guide). To find out more about RallySportED's data formats, see the [data formats](#data-formats) section.
+By default, the app will load Rally-Sport's track #4, from [distributable/client/assets/tracks/demo-4.json](distributable/client/assets/tracks/demo-4.json). For information on how to load a different track, see the [end user's guide](#end-users-guide). To find out more about RallySportED's data formats, see the [data formats](#data-formats) section.
 
 ## Data formats
 ### Rally-Sport's track data
@@ -79,7 +79,7 @@ A project's manifesto file tells the [RallySportED Loader](https://github.com/le
 *(Coming: A more in-depth description of the manifesto file.)*
 
 ### RallySportED-js's JSON track format
-For convenience, RallySportED-js stores the original Rally-Sport tracks &ndash; converted into RallySportED projects &ndash; in a JSON wrapper, which provides room for additional metadata. You can find examples of these JSON track files in the [rallysported-js/client/assets/tracks/](rallysported-js/client/assets/tracks/) directory.
+For convenience, RallySportED-js stores the original Rally-Sport tracks &ndash; converted into RallySportED projects &ndash; in a JSON wrapper, which provides room for additional metadata. You can find examples of these JSON track files in the [distributable/client/assets/tracks/](distributable/client/assets/tracks/) directory.
 
 A JSON track file has the following format:
 
