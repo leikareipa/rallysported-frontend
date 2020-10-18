@@ -37,48 +37,28 @@ helpTopics["What's RallySportED?"] = `
 
 helpTopics["System requirements"] = `
     <p>
-        RallySportED-js requires a compliant browser - generally a version of Chrome or
-        Firefox updated in the last year or so -  with JavaScript enabled. Chrome tends
-        to offer the best performance and is the browser on which RallySportED-js is most
-        thoroughly tested.
+        RallySportED-js requires a recent, compliant browser with JavaScript enabled. Google
+        Chrome tends to offer the best performance and is also the only browser on which
+        RallySportED-js is regularly tested.
     </p>
 
     <p>
-        The table below lists the <em>approximate</em> version numbers required to run
-        RallySportED-js on supported browsers.
-    </p>
-
-    <table>
-        <tr>
-            <th align="center" width="90">
-                Chrome
-            </th>
-            <th align="center" width="90">
-                Firefox
-            </th>
-            <th align="center" width="90">
-                Opera
-            </th>
-            <th align="center" width="90">
-                Safari
-            </th>
-        </tr>
-        <tr>
-            <td align="center">64</td>
-            <td align="center">48</td>
-            <td align="center">51</td>
-            <td align="center">11</td>
-        </tr>
-    </table>
-
-    <p>
-        Since the app uses software 3D rendering, you'll benefit from having more CPU
-        speed. A mid-range desktop computer bought within the last couple of years should
-        suffice.
+        Since RallySportED-js uses software 3D rendering, you'll benefit from having a decent
+        CPU. A mid-range desktop or laptop computer bought within the last five or so
+        years should suffice.
     </p>
 
     <p>
         To operate the RallySportED-js user interface, a mouse and keyboard are required.
+        With a touch screen, you can scroll the camera, but that's it.
+    </p>
+
+    <p>
+        RallySportED-js remains largely untested on Apple's operating systems; and at times,
+        these systems deal poorly with apps written more with Linux or Windows in mind.
+        Since the dude making RallySportED-js doesn't have access to Apple's hardware, Apple
+        users are encouraged to actively file issue reports in the RallySportED-js GitHub
+        repo.
     </p>
 `;
 
