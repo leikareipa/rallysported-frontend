@@ -79,11 +79,16 @@ body
     display: flex;
 }
 
+#html-ui .button-bar.left
+{
+    border-right: 1px solid dimgray;
+    border-radius: 2px;
+}
+
 #html-ui .button-bar.right
 {
-    border-left: 1px solid dimgray;
-    margin-left: 10px;
-    padding-left: 10px;
+    border-left: 1px solid #bababa;
+    border-radius: 2px;
 }
 
 #html-ui .button
