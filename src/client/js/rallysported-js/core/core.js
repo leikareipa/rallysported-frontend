@@ -106,7 +106,7 @@ Rsed.core = (function()
 
                 if (frameCount >= 180)
                 {
-                    const shade = Math.max(0, (168 - ((frameCount - 180) / 1)));
+                    const shade = 168;
 
                     currentScale = Rsed.lerp(currentScale, targetScale, 0.0001);
 

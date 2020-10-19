@@ -12,14 +12,14 @@ body
     cursor: url("./client/assets/cursors/rsed-cursor-arrow.png"), auto;
     text-align: center;
     align-content: center;
-    background-color: #a8a8a8;
+    background-color: black;
     color: rgb(255, 255, 255);
     padding: 0;
     margin: 0;
     overflow-y: hidden;
-    background-size: 20px 20px;
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                      linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 25px 25px;
+    background-image: linear-gradient(to right, rgb(20, 20, 20) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgb(20, 20, 20) 1px, transparent 1px);
 }
 
 /* For the HTML5 canvas that displays RallySportED's render output.*/
@@ -49,7 +49,7 @@ body
 #html-ui
 {
     font-family: sans-serif;
-    background-image: linear-gradient(rgb(170, 170, 170), rgb(133, 133, 133));
+    background-image: linear-gradient(rgb(60, 60, 60), rgb(60, 60, 60));
     display: flex;
     line-height: 180%;
     width: 100vw;
@@ -58,8 +58,8 @@ body
     position: absolute;
     left: 0;
     top: 0;
-    filter: drop-shadow(0 1px 0px rgba(0, 0, 0, 0.4));
     cursor: initial;
+    border-bottom: 1px solid black;
 }
 
 #html-ui #track-name-display
@@ -81,13 +81,13 @@ body
 
 #html-ui .button-bar.left
 {
-    border-right: 1px solid dimgray;
+    border-right: 1px solid black;
     border-radius: 2px;
 }
 
 #html-ui .button-bar.right
 {
-    border-left: 1px solid #bababa;
+    border-left: 1px solid #636363;
     border-radius: 2px;
 }
 
@@ -99,21 +99,20 @@ body
     vertical-align: text-bottom;
     font-size: 85%;
     text-decoration: none;
-    color: white;
-    background-image: linear-gradient(rgb(170, 170, 170), rgb(133, 133, 133));
+    color: #c2c2c2;
+    background-image: linear-gradient(rgb(60, 60, 60), rgb(60, 60, 60));
     padding: 0 12px 0 12px;
 }
 
 #html-ui .button:hover
 {
-    background-color: rgba(255, 255, 255, 0.4);
-    background-image: linear-gradient(rgb(190, 190, 190), rgb(133, 133, 133));
+    color: white;
 }
 
 #html-ui .button:active
 {
     border-bottom: none;
-    background-image: linear-gradient(rgb(133, 133, 133), rgb(190, 190, 190));
+    background-image: linear-gradient(rgb(30, 30, 30), rgb(50, 50, 50));
 }
 
 #html-ui .button > a
@@ -122,14 +121,8 @@ body
     text-decoration: none;
 }
 
-#html-ui .button.stream
-{
-    color: inherit;
-}
-
 #html-ui .button .fas
 {
-    color: lightgray;
     margin-right: 2px;
 }
 
@@ -143,7 +136,6 @@ body
 
 #html-ui .button.stream.initializing
 {
-    color: lightgray;
     cursor: not-allowed;
     pointer-events: none;
 }
