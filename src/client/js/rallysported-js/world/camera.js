@@ -57,7 +57,7 @@ Rsed.world.camera = (function()
             {
                 const marginX = 8;
                 const marginY = 9;
-
+                
                 const maxX = (Rsed.core.current_project().maasto.width - this.view_width);
                 const maxY = (Rsed.core.current_project().maasto.width - this.view_height + 1);
 
@@ -164,7 +164,7 @@ Rsed.world.camera = (function()
 
         // How many track ground tiles, horizontally and vertically, should be
         // visible on screen when using this camera.
-        view_width: 18,
+        view_width: 24,
         view_height: 22,
     };
 
