@@ -231,7 +231,7 @@ Rsed.minimal_rngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 0] = red;
                                 pixelBuffer[pixelBufferIdx + 1] = green;
                                 pixelBuffer[pixelBufferIdx + 2] = blue;
-                                pixelBuffer[pixelBufferIdx + 3] = 255;
+                                pixelBuffer[pixelBufferIdx + 3] = (material.auxiliary.isCorner? 100 : 255);
 
                                 for (let b = 0; b < auxiliaryBuffers.length; b++)
                                 {

@@ -78,6 +78,10 @@ Rsed.world.meshBuilder = (function()
                         continue;
                     }
 
+                    const isCornerTile = ((x == 0) ||
+                                          (z == 0) ||
+                                          (x == (Rsed.world.camera.view_width - 1)));
+
                     // Coordinates in world units of the ground tile's top left vertex.
                     const vertX = (((x * Rsed.constants.groundTileSize) + centerView.x) - (fractionX * Rsed.constants.groundTileSize));
                     const vertZ = ((centerView.z - (z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
@@ -120,9 +124,7 @@ Rsed.world.meshBuilder = (function()
                         {
                             color: Rngon.color_rgba(heightDiff, heightDiff, heightDiff),
                             texture: texture,
-                            textureMapping: "ortho",
-                            uvWrapping: "clamp",
-                            hasWireframe: args.includeWireframe,
+                            hasWireframe: (!isCornerTile && args.includeWireframe),
                             auxiliary:
                             {
                                 // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
@@ -134,6 +136,8 @@ Rsed.world.meshBuilder = (function()
                                     groundTileX: tileX,
                                     groundTileY: (tileZ - 1),
                                 }),
+
+                                isCorner: isCornerTile,
                             }
                         });
 
@@ -154,6 +158,10 @@ Rsed.world.meshBuilder = (function()
                     {
                         continue;
                     }
+
+                    const isCornerTile = ((x == 0) ||
+                                          (z == 0) ||
+                                          (x == (Rsed.world.camera.view_width - 1)));
 
                     const vertX = (((x * Rsed.constants.groundTileSize) + centerView.x) - (fractionX * Rsed.constants.groundTileSize));
                     const vertZ = ((centerView.z - (z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
@@ -202,14 +210,12 @@ Rsed.world.meshBuilder = (function()
 
                         const billboardQuad = Rngon.ngon(billboardVertices,
                         {
-                            color: Rngon.color_rgba(255, 255, 255),
                             texture: billboardTexture,
-                            textureMapping: "ortho",
                             hasFill: true,
-                            hasWireframe: false,
                             auxiliary:
                             {
                                 mousePickId: null,
+                                isCorner: isCornerTile,
                             }
                         });
 
@@ -279,7 +285,9 @@ Rsed.world.meshBuilder = (function()
                                                                                : null)
                                                 : null);
 
-                const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x), (v.y + args.position.y), (v.z + args.position.z))),
+                const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x),
+                                                                              (v.y + args.position.y),
+                                                                              (v.z + args.position.z))),
                 {
                     color: (args.solidProps? (ngon.fill.type === "texture"? Rsed.visual.palette.color_at_idx(0)
                                                                           : Rsed.visual.palette.color_at_idx(ngon.fill.idx))
