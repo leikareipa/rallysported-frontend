@@ -38,6 +38,13 @@ Rsed.world.meshBuilder = (function()
                 ...args,
             };
 
+            // Returns true if the given XY coordinates are out of track bounds.
+            function out_of_bounds(x, y)
+            {
+                return Boolean((x < 0) || (x >= Rsed.core.current_project().maasto.width) ||
+                               (y < 1) || (y > Rsed.core.current_project().maasto.height));
+            }
+
             // The polygons that make up the track mesh.
             const trackPolygons = [];
 
@@ -58,6 +65,11 @@ Rsed.world.meshBuilder = (function()
                     // Coordinates of the current ground tile.
                     const tileX = (x + args.cameraPos.x);
                     const tileZ = (z + args.cameraPos.z);
+
+                    if (out_of_bounds(tileX, tileZ))
+                    {
+                        continue;
+                    }
 
                     // Coordinates in world units of the ground tile's top left vertex.
                     const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
@@ -130,6 +142,11 @@ Rsed.world.meshBuilder = (function()
                 {
                     const tileX = (x + args.cameraPos.x);
                     const tileZ = (z + args.cameraPos.z);
+
+                    if (out_of_bounds(tileX, tileZ))
+                    {
+                        continue;
+                    }
 
                     const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
                     const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));

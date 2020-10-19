@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 October 2020 01:34:33 UTC)
+// VERSION: live (19 October 2020 00:43:45 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3724,7 +3724,7 @@ groundTileSize: 128,
 // The margins, in number of tiles, on the sides of the track past which the user is
 // not allowed to move props (so that they don't accidentally get moved out of reach,
 // etc.).
-propTileMargin: 2,
+propTileMargin: -3,
 // The maximum number of props on a track.
 maxPropCount: 14,
 // How many hard-coded palettes there are in Rally-Sport's demo version.
@@ -3781,6 +3781,12 @@ paintHoverPala: false,
 },
 ...args,
 };
+// Returns true if the given XY coordinates are out of track bounds.
+function out_of_bounds(x, y)
+{
+return Boolean((x < 0) || (x >= Rsed.core.current_project().maasto.width) ||
+(y < 1) || (y > Rsed.core.current_project().maasto.height));
+}
 // The polygons that make up the track mesh.
 const trackPolygons = [];
 // We'll shift the track mesh by these values (world units) to center the mesh on screen.
@@ -3798,6 +3804,10 @@ for (let x = 0; x < Rsed.world.camera.view_width; x++)
 // Coordinates of the current ground tile.
 const tileX = (x + args.cameraPos.x);
 const tileZ = (z + args.cameraPos.z);
+if (out_of_bounds(tileX, tileZ))
+{
+continue;
+}
 // Coordinates in world units of the ground tile's top left vertex.
 const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
 const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
@@ -3860,6 +3870,10 @@ for (let x = 0; x < Rsed.world.camera.view_width; x++)
 {
 const tileX = (x + args.cameraPos.x);
 const tileZ = (z + args.cameraPos.z);
+if (out_of_bounds(tileX, tileZ))
+{
+continue;
+}
 const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
 const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
 const tilePalaIdx = (()=>
@@ -4041,8 +4055,12 @@ position.z += (deltaZ * moveSpeed);
 // Prevent the camera from moving past the track boundaries.
 if (enforceBounds)
 {
-position.x = Math.max(0, Math.min(position.x, Rsed.core.current_project().maasto.width - this.view_width));
-position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height + 1)));
+const marginX = 8;
+const marginY = 9;
+const maxX = (Rsed.core.current_project().maasto.width - this.view_width);
+const maxY = (Rsed.core.current_project().maasto.width - this.view_height + 1);
+position.x = Math.max(-marginX, Math.min(position.x, (maxX + marginX)));
+position.z = Math.max(-marginY, Math.min(position.z, (maxY + marginY)));
 }
 const newPos = this.position_floored();
 const posDelta =
@@ -7681,8 +7699,10 @@ frame.push(color);
 }
 }
 const cameraPos = Rsed.world.camera.position_floored();
-const camX = (cameraPos.x / xMul);
-const camZ = (cameraPos.z / yMul);
+const maxX = (Rsed.core.current_project().maasto.width - Rsed.world.camera.view_width);
+const maxZ = (Rsed.core.current_project().maasto.height - Rsed.world.camera.view_height);
+const camX = Math.max(0, (Math.min(maxX, cameraPos.x) / xMul));
+const camZ = Math.max(0, (Math.min(maxZ, cameraPos.z) / yMul));
 Rsed.ui.draw.image(frame, null, frameWidth, frameHeight, (offsetX - width + camX), (offsetY + camZ), true);
 }
 return;

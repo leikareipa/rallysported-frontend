@@ -55,8 +55,14 @@ Rsed.world.camera = (function()
             // Prevent the camera from moving past the track boundaries.
             if (enforceBounds)
             {
-                position.x = Math.max(0, Math.min(position.x, Rsed.core.current_project().maasto.width - this.view_width));
-                position.z = Math.max(1, Math.min(position.z, (Rsed.core.current_project().maasto.width - this.view_height + 1)));
+                const marginX = 8;
+                const marginY = 9;
+
+                const maxX = (Rsed.core.current_project().maasto.width - this.view_width);
+                const maxY = (Rsed.core.current_project().maasto.width - this.view_height + 1);
+
+                position.x = Math.max(-marginX, Math.min(position.x, (maxX + marginX)));
+                position.z = Math.max(-marginY, Math.min(position.z, (maxY + marginY)));
             }
 
             const newPos = this.position_floored();

@@ -86,8 +86,10 @@ Rsed.ui.component.tilemapMinimap =
                 }
 
                 const cameraPos = Rsed.world.camera.position_floored();
-                const camX = (cameraPos.x / xMul);
-                const camZ = (cameraPos.z / yMul);
+                const maxX = (Rsed.core.current_project().maasto.width - Rsed.world.camera.view_width);
+                const maxZ = (Rsed.core.current_project().maasto.height - Rsed.world.camera.view_height);
+                const camX = Math.max(0, (Math.min(maxX, cameraPos.x) / xMul));
+                const camZ = Math.max(0, (Math.min(maxZ, cameraPos.z) / yMul));
                 Rsed.ui.draw.image(frame, null, frameWidth, frameHeight, (offsetX - width + camX), (offsetY + camZ), true);
             }
 
