@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (19 October 2020 00:50:33 UTC)
+// VERSION: live (19 October 2020 02:57:38 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -24,6 +24,7 @@
 //	./src/client/js/rallysported-js/visual/canvas.js
 //	./src/client/js/rallysported-js/track/varimaa.js
 //	./src/client/js/rallysported-js/track/maasto.js
+//	./src/client/js/rallysported-js/track/kierros.js
 //	./src/client/js/rallysported-js/track/palat.js
 //	./src/client/js/rallysported-js/track/props.js
 //	./src/client/js/rallysported-js/ui/ui.js
@@ -3141,6 +3142,9 @@ projectDataContainer.byteSize().palat));
 const props = await Rsed.track.props(new Uint8Array(projectDataContainer.dataBuffer,
 projectDataContainer.byteOffset().text,
 projectDataContainer.byteSize().text));
+const kierros = await Rsed.track.kierros(new Uint8Array(projectDataContainer.dataBuffer,
+projectDataContainer.byteOffset().kierros,
+projectDataContainer.byteSize().kierros));
 const manifesto = projectData.manifesto;
 apply_manifesto();
 Rsed.log("\"" + projectData.meta.displayName + "\" is a valid RallySportED project. " +
@@ -4719,6 +4723,39 @@ byte1 = Math.abs(height);
 return [byte1, byte2];
 }
 };
+/*
+* Most recent known filename: js/track/kierros.js
+*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+Rsed.track = Rsed.track || {};
+// Provides information about a track's KIERROS data (the AI driver's checkpoints).
+// You can learn more about the KIERROS format at https://github.com/leikareipa/rallysported/tree/master/docs.
+Rsed.track.kierros = function(data = Uint8Array)
+{
+const checkpoints = [];
+const bytesPerCheckpoint = 8;
+const numCheckpoints = ((data.length / bytesPerCheckpoint) - 1);
+for (let i = 0; i < numCheckpoints; i++)
+{
+const idx = (i * bytesPerCheckpoint);
+checkpoints.push({
+x:          ((data[idx+0] | (data[idx+1] << 8)) / 128),
+y:          ((data[idx+2] | (data[idx+3] << 8)) / 128),
+orientation: (data[idx+4] | (data[idx+5] << 8)),
+speed:       (data[idx+6] | (data[idx+7] << 8)),
+});
+}
+const publicInterface =
+{
+checkpoints: Object.freeze(checkpoints),
+};
+return publicInterface;
+}
 /*
 * Most recent known filename: js/track/palat.js
 *

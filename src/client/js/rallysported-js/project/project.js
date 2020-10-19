@@ -135,6 +135,10 @@ Rsed.project = async function(projectArgs = {})
                                                         projectDataContainer.byteOffset().text,
                                                         projectDataContainer.byteSize().text));
 
+    const kierros = await Rsed.track.kierros(new Uint8Array(projectDataContainer.dataBuffer,
+                                                            projectDataContainer.byteOffset().kierros,
+                                                            projectDataContainer.byteSize().kierros));
+
     const manifesto = projectData.manifesto;
 
     apply_manifesto();
