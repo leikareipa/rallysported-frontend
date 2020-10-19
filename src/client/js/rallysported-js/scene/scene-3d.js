@@ -272,9 +272,10 @@ Rsed.scenes["3d"] = (function()
 
         draw_mesh: function()
         {
-            Rsed.world.camera.move_camera((cameraMovement.up? -1 : cameraMovement.down? 1 : 0),
+            const moveSpeed = 1;
+            Rsed.world.camera.move_camera((moveSpeed * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
                                           0,
-                                          (cameraMovement.left? -1 : cameraMovement.right? 1 : 0));
+                                          (moveSpeed * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
 
             const trackMesh = Rsed.world.meshBuilder.track_mesh(
             {

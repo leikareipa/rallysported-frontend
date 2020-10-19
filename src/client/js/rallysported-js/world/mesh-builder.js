@@ -23,10 +23,9 @@ Rsed.world.meshBuilder = (function()
 
             args =
             {
-                ...// Default args.
-                {
-                    cameraPos:
-                    {
+                // Default args.
+                ...{
+                    cameraPos: {
                         x: 0,
                         y: 0,
                         z: 0,
@@ -37,6 +36,11 @@ Rsed.world.meshBuilder = (function()
                 },
                 ...args,
             };
+
+            if (!args.cameraPosFloat)
+            {
+                args.cameraPosFloat = args.cameraPos;
+            }
 
             // Returns true if the given XY coordinates are out of track bounds.
             function out_of_bounds(x, y)
@@ -57,6 +61,9 @@ Rsed.world.meshBuilder = (function()
             const mouseHover = Rsed.ui.inputState.current_mouse_hover();
             const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
 
+            const fractionX = (args.cameraPosFloat.x - args.cameraPos.x);
+            const fractionZ = (args.cameraPosFloat.z - args.cameraPos.z);
+
             for (let z = 0; z < Rsed.world.camera.view_height; z++)
             {
                 // Add the ground tiles.
@@ -72,8 +79,8 @@ Rsed.world.meshBuilder = (function()
                     }
 
                     // Coordinates in world units of the ground tile's top left vertex.
-                    const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
-                    const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
+                    const vertX = (((x * Rsed.constants.groundTileSize) + centerView.x) - (fractionX * Rsed.constants.groundTileSize));
+                    const vertZ = ((centerView.z - (z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
 
                     const tilePalaIdx = (()=>
                     {
@@ -148,9 +155,9 @@ Rsed.world.meshBuilder = (function()
                         continue;
                     }
 
-                    const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
-                    const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
-                    
+                    const vertX = (((x * Rsed.constants.groundTileSize) + centerView.x) - (fractionX * Rsed.constants.groundTileSize));
+                    const vertZ = ((centerView.z - (z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
+
                     const tilePalaIdx = (()=>
                     {
                         let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
@@ -220,8 +227,9 @@ Rsed.world.meshBuilder = (function()
                     (pos.z >= (args.cameraPos.z * Rsed.constants.groundTileSize)) &&
                     (pos.z <= ((args.cameraPos.z + Rsed.world.camera.view_height) * Rsed.constants.groundTileSize)))
                 {
-                    const x = (pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize));
-                    const z = (centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize));
+                    const x = ((pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize)) - (fractionX * Rsed.constants.groundTileSize));
+                    const z = ((centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
+                    
                     const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
                     const y = (groundHeight + pos.y);
 
