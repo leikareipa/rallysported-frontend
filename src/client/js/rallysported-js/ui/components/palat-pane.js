@@ -43,17 +43,8 @@ Rsed.ui.component.palatPane =
 
         component.draw = function(offsetX = 0, offsetY = 0)
         {
-            if (knownResX !== Rsed.visual.canvas.width ||
-                knownResY !== Rsed.visual.canvas.height ||
-                offsetX !== palatPaneOffsetX ||
-                offsetY !== palatPaneOffsetY)
-            {
-                knownResX = Rsed.visual.canvas.width;
-                knownResY = Rsed.visual.canvas.height;
-
-                generate_palat_pane();
-            }
-
+            generate_palat_pane();
+            
             offsetX -= palatPaneWidth;
 
             palatPaneOffsetX = offsetX;
