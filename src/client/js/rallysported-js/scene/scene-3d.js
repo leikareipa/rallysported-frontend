@@ -354,6 +354,17 @@ Rsed.scenes["3d"] = (function()
 
                     if (hover.type !== "ground") break;
 
+                    // Eyedropper.
+                    if (Rsed.ui.inputState.left_mouse_button_down() &&
+                        Rsed.ui.inputState.left_mouse_click_modifiers().includes("control"))
+                    {
+                        const palaIdx = Rsed.core.current_project().varimaa.tile_at(hover.groundTileX, hover.groundTileY);
+
+                        Rsed.ui.groundBrush.set_brush_pala_idx(palaIdx);
+
+                        break;
+                    }
+
                     // Add a new prop.
                     if (Rsed.ui.inputState.left_mouse_button_down() &&
                         Rsed.ui.inputState.left_mouse_click_modifiers().includes("shift"))
@@ -379,8 +390,7 @@ Rsed.scenes["3d"] = (function()
                     {
                         // Left button raises, right button lowers. Holding down Ctrl  reduces
                         // the rate of change.
-                        const delta = ((Rsed.ui.inputState.left_mouse_button_down()? 2 : -2)
-                                       / (Rsed.ui.inputState.key_down("control")? 2 : 1));
+                        const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : -2);
                         
                         Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
                                                                    delta,
