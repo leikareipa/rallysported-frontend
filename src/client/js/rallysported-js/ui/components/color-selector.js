@@ -31,8 +31,9 @@ Rsed.ui.component.colorSelector =
         const swatchMousePick = new Array(swatch.length);
 
         // A swatch indicating the currently-selecter color.
-        const curColorSwatchSideLen = 32;
-        const curColorSwatch = new Array(curColorSwatchSideLen * curColorSwatchSideLen);  
+        const curColorSwatchWidth = 33;
+        const curColorSwatchHeight = 32;
+        const curColorSwatch = new Array(curColorSwatchWidth * curColorSwatchHeight);  
 
         // The currently-selected color - an index to the current Rsed.visual.palette
         // palette.
@@ -116,8 +117,8 @@ Rsed.ui.component.colorSelector =
                 curColorSwatch.fill(Rsed.visual.palette.color_at_idx(currentColorIdx));
 
                 Rsed.ui.draw.image(curColorSwatch, null,
-                                   curColorSwatchSideLen, curColorSwatchSideLen,
-                                   (offsetX + (numSwatchesPerRow * swatchSideLen) + 2),
+                                   curColorSwatchWidth, curColorSwatchHeight,
+                                   (offsetX + (numSwatchesPerRow * swatchSideLen)),
                                    offsetY);
             }
         };

@@ -13,11 +13,6 @@ Rsed.scenes = Rsed.scenes || {};
 // A view of a given texture, allowing the user to paint the texture.
 Rsed.scenes["texture"] = (function()
 {
-    /// Temp hack. Lets the renderer know that we want it to update mouse hover information
-    /// once the next frame has finished rendering. This is used e.g. to keep proper track
-    /// mouse hover when various UI elements are toggled on/off.
-    let updateMouseHoverOnFrameFinish = false;
-
     // A reference to the Rsed.visual.texture() object that we're to edit.
     let texture = null;
 
@@ -33,6 +28,10 @@ Rsed.scenes["texture"] = (function()
     const sceneSettings = {
         // Which color (index to Rally-Sport's palette) to paint with.
         selectedColorIdx: false,
+
+        // Whether to show the PALAT pane; i.e. a side panel that displays all the available
+        // PALA textures.
+        showPalatPane: true,
     };
 
     // In which direction(s) the camera is currently moving. This is affected
@@ -51,6 +50,10 @@ Rsed.scenes["texture"] = (function()
         uiComponents = {
             fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
             colorSelector: Rsed.ui.component.colorSelector.instance(),
+            palatPane: Rsed.ui.component.palatPane.instance({
+                selectionCallback: (palaIdx)=>scene.set_texture(Rsed.core.current_project().palat.texture[palaIdx]),
+                indicateSelection: false,
+            }),
         };
     })();
 
@@ -113,6 +116,10 @@ Rsed.scenes["texture"] = (function()
             {
                 cameraMovement.right = true;
             }
+            else if (key_is("a") && !repeat)
+            {
+                sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
+            }
             else if (key_is("z"))
             {
                 if (Rsed.ui.inputState.key_down("control") &&
@@ -135,14 +142,6 @@ Rsed.scenes["texture"] = (function()
                 Rsed.core.set_scene("3d");
                 Rsed.ui.inputState.set_key_down("q", false);
             }
-            else if (key_is("a") && !repeat)
-            {
-                sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
-
-                // Prevent a mouse click from acting on the ground behind the pane when the pane
-                // is brought up, and on the pane when the pane has been removed.
-                updateMouseHoverOnFrameFinish = true;
-            }
             else
             {
                 for (const brushSizeKey of ["1", "2", "3", "4", "5"])
@@ -164,27 +163,24 @@ Rsed.scenes["texture"] = (function()
             if (uiComponents) // Once the UI components have finished async loading...
             {
                 uiComponents.colorSelector.update(sceneSettings);
-                uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 35), 11);
+                uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 101), 11);
                 
                 if (Rsed.core.fps_counter_enabled())
                 {
                     uiComponents.fpsIndicator.update(sceneSettings);
                     uiComponents.fpsIndicator.draw(3, 10);
                 }
+
+                if (sceneSettings.showPalatPane)
+                {
+                    uiComponents.palatPane.update(sceneSettings);
+                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 47);
+                }
             }
 
             Rsed.ui.draw.mouse_cursor();
 
             Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
-
-            // Note: We assume that UI drawing is the last step in rendering the current
-            // frame; and thus that once the UI rendering has finished, the frame is finished
-            // also.
-            if (updateMouseHoverOnFrameFinish)
-            {
-                Rsed.ui.inputState.update_mouse_hover();
-                updateMouseHoverOnFrameFinish = false;
-            }
 
             return;
         },
