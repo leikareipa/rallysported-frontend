@@ -1,5 +1,5 @@
 /*
- * 2020 Tarpeeksi Hyvae Soft
+ * 2018-2020 Tarpeeksi Hyvae Soft
  * 
  * Software: RallySportED-js
  * 
@@ -11,15 +11,32 @@
 // The user can click on the thumbnails to select which texture to paint the ground with.
 Rsed.ui.component.palatPane =
 {
-    instance: function()
+    instance: function(options = {})
     {
+        options = {
+            // Default options.
+            ...{
+                // Whether to draw an indicator around the currently-selected PALA.
+                indicateSelection: true,
+
+                // Whether to draw an indicator around the PALA over which the mouse currently hovers.
+                indicateHover: true,
+
+                // Whether to always indicate which PALA index the cursor is hovering
+                // over.
+                alwaysShowIdxTag: false,
+
+                // A function called when the user selects a PALA.
+                selectionCallback: (palaIdx)=>{},
+            },
+            ...options,
+        };
+
         const component = Rsed.ui.component();
 
         // We'll pre-generate the thumbnails into these pixel buffers.
         const palatPaneBuffer = [];
         const palatPaneMousePick = [];
-        let knownResX = undefined;
-        let knownResY = undefined;
         let numPalatPaneCols = 9;
         let numPalatPaneRows = 29;
         let palatPaneWidth = 0;
@@ -37,6 +54,7 @@ Rsed.ui.component.palatPane =
                     Rsed.ui.inputState.right_mouse_button_down())
                 {
                     Rsed.ui.groundBrush.set_brush_pala_idx(grab.palaIdx);
+                    options.selectionCallback(grab.palaIdx);
                 }
             }
         };
@@ -44,7 +62,7 @@ Rsed.ui.component.palatPane =
         component.draw = function(offsetX = 0, offsetY = 0)
         {
             generate_palat_pane();
-            
+
             offsetX -= palatPaneWidth;
 
             palatPaneOffsetX = offsetX;
@@ -56,7 +74,7 @@ Rsed.ui.component.palatPane =
                                    palatPaneWidth, palatPaneHeight,
                                    palatPaneOffsetX, palatPaneOffsetY);
 
-                // Draw a frame around the currently-selected PALA.
+                
                 {
                     const frame = [];
                     const dottedFrame = []
@@ -85,42 +103,42 @@ Rsed.ui.component.palatPane =
                         }
                     }
 
-                    const selectedPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
-                    const y = Math.floor(selectedPalaIdx / numPalatPaneCols);
-                    const x = (selectedPalaIdx - y * numPalatPaneCols);
+                    // Draw a frame around the currently-selected PALA.
+                    if (options.indicateSelection)
+                    {
+                        const selectedPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
+                        const y = Math.floor(selectedPalaIdx / numPalatPaneCols);
+                        const x = (selectedPalaIdx - y * numPalatPaneCols);
 
-                    Rsed.ui.draw.image(frame, null,
-                                       frameWidth, frameHeight,
-                                       palatPaneOffsetX + x * 8, palatPaneOffsetY + y * 8,
-                                       true);
+                        Rsed.ui.draw.image(frame, null,
+                                        frameWidth, frameHeight,
+                                        palatPaneOffsetX + x * 8, palatPaneOffsetY + y * 8,
+                                        true);
+                    }
 
                     const mouseHover = component.is_hovered()
 
                     // Draw a frame around the PALA over which the mouse cursor is hovering.
-                    //
-                    // Note: we don't draw the frame if the cursor is also grabbing something;
-                    // to prevent the PALAT pane from responding to mouse hover while the cursor
-                    // is grabbing some other element.
-                    if (mouseHover && !Rsed.ui.inputState.current_mouse_grab())
+                    if (mouseHover && options.indicateHover)
                     {
                         Rsed.ui.draw.image(dottedFrame, null,
                                            frameWidth, frameHeight,
                                            mouseHover.cornerX, mouseHover.cornerY,
                                            true);
+                    }
 
-                        // Draw a label on the PALA over which the mouse cursor hovers in the
-                        // PALAT pane.
-                        if (Rsed.ui.inputState.key_down("tab"))
-                        {
-                            const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
-                            const labelPixelWidth = (label.length * Rsed.ui.font.font_width());
-                            const labelPixelHeight = Rsed.ui.font.font_height();
+                    // Draw a label on the PALA over which the mouse cursor hovers in the
+                    // PALAT pane.
+                    if (options.alwaysShowIdxTag || Rsed.ui.inputState.key_down("tab"))
+                    {
+                        const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
+                        const labelPixelWidth = (label.length * Rsed.ui.font.font_width());
+                        const labelPixelHeight = Rsed.ui.font.font_height();
 
-                            const x = (Rsed.ui.inputState.current_mouse_hover().cornerX - labelPixelWidth + 1);
-                            const y = (Rsed.ui.inputState.current_mouse_hover().cornerY - labelPixelHeight + 2);
+                        const x = (Rsed.ui.inputState.current_mouse_hover().cornerX - labelPixelWidth + 1);
+                        const y = (Rsed.ui.inputState.current_mouse_hover().cornerY - labelPixelHeight + 2);
 
-                            Rsed.ui.draw.string(label, x, y);
-                        }
+                        Rsed.ui.draw.string(label, x, y);
                     }
                 }
             }
@@ -147,7 +165,7 @@ Rsed.ui.component.palatPane =
             palatPaneBuffer.length = 0;
             palatPaneMousePick.length = 0;
             
-            palatPaneHeight = (Math.floor((Rsed.visual.canvas.height - palatPaneOffsetY) / palaThumbnailHeight) - 2) * palaThumbnailHeight
+            palatPaneHeight = ((Math.round((Rsed.visual.canvas.height - palatPaneOffsetY) / palaThumbnailHeight) - 1) * palaThumbnailHeight);
             numPalatPaneRows = Math.ceil(palatPaneHeight / (palaHeight / 2));
             numPalatPaneCols = Math.ceil(maxNumPalas / numPalatPaneRows);
             palatPaneWidth = (numPalatPaneCols * (palaWidth / 2));
