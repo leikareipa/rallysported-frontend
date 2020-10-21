@@ -16,9 +16,14 @@ Rsed.ui.component.colorSelector =
     {
         const component = Rsed.ui.component();
 
-        const swatchSideLen = Rsed.ui.font.font_height();
+        // A swatch of a particular color, clickable by the user to select that color.
+        const swatchSideLen = 8;
         const swatch = new Array(swatchSideLen * swatchSideLen);
-        const mousePick = new Array(swatch.length);
+        const swatchMousePick = new Array(swatch.length);
+
+        // A swatch indicating the currently-selecter color.
+        const curColorSwatchSideLen = 32;
+        const curColorSwatch = new Array(curColorSwatchSideLen * curColorSwatchSideLen);  
 
         // The currently-selected color - an index to the current Rsed.visual.palette
         // palette.
@@ -42,7 +47,7 @@ Rsed.ui.component.colorSelector =
         {
             Rsed.throw_if_not_type("number", offsetX, offsetY);
 
-            const numSwatchesPerRow = 4;
+            const numSwatchesPerRow = 8;
 
             // Draw a grid of color swatches.
             for (let i = 0; i < Rsed.visual.palette.numColorsInPalette; i++)
@@ -52,13 +57,13 @@ Rsed.ui.component.colorSelector =
 
                 swatch.fill(Rsed.visual.palette.color_at_idx(i));
 
-                mousePick.fill({
+                swatchMousePick.fill({
                     type: "ui-component",
                     componentId: component.id,
                     colorIdx: i,
                 });
 
-                Rsed.ui.draw.image(swatch, mousePick,
+                Rsed.ui.draw.image(swatch, swatchMousePick,
                                    swatchSideLen, swatchSideLen,
                                    (offsetX + (x * swatchSideLen)),
                                    (offsetY + (y * swatchSideLen)));
@@ -67,8 +72,8 @@ Rsed.ui.component.colorSelector =
             // Draw a frame around the currently-selected swatch.
             {
                 const frame = [];
-                const frameWidth = 9;
-                const frameHeight = 9;
+                const frameWidth = (swatchSideLen + 2);
+                const frameHeight = (swatchSideLen + 2);
                 
                 for (let y = 0; y < frameHeight; y++)
                 {
@@ -91,6 +96,16 @@ Rsed.ui.component.colorSelector =
                                    (offsetX + (x * swatchSideLen) - 1),
                                    (offsetY + (y * swatchSideLen) - 1),
                                    true);
+            }
+
+            // Draw a large swatch of the currently-selected color.
+            {
+                curColorSwatch.fill(Rsed.visual.palette.color_at_idx(currentColorIdx));
+
+                Rsed.ui.draw.image(curColorSwatch, null,
+                                   curColorSwatchSideLen, curColorSwatchSideLen,
+                                   (offsetX + (numSwatchesPerRow * swatchSideLen) + 2),
+                                   offsetY);
             }
         };
 
