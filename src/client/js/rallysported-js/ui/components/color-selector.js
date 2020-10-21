@@ -12,8 +12,17 @@
 // (e.g. to paint a texture with).
 Rsed.ui.component.colorSelector =
 {
-    instance: function()
+    instance: function(options = {})
     {
+        options = {
+            // Default options.
+            ...{
+                // A function called when the user selects a color.
+                selectionCallback: (colorIdx)=>{},
+            },
+            ...options,
+        };
+
         const component = Rsed.ui.component();
 
         // A swatch of a particular color, clickable by the user to select that color.
@@ -38,7 +47,11 @@ Rsed.ui.component.colorSelector =
 
             if (component.is_grabbed())
             {
-                currentColorIdx = Rsed.ui.inputState.current_mouse_grab().colorIdx;
+                const selectedColorIdx = Rsed.ui.inputState.current_mouse_grab().colorIdx;
+
+                currentColorIdx = selectedColorIdx;
+                options.selectionCallback(selectedColorIdx);
+
                 Rsed.ui.inputState.reset_mouse_grab();
             }
         };
