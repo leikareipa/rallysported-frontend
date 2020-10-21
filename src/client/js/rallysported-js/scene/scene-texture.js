@@ -213,14 +213,15 @@ Rsed.scenes["texture"] = (function()
                                             Rngon.vertex(texture.width, 0, textureZoom, 1, 0),
                                             Rngon.vertex(texture.width, texture.height, textureZoom, 1, 1),
                                             Rngon.vertex(0, texture.height, textureZoom, 0, 1)],
-                                            {
-                                                color: Rngon.color_rgba(255, 255, 255),
-                                                texture: texture,
-                                                hasWireframe: true,
-                                                wireframeColor: Rngon.color_rgba(255, 255, 0),
-                                                textureMapping: "affine",
-                                                uvWrapping: "clamp",
-                                            });
+            {
+                color: Rngon.color_rgba(255, 255, 255),
+                texture: texture,
+                hasWireframe: true,
+                wireframeColor: Rngon.color_rgba(255, 255, 0),
+                textureMapping: "affine",
+                uvWrapping: "clamp",
+                allowAlphaReject: false,
+            });
 
             const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [Rngon.mesh([textureNgon])],
             {
@@ -311,7 +312,7 @@ Rsed.scenes["texture"] = (function()
         }
         else if (Rsed.ui.inputState.mouse_wheel_scroll())
         {
-            textureZoom += (Rsed.ui.inputState.mouse_wheel_scroll() / 3);
+            textureZoom += (Rsed.ui.inputState.mouse_wheel_scroll() / 10);
             Rsed.ui.inputState.reset_wheel_scroll();
         }
         
