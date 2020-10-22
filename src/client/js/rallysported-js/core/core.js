@@ -217,6 +217,7 @@ Rsed.core = (function()
         programFPS = Math.round(1000 / (frameDeltaMs || 1));
 
         currentScene.handle_user_interaction();
+        Rsed.ui.cursor.update_cursor();
 
         // Render the next frame.
         Rsed.visual.canvas.mousePickingBuffer.fill(null);

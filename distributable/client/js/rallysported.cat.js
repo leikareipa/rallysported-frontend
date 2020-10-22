@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (22 October 2020 13:54:09 UTC)
+// VERSION: live (22 October 2020 23:25:12 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -34,6 +34,7 @@
 //	./src/client/js/rallysported-js/ui/popup-notification.js
 //	./src/client/js/rallysported-js/ui/font.js
 //	./src/client/js/rallysported-js/ui/ground-brush.js
+//	./src/client/js/rallysported-js/ui/cursor.js
 //	./src/client/js/rallysported-js/ui/draw.js
 //	./src/client/js/rallysported-js/ui/window.js
 //	./src/client/js/rallysported-js/ui/input-state.js
@@ -6467,6 +6468,58 @@ return brushPalaIdx;
 return publicInterface;
 })();
 /*
+* Most recent known filename: js/ui/cursor.js
+*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+Rsed.ui.cursor = (function()
+{
+const cursors = {
+arrow: "./client/assets/cursors/rsed-cursor-arrow.png",
+openHand: "./client/assets/cursors/rsed-cursor-openhand.png",
+};
+cursors.default = cursors.arrow;
+let currentCursor = cursors.default;
+const publicInterface = {
+// Inspect the app's current state (e.g. of user input), and select
+// the most appropriate cursor.
+update_cursor: function()
+{
+const cursor = (()=>
+{
+const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
+if (mouseHover && mouseHover.type == "prop")
+{
+return cursors.openHand;
+}
+return cursors.default;
+})();
+set_cursor(cursor);
+return;
+},
+};
+return publicInterface;
+function set_cursor(cursor = cursors.default)
+{
+if (!cursor)
+{
+cursor = cursors.default;
+}
+if (currentCursor == cursor)
+{
+return;
+}
+document.body.style.cursor = `url(${cursor}), auto`;
+currentCursor = cursor;
+return;
+}
+})();
+/*
 * Most recent known filename: js/ui/draw.js
 *
 * Tarpeeksi Hyvae Soft 2018 /
@@ -9588,6 +9641,7 @@ function tick(timestamp = 0, frameDeltaMs = 0)
 if (!coreIsRunning) return;
 programFPS = Math.round(1000 / (frameDeltaMs || 1));
 currentScene.handle_user_interaction();
+Rsed.ui.cursor.update_cursor();
 // Render the next frame.
 Rsed.visual.canvas.mousePickingBuffer.fill(null);
 currentScene.draw_mesh();
