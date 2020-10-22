@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (19 October 2020 02:57:38 UTC)
+// VERSION: live (22 October 2020 13:33:55 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -79,7 +79,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 (function(a,b){if("function"==typeof define&&define.amd)define([],b);else if("undefined"!=typeof exports)b();else{b(),a.FileSaver={exports:{}}.exports}})(this,function(){"use strict";function b(a,b){return"undefined"==typeof b?b={autoBom:!1}:"object"!=typeof b&&(console.warn("Deprecated: Expected third argument to be a object"),b={autoBom:!b}),b.autoBom&&/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a.type)?new Blob(["\uFEFF",a],{type:a.type}):a}function c(b,c,d){var e=new XMLHttpRequest;e.open("GET",b),e.responseType="blob",e.onload=function(){a(e.response,c,d)},e.onerror=function(){console.error("could not download file")},e.send()}function d(a){var b=new XMLHttpRequest;b.open("HEAD",a,!1);try{b.send()}catch(a){}return 200<=b.status&&299>=b.status}function e(a){try{a.dispatchEvent(new MouseEvent("click"))}catch(c){var b=document.createEvent("MouseEvents");b.initMouseEvent("click",!0,!0,window,0,0,0,80,20,!1,!1,!1,!1,0,null),a.dispatchEvent(b)}}var f="object"==typeof window&&window.window===window?window:"object"==typeof self&&self.self===self?self:"object"==typeof global&&global.global===global?global:void 0,a=f.saveAs||("object"!=typeof window||window!==f?function(){}:"download"in HTMLAnchorElement.prototype?function(b,g,h){var i=f.URL||f.webkitURL,j=document.createElement("a");g=g||b.name||"download",j.download=g,j.rel="noopener","string"==typeof b?(j.href=b,j.origin===location.origin?e(j):d(j.href)?c(b,g,h):e(j,j.target="_blank")):(j.href=i.createObjectURL(b),setTimeout(function(){i.revokeObjectURL(j.href)},4E4),setTimeout(function(){e(j)},0))}:"msSaveOrOpenBlob"in navigator?function(f,g,h){if(g=g||f.name||"download","string"!=typeof f)navigator.msSaveOrOpenBlob(b(f,h),g);else if(d(f))c(f,g,h);else{var i=document.createElement("a");i.href=f,i.target="_blank",setTimeout(function(){e(i)})}}:function(a,b,d,e){if(e=e||open("","_blank"),e&&(e.document.title=e.document.body.innerText="downloading..."),"string"==typeof a)return c(a,b,d);var g="application/octet-stream"===a.type,h=/constructor/i.test(f.HTMLElement)||f.safari,i=/CriOS\/[\d]+/.test(navigator.userAgent);if((i||g&&h)&&"object"==typeof FileReader){var j=new FileReader;j.onloadend=function(){var a=j.result;a=i?a:a.replace(/^data:[^;]*;/,"data:attachment/file;"),e?e.location.href=a:location=a,e=null},j.readAsDataURL(a)}else{var k=f.URL||f.webkitURL,l=k.createObjectURL(a);e?e.location=l:location.href=l,e=null,setTimeout(function(){k.revokeObjectURL(l)},4E4)}});f.saveAs=a.saveAs=a,"undefined"!=typeof module&&(module.exports=a)});
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (11 October 2020 21:09:34 UTC)
+// VERSION: beta live (21 October 2020 22:12:49 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -729,6 +729,8 @@ hasFill: true,
 isTwoSided: true,
 wireframeColor: Rngon.color_rgba(0, 0, 0),
 allowTransform: true,
+allowAlphaReject: true,
+allowAlphaBlend: true,
 auxiliary: {},
 };
 Rngon.ngon.perspective_divide = function(ngon)
@@ -1350,10 +1352,10 @@ let blue = 0;
 // Solid fill.
 if (!texture)
 {
-// Alpha-test the polygon. For partial transparency, we'll reject
+// Alpha-blend the polygon. For partial transparency, we'll reject
 // pixels in a particular pattern to create a see-through stipple
 // effect.
-if (material.color.alpha < 255)
+if (material.allowAlphaBlend && (material.color.alpha < 255))
 {
 // Full transparency.
 if (material.color.alpha <= 0)
@@ -1462,11 +1464,11 @@ const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
 // Make sure we gracefully exit if accessing the texture out of bounds.
 if (!texel) continue;
 // Alpha-test the texture. If the texel isn't fully opaque, skip it.
-if (texel.alpha !== 255) continue;
-// Alpha-test the polygon. For partial transparency, we'll reject
+if (material.allowAlphaReject && (texel.alpha !== 255)) continue;
+// Alpha-blend the polygon. For partial transparency, we'll reject
 // pixels in a particular pattern to create a see-through stipple
 // effect.
-if (material.color.alpha < 255)
+if (material.allowAlphaBlend && (material.color.alpha < 255))
 {
 // Full transparency.
 if (material.color.alpha <= 0)
@@ -2905,7 +2907,7 @@ blue  = (texel.blue  * material.color.unitRange.blue);
 pixelBuffer[pixelBufferIdx + 0] = red;
 pixelBuffer[pixelBufferIdx + 1] = green;
 pixelBuffer[pixelBufferIdx + 2] = blue;
-pixelBuffer[pixelBufferIdx + 3] = 255;
+pixelBuffer[pixelBufferIdx + 3] = (material.auxiliary.isCorner? 100 : 255);
 for (let b = 0; b < auxiliaryBuffers.length; b++)
 {
 if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
@@ -3152,6 +3154,7 @@ Rsed.log("\"" + projectData.meta.displayName + "\" is a valid RallySportED proje
 const publicInterface = Object.freeze(
 {
 isPlaceholder: false,
+kierros,
 maasto,
 varimaa,
 palat,
@@ -3674,6 +3677,10 @@ name: ()=>("undefined"),
 mesh: ()=>{},
 texture: ()=>{},
 },
+kierros:
+{
+checkpoints: [],
+}
 };
 /*
 * Most recent known filename: js/project/hitable.js
@@ -3771,10 +3778,9 @@ track_mesh: function(args = {})
 Rsed.throw_if_not_type("object", args);
 args =
 {
-...// Default args.
-{
-cameraPos:
-{
+// Default args.
+...{
+cameraPos: {
 x: 0,
 y: 0,
 z: 0,
@@ -3785,6 +3791,10 @@ paintHoverPala: false,
 },
 ...args,
 };
+if (!args.cameraPosFloat)
+{
+args.cameraPosFloat = args.cameraPos;
+}
 // Returns true if the given XY coordinates are out of track bounds.
 function out_of_bounds(x, y)
 {
@@ -3800,6 +3810,8 @@ y: (-650 + args.cameraPos.y),
 z: (3628 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
+const fractionX = (args.cameraPosFloat.x - args.cameraPos.x);
+const fractionZ = (args.cameraPosFloat.z - args.cameraPos.z);
 for (let z = 0; z < Rsed.world.camera.view_height; z++)
 {
 // Add the ground tiles.
@@ -3812,9 +3824,12 @@ if (out_of_bounds(tileX, tileZ))
 {
 continue;
 }
+const isCornerTile = ((x == 0) ||
+(z == 0) ||
+(x == (Rsed.world.camera.view_width - 1)));
 // Coordinates in world units of the ground tile's top left vertex.
-const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
-const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
+const vertX = (((x * Rsed.constants.groundTileSize) + centerView.x) - (fractionX * Rsed.constants.groundTileSize));
+const vertZ = ((centerView.z - (z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
 const tilePalaIdx = (()=>
 {
 let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
@@ -3847,9 +3862,7 @@ Rngon.vertex(vertX, height4, (vertZ + Rsed.constants.groundTileSize), 0, 1)],
 {
 color: Rngon.color_rgba(heightDiff, heightDiff, heightDiff),
 texture: texture,
-textureMapping: "ortho",
-uvWrapping: "clamp",
-hasWireframe: args.includeWireframe,
+hasWireframe: (!isCornerTile && args.includeWireframe),
 auxiliary:
 {
 // We'll encode this ground quad's tile coordinates into a 32-bit id value, which during
@@ -3861,6 +3874,7 @@ texture: texture,
 groundTileX: tileX,
 groundTileY: (tileZ - 1),
 }),
+isCorner: isCornerTile,
 }
 });
 trackPolygons.push(groundQuad);
@@ -3878,8 +3892,11 @@ if (out_of_bounds(tileX, tileZ))
 {
 continue;
 }
-const vertX = ((x * Rsed.constants.groundTileSize) + centerView.x);
-const vertZ = (centerView.z - (z * Rsed.constants.groundTileSize));
+const isCornerTile = ((x == 0) ||
+(z == 0) ||
+(x == (Rsed.world.camera.view_width - 1)));
+const vertX = (((x * Rsed.constants.groundTileSize) + centerView.x) - (fractionX * Rsed.constants.groundTileSize));
+const vertZ = ((centerView.z - (z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
 const tilePalaIdx = (()=>
 {
 let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
@@ -3920,14 +3937,12 @@ Rngon.vertex( vertX, baseHeight+Rsed.constants.groundTileSize, vertZ, 0, 1)];
 })();
 const billboardQuad = Rngon.ngon(billboardVertices,
 {
-color: Rngon.color_rgba(255, 255, 255),
 texture: billboardTexture,
-textureMapping: "ortho",
 hasFill: true,
-hasWireframe: false,
 auxiliary:
 {
 mousePickId: null,
+isCorner: isCornerTile,
 }
 });
 trackPolygons.push(billboardQuad);
@@ -3943,8 +3958,8 @@ if ((pos.x >= (args.cameraPos.x * Rsed.constants.groundTileSize)) &&
 (pos.z >= (args.cameraPos.z * Rsed.constants.groundTileSize)) &&
 (pos.z <= ((args.cameraPos.z + Rsed.world.camera.view_height) * Rsed.constants.groundTileSize)))
 {
-const x = (pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize));
-const z = (centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize));
+const x = ((pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize)) - (fractionX * Rsed.constants.groundTileSize));
+const z = ((centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
 const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
 const y = (groundHeight + pos.y);
 trackPolygons.push(...this.prop_mesh(pos.propId, idx,
@@ -3987,7 +4002,9 @@ srcMesh.ngons.forEach(ngon=>
 const texture = (args.solidProps? (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx]
 : null)
 : null);
-const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x), (v.y + args.position.y), (v.z + args.position.z))),
+const propNgon = Rngon.ngon(ngon.vertices.map(v=>Rngon.vertex((v.x + args.position.x),
+(v.y + args.position.y),
+(v.z + args.position.z))),
 {
 color: (args.solidProps? (ngon.fill.type === "texture"? Rsed.visual.palette.color_at_idx(0)
 : Rsed.visual.palette.color_at_idx(ngon.fill.idx))
@@ -4745,7 +4762,7 @@ for (let i = 0; i < numCheckpoints; i++)
 const idx = (i * bytesPerCheckpoint);
 checkpoints.push({
 x:          ((data[idx+0] | (data[idx+1] << 8)) / 128),
-y:          ((data[idx+2] | (data[idx+3] << 8)) / 128),
+z:          ((data[idx+2] | (data[idx+3] << 8)) / 128),
 orientation: (data[idx+4] | (data[idx+5] << 8)),
 speed:       (data[idx+6] | (data[idx+7] << 8)),
 });
@@ -5737,20 +5754,28 @@ data: Rsed.core.current_project().props.id_for_name(name),
 window.close_dropdowns();
 return;
 },
-refresh: function()
+refresh_prop_list: function(forFinishLines = false)
+{
+this.propList = Rsed.core.current_project().props.names()
+.filter(propName=>(forFinishLines? propName.startsWith("finish") : !propName.startsWith("finish")))
+.map(propName=>({propName}));
+return;
+},
+refresh_track_name: function()
 {
 this.trackName = Rsed.core.current_project().name;
-this.propList = Rsed.core.current_project().props.names()
-.filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
-.map(propName=>({propName}));
 return;
 },
 }
 });
 const publicInterface = {
+refresh_prop_list: function(forFinishLines = false)
+{
+uiContainer.refresh_prop_list(forFinishLines)
+},
 refresh: function()
 {
-uiContainer.refresh();
+uiContainer.refresh_track_name();
 if ((typeof Rsed.core.current_project().name == "string") &&
 Rsed.core.current_project().name.length)
 {
@@ -6729,23 +6754,16 @@ event.preventDefault();
 return;
 }
 event.preventDefault();
-/// Temp hack. The finish line is an immutable prop, so disallow changing it.
-if (Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish"))
-{
-Rsed.alert("The finish line can't be edited.");
-// Prevent the same input from registering again next frame, before
-// the user has had time to release the mouse button.
-Rsed.ui.inputState.reset_mouse_buttons_state();
-return;
-}
 // Display a right-click menu for changing the type of the prop under the cursor.
 if ( Rsed.ui.inputState.current_mouse_hover() &&
 (Rsed.ui.inputState.current_mouse_hover().type === "prop"))
 {
+const isFinishLine = Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish");
+Rsed.ui.htmlUI.refresh_prop_list(isFinishLine);
 const mousePos = Rsed.ui.inputState.mouse_pos();
 const propDropdown = document.getElementById("prop-dropdown");
 propDropdown.style.left = `${mousePos.x + 32}px`;
-propDropdown.style.top = `${mousePos.y - 140}px`;
+propDropdown.style.top = `${isFinishLine? (mousePos.y - 22) : (mousePos.y - 140)}px`;
 propDropdown.classList.toggle("show");
 RSED_DROPDOWN_ACTIVATED = true;
 }
@@ -7476,7 +7494,7 @@ return component;
 }
 }
 /*
-* 2020 Tarpeeksi Hyvae Soft
+* 2018-2020 Tarpeeksi Hyvae Soft
 *
 * Software: RallySportED-js
 *
@@ -7486,14 +7504,27 @@ return component;
 // The user can click on the thumbnails to select which texture to paint the ground with.
 Rsed.ui.component.palatPane =
 {
-instance: function()
+instance: function(options = {})
 {
+options = {
+// Default options.
+...{
+// Whether to draw an indicator around the currently-selected PALA.
+indicateSelection: true,
+// Whether to draw an indicator around the PALA over which the mouse currently hovers.
+indicateHover: true,
+// Whether to always indicate which PALA index the cursor is hovering
+// over.
+alwaysShowIdxTag: false,
+// A function called when the user selects a PALA.
+selectionCallback: (palaIdx)=>{},
+},
+...options,
+};
 const component = Rsed.ui.component();
 // We'll pre-generate the thumbnails into these pixel buffers.
 const palatPaneBuffer = [];
 const palatPaneMousePick = [];
-let knownResX = undefined;
-let knownResY = undefined;
 let numPalatPaneCols = 9;
 let numPalatPaneRows = 29;
 let palatPaneWidth = 0;
@@ -7509,20 +7540,13 @@ if (Rsed.ui.inputState.left_mouse_button_down() ||
 Rsed.ui.inputState.right_mouse_button_down())
 {
 Rsed.ui.groundBrush.set_brush_pala_idx(grab.palaIdx);
+options.selectionCallback(grab.palaIdx);
 }
 }
 };
 component.draw = function(offsetX = 0, offsetY = 0)
 {
-if (knownResX !== Rsed.visual.canvas.width ||
-knownResY !== Rsed.visual.canvas.height ||
-offsetX !== palatPaneOffsetX ||
-offsetY !== palatPaneOffsetY)
-{
-knownResX = Rsed.visual.canvas.width;
-knownResY = Rsed.visual.canvas.height;
 generate_palat_pane();
-}
 offsetX -= palatPaneWidth;
 palatPaneOffsetX = offsetX;
 palatPaneOffsetY = offsetY;
@@ -7531,7 +7555,6 @@ if (palatPaneBuffer.length > 0)
 Rsed.ui.draw.image(palatPaneBuffer, palatPaneMousePick,
 palatPaneWidth, palatPaneHeight,
 palatPaneOffsetX, palatPaneOffsetY);
-// Draw a frame around the currently-selected PALA.
 {
 const frame = [];
 const dottedFrame = []
@@ -7555,6 +7578,9 @@ dottedFrame.push(0);
 }
 }
 }
+// Draw a frame around the currently-selected PALA.
+if (options.indicateSelection)
+{
 const selectedPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
 const y = Math.floor(selectedPalaIdx / numPalatPaneCols);
 const x = (selectedPalaIdx - y * numPalatPaneCols);
@@ -7562,21 +7588,19 @@ Rsed.ui.draw.image(frame, null,
 frameWidth, frameHeight,
 palatPaneOffsetX + x * 8, palatPaneOffsetY + y * 8,
 true);
+}
 const mouseHover = component.is_hovered()
 // Draw a frame around the PALA over which the mouse cursor is hovering.
-//
-// Note: we don't draw the frame if the cursor is also grabbing something;
-// to prevent the PALAT pane from responding to mouse hover while the cursor
-// is grabbing some other element.
-if (mouseHover && !Rsed.ui.inputState.current_mouse_grab())
+if (mouseHover && options.indicateHover)
 {
 Rsed.ui.draw.image(dottedFrame, null,
 frameWidth, frameHeight,
 mouseHover.cornerX, mouseHover.cornerY,
 true);
+}
 // Draw a label on the PALA over which the mouse cursor hovers in the
 // PALAT pane.
-if (Rsed.ui.inputState.key_down("tab"))
+if (options.alwaysShowIdxTag || Rsed.ui.inputState.key_down("tab"))
 {
 const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
 const labelPixelWidth = (label.length * Rsed.ui.font.font_width());
@@ -7584,7 +7608,6 @@ const labelPixelHeight = Rsed.ui.font.font_height();
 const x = (Rsed.ui.inputState.current_mouse_hover().cornerX - labelPixelWidth + 1);
 const y = (Rsed.ui.inputState.current_mouse_hover().cornerY - labelPixelHeight + 2);
 Rsed.ui.draw.string(label, x, y);
-}
 }
 }
 }
@@ -7606,7 +7629,7 @@ const palaThumbnailWidth = (palaWidth / 2);
 const palaThumbnailHeight = (palaHeight / 2);
 palatPaneBuffer.length = 0;
 palatPaneMousePick.length = 0;
-palatPaneHeight = (Math.floor((Rsed.visual.canvas.height - palatPaneOffsetY) / palaThumbnailHeight) - 2) * palaThumbnailHeight
+palatPaneHeight = ((Math.round((Rsed.visual.canvas.height - palatPaneOffsetY) / palaThumbnailHeight) - 1) * palaThumbnailHeight);
 numPalatPaneRows = Math.ceil(palatPaneHeight / (palaHeight / 2));
 numPalatPaneCols = Math.ceil(maxNumPalas / numPalatPaneRows);
 palatPaneWidth = (numPalatPaneCols * (palaWidth / 2));
@@ -7759,12 +7782,25 @@ return component;
 // (e.g. to paint a texture with).
 Rsed.ui.component.colorSelector =
 {
-instance: function()
+instance: function(options = {})
 {
+options = {
+// Default options.
+...{
+// A function called when the user selects a color.
+selectionCallback: (colorIdx)=>{},
+},
+...options,
+};
 const component = Rsed.ui.component();
-const swatchSideLen = Rsed.ui.font.font_height();
+// A swatch of a particular color, clickable by the user to select that color.
+const swatchSideLen = 8;
 const swatch = new Array(swatchSideLen * swatchSideLen);
-const mousePick = new Array(swatch.length);
+const swatchMousePick = new Array(swatch.length);
+// A swatch indicating the currently-selecter color.
+const curColorSwatchWidth = 33;
+const curColorSwatchHeight = 32;
+const curColorSwatch = new Array(curColorSwatchWidth * curColorSwatchHeight);
 // The currently-selected color - an index to the current Rsed.visual.palette
 // palette.
 let currentColorIdx = 19;
@@ -7775,26 +7811,28 @@ Rsed.throw_if_undefined(sceneSettings.selectedColorIdx);
 sceneSettings.selectedColorIdx = currentColorIdx;
 if (component.is_grabbed())
 {
-currentColorIdx = Rsed.ui.inputState.current_mouse_grab().colorIdx;
+const selectedColorIdx = Rsed.ui.inputState.current_mouse_grab().colorIdx;
+currentColorIdx = selectedColorIdx;
+options.selectionCallback(selectedColorIdx);
 Rsed.ui.inputState.reset_mouse_grab();
 }
 };
 component.draw = function(offsetX = 0, offsetY = 0)
 {
 Rsed.throw_if_not_type("number", offsetX, offsetY);
-const numSwatchesPerRow = 4;
+const numSwatchesPerRow = 8;
 // Draw a grid of color swatches.
 for (let i = 0; i < Rsed.visual.palette.numColorsInPalette; i++)
 {
 const y = Math.floor(i / numSwatchesPerRow);
 const x = (i % numSwatchesPerRow);
 swatch.fill(Rsed.visual.palette.color_at_idx(i));
-mousePick.fill({
+swatchMousePick.fill({
 type: "ui-component",
 componentId: component.id,
 colorIdx: i,
 });
-Rsed.ui.draw.image(swatch, mousePick,
+Rsed.ui.draw.image(swatch, swatchMousePick,
 swatchSideLen, swatchSideLen,
 (offsetX + (x * swatchSideLen)),
 (offsetY + (y * swatchSideLen)));
@@ -7802,8 +7840,8 @@ swatchSideLen, swatchSideLen,
 // Draw a frame around the currently-selected swatch.
 {
 const frame = [];
-const frameWidth = 9;
-const frameHeight = 9;
+const frameWidth = (swatchSideLen + 2);
+const frameHeight = (swatchSideLen + 2);
 for (let y = 0; y < frameHeight; y++)
 {
 for (let x = 0; x < frameWidth; x++)
@@ -7821,6 +7859,14 @@ frameWidth, frameHeight,
 (offsetX + (x * swatchSideLen) - 1),
 (offsetY + (y * swatchSideLen) - 1),
 true);
+}
+// Draw a large swatch of the currently-selected color.
+{
+curColorSwatch.fill(Rsed.visual.palette.color_at_idx(currentColorIdx));
+Rsed.ui.draw.image(curColorSwatch, null,
+curColorSwatchWidth, curColorSwatchHeight,
+(offsetX + (numSwatchesPerRow * swatchSideLen)),
+offsetY);
 }
 };
 return component;
@@ -8099,9 +8145,10 @@ return;
 },
 draw_mesh: function()
 {
-Rsed.world.camera.move_camera((cameraMovement.up? -1 : cameraMovement.down? 1 : 0),
+const moveSpeed = 1;
+Rsed.world.camera.move_camera((moveSpeed * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
 0,
-(cameraMovement.left? -1 : cameraMovement.right? 1 : 0));
+(moveSpeed * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
 const trackMesh = Rsed.world.meshBuilder.track_mesh(
 {
 cameraPos: Rsed.world.camera.position_floored(),
@@ -8167,6 +8214,14 @@ case "ground":
 // held down - is currently over.
 if (!hover) break;
 if (hover.type !== "ground") break;
+// Eyedropper.
+if (Rsed.ui.inputState.left_mouse_button_down() &&
+Rsed.ui.inputState.left_mouse_click_modifiers().includes("control"))
+{
+const palaIdx = Rsed.core.current_project().varimaa.tile_at(hover.groundTileX, hover.groundTileY);
+Rsed.ui.groundBrush.set_brush_pala_idx(palaIdx);
+break;
+}
 // Add a new prop.
 if (Rsed.ui.inputState.left_mouse_button_down() &&
 Rsed.ui.inputState.left_mouse_click_modifiers().includes("shift"))
@@ -8189,8 +8244,7 @@ Rsed.ui.inputState.right_mouse_button_down())
 {
 // Left button raises, right button lowers. Holding down Ctrl  reduces
 // the rate of change.
-const delta = ((Rsed.ui.inputState.left_mouse_button_down()? 2 : -2)
-/ (Rsed.ui.inputState.key_down("control")? 2 : 1));
+const delta = (Rsed.ui.inputState.left_mouse_button_down()? 2 : -2);
 Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changeHeight,
 delta,
 hover.groundTileX,
@@ -8512,10 +8566,6 @@ Rsed.scenes = Rsed.scenes || {};
 // A view of a given texture, allowing the user to paint the texture.
 Rsed.scenes["texture"] = (function()
 {
-/// Temp hack. Lets the renderer know that we want it to update mouse hover information
-/// once the next frame has finished rendering. This is used e.g. to keep proper track
-/// mouse hover when various UI elements are toggled on/off.
-let updateMouseHoverOnFrameFinish = false;
 // A reference to the Rsed.visual.texture() object that we're to edit.
 let texture = null;
 // The amount by which the user has moved the texture's position in the view.
@@ -8528,6 +8578,9 @@ const textureMousePickBuffer = [];
 const sceneSettings = {
 // Which color (index to Rally-Sport's palette) to paint with.
 selectedColorIdx: false,
+// Whether to show the PALAT pane; i.e. a side panel that displays all the available
+// PALA textures.
+showPalatPane: true,
 };
 // In which direction(s) the camera is currently moving. This is affected
 // by e.g. user input.
@@ -8544,6 +8597,10 @@ let uiComponents = null;
 uiComponents = {
 fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
 colorSelector: Rsed.ui.component.colorSelector.instance(),
+palatPane: Rsed.ui.component.palatPane.instance({
+selectionCallback: (palaIdx)=>scene.set_texture(Rsed.core.current_project().palat.texture[palaIdx]),
+indicateSelection: false,
+}),
 };
 })();
 const scene = Rsed.scene(
@@ -8600,6 +8657,10 @@ else if (key_is("d"))
 {
 cameraMovement.right = true;
 }
+else if (key_is("a") && !repeat)
+{
+sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
+}
 else if (key_is("z"))
 {
 if (Rsed.ui.inputState.key_down("control") &&
@@ -8622,13 +8683,6 @@ else if (key_is("q"))
 Rsed.core.set_scene("3d");
 Rsed.ui.inputState.set_key_down("q", false);
 }
-else if (key_is("a") && !repeat)
-{
-sceneSettings.showPalatPane = !sceneSettings.showPalatPane;
-// Prevent a mouse click from acting on the ground behind the pane when the pane
-// is brought up, and on the pane when the pane has been removed.
-updateMouseHoverOnFrameFinish = true;
-}
 else
 {
 for (const brushSizeKey of ["1", "2", "3", "4", "5"])
@@ -8647,23 +8701,20 @@ Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 if (uiComponents) // Once the UI components have finished async loading...
 {
 uiComponents.colorSelector.update(sceneSettings);
-uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 35), 11);
+uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 101), 11);
 if (Rsed.core.fps_counter_enabled())
 {
 uiComponents.fpsIndicator.update(sceneSettings);
 uiComponents.fpsIndicator.draw(3, 10);
 }
+if (sceneSettings.showPalatPane)
+{
+uiComponents.palatPane.update(sceneSettings);
+uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 47);
+}
 }
 Rsed.ui.draw.mouse_cursor();
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
-// Note: We assume that UI drawing is the last step in rendering the current
-// frame; and thus that once the UI rendering has finished, the frame is finished
-// also.
-if (updateMouseHoverOnFrameFinish)
-{
-Rsed.ui.inputState.update_mouse_hover();
-updateMouseHoverOnFrameFinish = false;
-}
 return;
 },
 draw_mesh: function()
@@ -8696,6 +8747,7 @@ hasWireframe: true,
 wireframeColor: Rngon.color_rgba(255, 255, 0),
 textureMapping: "affine",
 uvWrapping: "clamp",
+allowAlphaReject: false,
 });
 const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [Rngon.mesh([textureNgon])],
 {
@@ -8773,7 +8825,7 @@ data: sceneSettings.selectedColorIdx,
 }
 else if (Rsed.ui.inputState.mouse_wheel_scroll())
 {
-textureZoom += (Rsed.ui.inputState.mouse_wheel_scroll() / 3);
+textureZoom += (Rsed.ui.inputState.mouse_wheel_scroll() / 10);
 Rsed.ui.inputState.reset_wheel_scroll();
 }
 return;
@@ -9452,7 +9504,7 @@ return;
 }
 if (frameCount >= 180)
 {
-const shade = Math.max(0, (168 - ((frameCount - 180) / 1)));
+const shade = 168;
 currentScale = Rsed.lerp(currentScale, targetScale, 0.0001);
 const meshes = new Array(100).fill().map((p, idx)=>
 {

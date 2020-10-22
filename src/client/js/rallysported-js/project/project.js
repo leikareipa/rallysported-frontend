@@ -149,6 +149,7 @@ Rsed.project = async function(projectArgs = {})
     const publicInterface = Object.freeze(
     {
         isPlaceholder: false,
+        kierros,
         maasto,
         varimaa,
         palat,
@@ -781,4 +782,8 @@ Rsed.project.placeholder =
         mesh: ()=>{},
         texture: ()=>{},
     },
+    kierros:
+    {
+        checkpoints: [],
+    }
 };

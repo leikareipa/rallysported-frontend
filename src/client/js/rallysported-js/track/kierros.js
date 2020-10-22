@@ -25,7 +25,7 @@ Rsed.track.kierros = function(data = Uint8Array)
 
         checkpoints.push({
             x:          ((data[idx+0] | (data[idx+1] << 8)) / 128),
-            y:          ((data[idx+2] | (data[idx+3] << 8)) / 128),
+            z:          ((data[idx+2] | (data[idx+3] << 8)) / 128),
             orientation: (data[idx+4] | (data[idx+5] << 8)),
             speed:       (data[idx+6] | (data[idx+7] << 8)),
         });

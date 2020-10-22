@@ -162,27 +162,19 @@ window.oncontextmenu = function(event)
 
     event.preventDefault();
 
-    /// Temp hack. The finish line is an immutable prop, so disallow changing it.
-    if (Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish"))
-    {
-        Rsed.alert("The finish line can't be edited.");
-
-        // Prevent the same input from registering again next frame, before
-        // the user has had time to release the mouse button.
-        Rsed.ui.inputState.reset_mouse_buttons_state();
-
-        return;
-    }
-
     // Display a right-click menu for changing the type of the prop under the cursor.
     if ( Rsed.ui.inputState.current_mouse_hover() &&
         (Rsed.ui.inputState.current_mouse_hover().type === "prop")) 
     {
+        const isFinishLine = Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish");
+
+        Rsed.ui.htmlUI.refresh_prop_list(isFinishLine);
+
         const mousePos = Rsed.ui.inputState.mouse_pos();
         const propDropdown = document.getElementById("prop-dropdown");
 
         propDropdown.style.left = `${mousePos.x + 32}px`;
-        propDropdown.style.top = `${mousePos.y - 140}px`;
+        propDropdown.style.top = `${isFinishLine? (mousePos.y - 22) : (mousePos.y - 140)}px`;
         propDropdown.classList.toggle("show");
 
         RSED_DROPDOWN_ACTIVATED = true;

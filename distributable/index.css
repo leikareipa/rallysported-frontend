@@ -87,7 +87,7 @@ body
 
 #html-ui .button-bar.right
 {
-    border-left: 1px solid #636363;
+    border-left: 1px solid #545454;
     border-radius: 2px;
 }
 
@@ -166,6 +166,7 @@ body
     display: none;
     padding: 10px;
     box-shadow: 0 5px 10px -4px black;
+    border-radius: 8px;
 }
 
 /* A left-pointing arrow on the left edge of the dropdown menu. Adapted

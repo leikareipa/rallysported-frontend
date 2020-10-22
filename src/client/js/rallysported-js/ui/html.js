@@ -54,13 +54,19 @@ Rsed.ui.htmlUI = (function()
 
                 return;
             },
+
+            refresh_prop_list: function(forFinishLines = false)
+            {
+                this.propList = Rsed.core.current_project().props.names()
+                                         .filter(propName=>(forFinishLines? propName.startsWith("finish") : !propName.startsWith("finish")))
+                                         .map(propName=>({propName}));
+
+                return;
+            },
             
-            refresh: function()
+            refresh_track_name: function()
             {
                 this.trackName = Rsed.core.current_project().name;
-                this.propList = Rsed.core.current_project().props.names()
-                                         .filter(propName=>(!propName.startsWith("finish"))) /// Temp hack. Finish lines are not to be user-editable.
-                                         .map(propName=>({propName}));
 
                 return;
             },
@@ -68,9 +74,14 @@ Rsed.ui.htmlUI = (function()
     });
 
     const publicInterface = {
+        refresh_prop_list: function(forFinishLines = false)
+        {
+            uiContainer.refresh_prop_list(forFinishLines)
+        },
+
         refresh: function()
         {
-            uiContainer.refresh();
+            uiContainer.refresh_track_name();
 
             if ((typeof Rsed.core.current_project().name == "string") &&
                 Rsed.core.current_project().name.length)
