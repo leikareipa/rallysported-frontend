@@ -167,23 +167,8 @@ body
     padding: 10px;
     box-shadow: 0 5px 10px -4px black;
     border-radius: 8px;
-}
-
-/* A left-pointing arrow on the left edge of the dropdown menu. Adapted
- * from http://www.cssarrowplease.com/.*/
-.dropdown-menu::after {
-	right: 99.5%;
-	top: 29%;
-	border: solid transparent;
-	content: " ";
-	height: 0;
-	width: 0;
-	position: absolute;
-	pointer-events: none;
-	border-color: transparent;
-	border-right-color: white;
-	border-width: 16px;
-	margin-top: -16px;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .dropdown-menu > .item

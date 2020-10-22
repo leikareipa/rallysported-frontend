@@ -172,9 +172,11 @@ window.oncontextmenu = function(event)
 
         const mousePos = Rsed.ui.inputState.mouse_pos();
         const propDropdown = document.getElementById("prop-dropdown");
+        const upperMargin = -38;
 
-        propDropdown.style.left = `${mousePos.x + 32}px`;
-        propDropdown.style.top = `${isFinishLine? (mousePos.y - 22) : (mousePos.y - 140)}px`;
+        propDropdown.style.left = `${mousePos.x + 25}px`;
+        propDropdown.style.top = `${mousePos.y + upperMargin}px`;
+        propDropdown.style.maxHeight = `${window.innerHeight - mousePos.y - upperMargin - 20}px`;
         propDropdown.classList.toggle("show");
 
         RSED_DROPDOWN_ACTIVATED = true;
