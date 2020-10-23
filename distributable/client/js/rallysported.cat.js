@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (22 October 2020 23:25:12 UTC)
+// VERSION: live (23 October 2020 01:58:42 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6481,6 +6481,10 @@ Rsed.ui.cursor = (function()
 const cursors = {
 arrow: "./client/assets/cursors/rsed-cursor-arrow.png",
 openHand: "./client/assets/cursors/rsed-cursor-openhand.png",
+openHand2: "./client/assets/cursors/rsed-cursor-openhand2.png",
+closedHand: "./client/assets/cursors/rsed-cursor-closedhand.png",
+groundSmoothing: "./client/assets/cursors/rsed-cursor-arrowsmooth.png",
+blocked: "./client/assets/cursors/rsed-cursor-blocked.png",
 };
 cursors.default = cursors.arrow;
 let currentCursor = cursors.default;
@@ -6493,9 +6497,24 @@ const cursor = (()=>
 {
 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
-if (mouseHover && mouseHover.type == "prop")
+if (mouseGrab &&
+(mouseGrab.type == "prop"))
+{
+if (Rsed.ui.inputState.right_mouse_button_down())
+{
+return cursors.openHand2;
+}
+return cursors.closedHand;
+}
+if (mouseHover &&
+(mouseHover.type == "prop"))
 {
 return cursors.openHand;
+}
+if (Rsed.ui.groundBrush.brushSmoothens &&
+(Rsed.core.current_scene() == Rsed.scenes["3d"]))
+{
+return cursors.groundSmoothing;
 }
 return cursors.default;
 })();
@@ -6653,19 +6672,6 @@ x += Rsed.ui.font.font_width();
 }
 return;
 },
-// Draws the mouse cursor, and any indicators attached to it.
-mouse_cursor: function()
-{
-const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
-if ( Rsed.ui.groundBrush.brushSmoothens &&
-(Rsed.core.current_scene() == Rsed.scenes["3d"]))
-{
-this.string("SMOOTHING",
-(mousePos.x + 10),
-(mousePos.y + 17));
-}
-return;
-},
 };
 function put_mouse_pick_value(x = 0, y = 0, value = 0)
 {
@@ -6784,7 +6790,7 @@ return;
 // If the right-click menu was already open.
 if (RSED_DROPDOWN_ACTIVATED)
 {
-window.close_dropdowns();
+window.close_dropdowns(false);
 event.preventDefault();
 return;
 }
@@ -6818,7 +6824,7 @@ const propDropdown = document.getElementById("prop-dropdown");
 const upperMargin = -38;
 propDropdown.style.left = `${mousePos.x + 25}px`;
 propDropdown.style.top = `${mousePos.y + upperMargin}px`;
-propDropdown.style.maxHeight = `${window.innerHeight - mousePos.y - upperMargin - 20}px`;
+propDropdown.style.maxHeight = `${window.innerHeight - mousePos.y - upperMargin - 15}px`;
 propDropdown.classList.toggle("show");
 RSED_DROPDOWN_ACTIVATED = true;
 }
@@ -6853,7 +6859,7 @@ return;
 }
 if (RSED_DROPDOWN_ACTIVATED)
 {
-window.close_dropdowns();
+window.close_dropdowns(false);
 return;
 }
 return;
@@ -8186,7 +8192,6 @@ uiComponents.fpsIndicator.update(sceneSettings);
 uiComponents.fpsIndicator.draw(3, 10);
 }
 }
-Rsed.ui.draw.mouse_cursor();
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 // Note: We assume that UI drawing is the last step in rendering the current
 // frame; and thus that once the UI rendering has finished, the frame is finished
@@ -8543,7 +8548,6 @@ uiComponents.fpsIndicator.draw(3, 10);
 Rsed.ui.draw.string(`Track size: ${Rsed.core.current_project().maasto.width},${Rsed.core.current_project().maasto.width}`,
 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
 ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
-Rsed.ui.draw.mouse_cursor();
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 // Note: We assume that UI drawing is the last step in rendering the current
 // frame; and thus that once the UI rendering has finished, the frame is finished
@@ -8768,7 +8772,6 @@ uiComponents.palatPane.update(sceneSettings);
 uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 47);
 }
 }
-Rsed.ui.draw.mouse_cursor();
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 return;
 },
@@ -9640,8 +9643,8 @@ function tick(timestamp = 0, frameDeltaMs = 0)
 {
 if (!coreIsRunning) return;
 programFPS = Math.round(1000 / (frameDeltaMs || 1));
-currentScene.handle_user_interaction();
 Rsed.ui.cursor.update_cursor();
+currentScene.handle_user_interaction();
 // Render the next frame.
 Rsed.visual.canvas.mousePickingBuffer.fill(null);
 currentScene.draw_mesh();

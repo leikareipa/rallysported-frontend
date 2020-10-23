@@ -178,8 +178,6 @@ Rsed.scenes["texture"] = (function()
                 }
             }
 
-            Rsed.ui.draw.mouse_cursor();
-
             Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 
             return;

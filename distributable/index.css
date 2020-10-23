@@ -154,8 +154,8 @@ body
 
 .dropdown-menu
 {
+    cursor: url("./client/assets/cursors/rsed-cursor-arrow.png"), auto;
     font-family: sans-serif;
-    cursor: pointer;
     text-align: left;
     position: absolute;
     left: 0;
@@ -165,7 +165,7 @@ body
     z-index: 3;
     display: none;
     padding: 10px;
-    box-shadow: 0 5px 10px -4px black;
+    box-shadow: 0 0 4px 3px rgba(0, 0, 0, 0.5);
     border-radius: 8px;
     overflow-y: auto;
     box-sizing: border-box;
@@ -173,6 +173,7 @@ body
 
 .dropdown-menu > .item
 {
+    cursor: url("./client/assets/cursors/rsed-cursor-fingerhand.png"), auto;
     text-transform: capitalize;
     color: black;
     padding: 3px 18px;

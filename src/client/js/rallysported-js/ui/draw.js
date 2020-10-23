@@ -172,22 +172,6 @@ Rsed.ui.draw = (function()
 
             return;
         },
-
-        // Draws the mouse cursor, and any indicators attached to it.
-        mouse_cursor: function()
-        {
-            const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
-
-            if ( Rsed.ui.groundBrush.brushSmoothens &&
-                (Rsed.core.current_scene() == Rsed.scenes["3d"]))
-            {
-                this.string("SMOOTHING",
-                            (mousePos.x + 10),
-                            (mousePos.y + 17));
-            }
-
-            return;
-        },
     };
 
     function put_mouse_pick_value(x = 0, y = 0, value = 0)

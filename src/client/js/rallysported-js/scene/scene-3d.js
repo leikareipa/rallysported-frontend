@@ -254,8 +254,6 @@ Rsed.scenes["3d"] = (function()
                 }
             }
 
-            Rsed.ui.draw.mouse_cursor();
-
             Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 
             // Note: We assume that UI drawing is the last step in rendering the current

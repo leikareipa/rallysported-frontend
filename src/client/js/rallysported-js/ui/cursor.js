@@ -14,6 +14,10 @@ Rsed.ui.cursor = (function()
     const cursors = {
         arrow: "./client/assets/cursors/rsed-cursor-arrow.png",
         openHand: "./client/assets/cursors/rsed-cursor-openhand.png",
+        openHand2: "./client/assets/cursors/rsed-cursor-openhand2.png",
+        closedHand: "./client/assets/cursors/rsed-cursor-closedhand.png",
+        groundSmoothing: "./client/assets/cursors/rsed-cursor-arrowsmooth.png",
+        blocked: "./client/assets/cursors/rsed-cursor-blocked.png",
     };
 
     cursors.default = cursors.arrow;
@@ -30,9 +34,27 @@ Rsed.ui.cursor = (function()
                 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
                 const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
 
-                if (mouseHover && mouseHover.type == "prop")
+                if (mouseGrab &&
+                    (mouseGrab.type == "prop"))
+                {
+                    if (Rsed.ui.inputState.right_mouse_button_down())
+                    {
+                        return cursors.openHand2;
+                    }
+
+                    return cursors.closedHand;
+                }
+
+                if (mouseHover &&
+                    (mouseHover.type == "prop"))
                 {
                     return cursors.openHand;
+                }
+
+                if (Rsed.ui.groundBrush.brushSmoothens &&
+                    (Rsed.core.current_scene() == Rsed.scenes["3d"]))
+                {
+                    return cursors.groundSmoothing;
                 }
 
                 return cursors.default;

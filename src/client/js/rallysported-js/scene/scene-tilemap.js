@@ -199,8 +199,6 @@ Rsed.scenes["tilemap"] = (function()
                                 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
                                 ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
 
-            Rsed.ui.draw.mouse_cursor();
-
             Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 
             // Note: We assume that UI drawing is the last step in rendering the current

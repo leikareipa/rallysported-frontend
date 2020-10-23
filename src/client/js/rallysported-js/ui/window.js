@@ -134,7 +134,7 @@ window.oncontextmenu = function(event)
     // If the right-click menu was already open.
     if (RSED_DROPDOWN_ACTIVATED)
     {
-        window.close_dropdowns();
+        window.close_dropdowns(false);
         event.preventDefault();
         return;
     }
@@ -176,7 +176,7 @@ window.oncontextmenu = function(event)
 
         propDropdown.style.left = `${mousePos.x + 25}px`;
         propDropdown.style.top = `${mousePos.y + upperMargin}px`;
-        propDropdown.style.maxHeight = `${window.innerHeight - mousePos.y - upperMargin - 20}px`;
+        propDropdown.style.maxHeight = `${window.innerHeight - mousePos.y - upperMargin}px`;
         propDropdown.classList.toggle("show");
 
         RSED_DROPDOWN_ACTIVATED = true;
@@ -221,7 +221,7 @@ window.onclick = function(event)
 
     if (RSED_DROPDOWN_ACTIVATED)
     {
-        window.close_dropdowns();
+        window.close_dropdowns(false);
         return;
     }
 
