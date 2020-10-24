@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (23 October 2020 01:58:42 UTC)
+// VERSION: live (24 October 2020 04:05:55 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6482,10 +6482,17 @@ const cursors = {
 arrow: "./client/assets/cursors/rsed-cursor-arrow.png",
 openHand: "./client/assets/cursors/rsed-cursor-openhand.png",
 openHand2: "./client/assets/cursors/rsed-cursor-openhand2.png",
+fingerHand: "./client/assets/cursors/rsed-cursor-fingerhand.png",
 closedHand: "./client/assets/cursors/rsed-cursor-closedhand.png",
 groundSmoothing: "./client/assets/cursors/rsed-cursor-arrowsmooth.png",
 blocked: "./client/assets/cursors/rsed-cursor-blocked.png",
 };
+// Pre-load the cursor images' data so they'll be immediately available for display.
+const cursorImages = Object.keys(cursors).map(c=>{
+const image = new Image();
+image.src = cursors[c];
+return image;
+});
 cursors.default = cursors.arrow;
 let currentCursor = cursors.default;
 const publicInterface = {
@@ -6533,6 +6540,10 @@ if (currentCursor == cursor)
 {
 return;
 }
+/// TODO: Chrome 86 (haven't tested other versions) seems to have some
+/// trouble with setting the cursor in this way. Seems the image isn't
+/// cached (so a new network request is fired every time the cursor
+/// changes), and there may be some flickering when displaying it.
 document.body.style.cursor = `url(${cursor}), auto`;
 currentCursor = cursor;
 return;
@@ -6824,7 +6835,7 @@ const propDropdown = document.getElementById("prop-dropdown");
 const upperMargin = -38;
 propDropdown.style.left = `${mousePos.x + 25}px`;
 propDropdown.style.top = `${mousePos.y + upperMargin}px`;
-propDropdown.style.maxHeight = `${window.innerHeight - mousePos.y - upperMargin - 15}px`;
+propDropdown.style.maxHeight = `${window.innerHeight - mousePos.y - upperMargin}px`;
 propDropdown.classList.toggle("show");
 RSED_DROPDOWN_ACTIVATED = true;
 }
