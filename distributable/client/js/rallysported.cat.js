@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (24 October 2020 04:05:55 UTC)
+// VERSION: live (26 October 2020 04:08:29 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2849,6 +2849,7 @@ if (!numLeftEdges || !numRightEdges) continue;
 // Note: We assume the n-gon's vertices to be sorted by increasing Y.
 const ngonStartY = leftEdges[0].startY;
 const ngonEndY = leftEdges[numLeftEdges-1].endY;
+const ngonHeight = (ngonEndY - ngonStartY);
 // Rasterize the n-gon in horizontal pixel spans over its height.
 for (let y = ngonStartY; y < ngonEndY; y++)
 {
@@ -2859,7 +2860,31 @@ if (spanWidth > 0)
 {
 // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
 let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
-// Draw the span into the pixel buffer.
+// Draw a solid-filled span.
+if (!texture)
+{
+for (let x = spanStartX; x < spanEndX; x++)
+{
+pixelBufferIdx += 4;
+pixelBuffer[pixelBufferIdx + 0] = material.color.red;
+pixelBuffer[pixelBufferIdx + 1] = material.color.green;
+pixelBuffer[pixelBufferIdx + 2] = material.color.blue;
+pixelBuffer[pixelBufferIdx + 3] = (material.auxiliary.isCorner? 100 : 255);
+for (let b = 0; b < auxiliaryBuffers.length; b++)
+{
+if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
+{
+// Buffers are expected to consist of one element per pixel.
+auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = material.auxiliary[auxiliaryBuffers[b].property];
+}
+}
+}
+}
+// Draw a textured span.
+else
+{
+const wDiv = (texture.width / spanWidth);
+const hDiv = (texture.height / ngonHeight);
 for (let x = spanStartX; x < spanEndX; x++)
 {
 // Will hold the texture coordinates used if we end up drawing
@@ -2867,29 +2892,13 @@ for (let x = spanStartX; x < spanEndX; x++)
 let u = 0.0, v = 0.0;
 // Update values that're interpolated horizontally along the span.
 pixelBufferIdx += 4;
-// The color we'll write into the pixel buffer for this pixel; assuming
-// it passes the alpha test, the depth test, etc.
-let red = 0;
-let green = 0;
-let blue = 0;
-// Solid fill.
-if (!texture)
-{
-red   = material.color.red;
-green = material.color.green;
-blue  = material.color.blue;
-}
-// Textured fill.
-else
-{
 // Screen-space UV mapping, as used e.g. in the DOS game Rally-Sport.
 {
-const ngonHeight = (ngonEndY - ngonStartY);
 // Pixel coordinates relative to the polygon.
 const ngonX = (x - spanStartX + 1);
 const ngonY = (y - ngonStartY + 1);
-u = (ngonX * (texture.width / spanWidth));
-v = (ngonY * (texture.height / ngonHeight));
+u = (ngonX * wDiv);
+v = (ngonY * hDiv);
 // The texture image is flipped, so we need to flip V as well.
 v = (texture.height - v);
 }
@@ -2898,16 +2907,12 @@ const texel = texture.pixels[(~~u) + (~~v) * texture.width];
 if (!texel) continue;
 // Alpha-test the texture. If the texel isn't fully opaque, skip it.
 if (texel.alpha !== 255) continue;
-red   = (texel.red   * material.color.unitRange.red);
-green = (texel.green * material.color.unitRange.green);
-blue  = (texel.blue  * material.color.unitRange.blue);
-}
 // The pixel passed its alpha test, depth test, etc., and should be drawn
 // on screen.
 {
-pixelBuffer[pixelBufferIdx + 0] = red;
-pixelBuffer[pixelBufferIdx + 1] = green;
-pixelBuffer[pixelBufferIdx + 2] = blue;
+pixelBuffer[pixelBufferIdx + 0] = (texel.red   * material.color.unitRange.red);
+pixelBuffer[pixelBufferIdx + 1] = (texel.green * material.color.unitRange.green);
+pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * material.color.unitRange.blue);
 pixelBuffer[pixelBufferIdx + 3] = (material.auxiliary.isCorner? 100 : 255);
 for (let b = 0; b < auxiliaryBuffers.length; b++)
 {
@@ -2915,6 +2920,7 @@ if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
 {
 // Buffers are expected to consist of one element per pixel.
 auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = material.auxiliary[auxiliaryBuffers[b].property];
+}
 }
 }
 }
