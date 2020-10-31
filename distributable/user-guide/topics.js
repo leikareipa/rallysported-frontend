@@ -87,47 +87,6 @@ helpTopics["User interface"] = `
     </p>
 `;
 
-helpTopics["The \"Serve\" feature"] = `
-    <p>
-        Want to show a track of yours to a friend, but don't want the hassle of sending
-        them a ZIP file? You can use the Serve feature to get a sharable URL.
-    </p>
-
-    <p>
-        To enable Serve, follow these steps:
-    </p>
-    
-    <ul>
-        <li>Press the "Serve" button at the top left of the RallySportED-js UI. After a
-        few seconds, sometimes a bit more, the button should display the text "Serving",
-        and your browser's address bar should now contain a "transientServer" parameter.</li>
-        <li>Copy the entire link from the address bar and give it to the people you want
-        to share the track with. When they access this Serve URL, they'll get a copy of the
-        track as it appers in your browser at that moment.</li>
-        <li>To stop Serving, press the "Serving" button again. The "transientServer"
-        parameter should disappear from your browser's address bar, and the Serve URL
-        will no longer function. If you start Serving again, a new URL will be generated.</li>
-    </ul>
-
-    <p>
-        A few things to keep in mind about the Serve feature:
-    </p>
-    
-    <ul>
-        <li>The Serve URL works only for as long as you've got the RallySportED-js browser
-        tab open and are connected to the internet. Reloading or leaving the page will
-        stop the Serve.</li>
-        <li>Track data will be transferred using WebRTC technology directly from your browser
-        &ndash; via your internet connection &ndash; to people accessing the Serve URL.</li>
-        <li>Any changes you make to the track (including loading a new track with drag
-        & drop) after starting to Serve will be visible to those with the Serve URL when
-        they reload the page.</li>
-        <li>Changes made to the track by a person accessing your Serve URL will affect only
-        their local copy, not yours or anybody else's.</li>
-    </ul>
-    </p>
-`;
-
 helpTopics["Mouse controls"] = `
     <p>
         <b>Left click on ground</b><br>
@@ -170,6 +129,12 @@ helpTopics["Mouse controls"] = `
     </p>
 
     <p>
+        <b>Ctrl + left click on ground</b><br>
+        Eyedropper tool. Set the ground tile's PALA index as the current brush PALA
+        index.
+    </p>
+
+    <p>
         <b>Tab + hover on ground texture pane</b><br>
         Show the hovered texture's index value.
     </p>
@@ -203,12 +168,17 @@ helpTopics["Keyboard controls"] = `
 
     <p>
         <b>W</b><br>
-        Toggle wireframe rendering on/off.
+        Toggle wireframe rendering (on/off).
     </p>
 
     <p>
         <b>B</b><br>
         Hide props (on/off).
+    </p>
+
+    <p>
+        <b>Up/down arrows</b><br>
+        Raise/lower the ground by one where the mouse cursor is hovering.
     </p>
 
     <p>
@@ -236,6 +206,47 @@ helpTopics["Keyboard controls"] = `
     <p>
         <b>Ctrl + Shift + Z</b><br>
         Redo your latest changes.
+    </p>
+`;
+
+helpTopics["The \"Serve\" feature"] = `
+    <p>
+        Want to show a track of yours to a friend, but don't want the hassle of sending
+        them a ZIP file? You can use the Serve feature to get a sharable URL.
+    </p>
+
+    <p>
+        To enable Serve, follow these steps:
+    </p>
+    
+    <ul>
+        <li>Press the "Serve" button at the top left of the RallySportED-js UI. After a
+        few seconds, sometimes a bit more, the button should display the text "Serving",
+        and your browser's address bar should now contain a "transientServer" parameter.</li>
+        <li>Copy the entire link from the address bar and give it to the people you want
+        to share the track with. When they access this Serve URL, they'll get a copy of the
+        track as it appers in your browser at that moment.</li>
+        <li>To stop Serving, press the "Serving" button again. The "transientServer"
+        parameter should disappear from your browser's address bar, and the Serve URL
+        will no longer function. If you start Serving again, a new URL will be generated.</li>
+    </ul>
+
+    <p>
+        A few things to keep in mind about the Serve feature:
+    </p>
+    
+    <ul>
+        <li>The Serve URL works only for as long as you've got the RallySportED-js browser
+        tab open and are connected to the internet. Reloading or leaving the page will
+        stop the Serve.</li>
+        <li>Track data will be transferred using WebRTC technology directly from your browser
+        &ndash; via your internet connection &ndash; to people accessing the Serve URL.</li>
+        <li>Any changes you make to the track (including loading a new track with drag
+        & drop) after starting to Serve will be visible to those with the Serve URL when
+        they reload the page.</li>
+        <li>Changes made to the track by a person accessing your Serve URL will affect only
+        their local copy, not yours or anybody else's.</li>
+    </ul>
     </p>
 `;
 
