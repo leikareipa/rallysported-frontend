@@ -173,6 +173,11 @@ hr
     max-width: 100%;
 }
 
+.help-topic img:last-child
+{
+    margin-bottom: calc(var(--content-margin) / 2);
+}
+
 .help-topic > table img
 {
     all: initial;
@@ -197,6 +202,11 @@ hr
     color: black;
     padding: 0;
     margin: 0;
+}
+
+.help-topic h3:not(:first-child)
+{
+    margin-top: var(--content-margin);
 }
 
 .topic-anchor

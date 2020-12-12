@@ -252,8 +252,10 @@ helpTopics["The \"Serve\" feature"] = `
 
 helpTopics["Loading a track"] = `
     <p>
-        There are two ways to load a track into RallySportED-js: URL parameter and
-        file-dragging.
+        There are two ways to load a track for editing or viewing in RallySportED-js: (1) by using a
+        URL parameter, and (2) by dragging a track archive file. The file-dragging method
+        is intended for track files located on your system, while the URL parameter method is
+        for tracks hosted on RallySportED's servers.
     </p>
 
     <p>
@@ -261,53 +263,79 @@ helpTopics["Loading a track"] = `
 
         <a href="https://www.tarpeeksihyvaesoft.com/rallysported/?track=democ">this link</a>.
         
-        It appends the parameter <em>track</em> to the RallySportED-js URL to indicate
-        that we want RallySportED-js to load track #3 of the Rally-Sport demo ("democ"
-        for "Demo C", C of course being the 3rd letter of the alphabet).
+        It appends the parameter <em>track</em> to the RallySportED-js URL to indicate that
+        we want to load track #3 of the Rally-Sport demo ("democ" standing for "Demo C").
+        You might use these demo tracks e.g. as a basis for your custom tracks &ndash; being
+        mindful that they're under copyright to someone other than the RallySportED author and
+        have not been licensed for this purpose.
     </p>
 
     <p>
-        The second way is to drag a RallySportED project file from your system onto the
-        RallySportED-js editor view. These project files are ZIP archives produced for
-        you by RallySportED when you save a track &ndash; the file contains a folder that
-        holds the track's data, as shown below.
+        The second way is to drag a track archive file &ndash; which you got e.g. by
+        exporting a track from RallySportED-js as described in <a href="http://localhost:8000/user-guide/#saving-a-track">
+        this topic</a> &ndash; from your system onto the RallySportED-js editor view.
     </p>
 
-    <img src="img/project-zip.png">
+    <p>
+        You can find a whole bunch of custom tracks made with RallySportED over at
+        <a href="https://tarpeeksihyvaesoft.com/rallysport-content/tracks/">Rally-Sport Content</a>!
+    </p>
 `;
 
 helpTopics["Saving a track"] = `
     <p>
-        You can find an option at the top left corner of the RallySportED-js page to
-        download a copy of the current track. The download will be in the form of a ZIP
-        archive containing the track as a RallySportED project.
+        You'll find an option in the top left corner of the RallySportED-js UI's menu bar to
+        download a copy of the current track.
+    </p>
+    
+    <p>
+        The download will be in the form of a ZIP archive containing the track's assets, as
+        demonstrated below.
     </p>
 
+    <img src="img/project-zip.png">
+
     <p>
-        You can reload this file into the editor by dragging it onto the editor view.
+        You can reload a saved track file by dragging it onto the RallySportED-js editor view, as
+        described in <a href="http://localhost:8000/user-guide/#loading-a-track">this topic</a>.
     </p>
 `;
 
 helpTopics["Renaming a track"] = `
     <p>
-        To rename a track, first locate the ZIP archive that RallySportED-js spat
-        at you when you saved the track, then open it. Inside the archive, rename the XXXXX
-        (e.g. DEMOA) folder into YYYYY (a new name of your choosing). Change the names of
-        the $FT and DTA files accordingly, as well, but leave the HITABLE.TXT file as-is.
-        See below for the expected result of renaming a track called DEMOA to TUTORIAL.
+        A track can be renamed in two ways: (1) via the RallySportED-js UI, or (2) by renaming the
+        track's data files.
+    </p>
+
+    <p>
+        Before renaming, keep the following in mind:
+        
+        <ul>
+            <li>A track's name can be at most eight characters long</li>
+            <li>All characters in the name must be from A&ndash;Z (no spaces, special characters, numbers, etc.)</li>
+            <li>The name be auto-capitalized like so: "XXxxXx" &rarr; "Xxxxxx"</li>
+        </ul>
+    </p>
+
+    <p>
+        The first way to rename a track is to use the "Rename" button found in the top left corner
+        of the UI's menu bar. Pressing this button will bring up a dialog in which you can
+        enter a new name for the currenty-loaded track. A successful change will be reflected in
+        the browser's title bar.
+    </p>
+
+    <p>
+        The other, slightly more laborious way is to locate the track's ZIP archive (which you got
+        by clicking on the "Download" button in the top left corner of the menu bar) and rename all
+        directories and files inside that archive (except for HITABLE.TXT) to what you want the new
+        track name to be. Below is an example of a track having been renamed in this way from DEMOA
+        to TUTORIAL.
     </p>
 
     <img src="img/tut-rename.png">
-
-
-    <p>
-        Keep in mind that a track's name can be at most eight characters long, and those
-        characters are limited to A-Z. That means no spaces, numbers, Unicode, etc.
-    </p>
 `;
 
-
-helpTopics["Tutorial: Creating a track"] = `
+helpTopics["Tutorial: Creating a new track"] = `
     <p>
         Here's a runner-downer on how to create a new Rally-Sport track with
         RallySportED!
@@ -407,7 +435,7 @@ helpTopics["Tutorial: Creating a track"] = `
         open, press the 2 key to get a slightly enlarged brush size, then draw a road
         onto the map, starting at the finish line, snaking around the area, and winding
         back at the finish line.
-        <p>
+    </p>
 
     <img src="img/tut-roadlay.png">
 
@@ -419,7 +447,7 @@ helpTopics["Tutorial: Creating a track"] = `
         With these textures, you can smooth out the edges of your road. It's a bit of manual
         labor, but suck it up. Below, you can see some 45-degree road tiles having been
         put down.
-    <p>
+    </p>
 
     <img src="img/tut-curvesmooth.png">
 
@@ -448,7 +476,7 @@ helpTopics["Tutorial: Creating a track"] = `
         cursor is hovering. When you apply the texture (middle click), a spectator will
         be stood there. Experiment with textures #240 and up &ndash; there's bushes and
         wooden poles in there, too.
-    <p>
+    </p>
 
     <img src="img/tut-billboards.png">
 
