@@ -195,9 +195,9 @@ Rsed.scenes["tilemap"] = (function()
                 }
             }
 
-            Rsed.ui.draw.string(`Track size: ${Rsed.core.current_project().maasto.width},${Rsed.core.current_project().maasto.width}`,
+            Rsed.ui.draw.string(`Track size:${Rsed.core.current_project().maasto.width},${Rsed.core.current_project().maasto.width}`,
                                 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
-                                ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
+                                ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.nativeHeight - 2);
 
             Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 

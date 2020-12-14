@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 October 2020 04:08:29 UTC)
+// VERSION: live (15 December 2020 00:03:54 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5882,493 +5882,307 @@ return;
 /*
 * Most recent known filename: js/ui/font.js
 *
-* Tarpeeksi Hyvae Soft 2018 /
-* RallySportED-js
+* 2018-2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
 *
 */
 "use strict";
 Rsed.ui.font = (function()
 {
-// The font's pixel size.
-const charWidth = 4;
-const charHeight = 7;
 // Shorthands for colors.
 const X = "black";
 const _ = "background";
-// The sequential range of ASCII symbols represented in the font's character set.
-const firstChar = ' ';
-const lastChar = '_';
-const charset =
-[_,_,_,_, // Space
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-X,_,_,_,
-X,_,_,_,
-X,_,_,_,
-_,_,_,_,
-X,_,_,_,
-_,_,_,_,
-_,_,_,_,
-X,_,X,_,
-X,_,X,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_, // #
-_,X,_,_,
-X,X,X,_,
-_,X,_,_,
-X,X,X,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-_,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-_,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-_,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,X,_,
-_,X,_,_,
-_,X,_,_,
-_,X,_,_,
-_,_,X,_,
-_,_,_,_,
-_,_,_,_,
-X,_,_,_,
-_,X,_,_,
-_,X,_,_,
-_,X,_,_,
-X,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-X,_,X,_,
-_,X,_,_,
-X,_,X,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-X,X,X,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-X,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,X,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,X,_,
-_,_,X,_,
-_,X,_,_,
-X,_,_,_,
-X,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-X,_,X,_,
-X,_,X,_,
-X,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-X,X,_,_,
-_,X,_,_,
-_,X,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-X,_,X,_,
-_,_,X,_,
-_,X,_,_,
-X,X,X,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-_,_,X,_,
-_,X,_,_,
-_,_,X,_,
-X,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,X,_,
-_,X,X,_,
-X,_,X,_,
-X,X,X,_,
-_,_,X,_,
-_,_,_,_,
-_,_,_,_,
-X,X,X,_,
-X,_,_,_,
-X,X,_,_,
-_,_,X,_,
-X,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,X,_,
-X,_,_,_,
-X,X,_,_,
-X,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,X,_,
-_,_,X,_,
-_,X,_,_,
-_,X,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-X,_,X,_,
-_,X,_,_,
-X,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-X,_,X,_,
-_,X,X,_,
-_,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,X,_,_,
-X,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-X,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,X,_,
-_,_,_,_,
-X,X,X,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_, // ?
-_,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,// @
-_,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-X,_,X,_,
-X,X,X,_,
-X,_,X,_,
-X,_,X,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-X,_,X,_,
-X,X,_,_,
-X,_,X,_,
-X,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,X,_,
-X,_,_,_,
-X,_,_,_,
-X,_,_,_,
-_,X,X,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-X,_,X,_,
-X,_,X,_,
-X,_,X,_,
-X,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,X,_,
-X,_,_,_,
-X,X,X,_,
-X,_,_,_,
-_,X,X,_,
-_,_,_,_,
-_,_,_,_,
-_,X,X,_,
-X,_,_,_,
-X,X,X,_,
-X,_,_,_,
-X,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,X,_,
-X,_,_,_,
-X,_,X,_,
-X,_,X,_,
-_,X,X,_,
-_,_,_,_,
-_,_,_,_,
-X,_,X,_,
-X,_,X,_,
-X,X,X,_,
-X,_,X,_,
-X,_,X,_,
-_,_,_,_,
-_,_,_,_,
-X,X,X,_,
-_,X,_,_,
-_,X,_,_,
-_,X,_,_,
-X,X,X,_,
-_,_,_,_,
-_,_,_,_,
-_,_,X,_,
-_,_,X,_,
-_,_,X,_,
-X,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,_,X,_,
-X,_,X,_,
-X,X,_,_,
-X,_,X,_,
-X,_,X,_,
-_,_,_,_,
-_,_,_,_,
-X,_,_,_,
-X,_,_,_,
-X,_,_,_,
-X,_,_,_,
-_,X,X,_,
-_,_,_,_,
-_,_,_,_,
-X,_,X,_, // M
-X,X,X,_,
-X,_,X,_,
-X,_,X,_,
-X,_,X,_,
-_,_,_,_,
-_,_,_,_,
-X,_,X,_, // N
-X,X,X,_,
-X,X,X,_,
-X,_,X,_,
-X,_,X,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-X,_,X,_,
-X,_,X,_,
-X,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-X,_,X,_,
-X,X,_,_,
-X,_,_,_,
-X,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,_,_,
-X,_,X,_,
-X,_,X,_,
-X,X,X,_,
-_,_,X,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-X,_,X,_,
-X,X,_,_,
-X,_,X,_,
-X,_,X,_,
-_,_,_,_,
-_,_,_,_,
-_,X,X,_,
-X,_,_,_,
-_,X,_,_,
-_,_,X,_,
-X,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,X,_,
-_,X,_,_,
-_,X,_,_,
-_,X,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,_,X,_,
-X,_,X,_,
-X,_,X,_,
-X,_,X,_,
-X,X,X,_,
-_,_,_,_,
-_,_,_,_,
-X,_,X,_,
-X,_,X,_,
-X,_,X,_,
-X,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,_,_,X, // W
-X,_,_,X,
-X,X,X,X,
-X,X,X,X,
-_,X,X,_,
-_,_,_,_,
-_,_,_,_,
-X,_,X,_,
-X,_,X,_,
-_,X,_,_,
-X,_,X,_,
-X,_,X,_,
-_,_,_,_,
-_,_,_,_,
-X,_,X,_,
-X,_,X,_,
-_,X,_,_,
-_,X,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,X,_,
-_,_,X,_,
-_,X,_,_,
-X,_,_,_,
-X,X,X,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-_,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-_,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-_,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-X,X,_,_,
-_,_,X,_,
-_,X,_,_,
-_,_,_,_,
-_,X,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,_,_,_,
-_,X,X,_,
-_,_,_,_,];
-const publicInterface = {};
+const charset = {
+" ": c([[_,_]]),
+"!": c([[X],
+[X],
+[X],
+[_],
+[X]]),
+"?": c([[X,X,_],
+[_,_,X],
+[_,X,_],
+[_,_,_],
+[_,X,_]]),
+"\"": c([[_,X,_,X],
+[_,X,_,X],
+[X,_,X,_]]),
+"#": c([[_,X,_,X,_],
+[X,X,X,X,X],
+[_,X,_,X,_],
+[X,X,X,X,X],
+[_,X,_,X,_]]),
+"(": c([[_,X],
+[X,_],
+[X,_],
+[X,_],
+[_,X]]),
+")": c([[X,_],
+[_,X],
+[_,X],
+[_,X],
+[X,_]]),
+"*": c([[X,_,X],
+[_,X,_],
+[X,_,X]], {y: 1}),
+"/": c([[_,_,X],
+[_,_,X],
+[_,X,_],
+[X,_,_],
+[X,_,_]]),
+"+": c([[_,X,_],
+[X,X,X],
+[_,X,_]], {y: 1}),
+"-": c([[X,X,X]], {y: 2}),
+".": c([[X]], {y: 4}),
+",": c([[_,X],
+[X,_]], {y: 3}),
+":": c([[X],
+[_],
+[X]], {y: 1}),
+";": c([[_,X],
+[_,_],
+[_,X],
+[X,_]], {y: 1}),
+"<": c([[_,X],
+[X,_],
+[_,X]], {y: 1}),
+">": c([[X,_],
+[_,X],
+[X,_]], {y: 1}),
+"=": c([[X,X,X],
+[_,_,_],
+[X,X,X]], {y: 1}),
+"_": c([[X,X,X]], {y: 3}),
+"0": c([[_,X,_],
+[X,_,X],
+[X,_,X],
+[X,_,X],
+[_,X,_]]),
+"1": c([[_,_,X],
+[_,X,X],
+[_,_,X],
+[_,_,X],
+[_,_,X]], {x: -1}),
+"2": c([[_,X,_],
+[X,_,X],
+[_,_,X],
+[_,X,_],
+[X,X,X]]),
+"3": c([[X,X,_],
+[_,_,X],
+[_,X,_],
+[_,_,X],
+[X,X,_]]),
+"4": c([[_,_,X],
+[_,X,X],
+[X,_,X],
+[X,X,X],
+[_,_,X]]),
+"5": c([[X,X,X],
+[X,_,_],
+[X,X,_],
+[_,_,X],
+[X,X,_]]),
+"6": c([[_,X,X],
+[X,_,_],
+[X,X,_],
+[X,_,X],
+[_,X,_]]),
+"7": c([[X,X,X],
+[_,_,X],
+[_,X,_],
+[_,X,_],
+[_,X,_]]),
+"8": c([[_,X,_],
+[X,_,X],
+[_,X,_],
+[X,_,X],
+[_,X,_]]),
+"9": c([[_,X,_],
+[X,_,X],
+[_,X,X],
+[_,_,X],
+[_,X,_]]),
+"A": c([[_,X,_],
+[X,_,X],
+[X,X,X],
+[X,_,X],
+[X,_,X]]),
+"B": c([[X,X,_],
+[X,_,X],
+[X,X,_],
+[X,_,X],
+[X,X,_]]),
+"C": c([[_,X,X],
+[X,_,_],
+[X,_,_],
+[X,_,_],
+[_,X,X]]),
+"D": c([[X,X,_],
+[X,_,X],
+[X,_,X],
+[X,_,X],
+[X,X,_]]),
+"E": c([[_,X,X],
+[X,_,_],
+[X,X,X],
+[X,_,_],
+[_,X,X]]),
+"F": c([[_,X,X],
+[X,_,_],
+[X,X,_],
+[X,_,_],
+[X,_,_]]),
+"G": c([[_,X,X],
+[X,_,_],
+[X,_,X],
+[X,_,X],
+[_,X,X]]),
+"H": c([[X,_,X],
+[X,_,X],
+[X,X,X],
+[X,_,X],
+[X,_,X]]),
+"I": c([[X,X,X],
+[_,X,_],
+[_,X,_],
+[_,X,_],
+[X,X,X]]),
+"J": c([[_,X,X],
+[_,_,X],
+[_,_,X],
+[X,_,X],
+[_,X,_]]),
+"K": c([[X,_,X],
+[X,_,X],
+[X,X,_],
+[X,_,X],
+[X,_,X]]),
+"L": c([[X,_,_],
+[X,_,_],
+[X,_,_],
+[X,_,_],
+[_,X,X]]),
+"M": c([[X,X,_,X,_],
+[X,_,X,_,X],
+[X,_,X,_,X],
+[X,_,X,_,X],
+[X,_,X,_,X]]),
+"N": c([[X,X,_],
+[X,_,X],
+[X,_,X],
+[X,_,X],
+[X,_,X]]),
+"O": c([[_,X,_],
+[X,_,X],
+[X,_,X],
+[X,_,X],
+[_,X,_]]),
+"P": c([[X,X,_],
+[X,_,X],
+[X,X,_],
+[X,_,_],
+[X,_,_]]),
+"Q": c([[_,X,_],
+[X,_,X],
+[X,_,X],
+[X,_,X],
+[_,X,X],
+[_,_,X]]),
+"R": c([[X,X,_],
+[X,_,X],
+[X,X,_],
+[X,_,X],
+[X,_,X]]),
+"S": c([[_,X,X],
+[X,_,_],
+[_,X,_],
+[_,_,X],
+[X,X,_]]),
+"T": c([[X,X,X],
+[_,X,_],
+[_,X,_],
+[_,X,_],
+[_,X,_]]),
+"U": c([[X,_,X],
+[X,_,X],
+[X,_,X],
+[X,_,X],
+[X,X,X]]),
+"W": c([[_,_,_,_,X],
+[X,_,X,_,X],
+[X,_,X,_,X],
+[X,_,X,_,X],
+[_,X,_,X,_]]),
+"X": c([[X,_,X],
+[X,_,X],
+[_,X,_],
+[X,_,X],
+[X,_,X]]),
+"Y": c([[X,_,X],
+[X,_,X],
+[_,X,_],
+[_,X,_],
+[_,X,_]]),
+"Z": c([[X,X,X],
+[_,_,X],
+[_,X,_],
+[X,_,_],
+[X,X,X]]),
+};
+const publicInterface = Object.freeze({
+nativeHeight: 5,
+character: function(ch = "?")
 {
-// Returns a copy of the pixels in the charset of the given character.
-publicInterface.character = function(ch = 'A')
+return (charset[ch] ||
+c([[X,_,X,_],
+[_,X,_,X],
+[X,_,X,_],
+[_,X,_,X],
+[X,_,X,_]]));
+},
+width_in_pixels: function(string = "")
 {
-let idx = ch.charCodeAt(0);
-Rsed.assert && ((idx >= firstChar.charCodeAt(0)) &&
-(idx <= lastChar.charCodeAt(0))
-|| Rsed.throw("Was asked for a font character that isn't in the charset."));
-// Convert to 0-indexed, where 0 is the first character.
-idx -= firstChar.charCodeAt(0);
-// Convert to a starting index of this character in the charset.
-idx = (idx * charWidth * charHeight);
-const character = charset.slice(idx, (idx + (charWidth * charHeight)));
-Rsed.assert && (character.length === (charWidth * charHeight))
-|| Rsed.throw("Failed to return the given character.");
-return character;
+return Array.from(string).reduce((width, ch)=>(width + publicInterface.character(ch).width), 0);
 }
-publicInterface.font_width = function() { return charWidth; }
-publicInterface.font_height = function() { return charHeight; }
-}
+});
 return publicInterface;
+// Creates and returns a new character object.
+function c(pixels = [[],[],], options = {})
+{
+Rsed.throw_if_not_type("array", pixels);
+const width = pixels[0].length;
+const height = pixels.length;
+Rsed.throw_if(pixels.some(line=>(line.length != width)), "Malformed character bitmap.");
+options = {
+...{
+x: 0,
+y: 0,
+},
+...options
+};
+return Object.freeze({
+width,
+height,
+offsetX: options.x,
+offsetY: options.y,
+pixel_at: function(x = 0, y = 0)
+{
+x -= this.offsetX;
+y -= this.offsetY;
+if((x < 0) ||
+(y < 0) ||
+(x >= width) ||
+(y >= height))
+{
+return undefined;
+}
+return pixels[y][x];
+},
+});
+}
 })();
 /*
 * Most recent known filename: js/ui/ground-brush.js
@@ -6665,14 +6479,14 @@ y = Math.floor(y);
 if (x < 0) x = Math.floor(-x * Rsed.visual.canvas.width);
 if (y < 0) y = Math.floor(-y * Rsed.visual.canvas.height);
 // Prevent the string from going past the viewport's edges.
-x = Math.min(x, (Rsed.visual.canvas.width - 1 - (string.length * Rsed.ui.font.font_width())));
-y = Math.min(y, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
+x = Math.min(x, (Rsed.visual.canvas.width - 1 - Rsed.ui.font.width_in_pixels(string)));
+y = Math.min(y, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
 // Draw a left vertical border for the string block. The font's
 // bitmap characters include bottom, right, and top borders, but
 // not left; so we need to create the left one manually.
 if ((x >= 0) && (x < Rsed.visual.canvas.width))
 {
-for (let i = 0; i < Rsed.ui.font.font_height(); i++)
+for (let i = 0; i < (Rsed.ui.font.nativeHeight + 2); i++)
 {
 this.pixel(x, y + i, 255, 255, 0);
 }
@@ -6682,10 +6496,21 @@ x++;
 for (let i = 0; i < string.length; i++)
 {
 const character = Rsed.ui.font.character(string[i]);
-const width = Rsed.ui.font.font_width();
-const height = Rsed.ui.font.font_height();
-this.image(character, null, width, height, x, y, false);
-x += Rsed.ui.font.font_width();
+for (let cy = 0; cy < (Rsed.ui.font.nativeHeight + 2); cy++)
+{
+if ((y + cy) < 0) continue;
+if ((y + cy) >= pixelSurface.height) break;
+for (let cx = 0; cx <= character.width; cx++)
+{
+if ((x + cx) < 0) continue;
+if ((x + cx) >= pixelSurface.width) break;
+const color = character.pixel_at(cx, cy-1)
+? Rsed.visual.palette.color_at_idx(character.pixel_at(cx, cy-1))
+: Rsed.visual.palette.color_at_idx("background");
+this.pixel((x + cx), (y + cy), color.red, color.green, color.blue);
+}
+}
+x += (character.width + 1);
 }
 return;
 },
@@ -7517,7 +7342,7 @@ const component = Rsed.ui.component();
 component.draw = function(offsetX = 0, offsetY = 0)
 {
 Rsed.throw_if_not_type("number", offsetX, offsetY);
-Rsed.ui.draw.string(`FPS: ${Rsed.core.renderer_fps()}`, offsetX, offsetY);
+Rsed.ui.draw.string(`FPS:${Rsed.core.renderer_fps()}`, offsetX, offsetY);
 };
 return component;
 }
@@ -7543,7 +7368,7 @@ component.draw = function(offsetX = 0, offsetY = 0)
 Rsed.throw_if_not_type("number", offsetX, offsetY);
 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
-let str = "HEIGHT:+000 PALA:#000 X,Y:000,000";
+let str = "HEIGHT:+000  PALA:000  X,Y:000,000";
 if ((mouseHover && (mouseHover.type === "prop")) ||
 (mouseGrab && (mouseGrab.type === "prop")))
 {
@@ -7553,7 +7378,7 @@ const mouse = (mouseGrab && (mouseGrab.type === "prop"))
 ? mouseGrab
 : mouseHover;
 str = "PROP:\"" + Rsed.core.current_project().props.name(mouse.propId) + "\"" +
-" IDX:" + mouse.propId + "(" + mouse.propTrackIdx + ")";
+"  IDX:" + mouse.propId + "," + mouse.propTrackIdx;
 }
 else if (mouseHover && (mouseHover.type === "ground"))
 {
@@ -7564,7 +7389,7 @@ const yStr = String(y).padStart(3, "0");
 const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
 String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
 const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
-str = `HEIGHT:${heightStr} PALA:#${palaStr} X,Y:${xStr},${yStr}`;
+str = `HEIGHT:${heightStr}  PALA:${palaStr}  X,Y:${xStr},${yStr}`;
 }
 Rsed.ui.draw.string(str, offsetX, offsetY);
 };
@@ -7681,8 +7506,8 @@ true);
 if (options.alwaysShowIdxTag || Rsed.ui.inputState.key_down("tab"))
 {
 const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
-const labelPixelWidth = (label.length * Rsed.ui.font.font_width());
-const labelPixelHeight = Rsed.ui.font.font_height();
+const labelPixelWidth = Rsed.ui.font.width_in_pixels(label);
+const labelPixelHeight = Rsed.ui.font.nativeHeight;
 const x = (Rsed.ui.inputState.current_mouse_hover().cornerX - labelPixelWidth + 1);
 const y = (Rsed.ui.inputState.current_mouse_hover().cornerY - labelPixelHeight + 2);
 Rsed.ui.draw.string(label, x, y);
@@ -8194,7 +8019,7 @@ if (Rsed.visual.canvas.domElement.clientWidth > 650)
 uiComponents.activePala.update(sceneSettings);
 uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 11);
 uiComponents.footerInfo.update(sceneSettings);
-uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
+uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
 uiComponents.minimap.update(sceneSettings);
 uiComponents.minimap.draw((Rsed.visual.canvas.width - 4), 11);
 if (sceneSettings.showPalatPane)
@@ -8562,9 +8387,9 @@ uiComponents.fpsIndicator.update(sceneSettings);
 uiComponents.fpsIndicator.draw(3, 10);
 }
 }
-Rsed.ui.draw.string(`Track size: ${Rsed.core.current_project().maasto.width},${Rsed.core.current_project().maasto.width}`,
+Rsed.ui.draw.string(`Track size:${Rsed.core.current_project().maasto.width},${Rsed.core.current_project().maasto.width}`,
 ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
-((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.font_height());
+((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.nativeHeight - 2);
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 // Note: We assume that UI drawing is the last step in rendering the current
 // frame; and thus that once the UI rendering has finished, the frame is finished

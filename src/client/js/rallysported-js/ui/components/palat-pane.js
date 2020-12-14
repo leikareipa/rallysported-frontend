@@ -132,8 +132,8 @@ Rsed.ui.component.palatPane =
                     if (options.alwaysShowIdxTag || Rsed.ui.inputState.key_down("tab"))
                     {
                         const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
-                        const labelPixelWidth = (label.length * Rsed.ui.font.font_width());
-                        const labelPixelHeight = Rsed.ui.font.font_height();
+                        const labelPixelWidth = Rsed.ui.font.width_in_pixels(label);
+                        const labelPixelHeight = Rsed.ui.font.nativeHeight;
 
                         const x = (Rsed.ui.inputState.current_mouse_hover().cornerX - labelPixelWidth + 1);
                         const y = (Rsed.ui.inputState.current_mouse_hover().cornerY - labelPixelHeight + 2);

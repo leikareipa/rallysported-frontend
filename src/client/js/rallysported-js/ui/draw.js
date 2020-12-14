@@ -142,15 +142,15 @@ Rsed.ui.draw = (function()
             if (y < 0) y = Math.floor(-y * Rsed.visual.canvas.height);
 
             // Prevent the string from going past the viewport's edges.
-            x = Math.min(x, (Rsed.visual.canvas.width - 1 - (string.length * Rsed.ui.font.font_width())));
-            y = Math.min(y, (Rsed.visual.canvas.height - Rsed.ui.font.font_height()));
+            x = Math.min(x, (Rsed.visual.canvas.width - 1 - Rsed.ui.font.width_in_pixels(string)));
+            y = Math.min(y, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
 
             // Draw a left vertical border for the string block. The font's
             // bitmap characters include bottom, right, and top borders, but
             // not left; so we need to create the left one manually.
             if ((x >= 0) && (x < Rsed.visual.canvas.width))
             {
-                for (let i = 0; i < Rsed.ui.font.font_height(); i++)
+                for (let i = 0; i < (Rsed.ui.font.nativeHeight + 2); i++)
                 {
                     this.pixel(x, y + i, 255, 255, 0);
                 }
@@ -162,12 +162,26 @@ Rsed.ui.draw = (function()
             for (let i = 0; i < string.length; i++)
             {
                 const character = Rsed.ui.font.character(string[i]);
-                const width = Rsed.ui.font.font_width();
-                const height = Rsed.ui.font.font_height();
-                
-                this.image(character, null, width, height, x, y, false);
-                
-                x += Rsed.ui.font.font_width();
+
+                for (let cy = 0; cy < (Rsed.ui.font.nativeHeight + 2); cy++)
+                {
+                    if ((y + cy) < 0) continue;
+                    if ((y + cy) >= pixelSurface.height) break;
+
+                    for (let cx = 0; cx <= character.width; cx++)
+                    {
+                        if ((x + cx) < 0) continue;
+                        if ((x + cx) >= pixelSurface.width) break;
+
+                        const color = character.pixel_at(cx, cy-1)
+                                      ? Rsed.visual.palette.color_at_idx(character.pixel_at(cx, cy-1))
+                                      : Rsed.visual.palette.color_at_idx("background");
+
+                        this.pixel((x + cx), (y + cy), color.red, color.green, color.blue);
+                    }
+                }
+
+                x += (character.width + 1);
             }
 
             return;
