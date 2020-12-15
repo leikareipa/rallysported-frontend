@@ -129,14 +129,16 @@ Rsed.ui.component.palatPane =
 
                     // Draw a label on the PALA over which the mouse cursor hovers in the
                     // PALAT pane.
-                    if (options.alwaysShowIdxTag || Rsed.ui.inputState.key_down("tab"))
+                    if (mouseHover &&
+                        (options.alwaysShowIdxTag ||
+                         Rsed.ui.inputState.key_down("tab")))
                     {
-                        const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
+                        const label = `${mouseHover.palaIdx}`;
                         const labelPixelWidth = Rsed.ui.font.width_in_pixels(label);
                         const labelPixelHeight = Rsed.ui.font.nativeHeight;
 
-                        const x = (Rsed.ui.inputState.current_mouse_hover().cornerX - labelPixelWidth + 1);
-                        const y = (Rsed.ui.inputState.current_mouse_hover().cornerY - labelPixelHeight + 2);
+                        const x = (mouseHover.cornerX - labelPixelWidth);
+                        const y = (mouseHover.cornerY - labelPixelHeight);
 
                         Rsed.ui.draw.string(label, x, y);
                     }

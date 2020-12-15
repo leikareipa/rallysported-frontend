@@ -329,7 +329,9 @@ Rsed.ui.inputState = (function()
             // Note: We guard against Rsed.visual.canvas being undefined, which
             // it may be when running unit tests.
             const mousePos = this.mouse_pos_scaled_to_render_resolution();
-            mouseState.hover = (Rsed.visual.canvas? Rsed.visual.canvas.mousePickingBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width] : null);
+            mouseState.hover = (Rsed.visual.canvas
+                                ? Rsed.visual.canvas.mousePickingBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width]
+                                : null);
         },
 
         set_mouse_button_down: function(button = "left", isDown = false)

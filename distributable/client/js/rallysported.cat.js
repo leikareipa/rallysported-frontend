@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 December 2020 00:03:54 UTC)
+// VERSION: live (15 December 2020 02:33:22 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6143,9 +6143,12 @@ c([[X,_,X,_],
 [_,X,_,X],
 [X,_,X,_]]));
 },
-width_in_pixels: function(string = "")
+width_in_pixels: function(string = "A", characterSpacing = 1)
 {
-return Array.from(string).reduce((width, ch)=>(width + publicInterface.character(ch).width), 0);
+Rsed.throw_if_not_type("string", string);
+Rsed.throw_if(!string.length);
+const combinedCharacterWidth = Array.from(string).reduce((width, ch)=>(width + publicInterface.character(ch).width), 0);
+return (combinedCharacterWidth + (characterSpacing * (string.length - 1)));
 }
 });
 return publicInterface;
@@ -7105,7 +7108,9 @@ mouseState.position.y = y;
 // Note: We guard against Rsed.visual.canvas being undefined, which
 // it may be when running unit tests.
 const mousePos = this.mouse_pos_scaled_to_render_resolution();
-mouseState.hover = (Rsed.visual.canvas? Rsed.visual.canvas.mousePickingBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width] : null);
+mouseState.hover = (Rsed.visual.canvas
+? Rsed.visual.canvas.mousePickingBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width]
+: null);
 },
 set_mouse_button_down: function(button = "left", isDown = false)
 {
@@ -7503,13 +7508,15 @@ true);
 }
 // Draw a label on the PALA over which the mouse cursor hovers in the
 // PALAT pane.
-if (options.alwaysShowIdxTag || Rsed.ui.inputState.key_down("tab"))
+if (mouseHover &&
+(options.alwaysShowIdxTag ||
+Rsed.ui.inputState.key_down("tab")))
 {
-const label = `#${Rsed.ui.inputState.current_mouse_hover().palaIdx}`;
+const label = `${mouseHover.palaIdx}`;
 const labelPixelWidth = Rsed.ui.font.width_in_pixels(label);
 const labelPixelHeight = Rsed.ui.font.nativeHeight;
-const x = (Rsed.ui.inputState.current_mouse_hover().cornerX - labelPixelWidth + 1);
-const y = (Rsed.ui.inputState.current_mouse_hover().cornerY - labelPixelHeight + 2);
+const x = (mouseHover.cornerX - labelPixelWidth);
+const y = (mouseHover.cornerY - labelPixelHeight);
 Rsed.ui.draw.string(label, x, y);
 }
 }
