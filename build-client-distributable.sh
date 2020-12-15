@@ -63,7 +63,7 @@ echo "// VERSION: $VERSION (`LC_ALL=en_US.utf8 date -u +"%d %B %Y %H:%M:%S %Z"`)
 echo "// LINK: https://www.github.com/leikareipa/rallysported-js/" >> "$DST_DIRECTORY/$DST_FILENAME"
 echo "// INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }" >> "$DST_DIRECTORY/$DST_FILENAME"
 echo "// INCLUDES: { FileSaver.js (c) 2016 Eli Grey }" >> "$DST_DIRECTORY/$DST_FILENAME"
-echo "// INCLUDES: { The retro n-gon renderer (c) 2019 Tarpeeksi Hyvae Soft }" >> "$DST_DIRECTORY/$DST_FILENAME"
+echo "// INCLUDES: { The retro n-gon renderer (c) 2019-2020 Tarpeeksi Hyvae Soft }" >> "$DST_DIRECTORY/$DST_FILENAME"
 echo "// FILES:" >> "$DST_DIRECTORY/$DST_FILENAME"
 printf "//\t%s\n" "${SOURCE_FILES[@]}" >> "$DST_DIRECTORY/$DST_FILENAME"
 echo -e "/////////////////////////////////////////////////\n" >> "$DST_DIRECTORY/$DST_FILENAME"

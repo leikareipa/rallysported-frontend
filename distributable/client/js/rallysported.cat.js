@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 December 2020 02:33:22 UTC)
+// VERSION: live (15 December 2020 04:25:39 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -7463,32 +7463,26 @@ if (palatPaneBuffer.length > 0)
 Rsed.ui.draw.image(palatPaneBuffer, palatPaneMousePick,
 palatPaneWidth, palatPaneHeight,
 palatPaneOffsetX, palatPaneOffsetY);
+// Draw indicators for mouse hover/selection/etc.
 {
-const frame = [];
-const dottedFrame = []
 const frameWidth = 9;
 const frameHeight = 9;
-for (let y = 0; y < frameHeight; y++)
-{
-for (let x = 0; x < frameWidth; x++)
-{
-let color = 0;
-if (y % (frameHeight - 1) === 0) color = "yellow";
-if (x % (frameWidth - 1) === 0) color = "yellow";
-frame.push(color);
-if (color && ((x + y) % 2 !== 0))
-{
-dottedFrame.push("yellow");
-}
-else
-{
-dottedFrame.push(0);
-}
-}
-}
+const X = "yellow";
+const _ = 0;
 // Draw a frame around the currently-selected PALA.
 if (options.indicateSelection)
 {
+const frame = [
+X,X,X,X,X,X,X,X,X,
+X,_,_,_,_,_,_,_,X,
+X,_,_,_,_,_,_,_,X,
+X,_,_,_,_,_,_,_,X,
+X,_,_,_,_,_,_,_,X,
+X,_,_,_,_,_,_,_,X,
+X,_,_,_,_,_,_,_,X,
+X,_,_,_,_,_,_,_,X,
+X,X,X,X,X,X,X,X,X,
+];
 const selectedPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
 const y = Math.floor(selectedPalaIdx / numPalatPaneCols);
 const x = (selectedPalaIdx - y * numPalatPaneCols);
@@ -7501,7 +7495,18 @@ const mouseHover = component.is_hovered()
 // Draw a frame around the PALA over which the mouse cursor is hovering.
 if (mouseHover && options.indicateHover)
 {
-Rsed.ui.draw.image(dottedFrame, null,
+const frame = [
+X,X,X,_,_,_,X,X,X,
+X,_,_,_,_,_,_,_,X,
+X,_,_,_,_,_,_,_,X,
+_,_,_,_,_,_,_,_,_,
+_,_,_,_,X,_,_,_,_,
+_,_,_,_,_,_,_,_,_,
+X,_,_,_,_,_,_,_,X,
+X,_,_,_,_,_,_,_,X,
+X,X,X,_,_,_,X,X,X,
+];
+Rsed.ui.draw.image(frame, null,
 frameWidth, frameHeight,
 mouseHover.cornerX, mouseHover.cornerY,
 true);
