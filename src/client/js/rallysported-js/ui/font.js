@@ -322,9 +322,14 @@ Rsed.ui.font = (function()
                        [X,_,X,_]]));
         },
 
-        width_in_pixels: function(string = "")
+        width_in_pixels: function(string = "A", characterSpacing = 1)
         {
-            return Array.from(string).reduce((width, ch)=>(width + publicInterface.character(ch).width), 0);
+            Rsed.throw_if_not_type("string", string);
+            Rsed.throw_if(!string.length);
+
+            const combinedCharacterWidth = Array.from(string).reduce((width, ch)=>(width + publicInterface.character(ch).width), 0);
+
+            return (combinedCharacterWidth + (characterSpacing * (string.length - 1)));
         }
     });
 
