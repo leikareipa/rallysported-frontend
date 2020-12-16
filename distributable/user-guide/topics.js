@@ -11,54 +11,49 @@
 
 export const helpTopics = [];
 
-helpTopics["What's RallySportED?"] = `
+helpTopics["Introduction"] = `
     <p>
-        RallySportED is a contemporary asset editor (modding tool) for the classic racing
-        game Rally-Sport.
+        RallySportED is a contemporary asset editor (modding tool) for the classic DOS-era
+        racing game Rally-Sport.
     </p>
         
     <p>
-        A JavaScript port of RallySportED, RallySportED-js lets you create new
+        RallySportED-js is a JavaScript port of RallySportED, allowing you to create new
         Rally-Sport tracks in your browser!
     </p>
 
+    <hr>
+
     <p>
-        RallySportED was developed by Tarpeeksi Hyvae Soft and released under the GNU
-        General Public License v3. Its source code is available on GitHub
-        <a href="https://github.com/leikareipa/rallysported-js">here</a>.
+        RallySportED is &copy; Tarpeeksi Hyvae Soft. Its source code is available on GitHub:
+        <a href="https://github.com/leikareipa/rallysported">/rallysported</a>.
     </p>
 
     <p>
-        Rally-Sport was developed by Jukka Jäkälä, who is not affiliated with
-        RallySportED or Tarpeeksi Hyvae Soft. Any rights remain with their respective
-        holders.
+        Rally-Sport is &copy; Jukka Jäkälä. Mr. Jäkälä is not affiliated with RallySportED
+        nor with Tarpeeksi Hyvae Soft.
+    </p>
+
+    <p>
+        Any rights remain with their respective holders.
     </p>
 `;
 
 helpTopics["System requirements"] = `
     <p>
-        RallySportED-js requires a recent, compliant browser with JavaScript enabled. Google
-        Chrome tends to offer the best performance and is also the only browser on which
-        RallySportED-js is regularly tested.
+        RallySportED-js has the following system requirements:
     </p>
 
-    <p>
-        Since RallySportED-js uses software 3D rendering, you'll benefit from having a decent
-        CPU. A mid-range desktop or laptop computer bought within the last five or so
-        years should suffice.
-    </p>
+    <ul>
+        <li>An up-to-date browser with JavaScript enabled (recommended: Google Chrome)</li>
+        <li>A decent CPU (recommended: at least a mid-range machine bought within the last 4 yrs.)</li>
+        <li>Mouse and keyboard (+ full-sized screen recommended)</li>
+    </ul>
 
     <p>
-        To operate the RallySportED-js user interface, a mouse and keyboard are required.
-        With a touch screen, you can scroll the camera, but that's it.
-    </p>
-
-    <p>
-        RallySportED-js remains largely untested on Apple's operating systems; and at times,
-        these systems deal poorly with apps written more with Linux or Windows in mind.
-        Since the dude making RallySportED-js doesn't have access to Apple's hardware, Apple
-        users are encouraged to actively file issue reports in the RallySportED-js GitHub
-        repo.
+        RallySportED-js is tested primarily in Linux, but should work just as well on Windows.
+        You might find more problems on Apple's operating systems, since the developer has few
+        or no Apple devices to test on.
     </p>
 `;
 
@@ -226,9 +221,6 @@ helpTopics["The \"Serve\" feature"] = `
         <li>Copy the entire link from the address bar and give it to the people you want
         to share the track with. When they access this Serve URL, they'll get a copy of the
         track as it appers in your browser at that moment.</li>
-        <li>To stop Serving, press the "Serving" button again. The "transientServer"
-        parameter should disappear from your browser's address bar, and the Serve URL
-        will no longer function. If you start Serving again, a new URL will be generated.</li>
     </ul>
 
     <p>
@@ -247,6 +239,11 @@ helpTopics["The \"Serve\" feature"] = `
         <li>Changes made to the track by a person accessing your Serve URL will affect only
         their local copy, not yours or anybody else's.</li>
     </ul>
+
+    <p>
+        To stop Serving, press the "Serving" button again. The "transientServer" parameter
+        should disappear from your browser's address bar, and the Serve URL will no longer
+        function. If you start Serving again, a new URL will be generated.
     </p>
 `;
 
@@ -276,8 +273,10 @@ helpTopics["Loading a track"] = `
         this topic</a> &ndash; from your system onto the RallySportED-js editor view.
     </p>
 
+    <hr>
+
     <p>
-        You can find a whole bunch of custom tracks made with RallySportED over at
+        <b>Note:</b> You can find a whole bunch of custom tracks over at
         <a href="https://tarpeeksihyvaesoft.com/rallysport-content/tracks/">Rally-Sport Content</a>!
     </p>
 `;
@@ -335,14 +334,14 @@ helpTopics["Renaming a track"] = `
     <img src="img/tut-rename.png">
 `;
 
-helpTopics["Tutorial: Creating a new track"] = `
+helpTopics["Tutorial: Creating a track"] = `
     <p>
         Here's a runner-downer on how to create a new Rally-Sport track with
         RallySportED!
     </p>
 
     <h3>
-        Starting out
+        1. Starting out
     </h3>
 
     <p>
@@ -424,10 +423,10 @@ helpTopics["Tutorial: Creating a new track"] = `
         When you now open the tilemap view (Q) again, you'll see a lot of green but also
         a brown horizontal line. This is a temporary visual aid for you that tells you
         where the finish line is, for when you're laying down the road.
-        <p>
+    </p>
 
     <h3>
-        Laying the road
+        2. Laying the road
     </h3>
     
     <p>
@@ -452,7 +451,7 @@ helpTopics["Tutorial: Creating a new track"] = `
     <img src="img/tut-curvesmooth.png">
 
     <h3>
-        Decorating the terrain
+        3. Decorating the terrain
     </h3>
 
     <p>
@@ -481,7 +480,7 @@ helpTopics["Tutorial: Creating a new track"] = `
     <img src="img/tut-billboards.png">
 
     <h3>
-        Testing the track in Rally-Sport
+        4. Testing the track in Rally-Sport
     </h3>
 
     <p>
@@ -521,7 +520,7 @@ helpTopics["Tutorial: Creating a new track"] = `
     </p>
 
     <h3>
-        Adding the AI opponent
+        5. Adding an AI opponent
     </h3>
 
     <p>
