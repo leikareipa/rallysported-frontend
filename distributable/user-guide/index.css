@@ -1,14 +1,9 @@
 :root
 {
-    --header-height: 100px;
+    --header-height: 90px;
     --side-panel-width: 330px;
     --content-margin: 20px;
     --content-border-radius: 10px;
-}
-
-html
-{
-    scroll-behavior: smooth;
 }
 
 body

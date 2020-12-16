@@ -19,16 +19,18 @@ Rsed.ui.cursor = (function()
         closedHand: "./client/assets/cursors/rsed-cursor-closedhand.png",
         groundSmoothing: "./client/assets/cursors/rsed-cursor-arrowsmooth.png",
         blocked: "./client/assets/cursors/rsed-cursor-blocked.png",
+        default: undefined,
     };
 
-    // Pre-load the cursor images' data so they'll be immediately available for display.
+    cursors.default = cursors.arrow;
+
+    // Pre-load the cursor images' data so they'll be immediately available for display
+    // when required.
     const cursorImages = Object.keys(cursors).map(c=>{
         const image = new Image();
         image.src = cursors[c];
         return image;
     });
-
-    cursors.default = cursors.arrow;
 
     let currentCursor = cursors.default;
 

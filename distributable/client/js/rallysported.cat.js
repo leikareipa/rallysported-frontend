@@ -1,11 +1,11 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (15 December 2020 04:25:39 UTC)
+// VERSION: live (16 December 2020 01:25:59 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
-// INCLUDES: { The retro n-gon renderer (c) 2019 Tarpeeksi Hyvae Soft }
+// INCLUDES: { The retro n-gon renderer (c) 2019-2020 Tarpeeksi Hyvae Soft }
 // FILES:
 //	./src/client/js/jszip/jszip.min.js
 //	./src/client/js/filesaver/FileSaver.min.js
@@ -6309,14 +6309,16 @@ fingerHand: "./client/assets/cursors/rsed-cursor-fingerhand.png",
 closedHand: "./client/assets/cursors/rsed-cursor-closedhand.png",
 groundSmoothing: "./client/assets/cursors/rsed-cursor-arrowsmooth.png",
 blocked: "./client/assets/cursors/rsed-cursor-blocked.png",
+default: undefined,
 };
-// Pre-load the cursor images' data so they'll be immediately available for display.
+cursors.default = cursors.arrow;
+// Pre-load the cursor images' data so they'll be immediately available for display
+// when required.
 const cursorImages = Object.keys(cursors).map(c=>{
 const image = new Image();
 image.src = cursors[c];
 return image;
 });
-cursors.default = cursors.arrow;
 let currentCursor = cursors.default;
 const publicInterface = {
 // Inspect the app's current state (e.g. of user input), and select
@@ -9519,7 +9521,7 @@ notificationType: "warning",
 // A crude test for whether the user's device might not have mouse/keyboard available.
 if (browserInfo.isMobile)
 {
-Rsed.ui.popup_notification("For best results, this app requires a mouse, keyboard, and a non-small screen!",
+Rsed.ui.popup_notification("Note: This app requires a mouse, a keyboard, and a non-small screen!",
 {
 timeoutMs: 7000,
 });
