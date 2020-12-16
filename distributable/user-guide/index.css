@@ -1,8 +1,14 @@
 :root
 {
-    --header-height: 60px;
+    --header-height: 100px;
     --side-panel-width: 330px;
     --content-margin: 20px;
+    --content-border-radius: 10px;
+}
+
+html
+{
+    scroll-behavior: smooth;
 }
 
 body
@@ -10,7 +16,7 @@ body
     font-family: sans-serif;
     text-align: center;
     align-content: center;
-    background-color: rgb(240, 240, 240);
+    background-color: white;
     color: black;
     padding: 0;
     margin: 0;
@@ -18,23 +24,26 @@ body
 
 header
 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     overflow-x: auto;
     white-space: nowrap;
-    position: fixed;
     top: 0;
     left: 0;
     z-index: 1;
     box-sizing: border-box;
     width: 100%;
     background-color: white;
-    padding: 15px;
+    padding-left: 35px;
     text-align: left;
     font-family: sans-serif;
     font-weight: normal;
     font-size: 150%;
     color: black;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     height: var(--header-height);
+    border-bottom: 1px solid lightgray;
+    border-radius: var(--content-border-radius);
 }
 
 a
@@ -52,7 +61,7 @@ hr
 {
     width: 100%;
     border: none;
-    border-bottom: 3px solid rgb(240, 240, 240);
+    border-bottom: 1px solid lightgray;
 }
 
 #main-container
@@ -81,10 +90,9 @@ hr
     background-color: white;
     width: var(--side-panel-width);
     text-align: left;
-    padding: 30px;
+    padding: 10px;
     margin-top: var(--content-margin);
     margin-right: 0;
-    border-radius: 10px;
     height: calc(100% - 100px);
     overflow-y: auto;
 }
@@ -95,7 +103,7 @@ hr
     list-style-type: none;
     padding: 0;
     margin: 0;
-    margin-top: 16px;
+    margin-top: 14px;
 }
 
 #side-panel li
@@ -146,7 +154,13 @@ hr
     padding: 30px;
     background-color: white;
     width: 100%;
-    border-radius: 10px;
+    border-radius: var(--content-border-radius);
+    border: 1px solid lightgray;
+}
+
+.help-topic li
+{
+    margin-top: 10px;
 }
 
 .help-topic + .topic-anchor
@@ -165,11 +179,12 @@ hr
     display: block;
     margin-top: var(--content-margin);
     margin-bottom: var(--content-margin);
-    margin: 45px;
+    margin: 30px;
     margin-left: auto;
     margin-right: auto;
     border-radius: 0;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: 1px solid lightgray;
+    border-radius: 5px;
     max-width: 100%;
 }
 
@@ -213,9 +228,7 @@ hr
 {
     visibility: hidden;
     position: relative;
-
-    /* Vertically align the help topic anchor with the help topics side panel.*/
-    top: calc(-1 * var(--header-height) - var(--content-margin));
+    top: calc(var(--content-margin) * -1);
 }
 
 @media only screen and (max-width: 1500px)
@@ -244,6 +257,13 @@ hr
 
 @media only screen and (max-width: 1000px)
 {
+    header
+    {
+        justify-content: center;
+        padding: 0;
+        position: relative;
+    }
+
     #side-panel
     {
         display: none;
@@ -258,11 +278,6 @@ hr
 
 @media only screen and (max-width: 600px)
 {
-    :root
-    {
-        --content-margin: 5px;
-    }
-
     #help-topics
     {
         margin-left: 0;
@@ -271,7 +286,8 @@ hr
 
     .help-topic
     {
-        border-radius: 0;
-        padding: 15px;
+        border-left: none;
+        border-right: none;
+        padding: 20px;
     }
 }
