@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (16 December 2020 01:25:59 UTC)
+// VERSION: live (17 December 2020 02:57:18 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6301,7 +6301,7 @@ return publicInterface;
 "use strict";
 Rsed.ui.cursor = (function()
 {
-const cursors = {
+const cursor = {
 arrow: "./client/assets/cursors/rsed-cursor-arrow.png",
 openHand: "./client/assets/cursors/rsed-cursor-openhand.png",
 openHand2: "./client/assets/cursors/rsed-cursor-openhand2.png",
@@ -6309,23 +6309,24 @@ fingerHand: "./client/assets/cursors/rsed-cursor-fingerhand.png",
 closedHand: "./client/assets/cursors/rsed-cursor-closedhand.png",
 groundSmoothing: "./client/assets/cursors/rsed-cursor-arrowsmooth.png",
 blocked: "./client/assets/cursors/rsed-cursor-blocked.png",
+eyedropper: "./client/assets/cursors/rsed-cursor-eyedropper.png",
 default: undefined,
 };
-cursors.default = cursors.arrow;
+cursor.default = cursor.arrow;
 // Pre-load the cursor images' data so they'll be immediately available for display
 // when required.
-const cursorImages = Object.keys(cursors).map(c=>{
+const cursorImages = Object.keys(cursor).map(c=>{
 const image = new Image();
-image.src = cursors[c];
+image.src = cursor[c];
 return image;
 });
-let currentCursor = cursors.default;
+let currentCursor = cursor.default;
 const publicInterface = {
 // Inspect the app's current state (e.g. of user input), and select
 // the most appropriate cursor.
 update_cursor: function()
 {
-const cursor = (()=>
+const currentCursor = (()=>
 {
 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
@@ -6334,32 +6335,41 @@ if (mouseGrab &&
 {
 if (Rsed.ui.inputState.right_mouse_button_down())
 {
-return cursors.openHand2;
+return cursor.openHand2;
 }
-return cursors.closedHand;
+return cursor.closedHand;
 }
-if (mouseHover &&
-(mouseHover.type == "prop"))
+if (mouseHover)
 {
-return cursors.openHand;
+switch (mouseHover.type)
+{
+case "prop": return cursor.openHand;
+case "ground":
+{
+if (Rsed.ui.inputState.key_down("control"))
+{
+return cursor.eyedropper;
+}
+}
+}
 }
 if (Rsed.ui.groundBrush.brushSmoothens &&
 (Rsed.core.current_scene() == Rsed.scenes["3d"]))
 {
-return cursors.groundSmoothing;
+return cursor.groundSmoothing;
 }
-return cursors.default;
+return cursor.default;
 })();
-set_cursor(cursor);
+set_cursor(currentCursor);
 return;
 },
 };
 return publicInterface;
-function set_cursor(cursor = cursors.default)
+function set_cursor(cursor = cursor.default)
 {
 if (!cursor)
 {
-cursor = cursors.default;
+cursor = cursor.default;
 }
 if (currentCursor == cursor)
 {
