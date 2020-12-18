@@ -37,8 +37,6 @@ header
     font-size: 150%;
     color: black;
     height: var(--header-height);
-    border-bottom: 1px solid lightgray;
-    border-radius: var(--content-border-radius);
 }
 
 a
@@ -90,6 +88,7 @@ hr
     margin-right: 0;
     height: calc(100% - 100px);
     overflow-y: auto;
+    height: calc(100% - var(--header-height) - var(--content-margin));
 }
 
 #side-panel ul
@@ -281,8 +280,6 @@ hr
 
     .help-topic
     {
-        border-left: none;
-        border-right: none;
         padding: 20px;
     }
 }
