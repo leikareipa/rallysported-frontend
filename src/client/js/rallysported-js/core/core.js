@@ -212,18 +212,18 @@ Rsed.core = (function()
     // Called once per frame to orchestrate program flow.
     function tick(timestamp = 0, frameDeltaMs = 0)
     {
-        if (!coreIsRunning) return;
+        if (!coreIsRunning)
+        {
+            return;
+        }
 
         programFPS = Math.round(1000 / (frameDeltaMs || 1));
 
-        Rsed.ui.cursor.update_cursor();
         currentScene.handle_user_interaction();
-
-        // Render the next frame.
-        Rsed.visual.canvas.mousePickingBuffer.fill(null);
         currentScene.draw_mesh();
         currentScene.draw_ui();
 
+        // Keep ticking.
         window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
     }
 

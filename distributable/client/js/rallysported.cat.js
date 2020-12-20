@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 December 2020 15:23:43 UTC)
+// VERSION: live (20 December 2020 16:01:35 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -34,7 +34,7 @@
 //	./src/client/js/rallysported-js/ui/popup-notification.js
 //	./src/client/js/rallysported-js/ui/font.js
 //	./src/client/js/rallysported-js/ui/ground-brush.js
-//	./src/client/js/rallysported-js/ui/cursor.js
+//	./src/client/js/rallysported-js/ui/cursor-handler.js
 //	./src/client/js/rallysported-js/ui/draw.js
 //	./src/client/js/rallysported-js/ui/window.js
 //	./src/client/js/rallysported-js/ui/input-state.js
@@ -6292,7 +6292,7 @@ return brushPalaIdx;
 return publicInterface;
 })();
 /*
-* Most recent known filename: js/ui/cursor.js
+* Most recent known filename: js/ui/cursor-handler.js
 *
 * 2020 Tarpeeksi Hyvae Soft
 *
@@ -6300,9 +6300,10 @@ return publicInterface;
 *
 */
 "use strict";
-Rsed.ui.cursor = (function()
+Rsed.ui.cursorHandler = (function()
 {
-const cursor = {
+let currentCursor = undefined;
+const cursors = {
 arrow: "./client/assets/cursors/rsed-cursor-arrow.png",
 openHand: "./client/assets/cursors/rsed-cursor-openhand.png",
 openHand2: "./client/assets/cursors/rsed-cursor-openhand2.png",
@@ -6313,66 +6314,20 @@ blocked: "./client/assets/cursors/rsed-cursor-blocked.png",
 eyedropper: "./client/assets/cursors/rsed-cursor-eyedropper.png",
 default: undefined,
 };
-cursor.default = cursor.arrow;
+cursors.default = cursors.arrow;
 // Pre-load the cursor images' data so they'll be immediately available for display
 // when required.
-const cursorImages = Object.keys(cursor).map(c=>{
+const cursorImages = Object.keys(cursors).map(c=>{
 const image = new Image();
-image.src = cursor[c];
+image.src = cursors[c];
 return image;
 });
-let currentCursor = cursor.default;
 const publicInterface = {
-// Inspect the app's current state (e.g. of user input), and select
-// the most appropriate cursor.
-update_cursor: function()
+cursors: Object.freeze(cursors),
+set_cursor: function(cursor = cursors.default)
 {
-const currentCursor = (()=>
-{
-const mouseHover = Rsed.ui.inputState.current_mouse_hover();
-const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
-if (mouseGrab &&
-(mouseGrab.type == "prop"))
-{
-if (Rsed.ui.inputState.right_mouse_button_down())
-{
-return cursor.openHand2;
-}
-return cursor.closedHand;
-}
-if (mouseHover)
-{
-switch (mouseHover.type)
-{
-case "prop": return cursor.openHand;
-case "ground":
-{
-if (Rsed.ui.inputState.key_down("tab"))
-{
-return cursor.eyedropper;
-}
-}
-}
-}
-if (Rsed.ui.groundBrush.brushSmoothens &&
-(Rsed.core.current_scene() == Rsed.scenes["3d"]))
-{
-return cursor.groundSmoothing;
-}
-return cursor.default;
-})();
-set_cursor(currentCursor);
-return;
-},
-};
-return publicInterface;
-function set_cursor(cursor = cursor.default)
-{
-if (!cursor)
-{
-cursor = cursor.default;
-}
-if (currentCursor == cursor)
+cursor = (cursor || cursors.default);
+if (currentCursor === cursor)
 {
 return;
 }
@@ -6384,6 +6339,9 @@ document.body.style.cursor = `url(${cursor}), auto`;
 currentCursor = cursor;
 return;
 }
+};
+publicInterface.set_cursor(cursors.default);
+return publicInterface;
 })();
 /*
 * Most recent known filename: js/ui/draw.js
@@ -8145,11 +8103,51 @@ return;
 handle_user_interaction: function()
 {
 handle_mouse_input();
+update_cursor_graphic();
 /// EXPERIMENTAL. Temporary testing of mobile controls.
 const touchDelta = Rsed.ui.inputState.get_touch_move_delta();
 Rsed.world.camera.move_camera(-touchDelta.x, 0, -touchDelta.y);
+Rsed.visual.canvas.mousePickingBuffer.fill(null);
 },
 });
+function update_cursor_graphic()
+{
+const cursors = Rsed.ui.cursorHandler.cursors;
+const currentCursor = (()=>
+{
+const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
+if (mouseGrab && (mouseGrab.type == "prop"))
+{
+if (Rsed.ui.inputState.right_mouse_button_down())
+{
+return cursors.openHand2;
+}
+return cursors.closedHand;
+}
+if (mouseHover)
+{
+switch (mouseHover.type)
+{
+case "prop": return cursors.openHand;
+case "ground":
+{
+if (Rsed.ui.inputState.key_down("tab"))
+{
+return cursors.eyedropper;
+}
+}
+}
+}
+if (Rsed.ui.groundBrush.brushSmoothens)
+{
+return cursors.groundSmoothing;
+}
+return cursors.default;
+})();
+Rsed.ui.cursorHandler.set_cursor(currentCursor);
+return;
+}
 function handle_mouse_input()
 {
 if (Rsed.ui.inputState.mouse_wheel_scroll())
@@ -8489,6 +8487,7 @@ return;
 handle_user_interaction: function()
 {
 handle_mouse_input();
+Rsed.visual.canvas.mousePickingBuffer.fill(null);
 },
 });
 return scene;
@@ -8766,6 +8765,7 @@ return;
 handle_user_interaction: function()
 {
 handle_mouse_input();
+Rsed.visual.canvas.mousePickingBuffer.fill(null);
 },
 });
 return scene;
@@ -9558,14 +9558,15 @@ return publicInterface;
 // Called once per frame to orchestrate program flow.
 function tick(timestamp = 0, frameDeltaMs = 0)
 {
-if (!coreIsRunning) return;
+if (!coreIsRunning)
+{
+return;
+}
 programFPS = Math.round(1000 / (frameDeltaMs || 1));
-Rsed.ui.cursor.update_cursor();
 currentScene.handle_user_interaction();
-// Render the next frame.
-Rsed.visual.canvas.mousePickingBuffer.fill(null);
 currentScene.draw_mesh();
 currentScene.draw_ui();
+// Keep ticking.
 window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
 }
 // Test various browser compatibility factors, and give the user messages of warning where appropriate.

@@ -317,11 +317,62 @@ Rsed.scenes["3d"] = (function()
         {
             handle_mouse_input();
 
+            update_cursor_graphic();
+
             /// EXPERIMENTAL. Temporary testing of mobile controls.
             const touchDelta = Rsed.ui.inputState.get_touch_move_delta();
             Rsed.world.camera.move_camera(-touchDelta.x, 0, -touchDelta.y);
+
+            Rsed.visual.canvas.mousePickingBuffer.fill(null);
         },
     });
+
+    function update_cursor_graphic()
+    {
+        const cursors = Rsed.ui.cursorHandler.cursors;
+
+        const currentCursor = (()=>
+        {
+            const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+            const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
+
+            if (mouseGrab && (mouseGrab.type == "prop"))
+            {
+                if (Rsed.ui.inputState.right_mouse_button_down())
+                {
+                    return cursors.openHand2;
+                }
+
+                return cursors.closedHand;
+            }
+
+            if (mouseHover)
+            {
+                switch (mouseHover.type)
+                {
+                    case "prop": return cursors.openHand;
+                    case "ground":
+                    {
+                        if (Rsed.ui.inputState.key_down("tab"))
+                        {
+                            return cursors.eyedropper;
+                        }
+                    }
+                }
+            }
+
+            if (Rsed.ui.groundBrush.brushSmoothens)
+            {
+                return cursors.groundSmoothing;
+            }
+
+            return cursors.default;
+        })();
+
+        Rsed.ui.cursorHandler.set_cursor(currentCursor);
+        
+        return;
+    }
 
     function handle_mouse_input()
     {

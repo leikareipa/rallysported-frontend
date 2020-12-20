@@ -247,6 +247,8 @@ Rsed.scenes["tilemap"] = (function()
         handle_user_interaction: function()
         {
             handle_mouse_input();
+
+            Rsed.visual.canvas.mousePickingBuffer.fill(null);
         },
     });
 
