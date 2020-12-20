@@ -39,19 +39,26 @@ Rsed.ui.component.colorSelector =
         // palette.
         let currentColorIdx = 19;
 
+        component.set_color_idx = function(newIdx = 0)
+        {
+            Rsed.throw_if_not_type("number", newIdx);
+
+            currentColorIdx = newIdx;
+        }
+
         component.update = function(sceneSettings = {})
         {
             Rsed.throw_if_not_type("object", sceneSettings);
-            Rsed.throw_if_undefined(sceneSettings.selectedColorIdx);
+            Rsed.throw_if_undefined(sceneSettings.penColorIdx);
 
-            sceneSettings.selectedColorIdx = currentColorIdx;
+            sceneSettings.penColorIdx = currentColorIdx;
 
             if (component.is_grabbed())
             {
-                const selectedColorIdx = Rsed.ui.inputState.current_mouse_grab().colorIdx;
+                const penColorIdx = Rsed.ui.inputState.current_mouse_grab().colorIdx;
 
-                currentColorIdx = selectedColorIdx;
-                options.selectionCallback(selectedColorIdx);
+                currentColorIdx = penColorIdx;
+                options.selectionCallback(penColorIdx);
 
                 Rsed.ui.inputState.reset_mouse_grab();
             }

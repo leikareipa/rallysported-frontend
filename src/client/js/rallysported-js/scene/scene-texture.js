@@ -27,7 +27,7 @@ Rsed.scenes["texture"] = (function()
 
     const sceneSettings = {
         // Which color (index to Rally-Sport's palette) to paint with.
-        selectedColorIdx: false,
+        penColorIdx: false,
 
         // Whether to show the PALAT pane; i.e. a side panel that displays all the available
         // PALA textures.
@@ -308,14 +308,26 @@ Rsed.scenes["texture"] = (function()
         const pickElement = textureMousePickBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width];
         const isCursorOnTexture = (pickElement && (pickElement.u !== null) && (pickElement.v !== null));
 
-        if (isCursorOnTexture)
+        const newCursor = (()=>
         {
-            Rsed.ui.cursorHandler.set_cursor(cursors.pencil);
-        }
-        else
-        {
-            Rsed.ui.cursorHandler.set_cursor(cursors.default);
-        }
+            if (isCursorOnTexture)
+            {
+                if (Rsed.ui.inputState.key_down("tab"))
+                {
+                    return cursors.eyedropper;
+                }
+                else
+                {
+                    return cursors.pencil;
+                }
+            }
+            else
+            {
+                return cursors.default;
+            }
+        })();
+
+        Rsed.ui.cursorHandler.set_cursor(newCursor);
         
         return;
     }
@@ -337,18 +349,35 @@ Rsed.scenes["texture"] = (function()
 
             if (isCursorOnTexture)
             {
-                // Note: Changing a pixel in the texture causes the texture to be regenerated,
-                // so we need to update our reference to it. (The new reference is returned
-                // from the pixel-setting function.)
-                texture = Rsed.ui.assetMutator.user_edit("texture", {
-                    command: "set-pixel",
-                    target: {
-                        texture,
-                        u: pickElement.u,
-                        v: pickElement.v,
-                    },
-                    data: sceneSettings.selectedColorIdx,
-                });
+                const colorIdxUnderCursor = texture.indices[pickElement.u + pickElement.v * texture.width];
+
+                // Eyedropper.
+                if (Rsed.ui.inputState.key_down("tab"))
+                {
+                    uiComponents.colorSelector.set_color_idx(colorIdxUnderCursor);
+
+                    // Only allow the eyedropper to select one pixel per click, so you don't get
+                    // flicker in the color selector if the mouse is moved while holding the click.
+                    Rsed.ui.inputState.reset_mouse_buttons_state();
+                }
+                else
+                {
+                    if (colorIdxUnderCursor !== sceneSettings.penColorIdx)
+                    {
+                        // Note: Changing a pixel in the texture causes the texture to be regenerated,
+                        // so we need to update our reference to it. (The new reference is returned
+                        // from the pixel-setting function.)
+                        texture = Rsed.ui.assetMutator.user_edit("texture", {
+                            command: "set-pixel",
+                            target: {
+                                texture,
+                                u: pickElement.u,
+                                v: pickElement.v,
+                            },
+                            data: sceneSettings.penColorIdx,
+                        });
+                    }
+                }
             }
         }
         else if (Rsed.ui.inputState.mouse_wheel_scroll())

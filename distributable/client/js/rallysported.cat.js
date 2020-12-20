@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 December 2020 19:03:43 UTC)
+// VERSION: live (20 December 2020 21:33:32 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -7691,16 +7691,21 @@ const curColorSwatch = new Array(curColorSwatchWidth * curColorSwatchHeight);
 // The currently-selected color - an index to the current Rsed.visual.palette
 // palette.
 let currentColorIdx = 19;
+component.set_color_idx = function(newIdx = 0)
+{
+Rsed.throw_if_not_type("number", newIdx);
+currentColorIdx = newIdx;
+}
 component.update = function(sceneSettings = {})
 {
 Rsed.throw_if_not_type("object", sceneSettings);
-Rsed.throw_if_undefined(sceneSettings.selectedColorIdx);
-sceneSettings.selectedColorIdx = currentColorIdx;
+Rsed.throw_if_undefined(sceneSettings.penColorIdx);
+sceneSettings.penColorIdx = currentColorIdx;
 if (component.is_grabbed())
 {
-const selectedColorIdx = Rsed.ui.inputState.current_mouse_grab().colorIdx;
-currentColorIdx = selectedColorIdx;
-options.selectionCallback(selectedColorIdx);
+const penColorIdx = Rsed.ui.inputState.current_mouse_grab().colorIdx;
+currentColorIdx = penColorIdx;
+options.selectionCallback(penColorIdx);
 Rsed.ui.inputState.reset_mouse_grab();
 }
 };
@@ -8558,7 +8563,7 @@ let textureZoom = 1;
 const textureMousePickBuffer = [];
 const sceneSettings = {
 // Which color (index to Rally-Sport's palette) to paint with.
-selectedColorIdx: false,
+penColorIdx: false,
 // Whether to show the PALAT pane; i.e. a side panel that displays all the available
 // PALA textures.
 showPalatPane: true,
@@ -8798,14 +8803,25 @@ const cursors = Rsed.ui.cursorHandler.cursors;
 const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 const pickElement = textureMousePickBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width];
 const isCursorOnTexture = (pickElement && (pickElement.u !== null) && (pickElement.v !== null));
+const newCursor = (()=>
+{
 if (isCursorOnTexture)
 {
-Rsed.ui.cursorHandler.set_cursor(cursors.pencil);
+if (Rsed.ui.inputState.key_down("tab"))
+{
+return cursors.eyedropper;
 }
 else
 {
-Rsed.ui.cursorHandler.set_cursor(cursors.default);
+return cursors.pencil;
 }
+}
+else
+{
+return cursors.default;
+}
+})();
+Rsed.ui.cursorHandler.set_cursor(newCursor);
 return;
 }
 function handle_mouse_input()
@@ -8822,6 +8838,19 @@ const pickElement = textureMousePickBuffer[mousePos.x + mousePos.y * Rsed.visual
 const isCursorOnTexture = (pickElement && (pickElement.u !== null) && (pickElement.v !== null));
 if (isCursorOnTexture)
 {
+const colorIdxUnderCursor = texture.indices[pickElement.u + pickElement.v * texture.width];
+// Eyedropper.
+if (Rsed.ui.inputState.key_down("tab"))
+{
+uiComponents.colorSelector.set_color_idx(colorIdxUnderCursor);
+// Only allow the eyedropper to select one pixel per click, so you don't get
+// flicker in the color selector if the mouse is moved while holding the click.
+Rsed.ui.inputState.reset_mouse_buttons_state();
+}
+else
+{
+if (colorIdxUnderCursor !== sceneSettings.penColorIdx)
+{
 // Note: Changing a pixel in the texture causes the texture to be regenerated,
 // so we need to update our reference to it. (The new reference is returned
 // from the pixel-setting function.)
@@ -8832,8 +8861,10 @@ texture,
 u: pickElement.u,
 v: pickElement.v,
 },
-data: sceneSettings.selectedColorIdx,
+data: sceneSettings.penColorIdx,
 });
+}
+}
 }
 }
 else if (Rsed.ui.inputState.mouse_wheel_scroll())
