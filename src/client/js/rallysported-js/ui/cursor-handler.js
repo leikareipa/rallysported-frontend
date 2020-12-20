@@ -22,6 +22,7 @@ Rsed.ui.cursorHandler = (function()
         groundSmoothing: "./client/assets/cursors/rsed-cursor-arrowsmooth.png",
         blocked: "./client/assets/cursors/rsed-cursor-blocked.png",
         eyedropper: "./client/assets/cursors/rsed-cursor-eyedropper.png",
+        pencil: "./client/assets/cursors/rsed-cursor-pencil.png",
         default: undefined,
     };
 
