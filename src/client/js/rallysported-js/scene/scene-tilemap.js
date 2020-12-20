@@ -44,6 +44,7 @@ Rsed.scenes["tilemap"] = (function()
             activePala:   Rsed.ui.component.activePala.instance(),
             palatPane:    Rsed.ui.component.palatPane.instance(),
             fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
+            footer: Rsed.ui.component.label.instance(),
         };
     })();
     
@@ -182,6 +183,9 @@ Rsed.scenes["tilemap"] = (function()
                 uiComponents.activePala.update(sceneSettings);
                 uiComponents.activePala.draw((Rsed.visual.canvas.width - 20), 11);
 
+                uiComponents.footer.update(`Tilemap size: ${Rsed.core.current_project().maasto.width} * ${Rsed.core.current_project().maasto.width}`);
+                uiComponents.footer.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
+
                 if (sceneSettings.showPalatPane)
                 {
                     uiComponents.palatPane.update(sceneSettings);
@@ -194,10 +198,6 @@ Rsed.scenes["tilemap"] = (function()
                     uiComponents.fpsIndicator.draw(3, 10);
                 }
             }
-
-            Rsed.ui.draw.string(`Track size:${Rsed.core.current_project().maasto.width},${Rsed.core.current_project().maasto.width}`,
-                                ((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
-                                ((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.nativeHeight - 2);
 
             Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 
