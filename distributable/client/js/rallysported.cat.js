@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 December 2020 18:59:00 UTC)
+// VERSION: live (20 December 2020 19:03:43 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8517,7 +8517,7 @@ function handle_mouse_input()
 {
 const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 // Handle painting the tilemap.
-if (Rsed.ui.inputState.mid_mouse_button_down())
+if (Rsed.ui.inputState.mouse_button_down())
 {
 const mouseTilemapPosX = Math.round((mousePos.x - tilemapOffsetX) * (Rsed.core.current_project().maasto.width / tilemapWidth));
 const mouseTilemapPosY = Math.round((mousePos.y - tilemapOffsetY) * (Rsed.core.current_project().maasto.height / tilemapHeight));

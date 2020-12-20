@@ -284,7 +284,7 @@ Rsed.scenes["tilemap"] = (function()
         const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 
         // Handle painting the tilemap.
-        if (Rsed.ui.inputState.mid_mouse_button_down())
+        if (Rsed.ui.inputState.mouse_button_down())
         {
             const mouseTilemapPosX = Math.round((mousePos.x - tilemapOffsetX) * (Rsed.core.current_project().maasto.width / tilemapWidth));
             const mouseTilemapPosY = Math.round((mousePos.y - tilemapOffsetY) * (Rsed.core.current_project().maasto.height / tilemapHeight));
