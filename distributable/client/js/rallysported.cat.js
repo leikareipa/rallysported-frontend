@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (17 December 2020 02:57:18 UTC)
+// VERSION: live (20 December 2020 03:07:03 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -46,6 +46,7 @@
 //	./src/client/js/rallysported-js/ui/components/palat-pane.js
 //	./src/client/js/rallysported-js/ui/components/tilemap-minimap.js
 //	./src/client/js/rallysported-js/ui/components/color-selector.js
+//	./src/client/js/rallysported-js/ui/components/label.js
 //	./src/client/js/rallysported-js/scene/scene.js
 //	./src/client/js/rallysported-js/scene/scene-3d.js
 //	./src/client/js/rallysported-js/scene/scene-tilemap.js
@@ -6110,7 +6111,7 @@ const charset = {
 [X,_,X],
 [X,_,X],
 [X,_,X],
-[X,X,X]]),
+[_,X,X]]),
 "W": c([[_,_,_,_,X],
 [X,_,X,_,X],
 [X,_,X,_,X],
@@ -7800,6 +7801,34 @@ return component;
 }
 }
 /*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+* A UI component that displays a string.
+*
+*/
+"use strict";
+Rsed.ui.component.label =
+{
+instance: function()
+{
+const component = Rsed.ui.component();
+let labelString = "Hello";
+component.draw = function(screenX = 0, screenY = 0)
+{
+Rsed.throw_if_not_type("number", screenX, screenY);
+Rsed.ui.draw.string(labelString, screenX, screenY);
+};
+component.update = function(string)
+{
+Rsed.throw_if_not_type("string", string);
+labelString = string;
+}
+return component;
+}
+}
+/*
 * Most recent known filename: js/scene/scene.js
 *
 * 2019 Tarpeeksi Hyvae Soft /
@@ -8488,7 +8517,7 @@ return;
 */
 "use strict";
 Rsed.scenes = Rsed.scenes || {};
-// A view of a given texture, allowing the user to paint the texture.
+// A view of a given texture, allowing the user to modify the texture's pixels.
 Rsed.scenes["texture"] = (function()
 {
 // A reference to the Rsed.visual.texture() object that we're to edit.
@@ -8496,7 +8525,7 @@ let texture = null;
 // The amount by which the user has moved the texture's position in the view.
 let textureUserOffsetX = 0;
 let textureUserOffsetY = 0;
-let textureZoom = 50;
+let textureZoom = 1;
 // A buffer in which we store mouse-picking information about the rendering - so for
 // each pixel on-screen, we can tell to which part of the texture the pixel corresponds.
 const textureMousePickBuffer = [];
@@ -8522,6 +8551,8 @@ let uiComponents = null;
 uiComponents = {
 fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
 colorSelector: Rsed.ui.component.colorSelector.instance(),
+textureLabel: Rsed.ui.component.label.instance(),
+zoomLabel: Rsed.ui.component.label.instance(),
 palatPane: Rsed.ui.component.palatPane.instance({
 selectionCallback: (palaIdx)=>scene.set_texture(Rsed.core.current_project().palat.texture[palaIdx]),
 indicateSelection: false,
@@ -8627,9 +8658,15 @@ if (uiComponents) // Once the UI components have finished async loading...
 {
 uiComponents.colorSelector.update(sceneSettings);
 uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 101), 11);
+uiComponents.textureLabel.update(`Size: ${texture.width} * ${texture.height}`);
+uiComponents.textureLabel.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
+{
+const truncatedZoomValue = (1 / textureZoom).toString().match(/^-?\d+(?:\.\d{0,1})?/)[0];
+uiComponents.zoomLabel.update(`Zoom: ${truncatedZoomValue}*`);
+uiComponents.zoomLabel.draw(0, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 2) - 5));
+}
 if (Rsed.core.fps_counter_enabled())
 {
-uiComponents.fpsIndicator.update(sceneSettings);
 uiComponents.fpsIndicator.draw(3, 10);
 }
 if (sceneSettings.showPalatPane)
@@ -8660,10 +8697,10 @@ textureUserOffsetX += (direction.x * movementSpeed);
 textureUserOffsetY += (direction.y * movementSpeed);
 }
 textureMousePickBuffer.length = 0;
-const textureNgon = Rngon.ngon([Rngon.vertex(0, 0, textureZoom, 0, 0),
-Rngon.vertex(texture.width, 0, textureZoom, 1, 0),
-Rngon.vertex(texture.width, texture.height, textureZoom, 1, 1),
-Rngon.vertex(0, texture.height, textureZoom, 0, 1)],
+const textureNgon = Rngon.ngon([Rngon.vertex(0, 0, (textureZoom * 50), 0, 0),
+Rngon.vertex(texture.width, 0, (textureZoom * 50), 1, 0),
+Rngon.vertex(texture.width, texture.height, (textureZoom * 50), 1, 1),
+Rngon.vertex(0, texture.height, (textureZoom * 50), 0, 1)],
 {
 color: Rngon.color_rgba(255, 255, 255),
 texture: texture,
@@ -8749,7 +8786,7 @@ data: sceneSettings.selectedColorIdx,
 }
 else if (Rsed.ui.inputState.mouse_wheel_scroll())
 {
-textureZoom += (Rsed.ui.inputState.mouse_wheel_scroll() / 10);
+textureZoom += (.1 * Math.sign(Rsed.ui.inputState.mouse_wheel_scroll()));
 Rsed.ui.inputState.reset_wheel_scroll();
 }
 return;
