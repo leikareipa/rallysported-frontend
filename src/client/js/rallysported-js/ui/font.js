@@ -16,7 +16,7 @@ Rsed.ui.font = (function()
     const _ = "background";
 
     const charset = {
-        " ": c([[_,_]]),
+        " ": c([[_]]),
 
         "!": c([[X],
                 [X],

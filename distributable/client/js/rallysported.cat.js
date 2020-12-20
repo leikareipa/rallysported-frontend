@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 December 2020 04:55:04 UTC)
+// VERSION: live (20 December 2020 15:23:43 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5895,7 +5895,7 @@ Rsed.ui.font = (function()
 const X = "black";
 const _ = "background";
 const charset = {
-" ": c([[_,_]]),
+" ": c([[_]]),
 "!": c([[X],
 [X],
 [X],
@@ -7387,7 +7387,7 @@ component.draw = function(offsetX = 0, offsetY = 0)
 Rsed.throw_if_not_type("number", offsetX, offsetY);
 const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
-let str = "HEIGHT:+000  PALA:000  X,Y:000,000";
+let str = "HEIGHT:+000   PALA:000   X,Y:000,000";
 if ((mouseHover && (mouseHover.type === "prop")) ||
 (mouseGrab && (mouseGrab.type === "prop")))
 {
@@ -7396,8 +7396,7 @@ if ((mouseHover && (mouseHover.type === "prop")) ||
 const mouse = (mouseGrab && (mouseGrab.type === "prop"))
 ? mouseGrab
 : mouseHover;
-str = "PROP:\"" + Rsed.core.current_project().props.name(mouse.propId) + "\"" +
-"  IDX:" + mouse.propId + "," + mouse.propTrackIdx;
+str = `PROP: "${Rsed.core.current_project().props.name(mouse.propId)}"`;
 }
 else if (mouseHover && (mouseHover.type === "ground"))
 {
@@ -7408,7 +7407,7 @@ const yStr = String(y).padStart(3, "0");
 const heightStr = (Rsed.core.current_project().maasto.tile_at(x, y) < 0? "-" : "+") +
 String(Math.abs(Rsed.core.current_project().maasto.tile_at(x, y))).padStart(3, "0");
 const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
-str = `HEIGHT:${heightStr}  PALA:${palaStr}  X,Y:${xStr},${yStr}`;
+str = `HEIGHT:${heightStr}   PALA:${palaStr}   X,Y:${xStr},${yStr}`;
 }
 Rsed.ui.draw.string(str, offsetX, offsetY);
 };
@@ -7800,7 +7799,7 @@ curColorSwatchWidth, curColorSwatchHeight,
 swatchX,
 swatchY);
 Rsed.ui.draw.string(colorIdxLabel,
-(swatchX + (curColorSwatchWidth / 2) - (Rsed.ui.font.width_in_pixels(colorIdxLabel) / 2)),
+(swatchX + (curColorSwatchWidth / 2) - (Rsed.ui.font.width_in_pixels(colorIdxLabel) / 2) - 1),
 (swatchY + (curColorSwatchHeight / 2) - (Rsed.ui.font.nativeHeight / 2)));
 }
 };
@@ -8317,6 +8316,7 @@ uiComponents = {
 activePala:   Rsed.ui.component.activePala.instance(),
 palatPane:    Rsed.ui.component.palatPane.instance(),
 fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
+footer: Rsed.ui.component.label.instance(),
 };
 })();
 const scene = Rsed.scene(
@@ -8436,6 +8436,8 @@ if (uiComponents) // Once the UI components have finished async loading...
 {
 uiComponents.activePala.update(sceneSettings);
 uiComponents.activePala.draw((Rsed.visual.canvas.width - 20), 11);
+uiComponents.footer.update(`Tilemap size: ${Rsed.core.current_project().maasto.width} * ${Rsed.core.current_project().maasto.width}`);
+uiComponents.footer.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
 if (sceneSettings.showPalatPane)
 {
 uiComponents.palatPane.update(sceneSettings);
@@ -8447,9 +8449,6 @@ uiComponents.fpsIndicator.update(sceneSettings);
 uiComponents.fpsIndicator.draw(3, 10);
 }
 }
-Rsed.ui.draw.string(`Track size:${Rsed.core.current_project().maasto.width},${Rsed.core.current_project().maasto.width}`,
-((Rsed.visual.canvas.width / 2) - (tilemapWidth / 2)),
-((Rsed.visual.canvas.height / 2) - (tilemapHeight / 2)) - Rsed.ui.font.nativeHeight - 2);
 Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 // Note: We assume that UI drawing is the last step in rendering the current
 // frame; and thus that once the UI rendering has finished, the frame is finished

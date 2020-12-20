@@ -24,7 +24,7 @@ Rsed.ui.component.groundHoverInfo =
             const mouseHover = Rsed.ui.inputState.current_mouse_hover();
             const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
 
-            let str = "HEIGHT:+000  PALA:000  X,Y:000,000";
+            let str = "HEIGHT:+000   PALA:000   X,Y:000,000";
 
             if ((mouseHover && (mouseHover.type === "prop")) ||
                 (mouseGrab && (mouseGrab.type === "prop")))
@@ -35,8 +35,7 @@ Rsed.ui.component.groundHoverInfo =
                               ? mouseGrab
                               : mouseHover;
 
-                str = "PROP:\"" + Rsed.core.current_project().props.name(mouse.propId) + "\"" +
-                      "  IDX:" + mouse.propId + "," + mouse.propTrackIdx;
+                str = `PROP: "${Rsed.core.current_project().props.name(mouse.propId)}"`;
             }
             else if (mouseHover && (mouseHover.type === "ground"))
             {
@@ -51,7 +50,7 @@ Rsed.ui.component.groundHoverInfo =
 
                 const palaStr = String(Rsed.core.current_project().varimaa.tile_at(x, y)).padStart(3, "0");
 
-                str = `HEIGHT:${heightStr}  PALA:${palaStr}  X,Y:${xStr},${yStr}`;
+                str = `HEIGHT:${heightStr}   PALA:${palaStr}   X,Y:${xStr},${yStr}`;
             }
 
             Rsed.ui.draw.string(str, offsetX, offsetY);
