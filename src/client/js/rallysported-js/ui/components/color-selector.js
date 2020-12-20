@@ -114,12 +114,20 @@ Rsed.ui.component.colorSelector =
 
             // Draw a large swatch of the currently-selected color.
             {
+                const swatchX = (offsetX + (numSwatchesPerRow * swatchSideLen));
+                const swatchY = offsetY;
+                const colorIdxLabel = `${currentColorIdx}`;
+
                 curColorSwatch.fill(Rsed.visual.palette.color_at_idx(currentColorIdx));
 
                 Rsed.ui.draw.image(curColorSwatch, null,
                                    curColorSwatchWidth, curColorSwatchHeight,
-                                   (offsetX + (numSwatchesPerRow * swatchSideLen)),
-                                   offsetY);
+                                   swatchX,
+                                   swatchY);
+
+                Rsed.ui.draw.string(colorIdxLabel,
+                                    (swatchX + (curColorSwatchWidth / 2) - (Rsed.ui.font.width_in_pixels(colorIdxLabel) / 2)),
+                                    (swatchY + (curColorSwatchHeight / 2) - (Rsed.ui.font.nativeHeight / 2)));
             }
         };
 

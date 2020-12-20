@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 December 2020 03:07:03 UTC)
+// VERSION: live (20 December 2020 04:35:33 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -7790,11 +7790,17 @@ true);
 }
 // Draw a large swatch of the currently-selected color.
 {
+const swatchX = (offsetX + (numSwatchesPerRow * swatchSideLen));
+const swatchY = offsetY;
+const colorIdxLabel = `${currentColorIdx}`;
 curColorSwatch.fill(Rsed.visual.palette.color_at_idx(currentColorIdx));
 Rsed.ui.draw.image(curColorSwatch, null,
 curColorSwatchWidth, curColorSwatchHeight,
-(offsetX + (numSwatchesPerRow * swatchSideLen)),
-offsetY);
+swatchX,
+swatchY);
+Rsed.ui.draw.string(colorIdxLabel,
+(swatchX + (curColorSwatchWidth / 2) - (Rsed.ui.font.width_in_pixels(colorIdxLabel) / 2)),
+(swatchY + (curColorSwatchHeight / 2) - (Rsed.ui.font.nativeHeight / 2)));
 }
 };
 return component;
