@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html>
     <head>
-		<meta name="viewport" content="width=device-width">
-        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <link rel="stylesheet" type="text/css" href="index.css">
+        <meta name="viewport"
+              content="width=device-width">
+        <meta http-equiv="content-type"
+              content="text/html; charset=UTF-8">
+        <link rel="stylesheet"
+              type="text/css"
+              href="index.css">
         <link rel="stylesheet"
               href="https://use.fontawesome.com/releases/v5.6.1/css/all.css"
               integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP"
               crossorigin="anonymous">
-        <link href="https://fonts.googleapis.com/css?family=Fredoka+One" rel="stylesheet">
         <title>RallySportED</title>
     </head>
     <body>
@@ -19,93 +22,105 @@
                 That failed. Maybe reloading fixes it?
             </h1>
 
-            <div id="error-description">sad</div>
+            <div id="error-description">
+                Undefined error
+            </div>
 
         </div>
 
-        <div id="html-ui" v-if="uiVisible" v-cloak>
+        <div id="html-ui"
+             v-if="uiVisible"
+             v-cloak>
 
-            <span id="track-name-display">&ldquo;{{trackName}}&rdquo;</span>
+            <div class="menu-bar">
 
-            <div class="button-bar left">
+                <div class="button-bar">
 
-                <div class="button left"
-                     title="Download this track as a ZIP file"
-                     onclick="Rsed.core.current_project().download_as_zip();">
+                    <div class="button left"
+                         title="Download this track as a ZIP file"
+                         onclick="Rsed.core.current_project().download_as_zip();">
 
-                    <i class="fas fa-download"></i>
-                    Download
+                        <i class="fas fa-download"></i>
+                        Download
 
-                </div>
+                    </div>
 
-                <div class="button middle"
-                     title="Rename this track"
-                     onclick="Rsed.core.current_project().rename();">
+                    <div class="button middle"
+                         title="Rename this track"
+                         onclick="Rsed.core.current_project().rename();">
 
-                    <i class="fas fa-tag"></i>
-                    Rename
+                        <i class="fas fa-tag"></i>
+                        Rename
 
-                </div>
+                    </div>
 
-                <div id="stream-button"
-                     class="button right stream"
-                     :class="streamStatus"
-                     :title="((streamStatus == 'disabled' || streamStatus == 'viewer')
-                              ? `Host this track's data from your browser to people online`
-                              : (streamStatus == 'initializing')
-                                ? `Setting up...`
-                                : `Downloads: ${streamViewerCount}`)"
-                     :onclick="((streamStatus == 'disabled' || streamStatus == 'viewer')
-                                ? `Rsed.stream.start('server');`
-                                : 'Rsed.stream.stop()')"></a>
+                    <div id="stream-button"
+                         class="button right stream"
+                         :class="streamStatus"
+                         :title="((streamStatus == 'disabled' || streamStatus == 'viewer')
+                                 ? `Host this track's data from your browser to people online`
+                                 : (streamStatus == 'initializing')
+                                   ? `Setting up...`
+                                   : `Downloads: ${streamViewerCount}`)"
+                         :onclick="((streamStatus == 'disabled' || streamStatus == 'viewer')
+                                    ? `Rsed.stream.start('server');`
+                                    : 'Rsed.stream.stop()')"></a>
 
-                    <i class="fas"
-                       :class="((streamStatus == 'initializing')
-                                ? 'fa-spin fa-spinner'
-                                : 'fa-project-diagram')"></i>
+                        <i class="fas"
+                           :class="((streamStatus == 'initializing')
+                                    ? 'fa-spin fa-spinner'
+                                    : 'fa-project-diagram')"></i>
 
-                    {{(streamStatus == "server")
-                      ? `Serving (${streamViewerCount})`
-                      : (streamStatus == "initializing")
-                        ? "Hold on..."
-                        : "Serve"}}
+                        {{(streamStatus == "server")
+                          ? `Serving (${streamViewerCount})`
+                          : (streamStatus == "initializing")
+                            ? "Hold on..."
+                            : "Serve"}}
 
-                </div>
-
-                <div class="button"
-                     title="View tracks made by others"
-                     onclick="window.open('/rallysport-content/tracks/', '_blank', 'noopener');">
-
-                    <i class="fas fa-search"></i>
-                    More tracks
+                    </div>
 
                 </div>
 
-            </div>
+                <div class="button-bar">
 
-            <div class="button-bar right">
+                    <div class="button"
+                         title="View tracks made by others"
+                         onclick="window.open('/rallysport-content/tracks/', '_blank', 'noopener');">
 
-                <div class="button"
-                     title="Open the user's guide"
-                     onclick="window.open('./user-guide/', '_blank', 'noopener');">
+                        <i class="fas fa-search"></i>
+                        More tracks
 
-                    <i class="fas fa-gas-pump"></i>
-                    Help
+                    </div>
+
+                    <div class="button"
+                         title="Open the user's guide"
+                         onclick="window.open('./user-guide/', '_blank', 'noopener');">
+
+                        <i class="fas fa-gas-pump"></i>
+                        Help
+
+                    </div>
 
                 </div>
 
             </div>
             
-            <div id="prop-dropdown" class="dropdown-menu">
+            <div id="prop-dropdown"
+                 class="dropdown-menu">
                 <div class="item"
                      v-for="prop in propList"
                      v-on:click="activate_prop(prop.propName)">{{prop.propName}}</div>
             </div>
+
         </div>
 
-        <div id="render_container" class="canvas_container"
-             ondrop="window.drop_handler(event);" ondragover="event.preventDefault();">
+        <div id="render_container"
+             class="canvas_container"
+             ondrop="window.drop_handler(event);"
+             ondragover="event.preventDefault();">
+
              <canvas id="render-canvas" class="canvas"></canvas>
+
         </div>
 
         <div id="popup-notifications-container"></div>

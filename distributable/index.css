@@ -62,33 +62,27 @@ body
     border-bottom: 1px solid black;
 }
 
-#html-ui #track-name-display
-{
-    display: none;
-    color: white;
-    font-weight: normal;
-    font-size: 180%;
-    letter-spacing: 1px;
-    text-transform: capitalize;
-    font-family: "Fredoka One", sans-serif;
-    transform: translateY(1px);
-}
-
-#html-ui .button-bar
+#html-ui .menu-bar
 {
     display: flex;
 }
 
-#html-ui .button-bar.left
+#html-ui .menu-bar > .button-bar
 {
+    display: flex;
     border-right: 1px solid black;
     border-radius: 2px;
 }
 
-#html-ui .button-bar.right
+#html-ui .menu-bar > .button-bar + .button-bar
 {
     border-left: 1px solid #545454;
     border-radius: 2px;
+}
+
+#html-ui .menu-bar > .button-bar:last-of-type
+{
+    border-right: none;
 }
 
 #html-ui .button
