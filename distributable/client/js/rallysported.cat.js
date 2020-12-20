@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 December 2020 04:35:33 UTC)
+// VERSION: live (20 December 2020 04:51:06 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8001,8 +8001,8 @@ const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 if (mouseHover && mouseHover.texture)
 {
 Rsed.scenes["texture"].set_texture(mouseHover.texture);
-Rsed.core.set_scene("texture");
 }
+Rsed.core.set_scene("texture");
 }
 else if (key_is("arrowup") ||
 key_is("arrowdown"))
@@ -8659,12 +8659,18 @@ return;
 },
 draw_ui: function()
 {
+if (!texture)
+{
+Rsed.throw_if(Rsed.core.current_project().isPlaceholder,
+"Expected project data to have been loaded already.");
+this.set_texture(Rsed.core.current_project().palat.texture[3]);
+}
 Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 if (uiComponents) // Once the UI components have finished async loading...
 {
 uiComponents.colorSelector.update(sceneSettings);
 uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 101), 11);
-uiComponents.textureLabel.update(`Size: ${texture.width} * ${texture.height}`);
+uiComponents.textureLabel.update(`Texture size: ${texture.width} * ${texture.height}`);
 uiComponents.textureLabel.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
 {
 const truncatedZoomValue = (1 / textureZoom).toString().match(/^-?\d+(?:\.\d{0,1})?/)[0];
@@ -8688,7 +8694,9 @@ draw_mesh: function()
 {
 if (!texture)
 {
-return;
+Rsed.throw_if(Rsed.core.current_project().isPlaceholder,
+"Expected project data to have been loaded already.");
+this.set_texture(Rsed.core.current_project().palat.texture[3]);
 }
 // Update the camera's position.
 {

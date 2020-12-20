@@ -160,6 +160,14 @@ Rsed.scenes["texture"] = (function()
 
         draw_ui: function()
         {
+            if (!texture)
+            {
+                Rsed.throw_if(Rsed.core.current_project().isPlaceholder,
+                              "Expected project data to have been loaded already.");
+
+                this.set_texture(Rsed.core.current_project().palat.texture[3]);
+            }
+
             Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 
             if (uiComponents) // Once the UI components have finished async loading...
@@ -167,7 +175,7 @@ Rsed.scenes["texture"] = (function()
                 uiComponents.colorSelector.update(sceneSettings);
                 uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 101), 11);
 
-                uiComponents.textureLabel.update(`Size: ${texture.width} * ${texture.height}`);
+                uiComponents.textureLabel.update(`Texture size: ${texture.width} * ${texture.height}`);
                 uiComponents.textureLabel.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
 
                 {
@@ -198,7 +206,10 @@ Rsed.scenes["texture"] = (function()
         {
             if (!texture)
             {
-                return;
+                Rsed.throw_if(Rsed.core.current_project().isPlaceholder,
+                              "Expected project data to have been loaded already.");
+
+                this.set_texture(Rsed.core.current_project().palat.texture[3]);
             }
 
             // Update the camera's position.

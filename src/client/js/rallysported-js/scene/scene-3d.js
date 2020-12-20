@@ -150,8 +150,9 @@ Rsed.scenes["3d"] = (function()
                 if (mouseHover && mouseHover.texture)
                 {
                     Rsed.scenes["texture"].set_texture(mouseHover.texture);
-                    Rsed.core.set_scene("texture");
                 }
+
+                Rsed.core.set_scene("texture");
             }
             else if (key_is("arrowup") ||
                      key_is("arrowdown"))
