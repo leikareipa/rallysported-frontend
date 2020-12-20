@@ -247,6 +247,7 @@ Rsed.scenes["tilemap"] = (function()
         handle_user_interaction: function()
         {
             handle_mouse_input();
+            update_cursor_graphic();
 
             Rsed.visual.canvas.mousePickingBuffer.fill(null);
         },
@@ -254,25 +255,49 @@ Rsed.scenes["tilemap"] = (function()
 
     return scene;
 
+    function update_cursor_graphic()
+    {
+        const cursors = Rsed.ui.cursorHandler.cursors;
+        const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
+        const mouseTilemapPosX = Math.round((mousePos.x - tilemapOffsetX) * (Rsed.core.current_project().maasto.width / tilemapWidth));
+        const mouseTilemapPosY = Math.round((mousePos.y - tilemapOffsetY) * (Rsed.core.current_project().maasto.height / tilemapHeight));
+
+        const isCursorOnTilemap = ((mouseTilemapPosX >= 0) &&
+                                   (mouseTilemapPosY >= 0) &&
+                                   (mouseTilemapPosX < Rsed.core.current_project().maasto.width) &&
+                                   (mouseTilemapPosY < Rsed.core.current_project().maasto.height));
+
+        if (isCursorOnTilemap)
+        {
+            Rsed.ui.cursorHandler.set_cursor(cursors.pencil);
+        }
+        else
+        {
+            Rsed.ui.cursorHandler.set_cursor(cursors.default);
+        }
+        
+        return;
+    }
+
     function handle_mouse_input()
     {
-        const mouseHover = Rsed.ui.inputState.current_mouse_hover();
         const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 
         // Handle painting the tilemap.
         if (Rsed.ui.inputState.mid_mouse_button_down())
         {
-            const mousePosX = Math.round((mousePos.x - tilemapOffsetX) * (Rsed.core.current_project().maasto.width / tilemapWidth));
-            const mousePosY = Math.round((mousePos.y - tilemapOffsetY) * (Rsed.core.current_project().maasto.height / tilemapHeight));
+            const mouseTilemapPosX = Math.round((mousePos.x - tilemapOffsetX) * (Rsed.core.current_project().maasto.width / tilemapWidth));
+            const mouseTilemapPosY = Math.round((mousePos.y - tilemapOffsetY) * (Rsed.core.current_project().maasto.height / tilemapHeight));
             const brushSize = (Rsed.ui.groundBrush.brush_size() + 1);
 
             Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
                                                        Rsed.ui.groundBrush.brush_pala_idx(),
-                                                       mousePosX, mousePosY);
+                                                       mouseTilemapPosX,
+                                                       mouseTilemapPosY);
 
             // Update the region of the tilemap that we painted over.
-            scene.refresh_tilemap_view((mousePosX - brushSize),
-                                       (mousePosY - brushSize),
+            scene.refresh_tilemap_view((mouseTilemapPosX - brushSize),
+                                       (mouseTilemapPosY - brushSize),
                                        (brushSize * 2),
                                        (brushSize * 2));
         }

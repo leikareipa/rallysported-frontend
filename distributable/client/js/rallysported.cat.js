@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 December 2020 16:01:35 UTC)
+// VERSION: live (20 December 2020 18:59:00 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6312,6 +6312,7 @@ closedHand: "./client/assets/cursors/rsed-cursor-closedhand.png",
 groundSmoothing: "./client/assets/cursors/rsed-cursor-arrowsmooth.png",
 blocked: "./client/assets/cursors/rsed-cursor-blocked.png",
 eyedropper: "./client/assets/cursors/rsed-cursor-eyedropper.png",
+pencil: "./client/assets/cursors/rsed-cursor-pencil.png",
 default: undefined,
 };
 cursors.default = cursors.arrow;
@@ -8487,26 +8488,47 @@ return;
 handle_user_interaction: function()
 {
 handle_mouse_input();
+update_cursor_graphic();
 Rsed.visual.canvas.mousePickingBuffer.fill(null);
 },
 });
 return scene;
+function update_cursor_graphic()
+{
+const cursors = Rsed.ui.cursorHandler.cursors;
+const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
+const mouseTilemapPosX = Math.round((mousePos.x - tilemapOffsetX) * (Rsed.core.current_project().maasto.width / tilemapWidth));
+const mouseTilemapPosY = Math.round((mousePos.y - tilemapOffsetY) * (Rsed.core.current_project().maasto.height / tilemapHeight));
+const isCursorOnTilemap = ((mouseTilemapPosX >= 0) &&
+(mouseTilemapPosY >= 0) &&
+(mouseTilemapPosX < Rsed.core.current_project().maasto.width) &&
+(mouseTilemapPosY < Rsed.core.current_project().maasto.height));
+if (isCursorOnTilemap)
+{
+Rsed.ui.cursorHandler.set_cursor(cursors.pencil);
+}
+else
+{
+Rsed.ui.cursorHandler.set_cursor(cursors.default);
+}
+return;
+}
 function handle_mouse_input()
 {
-const mouseHover = Rsed.ui.inputState.current_mouse_hover();
 const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 // Handle painting the tilemap.
 if (Rsed.ui.inputState.mid_mouse_button_down())
 {
-const mousePosX = Math.round((mousePos.x - tilemapOffsetX) * (Rsed.core.current_project().maasto.width / tilemapWidth));
-const mousePosY = Math.round((mousePos.y - tilemapOffsetY) * (Rsed.core.current_project().maasto.height / tilemapHeight));
+const mouseTilemapPosX = Math.round((mousePos.x - tilemapOffsetX) * (Rsed.core.current_project().maasto.width / tilemapWidth));
+const mouseTilemapPosY = Math.round((mousePos.y - tilemapOffsetY) * (Rsed.core.current_project().maasto.height / tilemapHeight));
 const brushSize = (Rsed.ui.groundBrush.brush_size() + 1);
 Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,
 Rsed.ui.groundBrush.brush_pala_idx(),
-mousePosX, mousePosY);
+mouseTilemapPosX,
+mouseTilemapPosY);
 // Update the region of the tilemap that we painted over.
-scene.refresh_tilemap_view((mousePosX - brushSize),
-(mousePosY - brushSize),
+scene.refresh_tilemap_view((mouseTilemapPosX - brushSize),
+(mouseTilemapPosY - brushSize),
 (brushSize * 2),
 (brushSize * 2));
 }
@@ -8738,17 +8760,17 @@ pixelShaderFunction: function({renderWidth, renderHeight, fragmentBuffer})
 {
 for (let i = 0; i < (renderWidth * renderHeight); i++)
 {
-const u = (typeof fragmentBuffer[i].textureUScaled == undefined)
-? undefined
+const u = (fragmentBuffer[i].textureUScaled == null)
+? null
 : Math.max(0, Math.min((texture.width - 1), fragmentBuffer[i].textureUScaled));
-const v = (typeof fragmentBuffer[i].textureVScaled == undefined)
-? undefined
+const v = (fragmentBuffer[i].textureVScaled == null)
+? null
 : Math.max(0, Math.min((texture.height - 1), fragmentBuffer[i].textureVScaled));
 textureMousePickBuffer[i] = {u, v};
 // Reset the fragment buffer as we go along, since the renderer doesn't at the
 // time of writing this clear the fragment buffer at the beginning of each frame.
-fragmentBuffer[i].textureUScaled = undefined;
-fragmentBuffer[i].textureVScaled = undefined;
+fragmentBuffer[i].textureUScaled = null;
+fragmentBuffer[i].textureVScaled = null;
 }
 },
 });
@@ -8765,10 +8787,27 @@ return;
 handle_user_interaction: function()
 {
 handle_mouse_input();
+update_cursor_graphic();
 Rsed.visual.canvas.mousePickingBuffer.fill(null);
 },
 });
 return scene;
+function update_cursor_graphic()
+{
+const cursors = Rsed.ui.cursorHandler.cursors;
+const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
+const pickElement = textureMousePickBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width];
+const isCursorOnTexture = (pickElement && (pickElement.u !== null) && (pickElement.v !== null));
+if (isCursorOnTexture)
+{
+Rsed.ui.cursorHandler.set_cursor(cursors.pencil);
+}
+else
+{
+Rsed.ui.cursorHandler.set_cursor(cursors.default);
+}
+return;
+}
 function handle_mouse_input()
 {
 if (!texture)
@@ -8780,9 +8819,8 @@ const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
 if (Rsed.ui.inputState.mouse_button_down())
 {
 const pickElement = textureMousePickBuffer[mousePos.x + mousePos.y * Rsed.visual.canvas.width];
-if (pickElement &&
-(typeof pickElement.u !== "undefined") &&
-(typeof pickElement.v !== "undefined"))
+const isCursorOnTexture = (pickElement && (pickElement.u !== null) && (pickElement.v !== null));
+if (isCursorOnTexture)
 {
 // Note: Changing a pixel in the texture causes the texture to be regenerated,
 // so we need to update our reference to it. (The new reference is returned
