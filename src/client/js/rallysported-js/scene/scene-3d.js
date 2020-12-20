@@ -316,7 +316,6 @@ Rsed.scenes["3d"] = (function()
         handle_user_interaction: function()
         {
             handle_mouse_input();
-
             update_cursor_graphic();
 
             /// EXPERIMENTAL. Temporary testing of mobile controls.
