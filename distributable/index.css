@@ -85,7 +85,7 @@ body
     border-right: none;
 }
 
-#html-ui .button
+#html-ui .menu-bar .button
 {
     cursor: pointer;
     color: black;
@@ -94,28 +94,27 @@ body
     font-size: 85%;
     text-decoration: none;
     color: #c2c2c2;
-    background-image: linear-gradient(rgb(60, 60, 60), rgb(60, 60, 60));
+    background: transparent;
     padding: 0 12px 0 12px;
 }
 
-#html-ui .button:hover
+#html-ui .menu-bar .button:hover
 {
     color: white;
 }
 
-#html-ui .button:active
+#html-ui .menu-bar .button:active
 {
-    border-bottom: none;
-    background-image: linear-gradient(rgb(30, 30, 30), rgb(50, 50, 50));
+    transform: translateY(1px);
 }
 
-#html-ui .button > a
+#html-ui .menu-bar .button > a
 {
     color: inherit;
     text-decoration: none;
 }
 
-#html-ui .button .fas
+#html-ui .menu-bar .button .fas
 {
     margin-right: 2px;
 }
