@@ -126,7 +126,7 @@ Rsed.ui.component.colorSelector =
                                    swatchY);
 
                 Rsed.ui.draw.string(colorIdxLabel,
-                                    (swatchX + (curColorSwatchWidth / 2) - (Rsed.ui.font.width_in_pixels(colorIdxLabel) / 2)),
+                                    (swatchX + (curColorSwatchWidth / 2) - (Rsed.ui.font.width_in_pixels(colorIdxLabel) / 2) - 1),
                                     (swatchY + (curColorSwatchHeight / 2) - (Rsed.ui.font.nativeHeight / 2)));
             }
         };

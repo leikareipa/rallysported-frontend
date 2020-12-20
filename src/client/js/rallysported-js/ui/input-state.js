@@ -234,6 +234,7 @@ Rsed.ui.inputState = (function()
         {
             this.set_key_down("shift", false);
             this.set_key_down("control", false);
+            this.set_key_down("tab", false);
             this.set_key_down("alt", false);
             this.set_key_down("altgraph", false);
         },
@@ -345,7 +346,7 @@ Rsed.ui.inputState = (function()
                 mouseState.buttons[button].isDown = true;
                 mouseState.buttons[button].modifiers = (()=>
                 {
-                    knownModifiers = ["shift", "control", "alt"];
+                    knownModifiers = ["shift", "control", "alt", "tab"];
                     return knownModifiers.filter(modifier=>this.key_down(modifier));
                 })();
             }

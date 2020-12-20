@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 December 2020 04:51:06 UTC)
+// VERSION: live (20 December 2020 04:55:04 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6347,7 +6347,7 @@ switch (mouseHover.type)
 case "prop": return cursor.openHand;
 case "ground":
 {
-if (Rsed.ui.inputState.key_down("control"))
+if (Rsed.ui.inputState.key_down("tab"))
 {
 return cursor.eyedropper;
 }
@@ -7042,6 +7042,7 @@ reset_modifier_keys_state: function()
 {
 this.set_key_down("shift", false);
 this.set_key_down("control", false);
+this.set_key_down("tab", false);
 this.set_key_down("alt", false);
 this.set_key_down("altgraph", false);
 },
@@ -7135,7 +7136,7 @@ if (isDown)
 mouseState.buttons[button].isDown = true;
 mouseState.buttons[button].modifiers = (()=>
 {
-knownModifiers = ["shift", "control", "alt"];
+knownModifiers = ["shift", "control", "alt", "tab"];
 return knownModifiers.filter(modifier=>this.key_down(modifier));
 })();
 }
@@ -8177,7 +8178,7 @@ if (!hover) break;
 if (hover.type !== "ground") break;
 // Eyedropper.
 if (Rsed.ui.inputState.left_mouse_button_down() &&
-Rsed.ui.inputState.left_mouse_click_modifiers().includes("control"))
+Rsed.ui.inputState.left_mouse_click_modifiers().includes("tab"))
 {
 const palaIdx = Rsed.core.current_project().varimaa.tile_at(hover.groundTileX, hover.groundTileY);
 Rsed.ui.groundBrush.set_brush_pala_idx(palaIdx);

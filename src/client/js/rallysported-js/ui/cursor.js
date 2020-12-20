@@ -63,7 +63,7 @@ Rsed.ui.cursor = (function()
                         case "prop": return cursor.openHand;
                         case "ground":
                         {
-                            if (Rsed.ui.inputState.key_down("control"))
+                            if (Rsed.ui.inputState.key_down("tab"))
                             {
                                 return cursor.eyedropper;
                             }

@@ -355,7 +355,7 @@ Rsed.scenes["3d"] = (function()
 
                     // Eyedropper.
                     if (Rsed.ui.inputState.left_mouse_button_down() &&
-                        Rsed.ui.inputState.left_mouse_click_modifiers().includes("control"))
+                        Rsed.ui.inputState.left_mouse_click_modifiers().includes("tab"))
                     {
                         const palaIdx = Rsed.core.current_project().varimaa.tile_at(hover.groundTileX, hover.groundTileY);
 
