@@ -95,6 +95,25 @@ Rsed.ui.assetMutator = (function()
                     // Returns the new modified texture.
                     return edit.target.texture.set_pixel_at(edit.target.u, edit.target.v, edit.data);
                 }
+                case "set-all-pixels":
+                {
+                    let texture = edit.target.texture;
+
+                    Rsed.throw_if(edit.data.length != (texture.width * texture.height));
+
+                    for (let y = 0; y < texture.height; y++)
+                    {
+                        for (let x = 0; x < texture.width; x++)
+                        {
+                            // Note: Modifying the texture causes it to be regenerated as a new
+                            // object, so we need to keep track of it.
+                            texture = texture.set_pixel_at(x, y, edit.data[x + y * texture.width]);
+                        }
+                    }
+
+                    // Returns the new modified texture.
+                    return texture;
+                }
                 default: Rsed.throw("Unknown edit action."); break;
             }
         },

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (20 December 2020 21:33:32 UTC)
+// VERSION: live (22 December 2020 00:24:33 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -5409,6 +5409,22 @@ case "set-pixel":
 // Returns the new modified texture.
 return edit.target.texture.set_pixel_at(edit.target.u, edit.target.v, edit.data);
 }
+case "set-all-pixels":
+{
+let texture = edit.target.texture;
+Rsed.throw_if(edit.data.length != (texture.width * texture.height));
+for (let y = 0; y < texture.height; y++)
+{
+for (let x = 0; x < texture.width; x++)
+{
+// Note: Modifying the texture causes it to be regenerated as a new
+// object, so we need to keep track of it.
+texture = texture.set_pixel_at(x, y, edit.data[x + y * texture.width]);
+}
+}
+// Returns the new modified texture.
+return texture;
+}
 default: Rsed.throw("Unknown edit action."); break;
 }
 },
@@ -8554,6 +8570,9 @@ Rsed.scenes["texture"] = (function()
 {
 // A reference to the Rsed.visual.texture() object that we're to edit.
 let texture = null;
+// Texture pixels copied with Ctrl + C.
+let clipboard;
+reset_clipboard();
 // The amount by which the user has moved the texture's position in the view.
 let textureUserOffsetX = 0;
 let textureUserOffsetY = 0;
@@ -8585,6 +8604,7 @@ fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
 colorSelector: Rsed.ui.component.colorSelector.instance(),
 textureLabel: Rsed.ui.component.label.instance(),
 zoomLabel: Rsed.ui.component.label.instance(),
+clipboardLabel: Rsed.ui.component.label.instance(),
 palatPane: Rsed.ui.component.palatPane.instance({
 selectionCallback: (palaIdx)=>scene.set_texture(Rsed.core.current_project().palat.texture[palaIdx]),
 indicateSelection: false,
@@ -8661,6 +8681,16 @@ else if (Rsed.ui.inputState.key_down("control"))
 Rsed.ui.undoStack.undo();
 }
 }
+else if (key_is("c") &&
+Rsed.ui.inputState.key_down("control"))
+{
+copy_to_clipboard(texture);
+}
+else if (key_is("v") &&
+Rsed.ui.inputState.key_down("control"))
+{
+paste_from_clipboard();
+}
 else if (key_is("y") &&
 Rsed.ui.inputState.key_down("control") )
 {
@@ -8696,12 +8726,16 @@ if (uiComponents) // Once the UI components have finished async loading...
 {
 uiComponents.colorSelector.update(sceneSettings);
 uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 101), 11);
-uiComponents.textureLabel.update(`Texture size: ${texture.width} * ${texture.height}`);
-uiComponents.textureLabel.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
+uiComponents.textureLabel.update(`Texture: ${texture.width} * ${texture.height}`);
+uiComponents.textureLabel.draw(0, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 2) - 5));
+uiComponents.clipboardLabel.update(clipboard
+? `Clipboard: ${clipboard.width} * ${clipboard.height}${(clipboard.source == texture)? " (this)" : ""}`
+: "Cliboard: empty");
+uiComponents.clipboardLabel.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
 {
 const truncatedZoomValue = (1 / textureZoom).toString().match(/^-?\d+(?:\.\d{0,1})?/)[0];
 uiComponents.zoomLabel.update(`Zoom: ${truncatedZoomValue}*`);
-uiComponents.zoomLabel.draw(0, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 2) - 5));
+uiComponents.zoomLabel.draw(0, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 3) - 8));
 }
 if (Rsed.core.fps_counter_enabled())
 {
@@ -8797,6 +8831,55 @@ Rsed.visual.canvas.mousePickingBuffer.fill(null);
 },
 });
 return scene;
+function reset_clipboard()
+{
+clipboard = undefined;
+return;
+}
+function copy_to_clipboard(texture)
+{
+if (!texture)
+{
+Rsed.ui.popup_notification("No texture to copy.", {
+notificationType: "error",
+});
+return;
+}
+clipboard = {
+width: texture.width,
+height: texture.height,
+colorIndices: [...texture.indices],
+source: texture,
+};
+return;
+}
+function paste_from_clipboard()
+{
+if (!clipboard)
+{
+Rsed.ui.popup_notification("The clipboard is empty.", {
+notificationType: "warning",
+});
+return;
+}
+if ((texture.width != clipboard.width) ||
+(texture.height != clipboard.height))
+{
+Rsed.ui.popup_notification("The clipboard's resolution doesn't match. It can't be pasted here.", {
+notificationType: "error",
+});
+return;
+}
+// Note: Changing a pixel in the texture causes the texture to be regenerated,
+// so we need to update our reference to it. (The new reference is returned
+// from the pixel-setting function.)
+texture = Rsed.ui.assetMutator.user_edit("texture", {
+command: "set-all-pixels",
+target: {texture},
+data: clipboard.colorIndices,
+});
+return;
+}
 function update_cursor_graphic()
 {
 const cursors = Rsed.ui.cursorHandler.cursors;
