@@ -28,6 +28,9 @@ Rsed.project = async function(projectArgs = {})
 
     const isPlaceholder = false;
 
+    // The height of water tiles on the current track.
+    let waterLevel = 0;
+
     // Rally-Sport uses checkpoints - invisible markers at given x,y tile positions on the
     // track - to keep track of whether the player's car has raced a valid lap. In other
     // words, the car must pass through all of the track's checkpoints in order for the lap
@@ -158,6 +161,7 @@ Rsed.project = async function(projectArgs = {})
         trackId,
         palatId,
         loaderVersion,
+        waterLevel,
 
         get name()
         {
@@ -724,6 +728,19 @@ Rsed.project = async function(projectArgs = {})
                 case 5: trackCheckpoints.push({x:10,y:48}); break;
                 case 6: trackCheckpoints.push({x:114,y:118}); break;
                 case 7: trackCheckpoints.push({x:56,y:60}); break;
+                default: Rsed.throw(`Unknown track id (${trackId}).`);
+            }
+
+            switch (trackId)
+            {
+                case 0: waterLevel = -64; break;
+                case 1: waterLevel = 0; break;
+                case 2: waterLevel = 0; break;
+                case 3: waterLevel = -250; break;
+                case 4: waterLevel = 0; break;
+                case 5: waterLevel = 0; break;
+                case 6: waterLevel = -100; break;
+                case 7: waterLevel = -40; break;
                 default: Rsed.throw(`Unknown track id (${trackId}).`);
             }
 

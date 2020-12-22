@@ -40,7 +40,7 @@ Rsed.world.meshBuilder = (function()
             if (!args.cameraPosFloat)
             {
                 args.cameraPosFloat = args.cameraPos;
-            }
+            }  
 
             // Returns true if the given XY coordinates are out of track bounds.
             function out_of_bounds(x, y)
@@ -63,6 +63,8 @@ Rsed.world.meshBuilder = (function()
 
             const fractionX = (args.cameraPosFloat.x - args.cameraPos.x);
             const fractionZ = (args.cameraPosFloat.z - args.cameraPos.z);
+
+            const project = Rsed.core.current_project();
 
             for (let z = 0; z < Rsed.world.camera.view_height; z++)
             {
@@ -88,10 +90,10 @@ Rsed.world.meshBuilder = (function()
 
                     const tilePalaIdx = (()=>
                     {
-                        let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
+                        let idx = project.varimaa.tile_at(tileX, (tileZ - 1));
 
-                        if ( args.paintHoverPala &&
-                             !mouseGrab &&
+                        if (args.paintHoverPala &&
+                            !mouseGrab &&
                             (mouseHover && (mouseHover.type === "ground")) &&
                             (Math.abs(mouseHover.groundTileX - tileX) <= Rsed.ui.groundBrush.brush_size()) &&
                             (Math.abs(mouseHover.groundTileY - (tileZ - 1)) <= Rsed.ui.groundBrush.brush_size()))
@@ -105,17 +107,82 @@ Rsed.world.meshBuilder = (function()
                     // Construct the ground quad polygon.
                     {
                         // The heights of the ground quad's corner points.
-                        const height1 = centerView.y + Rsed.core.current_project().maasto.tile_at( tileX,       tileZ);
-                        const height2 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1),  tileZ);
-                        const height3 = centerView.y + Rsed.core.current_project().maasto.tile_at((tileX + 1), (tileZ - 1));
-                        const height4 = centerView.y + Rsed.core.current_project().maasto.tile_at( tileX,      (tileZ - 1));
+                        let height1 = project.maasto.tile_at( tileX,       tileZ);
+                        let height2 = project.maasto.tile_at((tileX + 1),  tileZ);
+                        let height3 = project.maasto.tile_at((tileX + 1), (tileZ - 1));
+                        let height4 = project.maasto.tile_at( tileX,      (tileZ - 1));
 
                         // We'll do rudimentary shading of the polygon based on its orientation.
                         // Ideally, the shading would replicate that of Rally-Sport, but this
                         // particular implementation doesn't.
                         const heightDiff = Math.max(150, Math.min(255, (255 - ((height1 - height3) * 2))));
 
-                        const texture = Rsed.core.current_project().palat.texture[tilePalaIdx];
+                        // Each track in Rally-Sport has a water level, i.e. a height to which all water
+                        // tiles' corners will be set. The tiles' actual height can be lower, in which case
+                        // driving onto them will cause the car to become submerged under the apparent water
+                        // level. In other words, the game will render all water tiles flush with the water
+                        // level, but also keeps track of the tiles' actual height for car-ground collisions.
+                        //
+                        // In wireframe mode, we'll draw the ground tile heights as they are, but in non-
+                        // wireframe mode, we'll make them flush with the track's water level.
+                        if (!args.includeWireframe)
+                        {
+                            if (tilePalaIdx == 0) // Water tiles are those whose PALA index is 0.
+                            {
+                                height1 = project.waterLevel;
+                                height2 = project.waterLevel;
+                                height3 = project.waterLevel;
+                                height4 = project.waterLevel;
+                            }
+                            // This tile is not a water tile but is adjacent to one. In that case, we'll
+                            // adjust the heights of such neighboring corners.
+                            else
+                            {
+                                if (project.varimaa.tile_at(tileX, (tileZ - 1) + 1) == 0)
+                                {
+                                    height2 = project.waterLevel;
+                                    height1 = project.waterLevel;
+                                }
+                                if (project.varimaa.tile_at(tileX, (tileZ - 1) - 1) == 0)
+                                {
+                                    height3 = project.waterLevel;
+                                    height4 = project.waterLevel;
+                                }
+                                if (project.varimaa.tile_at(tileX - 1, (tileZ - 1)) == 0)
+                                {
+                                    height1 = project.waterLevel;
+                                    height4 = project.waterLevel;
+                                }
+                                if (project.varimaa.tile_at(tileX + 1, (tileZ - 1)) == 0)
+                                {
+                                    height2 = project.waterLevel;
+                                    height3 = project.waterLevel;
+                                }
+                                if (project.varimaa.tile_at(tileX + 1, (tileZ - 1) + 1) == 0)
+                                {
+                                    height2 = project.waterLevel;
+                                }
+                                if (project.varimaa.tile_at(tileX - 1, (tileZ - 1) + 1) == 0)
+                                {
+                                    height1 = project.waterLevel;
+                                }
+                                if (project.varimaa.tile_at(tileX + 1, (tileZ - 1) - 1) == 0)
+                                {
+                                    height3 = project.waterLevel;
+                                }
+                                if (project.varimaa.tile_at(tileX - 1, (tileZ - 1) - 1) == 0)
+                                {
+                                    height4 = project.waterLevel;
+                                }
+                            }
+                        }
+
+                        height1 += centerView.y;
+                        height2 += centerView.y;
+                        height3 += centerView.y;
+                        height4 += centerView.y;
+
+                        const texture = project.palat.texture[tilePalaIdx];
 
                         const groundQuad = Rngon.ngon([Rngon.vertex(vertX, height1, vertZ, 0, 0),
                                                        Rngon.vertex((vertX + Rsed.constants.groundTileSize), height2, vertZ, 1, 0),
@@ -168,7 +235,7 @@ Rsed.world.meshBuilder = (function()
 
                     const tilePalaIdx = (()=>
                     {
-                        let idx = Rsed.core.current_project().varimaa.tile_at(tileX, (tileZ - 1));
+                        let idx = project.varimaa.tile_at(tileX, (tileZ - 1));
 
                         if ( args.paintHoverPala &&
                              !mouseGrab &&
@@ -183,11 +250,11 @@ Rsed.world.meshBuilder = (function()
                     })();
 
                     // If this tile has a billboard, add it.
-                    const billboardPalaIdx = Rsed.core.current_project().palat.billboard_idx(tilePalaIdx, tileX, (tileZ - 1));
+                    const billboardPalaIdx = project.palat.billboard_idx(tilePalaIdx, tileX, (tileZ - 1));
                     if (billboardPalaIdx != null)
                     {
-                        const baseHeight = centerView.y + Rsed.core.current_project().maasto.tile_at(tileX, (tileZ - 1));
-                        const billboardTexture = Rsed.core.current_project().palat.texture[billboardPalaIdx];
+                        const baseHeight = centerView.y + project.maasto.tile_at(tileX, (tileZ - 1));
+                        const billboardTexture = project.palat.texture[billboardPalaIdx];
                         const billboardVertices = (()=>
                         {
                             // Bridges (lay horizontally).
@@ -225,7 +292,7 @@ Rsed.world.meshBuilder = (function()
             }
 
             // Add any track prop meshes that should be visible on the currently-drawn track.
-            const propLocations = Rsed.core.current_project().props.locations_of_props_on_track(Rsed.core.current_project().track_id());
+            const propLocations = project.props.locations_of_props_on_track(project.track_id());
             propLocations.forEach((pos, idx)=>
             {
                 if ((pos.x >= (args.cameraPos.x * Rsed.constants.groundTileSize)) &&
@@ -236,7 +303,7 @@ Rsed.world.meshBuilder = (function()
                     const x = ((pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize)) - (fractionX * Rsed.constants.groundTileSize));
                     const z = ((centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
                     
-                    const groundHeight = centerView.y + Rsed.core.current_project().maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
+                    const groundHeight = centerView.y + project.maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
                     const y = (groundHeight + pos.y);
 
                     trackPolygons.push(...this.prop_mesh(pos.propId, idx,
@@ -276,12 +343,13 @@ Rsed.world.meshBuilder = (function()
                 ...args
             };
 
-            const srcMesh = Rsed.core.current_project().props.mesh[propId];
+            const project = Rsed.core.current_project();
+            const srcMesh = project.props.mesh[propId];
             const dstMesh = [];
 
             srcMesh.ngons.forEach(ngon=>
             {
-                const texture = (args.solidProps? (ngon.fill.type === "texture"? Rsed.core.current_project().props.texture[ngon.fill.idx]
+                const texture = (args.solidProps? (ngon.fill.type === "texture"? project.props.texture[ngon.fill.idx]
                                                                                : null)
                                                 : null);
 
