@@ -199,7 +199,7 @@ Rsed.scenes["texture"] = (function()
 
                 uiComponents.clipboardLabel.update(clipboard
                                                    ? `Clipboard: ${clipboard.width} * ${clipboard.height}${(clipboard.source == texture)? " (this)" : ""}`
-                                                   : "Cliboard: empty");
+                                                   : "Clipboard: empty");
                 uiComponents.clipboardLabel.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
 
                 {

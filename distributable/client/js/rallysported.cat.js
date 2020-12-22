@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (22 December 2020 00:49:06 UTC)
+// VERSION: live (22 December 2020 01:28:30 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8734,7 +8734,7 @@ uiComponents.textureLabel.update(`Texture: ${texture.width} * ${texture.height}`
 uiComponents.textureLabel.draw(0, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 2) - 5));
 uiComponents.clipboardLabel.update(clipboard
 ? `Clipboard: ${clipboard.width} * ${clipboard.height}${(clipboard.source == texture)? " (this)" : ""}`
-: "Cliboard: empty");
+: "Clipboard: empty");
 uiComponents.clipboardLabel.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
 {
 const truncatedZoomValue = (1 / textureZoom).toString().match(/^-?\d+(?:\.\d{0,1})?/)[0];
