@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (22 December 2020 00:24:33 UTC)
+// VERSION: live (22 December 2020 00:49:06 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8691,6 +8691,10 @@ Rsed.ui.inputState.key_down("control"))
 {
 paste_from_clipboard();
 }
+else if (key_is("r"))
+{
+texture = rotated(texture);
+}
 else if (key_is("y") &&
 Rsed.ui.inputState.key_down("control") )
 {
@@ -8831,6 +8835,49 @@ Rsed.visual.canvas.mousePickingBuffer.fill(null);
 },
 });
 return scene;
+function rotated(texture)
+{
+if (!texture)
+{
+Rsed.ui.popup_notification("No texture data to rotate.", {
+notificationType: "error",
+});
+return texture;
+}
+if (texture.width != texture.height)
+{
+Rsed.ui.popup_notification("Only square textures can be rotated.", {
+notificationType: "warning",
+});
+return texture;
+}
+const indices = [...texture.indices];
+// Rotate 90 degrees.
+for (let y = 0; y < (texture.height - 1); y++)
+{
+for (let x = y; x < texture.width; x++)
+{
+const idx1 = (x + y * texture.width);
+const idx2 = (y + x * texture.width);
+[indices[idx1], indices[idx2]] = [indices[idx2], indices[idx1]];
+}
+}
+// Mirror.
+for (let x = 0; x < (texture.width / 2); x++)
+{
+for (let y = 0; y < texture.height; y++)
+{
+const idx1 = (x + y * texture.width);
+const idx2 = ((texture.width - 1 - x) + y * texture.width);
+[indices[idx1], indices[idx2]] = [indices[idx2], indices[idx1]];
+}
+}
+return Rsed.ui.assetMutator.user_edit("texture", {
+command: "set-all-pixels",
+target: {texture},
+data: indices,
+});
+}
 function reset_clipboard()
 {
 clipboard = undefined;
@@ -8866,7 +8913,7 @@ if ((texture.width != clipboard.width) ||
 (texture.height != clipboard.height))
 {
 Rsed.ui.popup_notification("The clipboard's resolution doesn't match. It can't be pasted here.", {
-notificationType: "error",
+notificationType: "warning",
 });
 return;
 }

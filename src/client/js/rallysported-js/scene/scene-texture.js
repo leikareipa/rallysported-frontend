@@ -149,6 +149,10 @@ Rsed.scenes["texture"] = (function()
             {
                 paste_from_clipboard();
             }
+            else if (key_is("r"))
+            {
+                texture = rotated(texture);
+            }
             else if (key_is("y") &&
                      Rsed.ui.inputState.key_down("control") )
             {
@@ -321,6 +325,59 @@ Rsed.scenes["texture"] = (function()
 
     return scene;
 
+    function rotated(texture)
+    {
+        if (!texture)
+        {
+            Rsed.ui.popup_notification("No texture data to rotate.", {
+                notificationType: "error",
+            });
+
+            return texture;
+        }
+
+        if (texture.width != texture.height)
+        {
+            Rsed.ui.popup_notification("Only square textures can be rotated.", {
+                notificationType: "warning",
+            });
+
+            return texture;
+        }
+
+        const indices = [...texture.indices];
+
+        // Rotate 90 degrees.
+        for (let y = 0; y < (texture.height - 1); y++)
+        {
+            for (let x = y; x < texture.width; x++)
+            {
+                const idx1 = (x + y * texture.width);
+                const idx2 = (y + x * texture.width);
+
+                [indices[idx1], indices[idx2]] = [indices[idx2], indices[idx1]];
+            }
+        }
+
+        // Mirror.
+        for (let x = 0; x < (texture.width / 2); x++)
+        {
+            for (let y = 0; y < texture.height; y++)
+            {
+                const idx1 = (x + y * texture.width);
+                const idx2 = ((texture.width - 1 - x) + y * texture.width);
+
+                [indices[idx1], indices[idx2]] = [indices[idx2], indices[idx1]];
+            }
+        }
+
+        return Rsed.ui.assetMutator.user_edit("texture", {
+            command: "set-all-pixels",
+            target: {texture},
+            data: indices,
+        });
+    }
+
     function reset_clipboard()
     {
         clipboard = undefined;
@@ -364,7 +421,7 @@ Rsed.scenes["texture"] = (function()
             (texture.height != clipboard.height))
         {
             Rsed.ui.popup_notification("The clipboard's resolution doesn't match. It can't be pasted here.", {
-                notificationType: "error",
+                notificationType: "warning",
             });
 
             return;
