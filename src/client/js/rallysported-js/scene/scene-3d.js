@@ -23,8 +23,11 @@ Rsed.scenes["3d"] = (function()
     let updateMouseHoverOnFrameFinish = false;
 
     const sceneSettings = {
-        // Whether to draw a wireframe around the scene's polygons.
-        showWireframe: true,
+        // Whether to draw a wireframe around the scene's polygons. Note that we default to
+        // not showing the wireframe on mobile devices, since we assume that they have small
+        // screens and so not enough resolution to show the wireframe as anything but a
+        // pixely mess.
+        showWireframe: !Rsed.browserMetadata.isMobile,
 
         // Whether to show the PALAT pane; i.e. a side panel that displays all the available
         // PALA textures.
