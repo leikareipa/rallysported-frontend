@@ -317,7 +317,7 @@ body
     }
 }
 
-@media only screen and (max-width: 550px)
+@media only screen and (max-width: 600px)
 {
     #html-ui .button-bar.right
     {
