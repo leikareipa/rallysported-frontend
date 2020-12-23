@@ -326,7 +326,7 @@ body
 
     #html-ui .button-bar.left
     {
-        border-right: none;
+        border: none;
     }
 }
 
