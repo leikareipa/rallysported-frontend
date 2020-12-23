@@ -25,13 +25,23 @@ Rsed.world.meshBuilder = (function()
             {
                 // Default args.
                 ...{
+                    // The camera's tile position in integer values.
                     cameraPos: {
                         x: 0,
                         y: 0,
                         z: 0,
                     },
-                    solidProps: true, // Whether to draw props with solid colors(/textures) or with just a wireframe.
+
+                    // The camera's world position in floating-point values - e.g. the same as
+                    // 'cameraPos' but without having rounded to integer values. If this is given,
+                    // camera movement will be pixel-based (smooth) instead of tile-based (jagged).
+                    cameraPosFloat: undefined,
+
+                    // Whether to draw props with solid colors(/textures) or with just a wireframe.
+                    solidProps: true,
+
                     includeWireframe: false,
+
                     paintHoverPala: false,
                 },
                 ...args,

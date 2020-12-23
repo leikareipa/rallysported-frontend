@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (23 December 2020 06:25:38 UTC)
+// VERSION: live (23 December 2020 16:39:24 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -11,6 +11,7 @@
 //	./src/client/js/filesaver/FileSaver.min.js
 //	./src/client/js/retro-ngon/rngon.cat.js
 //	./src/client/js/rallysported-js/rallysported.js
+//	./src/client/js/rallysported-js/misc/browser-metadata.js
 //	./src/client/js/rallysported-js/misc/rngon-minimal-fill.js
 //	./src/client/js/rallysported-js/misc/rngon-minimal-tcl.js
 //	./src/client/js/rallysported-js/project/project.js
@@ -2717,6 +2718,30 @@ Rsed.lerp = (x = 0, y = 0, interval = 0)=>(x + (interval * (y - x)));
 Rsed.clamp = (value = 0, min = 0, max = 1)=>Math.min(Math.max(value, min), max);
 }
 /*
+* Most recent known filename: js/misc/browser-metadata.js
+*
+* 2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+// Rudimentary (and not necessarily accurate) information about the browser in which
+// the app is running.
+Rsed.browserMetadata = (function()
+{
+const publicInterface = {
+isMobile: Boolean(/android|mobi/i.test(navigator.userAgent)),
+browserName: (/Chrome/i.test(navigator.userAgent)? "Chrome" :
+/CriOS/i.test(navigator.userAgent)? "Chrome" :
+/Opera/i.test(navigator.userAgent)? "Opera" :
+/Firefox/i.test(navigator.userAgent)? "Firefox" :
+/Safari/i.test(navigator.userAgent)? "Safari" :
+null),
+};
+return publicInterface;
+})();
+/*
 * 2019, 2020 Tarpeeksi Hyvae Soft
 *
 * Software: RallySportED-js
@@ -3813,12 +3838,18 @@ args =
 {
 // Default args.
 ...{
+// The camera's tile position in integer values.
 cameraPos: {
 x: 0,
 y: 0,
 z: 0,
 },
-solidProps: true, // Whether to draw props with solid colors(/textures) or with just a wireframe.
+// The camera's world position in floating-point values - e.g. the same as
+// 'cameraPos' but without having rounded to integer values. If this is given,
+// camera movement will be pixel-based (smooth) instead of tile-based (jagged).
+cameraPosFloat: undefined,
+// Whether to draw props with solid colors(/textures) or with just a wireframe.
+solidProps: true,
 includeWireframe: false,
 paintHoverPala: false,
 },
@@ -7974,8 +8005,11 @@ let prevMousePos = {x:0, y:0};
 /// mouse hover when various UI elements are toggled on/off.
 let updateMouseHoverOnFrameFinish = false;
 const sceneSettings = {
-// Whether to draw a wireframe around the scene's polygons.
-showWireframe: true,
+// Whether to draw a wireframe around the scene's polygons. Note that we default to
+// not showing the wireframe on mobile devices, since we assume that they have small
+// screens and so not enough resolution to show the wireframe as anything but a
+// pixely mess.
+showWireframe: !Rsed.browserMetadata.isMobile,
 // Whether to show the PALAT pane; i.e. a side panel that displays all the available
 // PALA textures.
 showPalatPane: false,
@@ -8163,10 +8197,13 @@ if (uiComponents) // Once the UI components have finished async loading.
 {
 if (Rsed.visual.canvas.domElement.clientWidth > 650)
 {
+if (!Rsed.browserMetadata.isMobile)
+{
 uiComponents.activePala.update(sceneSettings);
 uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 11);
 uiComponents.footerInfo.update(sceneSettings);
 uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
+}
 uiComponents.minimap.update(sceneSettings);
 uiComponents.minimap.draw((Rsed.visual.canvas.width - 4), 11);
 if (sceneSettings.showPalatPane)
@@ -8194,13 +8231,27 @@ return;
 },
 draw_mesh: function()
 {
-const moveSpeed = 1;
-Rsed.world.camera.move_camera((moveSpeed * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
+const isMobileControls = Rsed.browserMetadata.isMobile;
+// Move the camera based on user input.
+{
+const cameraMoveSpeed = 1;
+const cameraMoveVector = Rngon.vector3((cameraMoveSpeed * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
 0,
-(moveSpeed * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
+(cameraMoveSpeed * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
+// We'll use smooth camera movement on mobile but jagged (tile-based) movement
+// otherwise. Jagged movement looks especially janky when going diagonally, so
+// we won't normalize its the movement vector - looks a bit better to have more
+// movement speed diagonally then.
+if (isMobileControls)
+{
+Rngon.vector3.normalize(cameraMoveVector);
+}
+Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+}
 const trackMesh = Rsed.world.meshBuilder.track_mesh(
 {
 cameraPos: Rsed.world.camera.position_floored(),
+cameraPosFloat: (isMobileControls? Rsed.world.camera.position() : Rsed.world.camera.position_floored()), // Smooth scrolling on mobile, tile-based otherwise.
 solidProps: sceneSettings.showProps,
 includeWireframe: sceneSettings.showWireframe,
 paintHoverPala: sceneSettings.showHoverPala,
@@ -9699,8 +9750,9 @@ return publicInterface;
 /*
 * Most recent known filename: js/core/core.js
 *
-* Tarpeeksi Hyvae Soft 2018 /
-* RallySportED-js
+* 2018-2020 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
 *
 */
 "use strict";
@@ -9717,20 +9769,6 @@ let programFPS = 0;
 let project = Rsed.project.placeholder;
 // The scene we're currently displaying to the user.
 let currentScene = Rsed.scenes["3d"];
-// Rudimentary (and not necessarily accurate) information about the browser in which
-// the app is running.
-const browserInfo = (()=>
-{
-return {
-isMobile: Boolean(/android|mobi/i.test(navigator.userAgent)),
-browserName: (/Chrome/i.test(navigator.userAgent)? "Chrome" :
-/CriOS/i.test(navigator.userAgent)? "Chrome" :
-/Opera/i.test(navigator.userAgent)? "Opera" :
-/Firefox/i.test(navigator.userAgent)? "Firefox" :
-/Safari/i.test(navigator.userAgent)? "Safari" :
-null),
-};
-})();
 // Whether to display an FPS counter to the user.
 const fpsCounterEnabled = (()=>
 {
@@ -9742,7 +9780,6 @@ const publicInterface =
 is_running: ()=>coreIsRunning,
 renderer_fps: ()=>programFPS,
 fps_counter_enabled: ()=>fpsCounterEnabled,
-browser_info: ()=>browserInfo,
 appName: "RallySportED",
 // A convenience function that appends the given object's properties to the
 // default RallySportED-js startup arguments, and returns that amalgamation.
@@ -9888,7 +9925,7 @@ notificationType: "warning",
 });
 }
 // A crude test for whether the user's device might not have mouse/keyboard available.
-if (browserInfo.isMobile)
+if (Rsed.browserMetadata.isMobile)
 {
 Rsed.ui.popup_notification("Note: This app requires a mouse, a keyboard, and a non-small screen!",
 {

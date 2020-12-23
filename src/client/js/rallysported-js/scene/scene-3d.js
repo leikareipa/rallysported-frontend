@@ -277,14 +277,31 @@ Rsed.scenes["3d"] = (function()
 
         draw_mesh: function()
         {
-            const moveSpeed = 1;
-            Rsed.world.camera.move_camera((moveSpeed * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
-                                          0,
-                                          (moveSpeed * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
+            const isMobileControls = Rsed.browserMetadata.isMobile;
+
+            // Move the camera based on user input.
+            {
+                const cameraMoveSpeed = 1;
+                const cameraMoveVector = Rngon.vector3((cameraMoveSpeed * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
+                                                       0,
+                                                       (cameraMoveSpeed * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
+
+                // We'll use smooth camera movement on mobile but jagged (tile-based) movement
+                // otherwise. Jagged movement looks especially janky when going diagonally, so
+                // we won't normalize its the movement vector - looks a bit better to have more
+                // movement speed diagonally then.
+                if (isMobileControls)
+                {
+                    Rngon.vector3.normalize(cameraMoveVector);
+                }
+
+                Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+            }
 
             const trackMesh = Rsed.world.meshBuilder.track_mesh(
             {
                 cameraPos: Rsed.world.camera.position_floored(),
+                cameraPosFloat: (isMobileControls? Rsed.world.camera.position() : Rsed.world.camera.position_floored()), // Smooth scrolling on mobile, tile-based otherwise.
                 solidProps: sceneSettings.showProps,
                 includeWireframe: sceneSettings.showWireframe,
                 paintHoverPala: sceneSettings.showHoverPala,
