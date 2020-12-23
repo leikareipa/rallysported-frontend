@@ -235,11 +235,14 @@ Rsed.scenes["3d"] = (function()
             {
                 if (Rsed.visual.canvas.domElement.clientWidth > 650)
                 {
-                    uiComponents.activePala.update(sceneSettings);
-                    uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 11);
+                    if (!Rsed.browserMetadata.isMobile)
+                    {
+                        uiComponents.activePala.update(sceneSettings);
+                        uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 11);
 
-                    uiComponents.footerInfo.update(sceneSettings);
-                    uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
+                        uiComponents.footerInfo.update(sceneSettings);
+                        uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
+                    }
 
                     uiComponents.minimap.update(sceneSettings);
                     uiComponents.minimap.draw((Rsed.visual.canvas.width - 4), 11);
