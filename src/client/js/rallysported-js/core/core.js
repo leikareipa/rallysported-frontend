@@ -1,8 +1,9 @@
 /*
  * Most recent known filename: js/core/core.js
  *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
+ * 2018-2020 Tarpeeksi Hyvae Soft
+ * 
+ * Software: RallySportED-js
  *
  */
 
@@ -26,21 +27,6 @@ Rsed.core = (function()
     // The scene we're currently displaying to the user.
     let currentScene = Rsed.scenes["3d"];
 
-    // Rudimentary (and not necessarily accurate) information about the browser in which
-    // the app is running.
-    const browserInfo = (()=>
-    {
-        return {
-            isMobile: Boolean(/android|mobi/i.test(navigator.userAgent)),
-            browserName: (/Chrome/i.test(navigator.userAgent)? "Chrome" :
-                          /CriOS/i.test(navigator.userAgent)? "Chrome" :
-                          /Opera/i.test(navigator.userAgent)? "Opera" :
-                          /Firefox/i.test(navigator.userAgent)? "Firefox" :
-                          /Safari/i.test(navigator.userAgent)? "Safari" :
-                          null),
-        };
-    })();
-
     // Whether to display an FPS counter to the user.
     const fpsCounterEnabled = (()=>
     {
@@ -53,7 +39,6 @@ Rsed.core = (function()
         is_running: ()=>coreIsRunning,
         renderer_fps: ()=>programFPS,
         fps_counter_enabled: ()=>fpsCounterEnabled,
-        browser_info: ()=>browserInfo,
 
         appName: "RallySportED",
 
@@ -240,7 +225,7 @@ Rsed.core = (function()
         }
 
         // A crude test for whether the user's device might not have mouse/keyboard available.
-        if (browserInfo.isMobile)
+        if (Rsed.browserMetadata.isMobile)
         {
             Rsed.ui.popup_notification("Note: This app requires a mouse, a keyboard, and a non-small screen!",
             {
