@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (22 December 2020 03:13:50 UTC)
+// VERSION: live (23 December 2020 06:25:38 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3204,6 +3204,7 @@ return;
 }
 Rsed.log(`Renaming project ${publicInterface.name} to ${newName}`);
 projectData.meta.displayName = projectData.meta.internalName = newName;
+Rsed.ui.assetMutator.isMutatedSinceProjectSaved = true; // Technically a renaming is not an asset mutation, but we'll use this way to mark it as an unsaved change for now.
 Rsed.ui.htmlUI.refresh();
 },
 track_id: function()
@@ -3270,6 +3271,7 @@ download_as_zip: async()=>
 {
 const filename = `${publicInterface.internalName.toUpperCase()}.ZIP`;
 Rsed.log(`Saving project "${projectData.meta.displayName}" into ${filename}.`);
+let saved = false;
 // In case something goes wrong and an error gets thrown in some function while saving,
 // we want to catch it here rather than letting the entire app go down, so as to give
 // the user a chance to re-try.
@@ -3277,12 +3279,20 @@ try
 {
 const zipBlob = await publicInterface.zip();
 saveAs(zipBlob, filename); // From FileSaver.js.
+saved = true;
 }
 catch (error)
 {
 Rsed.ui.popup_notification(`Failed to save the project: ${error}`, {
 notificationType: "error",
 });
+saved = false;
+}
+if (saved)
+{
+// Let the user know there are no unsaved changes anymore.
+Rsed.ui.assetMutator.isMutatedSinceProjectSaved = false;
+Rsed.ui.htmlUI.refresh();
 }
 return;
 }
@@ -5424,6 +5434,9 @@ Rsed.ui = {};
 Rsed.ui.assetMutator = (function()
 {
 const publicInterface = {
+// Set to true if mutations have been made since the project was last saved. The
+// project saver code is expected to set this to false on saving.
+isMutatedSinceProjectSaved: false,
 // Call this function when the user requests (e.g. via the UI) to perform a
 // mutation on an asset - e.g. to paint the tilemap, alter the heightmap, etc.
 //
@@ -5447,6 +5460,9 @@ if (!Object.keys(applicators).includes(assetType))
 {
 Rsed.throw("Unknown asset type.");
 }
+// Let the user know that they have unsaved changes.
+publicInterface.isMutatedSinceProjectSaved = true;
+Rsed.ui.htmlUI.refresh();
 return applicators[assetType](Rsed.core.current_project(), editAction);
 }
 }
@@ -5883,7 +5899,9 @@ uiContainer.refresh_track_name();
 if ((typeof Rsed.core.current_project().name == "string") &&
 Rsed.core.current_project().name.length)
 {
-document.title = `${Rsed.core.current_project().name} - ${Rsed.core.appName}`;
+document.title = `${Rsed.ui.assetMutator.isMutatedSinceProjectSaved? "* " : ""}
+${Rsed.core.current_project().name} -
+${Rsed.core.appName}`;
 }
 else
 {
@@ -6617,6 +6635,16 @@ window.onunload = function()
 Rsed.stream.stop();
 return;
 };
+window.onbeforeunload = function(event)
+{
+if (Rsed.ui.assetMutator.isMutatedSinceProjectSaved)
+{
+event.preventDefault();
+// Note: We just need to return a string, any string - modern browsers won't display it
+// regardless.
+return "Leave and discard unsaved changes?";
+}
+}
 // Parses any address bar parameters, then launches RallySportED.
 window.onload = function(event)
 {

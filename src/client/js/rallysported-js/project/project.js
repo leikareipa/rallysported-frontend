@@ -203,6 +203,7 @@ Rsed.project = async function(projectArgs = {})
 
             projectData.meta.displayName = projectData.meta.internalName = newName;
 
+            Rsed.ui.assetMutator.isMutatedSinceProjectSaved = true; // Technically a renaming is not an asset mutation, but we'll use this way to mark it as an unsaved change for now.
             Rsed.ui.htmlUI.refresh();
         },
 
@@ -284,6 +285,8 @@ Rsed.project = async function(projectArgs = {})
 
             Rsed.log(`Saving project "${projectData.meta.displayName}" into ${filename}.`);
 
+            let saved = false;
+
             // In case something goes wrong and an error gets thrown in some function while saving,
             // we want to catch it here rather than letting the entire app go down, so as to give
             // the user a chance to re-try.
@@ -291,12 +294,23 @@ Rsed.project = async function(projectArgs = {})
             {
                 const zipBlob = await publicInterface.zip();
                 saveAs(zipBlob, filename); // From FileSaver.js.
+
+                saved = true;
             }
             catch (error)
             {
                 Rsed.ui.popup_notification(`Failed to save the project: ${error}`, {
                     notificationType: "error",
                 });
+
+                saved = false;
+            }
+
+            if (saved)
+            {
+                // Let the user know there are no unsaved changes anymore.
+                Rsed.ui.assetMutator.isMutatedSinceProjectSaved = false;
+                Rsed.ui.htmlUI.refresh();
             }
 
             return;

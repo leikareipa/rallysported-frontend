@@ -86,7 +86,9 @@ Rsed.ui.htmlUI = (function()
             if ((typeof Rsed.core.current_project().name == "string") &&
                 Rsed.core.current_project().name.length)
             {
-                document.title = `${Rsed.core.current_project().name} - ${Rsed.core.appName}`;
+                document.title = `${Rsed.ui.assetMutator.isMutatedSinceProjectSaved? "* " : ""}
+                                  ${Rsed.core.current_project().name} - 
+                                  ${Rsed.core.appName}`;
             }
             else
             {

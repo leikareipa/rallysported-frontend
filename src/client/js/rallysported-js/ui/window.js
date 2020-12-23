@@ -29,6 +29,18 @@ window.onunload = function()
     return;
 };
 
+window.onbeforeunload = function(event)
+{
+    if (Rsed.ui.assetMutator.isMutatedSinceProjectSaved)
+    {
+        event.preventDefault();
+
+        // Note: We just need to return a string, any string - modern browsers won't display it
+        // regardless.
+        return "Leave and discard unsaved changes?";
+    }
+}
+
 // Parses any address bar parameters, then launches RallySportED.
 window.onload = function(event)
 {
