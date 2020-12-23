@@ -178,6 +178,11 @@ Rsed.project = async function(projectArgs = {})
             return publicInterface.name;
         },
 
+        get areAllChangesSaved()
+        {
+            return Rsed.ui.undoStack.is_current_undo_level_saved();
+        },
+
         rename: function(newName = undefined)
         {
             if (typeof newName !== "string")
@@ -203,7 +208,6 @@ Rsed.project = async function(projectArgs = {})
 
             projectData.meta.displayName = projectData.meta.internalName = newName;
 
-            Rsed.ui.assetMutator.isMutatedSinceProjectSaved = true; // Technically a renaming is not an asset mutation, but we'll use this way to mark it as an unsaved change for now.
             Rsed.ui.htmlUI.refresh();
         },
 
@@ -309,7 +313,7 @@ Rsed.project = async function(projectArgs = {})
             if (saved)
             {
                 // Let the user know there are no unsaved changes anymore.
-                Rsed.ui.assetMutator.isMutatedSinceProjectSaved = false;
+                Rsed.ui.undoStack.mark_current_undo_level_as_saved();
                 Rsed.ui.htmlUI.refresh();
             }
 

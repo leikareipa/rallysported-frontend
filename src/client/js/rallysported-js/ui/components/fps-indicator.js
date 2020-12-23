@@ -18,7 +18,7 @@ Rsed.ui.component.fpsIndicator =
         {
             Rsed.throw_if_not_type("number", offsetX, offsetY);
 
-            Rsed.ui.draw.string(`FPS:${Rsed.core.renderer_fps()}`, offsetX, offsetY);
+            Rsed.ui.draw.string(`FPS: ${Rsed.core.renderer_fps()}`, offsetX, offsetY);
         };
 
         return component;

@@ -38,6 +38,10 @@ Rsed.ui.undoStack = (function()
     let dirtyProps = [];
     let dirtyTextures = [];
 
+    // We'll keep track of which undo level's data has been saved so RallySportED-js
+    // can indicate to the user whether the project's current state is saved or not.
+    let lastSavedUndoLevelId = undefined;
+
     // All undo levels we've recorded since they were last reset. Note that if the user
     // undoes and then makes new changes, the undo levels above that point will be
     // replaced with new undo levels that reflect the new changes.
@@ -108,6 +112,7 @@ Rsed.ui.undoStack = (function()
         }
 
         undoLevels[undoLevelHead] = {
+            id: Rsed.uuid.generate_v4(),
             before: {
                 ground: dirtyGround,
                 props: dirtyProps,
@@ -125,6 +130,10 @@ Rsed.ui.undoStack = (function()
         dirtyGround = [];
         dirtyProps = [];
         dirtyTextures = [];
+
+
+        // Let the user know that they have unsaved changes.
+        Rsed.ui.htmlUI.refresh();
     }
 
     // Undo the changes in the current undo level if when == "before", or redo
@@ -201,6 +210,21 @@ Rsed.ui.undoStack = (function()
 
     const publicInterface =
     {
+        is_current_undo_level_saved: function()
+        {
+            return (lastSavedUndoLevelId === publicInterface.current_undo_level_id());
+        },
+
+        mark_current_undo_level_as_saved: function()
+        {
+            lastSavedUndoLevelId = publicInterface.current_undo_level_id();
+        },
+
+        current_undo_level_id: function()
+        {
+            return (undoLevels[undoLevelHead - 1]? undoLevels[undoLevelHead - 1].id : undefined);
+        },
+
         // Removes all undo levels.
         reset: function()
         {
@@ -214,6 +238,7 @@ Rsed.ui.undoStack = (function()
         
             undoLevels.length = 0;
             undoLevelHead = 0;
+            lastSavedUndoLevelId = undefined;
         },
 
         // Undoes the latest level.
@@ -233,6 +258,8 @@ Rsed.ui.undoStack = (function()
             undoLevelHead--;
 
             apply_undo_level(undoLevels[undoLevelHead], "before");
+
+            Rsed.ui.htmlUI.refresh();
         },
 
         // Redoes the latest level.
@@ -250,8 +277,9 @@ Rsed.ui.undoStack = (function()
             }
 
             apply_undo_level(undoLevels[undoLevelHead], "after");
-
             undoLevelHead++;
+
+            Rsed.ui.htmlUI.refresh();
         },
 
         // For the given XY ground tile, marks its height and texture index at

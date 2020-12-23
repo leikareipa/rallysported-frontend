@@ -31,7 +31,7 @@ window.onunload = function()
 
 window.onbeforeunload = function(event)
 {
-    if (Rsed.ui.assetMutator.isMutatedSinceProjectSaved)
+    if (!Rsed.core.current_project().areAllChangesSaved)
     {
         event.preventDefault();
 

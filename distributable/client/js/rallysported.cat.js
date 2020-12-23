@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (23 December 2020 16:39:24 UTC)
+// VERSION: live (23 December 2020 22:20:45 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -12,6 +12,7 @@
 //	./src/client/js/retro-ngon/rngon.cat.js
 //	./src/client/js/rallysported-js/rallysported.js
 //	./src/client/js/rallysported-js/misc/browser-metadata.js
+//	./src/client/js/rallysported-js/misc/uuidgen.js
 //	./src/client/js/rallysported-js/misc/rngon-minimal-fill.js
 //	./src/client/js/rallysported-js/misc/rngon-minimal-tcl.js
 //	./src/client/js/rallysported-js/project/project.js
@@ -2741,6 +2742,15 @@ null),
 };
 return publicInterface;
 })();
+"use strict";
+Rsed.uuid = {};
+// Generates a version 4 UUID and returns it as a string. Adapted with
+// superficial modifications from https://stackoverflow.com/a/2117523,
+// which is based on https://gist.github.com/jed/982883.
+Rsed.uuid.generate_v4 = function()
+{
+return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+}
 /*
 * 2019, 2020 Tarpeeksi Hyvae Soft
 *
@@ -3210,6 +3220,10 @@ get internalName()
 {
 return publicInterface.name;
 },
+get areAllChangesSaved()
+{
+return Rsed.ui.undoStack.is_current_undo_level_saved();
+},
 rename: function(newName = undefined)
 {
 if (typeof newName !== "string")
@@ -3229,7 +3243,6 @@ return;
 }
 Rsed.log(`Renaming project ${publicInterface.name} to ${newName}`);
 projectData.meta.displayName = projectData.meta.internalName = newName;
-Rsed.ui.assetMutator.isMutatedSinceProjectSaved = true; // Technically a renaming is not an asset mutation, but we'll use this way to mark it as an unsaved change for now.
 Rsed.ui.htmlUI.refresh();
 },
 track_id: function()
@@ -3316,7 +3329,7 @@ saved = false;
 if (saved)
 {
 // Let the user know there are no unsaved changes anymore.
-Rsed.ui.assetMutator.isMutatedSinceProjectSaved = false;
+Rsed.ui.undoStack.mark_current_undo_level_as_saved();
 Rsed.ui.htmlUI.refresh();
 }
 return;
@@ -5465,9 +5478,6 @@ Rsed.ui = {};
 Rsed.ui.assetMutator = (function()
 {
 const publicInterface = {
-// Set to true if mutations have been made since the project was last saved. The
-// project saver code is expected to set this to false on saving.
-isMutatedSinceProjectSaved: false,
 // Call this function when the user requests (e.g. via the UI) to perform a
 // mutation on an asset - e.g. to paint the tilemap, alter the heightmap, etc.
 //
@@ -5491,10 +5501,8 @@ if (!Object.keys(applicators).includes(assetType))
 {
 Rsed.throw("Unknown asset type.");
 }
-// Let the user know that they have unsaved changes.
-publicInterface.isMutatedSinceProjectSaved = true;
-Rsed.ui.htmlUI.refresh();
-return applicators[assetType](Rsed.core.current_project(), editAction);
+const result = applicators[assetType](Rsed.core.current_project(), editAction);
+return result;
 }
 }
 // For each class of asset, a function that applies a user-requested mutation on
@@ -5623,6 +5631,9 @@ let timerId = null;
 let dirtyGround = [];
 let dirtyProps = [];
 let dirtyTextures = [];
+// We'll keep track of which undo level's data has been saved so RallySportED-js
+// can indicate to the user whether the project's current state is saved or not.
+let lastSavedUndoLevelId = undefined;
 // All undo levels we've recorded since they were last reset. Note that if the user
 // undoes and then makes new changes, the undo levels above that point will be
 // replaced with new undo levels that reflect the new changes.
@@ -5680,6 +5691,7 @@ const [textureType, textureIndex] = textureId.split(" ");
 texturesAfter[textureId] = Rsed.core.current_project()[textureType].texture[textureIndex];
 }
 undoLevels[undoLevelHead] = {
+id: Rsed.uuid.generate_v4(),
 before: {
 ground: dirtyGround,
 props: dirtyProps,
@@ -5695,6 +5707,8 @@ undoLevelHead++;
 dirtyGround = [];
 dirtyProps = [];
 dirtyTextures = [];
+// Let the user know that they have unsaved changes.
+Rsed.ui.htmlUI.refresh();
 }
 // Undo the changes in the current undo level if when == "before", or redo
 // the current undo level's changes if when == "after".
@@ -5757,6 +5771,18 @@ frozen = false;
 }
 const publicInterface =
 {
+is_current_undo_level_saved: function()
+{
+return (lastSavedUndoLevelId === publicInterface.current_undo_level_id());
+},
+mark_current_undo_level_as_saved: function()
+{
+lastSavedUndoLevelId = publicInterface.current_undo_level_id();
+},
+current_undo_level_id: function()
+{
+return (undoLevels[undoLevelHead - 1]? undoLevels[undoLevelHead - 1].id : undefined);
+},
 // Removes all undo levels.
 reset: function()
 {
@@ -5767,6 +5793,7 @@ dirtyProps = [];
 dirtyTextures = [];
 undoLevels.length = 0;
 undoLevelHead = 0;
+lastSavedUndoLevelId = undefined;
 },
 // Undoes the latest level.
 undo: function()
@@ -5782,6 +5809,7 @@ return;
 }
 undoLevelHead--;
 apply_undo_level(undoLevels[undoLevelHead], "before");
+Rsed.ui.htmlUI.refresh();
 },
 // Redoes the latest level.
 redo: function()
@@ -5797,6 +5825,7 @@ return;
 }
 apply_undo_level(undoLevels[undoLevelHead], "after");
 undoLevelHead++;
+Rsed.ui.htmlUI.refresh();
 },
 // For the given XY ground tile, marks its height and texture index at
 // the beginning of the current undo level.
@@ -5930,7 +5959,7 @@ uiContainer.refresh_track_name();
 if ((typeof Rsed.core.current_project().name == "string") &&
 Rsed.core.current_project().name.length)
 {
-document.title = `${Rsed.ui.assetMutator.isMutatedSinceProjectSaved? "* " : ""}
+document.title = `${Rsed.core.current_project().areAllChangesSaved? "" : "* "}
 ${Rsed.core.current_project().name} -
 ${Rsed.core.appName}`;
 }
@@ -6668,7 +6697,7 @@ return;
 };
 window.onbeforeunload = function(event)
 {
-if (Rsed.ui.assetMutator.isMutatedSinceProjectSaved)
+if (!Rsed.core.current_project().areAllChangesSaved)
 {
 event.preventDefault();
 // Note: We just need to return a string, any string - modern browsers won't display it
@@ -7475,7 +7504,7 @@ const component = Rsed.ui.component();
 component.draw = function(offsetX = 0, offsetY = 0)
 {
 Rsed.throw_if_not_type("number", offsetX, offsetY);
-Rsed.ui.draw.string(`FPS:${Rsed.core.renderer_fps()}`, offsetX, offsetY);
+Rsed.ui.draw.string(`FPS: ${Rsed.core.renderer_fps()}`, offsetX, offsetY);
 };
 return component;
 }

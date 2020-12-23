@@ -23,10 +23,6 @@
 Rsed.ui.assetMutator = (function()
 {
     const publicInterface = {
-        // Set to true if mutations have been made since the project was last saved. The
-        // project saver code is expected to set this to false on saving.
-        isMutatedSinceProjectSaved: false,
-
         // Call this function when the user requests (e.g. via the UI) to perform a
         // mutation on an asset - e.g. to paint the tilemap, alter the heightmap, etc.
         //
@@ -51,11 +47,9 @@ Rsed.ui.assetMutator = (function()
                 Rsed.throw("Unknown asset type.");
             }
 
-            // Let the user know that they have unsaved changes.
-            publicInterface.isMutatedSinceProjectSaved = true;
-            Rsed.ui.htmlUI.refresh();
+            const result = applicators[assetType](Rsed.core.current_project(), editAction);
 
-            return applicators[assetType](Rsed.core.current_project(), editAction);
+            return result;
         }
     }
 
