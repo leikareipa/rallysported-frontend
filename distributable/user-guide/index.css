@@ -6,6 +6,11 @@
     --content-border-radius: 10px;
 }
 
+html
+{
+    scroll-behavior: smooth;
+}
+
 body
 {
     font-family: sans-serif;
@@ -54,7 +59,7 @@ hr
 {
     width: 100%;
     border: none;
-    border-bottom: 1px solid lightgray;
+    border-bottom: 1px dashed lightgray;
 }
 
 #main-container
@@ -163,7 +168,7 @@ hr
     margin-top: var(--content-margin);
 }
 
-.help-topic p:last-of-type
+.help-topic *:last-of-type
 {
     margin-bottom: 0;
 }

@@ -57,157 +57,100 @@ helpTopics["System requirements"] = `
     </p>
 `;
 
-helpTopics["User interface"] = `
+
+helpTopics["Controls"] = `
+    <h3>
+        Mouse controls
+    </h3>
+
+    <ul>
+        <li><b>Left click on ground</b>: 3D view: Move the ground up. Texture & tilemap editors: Draw.</li>
+        <li><b>Right click on ground</b>: 3D view: Move the ground down. Texture & tilemap editors: Draw.</li>
+        <li><b>Middle click on ground</b>: 3D view: Paint the ground with the currently-selected ground texture.</li>
+        <li><b>Right click on prop</b>: 3D view: Change the prop's type.</li>
+        <li><b>Left click & drag prop</b>: 3D view: Move the prop.</li>
+        <li><b>Shift + wheel</b>: 3D view: Tilt the camera up/down. Texture editor: Zoom.</li>
+        <li><b>Shift + left click on ground</b>: 3D view: Add a new prop.</li>
+        <li><b>Shift + left click on prop</b>: 3D view: Remove the prop.</li>
+        <li><b>Tab + left click</b>: Eyedropper tool.</li>
+        <li><b>Tab + hover on ground texture pane</b>: Show the hovered texture's index value.</li>
+    </ul>
+
+    <h3>
+        Keyboard controls
+    </h3>
+
+    <ul>
+        <li><b>E S D F</b>: 3D view: Move the camera.</li>
+        <li><b>1 2 3 4 5</b>: 3D view: Set the size of the ground-editing brush.</li>
+        <li><b>L</b>: 3D view: Level the terrain to a given height.</li>
+        <li><b>W</b>: 3D view: Toggle wireframe rendering on/off.</li>
+        <li><b>B</b>: 3D view: Toggle prop visibility.</li>
+        <li><b>T</b>: 3D view: Open the hovered texture in the texture editor.</li>
+        <li><b>G</b>: 3D view: Show a preview under the cursor of the currently-selected ground texture.</li>
+        <li><b>R</b>: Texture editor: Rotate the current texture.</li>
+        <li><b>A</b>: Open/close the ground texture pane.</li>
+        <li><b>Q</b>: Open/close the tilemap editor.</li>
+        <li><b>Space</b>: 3D view: Toggle the ground-smoothing mode on/off (smoothens the ground instead of raising/lowering it).</li>
+        <li><b>Up/down arrows</b>: 3D view: Raise/lower the ground by one where the mouse cursor is hovering.</li>
+        <li><b>Ctrl + Z</b>: Undo your latest changes.</li>
+        <li><b>Ctrl + Y</b>: Redo your latest changes.</li>
+        <li><b>Ctrl + Shift + Z</b>: Redo your latest changes.</li>
+        <li><b>Ctrl + C</b>: Texture editor: Copy the current texture onto the clipboard.</li>
+        <li><b>Ctrl + V</b>: Texture editor: Paste the current texture from the clipboard.</li>
+    </ul>
+`;
+
+helpTopics["Saving tracks"] = `
     <p>
-        The RallySportED-js page displays the name of the track you're currently editing in
-        the top left corner; while the top right shows the track's minimap (clickable to
-        move the camera) and the currently-selected ground texture (clickable to open the
-        texture-selection pane).
+        You'll find an option in the top left corner of the RallySportED-js UI's menu bar to
+        download a copy of the current track.
     </p>
     
     <p>
-        In the bottom left corner of the screen you'll find information about things the
-        mouse cursor is hovering over. For instance, while the cursor hovers over a
-        ground tile, you'll see the tile's height and tilemap texture ("PALA") index.
+        The download will be in the form of a ZIP archive containing the track's assets, as
+        demonstrated below.
     </p>
 
+    <img src="img/project-zip.png">
+
     <p>
-        The user interface hides two additional editing modes besides the default ground
-        view. If you press the Q key, you'll bring up the 2D tilemap editor where you can
-        paint the ground from a bird's eye perspective. To get back to the ground view,
-        press Q again. Pressing the T key while hovering the mouse cursor over a ground
-        tile in the ground view will open the texture editor, where you can edit the
-        texture over which the cursor hovered (this also works with prop textures). You
-        can press Q while in the texture editor to return to the ground view.
+        You can reload a saved track file by dragging it onto the RallySportED-js editor view, as
+        described in <a href="http://localhost:8000/user-guide/#loading-a-track">this topic</a>.
     </p>
 `;
 
-helpTopics["Mouse controls"] = `
+helpTopics["Loading tracks"] = `
     <p>
-        <b>Left click on ground</b><br>
-        Move the ground up.
+        There are two ways to load a track for editing or viewing in RallySportED-js: (1) by using a
+        URL parameter, and (2) by dragging a track archive file. The file-dragging method
+        is intended for track files located on your system, while the URL parameter method is
+        for tracks hosted on RallySportED's servers.
     </p>
 
     <p>
-        <b>Right click on ground</b><br>
-        Move the ground down.
+        The first way is to use a URL parameter. For a demonstration, check out
+
+        <a href="https://www.tarpeeksihyvaesoft.com/rallysported/?track=democ">this link</a>.
+        
+        It appends the parameter <em>track</em> to the RallySportED-js URL to indicate that
+        we want to load track #3 of the Rally-Sport demo ("democ" standing for "Demo C").
+        You might use these demo tracks e.g. as a basis for your custom tracks &ndash; being
+        mindful that they're under copyright to someone other than the RallySportED author and
+        have not been licensed for this purpose.
     </p>
 
     <p>
-        <b>Middle click on ground</b><br>
-        Paint the ground with the currently-selected ground texture.
-    </p>
-
-    <p>
-        <b>Left click & drag prop</b><br>
-        Move the prop. Note that the starting line can't be moved.
-    </p>
-
-    <p>
-        <b>Right click on prop</b><br>
-        Change the prop's type. Note that the starting line's type can't be changed.
-    </p>
-
-    <p>
-        <b>Shift + wheel</b><br>
-        Tilt the camera up/down.
-    </p>
-
-    <p>
-        <b>Shift + left click on ground</b><br>
-        Add a new prop.
-    </p>
-
-    <p>
-        <b>Shift + left click on prop</b><br>
-        Remove the prop. Note that the starting line can't be removed.
-    </p>
-
-    <p>
-        <b>Ctrl + left click on ground</b><br>
-        Eyedropper tool. Set the ground tile's PALA index as the current brush PALA
-        index.
-    </p>
-
-    <p>
-        <b>Tab + hover on ground texture pane</b><br>
-        Show the hovered texture's index value.
+        The second way is to drag a track archive file &ndash; which you got e.g. by
+        exporting a track from RallySportED-js as described in <a href="http://localhost:8000/user-guide/#saving-a-track">
+        this topic</a> &ndash; from your system onto the RallySportED-js editor view.
     </p>
 `;
 
-helpTopics["Keyboard controls"] = `
-    <p>
-        <b>E S D F</b><br>
-        Move the camera.
-    </p>
-
-    <p>
-        <b>1 2 3 4 5</b><br>
-        Set the size of the ground-editing brush.
-    </p>
-
-    <p>
-        <b>L</b><br>
-        Level the terrain to a given height.
-    </p>
-
-    <p>
-        <b>A</b><br>
-        Open/close the ground texture-selection pane.
-    </p>
-
-    <p>
-        <b>Q</b><br>
-        Open/close the tilemap editor.
-    </p>
-
-    <p>
-        <b>W</b><br>
-        Toggle wireframe rendering (on/off).
-    </p>
-
-    <p>
-        <b>B</b><br>
-        Hide props (on/off).
-    </p>
-
-    <p>
-        <b>Up/down arrows</b><br>
-        Raise/lower the ground by one where the mouse cursor is hovering.
-    </p>
-
-    <p>
-        <b>G</b><br>
-        Draw the currently-selected ground texture on the ground tile over which the
-        mouse cursor hovers (on/off).
-    </p>
-
-    <p>
-        <b>Space</b><br>
-        Toggle the ground-smoothing mode on/off (smoothens the ground instead of
-        raising/lowering it).
-    </p>
-
-    <p>
-        <b>Ctrl + Z</b><br>
-        Undo your latest changes.
-    </p>
-
-    <p>
-        <b>Ctrl + Y</b><br>
-        Redo your latest changes.
-    </p>
-
-    <p>
-        <b>Ctrl + Shift + Z</b><br>
-        Redo your latest changes.
-    </p>
-`;
-
-helpTopics["The \"Serve\" feature"] = `
+helpTopics["The Serve feature"] = `
     <p>
         Want to show a track of yours to a friend, but don't want the hassle of sending
-        them a ZIP file? You can use the Serve feature to get a sharable URL.
+        them a ZIP file? You can use the Serve feature to produce a temporary sharable URL.
     </p>
 
     <p>
@@ -245,93 +188,6 @@ helpTopics["The \"Serve\" feature"] = `
         should disappear from your browser's address bar, and the Serve URL will no longer
         function. If you start Serving again, a new URL will be generated.
     </p>
-`;
-
-helpTopics["Loading a track"] = `
-    <p>
-        There are two ways to load a track for editing or viewing in RallySportED-js: (1) by using a
-        URL parameter, and (2) by dragging a track archive file. The file-dragging method
-        is intended for track files located on your system, while the URL parameter method is
-        for tracks hosted on RallySportED's servers.
-    </p>
-
-    <p>
-        The first way is to use a URL parameter. For a demonstration, check out
-
-        <a href="https://www.tarpeeksihyvaesoft.com/rallysported/?track=democ">this link</a>.
-        
-        It appends the parameter <em>track</em> to the RallySportED-js URL to indicate that
-        we want to load track #3 of the Rally-Sport demo ("democ" standing for "Demo C").
-        You might use these demo tracks e.g. as a basis for your custom tracks &ndash; being
-        mindful that they're under copyright to someone other than the RallySportED author and
-        have not been licensed for this purpose.
-    </p>
-
-    <p>
-        The second way is to drag a track archive file &ndash; which you got e.g. by
-        exporting a track from RallySportED-js as described in <a href="http://localhost:8000/user-guide/#saving-a-track">
-        this topic</a> &ndash; from your system onto the RallySportED-js editor view.
-    </p>
-
-    <hr>
-
-    <p>
-        <b>Note:</b> You can find a whole bunch of custom tracks over at
-        <a href="https://tarpeeksihyvaesoft.com/rallysport-content/tracks/">Rally-Sport Content</a>!
-    </p>
-`;
-
-helpTopics["Saving a track"] = `
-    <p>
-        You'll find an option in the top left corner of the RallySportED-js UI's menu bar to
-        download a copy of the current track.
-    </p>
-    
-    <p>
-        The download will be in the form of a ZIP archive containing the track's assets, as
-        demonstrated below.
-    </p>
-
-    <img src="img/project-zip.png">
-
-    <p>
-        You can reload a saved track file by dragging it onto the RallySportED-js editor view, as
-        described in <a href="http://localhost:8000/user-guide/#loading-a-track">this topic</a>.
-    </p>
-`;
-
-helpTopics["Renaming a track"] = `
-    <p>
-        A track can be renamed in two ways: (1) via the RallySportED-js UI, or (2) by renaming the
-        track's data files.
-    </p>
-
-    <p>
-        Before renaming, keep the following in mind:
-        
-        <ul>
-            <li>A track's name can be at most eight characters long</li>
-            <li>All characters in the name must be from A&ndash;Z (no spaces, special characters, numbers, etc.)</li>
-            <li>The name be auto-capitalized like so: "XXxxXx" &rarr; "Xxxxxx"</li>
-        </ul>
-    </p>
-
-    <p>
-        The first way to rename a track is to use the "Rename" button found in the top left corner
-        of the UI's menu bar. Pressing this button will bring up a dialog in which you can
-        enter a new name for the currenty-loaded track. A successful change will be reflected in
-        the browser's title bar.
-    </p>
-
-    <p>
-        The other, slightly more laborious way is to locate the track's ZIP archive (which you got
-        by clicking on the "Download" button in the top left corner of the menu bar) and rename all
-        directories and files inside that archive (except for HITABLE.TXT) to what you want the new
-        track name to be. Below is an example of a track having been renamed in this way from DEMOA
-        to TUTORIAL.
-    </p>
-
-    <img src="img/tut-rename.png">
 `;
 
 helpTopics["Tutorial: Creating a track"] = `
@@ -478,6 +334,19 @@ helpTopics["Tutorial: Creating a track"] = `
     </p>
 
     <img src="img/tut-billboards.png">
+
+    <p>
+        <b>Tip 1:</b> If you're not happy with the default Rally-Sport textures, you can
+        hover the cursor over a texture and press the T key to open the texture editor.
+    </p>
+
+    <p>
+        <b>Tip 2:</b> Any ground tile painted with texture #0 is considered by Rally-Sport a
+        water tile. In-game, water tiles form a smooth surface of a pre-determined height,
+        while the tiles' actual heights determine how deep the water is when driven into. To
+        see water tiles' actual heights in RallySportED-js, use the W key to enable the
+        wireframe mode. To see how the tiles would look in-game, disable the wireframe mode.
+    </p>
 
     <h3>
         4. Testing the track in Rally-Sport
