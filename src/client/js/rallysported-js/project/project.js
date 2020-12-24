@@ -788,6 +788,7 @@ Rsed.project = async function(projectArgs = {})
 // actual project data loaded.
 Rsed.project.placeholder =
 {
+    areAllChangesSaved: true,
     isPlaceholder: true,
     name: "",
     manifesto: "",
