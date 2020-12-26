@@ -27,7 +27,7 @@ Rsed.scenes["3d"] = (function()
         // not showing the wireframe on mobile devices, since we assume that they have small
         // screens and so not enough resolution to show the wireframe as anything but a
         // pixely mess.
-        showWireframe: !Rsed.browserMetadata.isMobile,
+        showWireframe: false,
 
         // Whether to show the PALAT pane; i.e. a side panel that displays all the available
         // PALA textures.

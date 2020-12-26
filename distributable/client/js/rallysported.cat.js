@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 December 2020 16:57:11 UTC)
+// VERSION: live (26 December 2020 17:25:59 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8043,7 +8043,7 @@ const sceneSettings = {
 // not showing the wireframe on mobile devices, since we assume that they have small
 // screens and so not enough resolution to show the wireframe as anything but a
 // pixely mess.
-showWireframe: !Rsed.browserMetadata.isMobile,
+showWireframe: false,
 // Whether to show the PALAT pane; i.e. a side panel that displays all the available
 // PALA textures.
 showPalatPane: false,
