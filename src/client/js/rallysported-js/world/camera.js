@@ -132,6 +132,11 @@ Rsed.world.camera = (function()
             return;
         },
 
+        vertical_zoom: function()
+        {
+            return verticalZoom;
+        },
+
         rotation: function()
         {
             return Rngon.rotation_vector(rotation.x, rotation.y, rotation.z);
@@ -164,8 +169,8 @@ Rsed.world.camera = (function()
 
         // How many track ground tiles, horizontally and vertically, should be
         // visible on screen when using this camera.
-        view_width: 24,
-        view_height: 22,
+        view_width: 27,
+        view_height: 31,
     };
 
     publicInterface.reset_camera_position();

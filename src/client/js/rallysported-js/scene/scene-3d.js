@@ -281,7 +281,7 @@ Rsed.scenes["3d"] = (function()
 
             // Move the camera based on user input.
             {
-                const cameraMoveSpeed = 1;
+                const cameraMoveSpeed = 1.125;
                 const cameraMoveVector = Rngon.vector3((cameraMoveSpeed * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
                                                        0,
                                                        (cameraMoveSpeed * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
@@ -306,6 +306,41 @@ Rsed.scenes["3d"] = (function()
                 includeWireframe: sceneSettings.showWireframe,
                 paintHoverPala: sceneSettings.showHoverPala,
             });
+
+            // Transform the n-gons into screen space using Rally-Sport's one-point perspective.
+            {
+                // The vanishing point. Defaults to the top middle of the screen, like in
+                // the game.
+                const vanishX = (Rngon.internalState.pixelBuffer.width / 2);
+                const vanishY = (4 - (Rsed.world.camera.vertical_zoom() * 2));
+
+                for (const ngon of trackMesh.ngons)
+                {
+                    // We don't want the renderer applying proper perspective projection.
+                    ngon.material.allowTransform = false;
+
+                    for (const vertex of ngon.vertices)
+                    {
+                        // Tweak the ground mesh's positioning so it matches the game's.
+                        vertex.y *= -1;
+                        vertex.x += (Rsed.constants.groundTileSize * 1.5);
+                        vertex.y += (Rsed.constants.groundTileSize * 1);
+                        vertex.z += (Rsed.constants.groundTileSize * 14.5);
+                        
+                        // Transform the vertex into screen space via simple depth division
+                        // toward the vanishing point.
+                        const z = (vertex.z / 600);
+                        vertex.x = (vanishX + ((vertex.x - vanishX) / z));
+                        vertex.y = (vanishY + ((vertex.y - vanishY) / z));
+
+                        // Clip against the screen plane.
+                        /// TODO: Implement proper interpolation of vertices so that meshes
+                        /// don't get misshapen at the edges of the screen.
+                        vertex.x = Math.max(-1, Math.min(vertex.x, Rngon.internalState.pixelBuffer.width));
+                        vertex.y = Math.max(-1, Math.min(vertex.y, Rngon.internalState.pixelBuffer.height));
+                    }
+                }
+            }
 
             const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [trackMesh],
             {

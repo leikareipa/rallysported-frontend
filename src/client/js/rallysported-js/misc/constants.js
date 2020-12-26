@@ -15,7 +15,7 @@ Rsed.constants = Object.freeze(
     palaHeight: 16,
 
     // For rendering; the side length, in world units, of a single ground tile.
-    groundTileSize: 128,
+    groundTileSize: 120,
 
     // The margins, in number of tiles, on the sides of the track past which the user is
     // not allowed to move props (so that they don't accidentally get moved out of reach,

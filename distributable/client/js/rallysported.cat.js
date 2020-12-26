@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (24 December 2020 02:12:37 UTC)
+// VERSION: live (26 December 2020 16:57:11 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3803,7 +3803,7 @@ Rsed.constants = Object.freeze(
 palaWidth: 16,
 palaHeight: 16,
 // For rendering; the side length, in world units, of a single ground tile.
-groundTileSize: 128,
+groundTileSize: 120,
 // The margins, in number of tiles, on the sides of the track past which the user is
 // not allowed to move props (so that they don't accidentally get moved out of reach,
 // etc.).
@@ -4280,6 +4280,10 @@ position.y = (-verticalZoom * 7);
 rotation.x = (16 + (verticalZoom / 4));
 return;
 },
+vertical_zoom: function()
+{
+return verticalZoom;
+},
 rotation: function()
 {
 return Rngon.rotation_vector(rotation.x, rotation.y, rotation.z);
@@ -4307,8 +4311,8 @@ z: (position.z * Rsed.constants.groundTileSize),
 movement_speed: moveSpeed,
 // How many track ground tiles, horizontally and vertically, should be
 // visible on screen when using this camera.
-view_width: 24,
-view_height: 22,
+view_width: 27,
+view_height: 31,
 };
 publicInterface.reset_camera_position();
 return publicInterface;
@@ -8264,7 +8268,7 @@ draw_mesh: function()
 const isMobileControls = Rsed.browserMetadata.isMobile;
 // Move the camera based on user input.
 {
-const cameraMoveSpeed = 1;
+const cameraMoveSpeed = 1.125;
 const cameraMoveVector = Rngon.vector3((cameraMoveSpeed * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
 0,
 (cameraMoveSpeed * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
@@ -8286,6 +8290,36 @@ solidProps: sceneSettings.showProps,
 includeWireframe: sceneSettings.showWireframe,
 paintHoverPala: sceneSettings.showHoverPala,
 });
+// Transform the n-gons into screen space using Rally-Sport's one-point perspective.
+{
+// The vanishing point. Defaults to the top middle of the screen, like in
+// the game.
+const vanishX = (Rngon.internalState.pixelBuffer.width / 2);
+const vanishY = (4 - (Rsed.world.camera.vertical_zoom() * 2));
+for (const ngon of trackMesh.ngons)
+{
+// We don't want the renderer applying proper perspective projection.
+ngon.material.allowTransform = false;
+for (const vertex of ngon.vertices)
+{
+// Tweak the ground mesh's positioning so it matches the game's.
+vertex.y *= -1;
+vertex.x += (Rsed.constants.groundTileSize * 1.5);
+vertex.y += (Rsed.constants.groundTileSize * 1);
+vertex.z += (Rsed.constants.groundTileSize * 14.5);
+// Transform the vertex into screen space via simple depth division
+// toward the vanishing point.
+const z = (vertex.z / 600);
+vertex.x = (vanishX + ((vertex.x - vanishX) / z));
+vertex.y = (vanishY + ((vertex.y - vanishY) / z));
+// Clip against the screen plane.
+/// TODO: Implement proper interpolation of vertices so that meshes
+/// don't get misshapen at the edges of the screen.
+vertex.x = Math.max(-1, Math.min(vertex.x, Rngon.internalState.pixelBuffer.width));
+vertex.y = Math.max(-1, Math.min(vertex.y, Rngon.internalState.pixelBuffer.height));
+}
+}
+}
 const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [trackMesh],
 {
 cameraPosition: Rngon.translation_vector(0, 0, 0),
