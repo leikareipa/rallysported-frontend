@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 December 2020 17:25:59 UTC)
+// VERSION: live (26 December 2020 19:25:51 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4311,7 +4311,7 @@ z: (position.z * Rsed.constants.groundTileSize),
 movement_speed: moveSpeed,
 // How many track ground tiles, horizontally and vertically, should be
 // visible on screen when using this camera.
-view_width: 27,
+view_width: 28,
 view_height: 31,
 };
 publicInterface.reset_camera_position();
@@ -8304,7 +8304,7 @@ for (const vertex of ngon.vertices)
 {
 // Tweak the ground mesh's positioning so it matches the game's.
 vertex.y *= -1;
-vertex.x += (Rsed.constants.groundTileSize * 1.5);
+vertex.x += (Rsed.constants.groundTileSize * 2);
 vertex.y += (Rsed.constants.groundTileSize * 1);
 vertex.z += (Rsed.constants.groundTileSize * 14.5);
 // Transform the vertex into screen space via simple depth division

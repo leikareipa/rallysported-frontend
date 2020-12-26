@@ -323,7 +323,7 @@ Rsed.scenes["3d"] = (function()
                     {
                         // Tweak the ground mesh's positioning so it matches the game's.
                         vertex.y *= -1;
-                        vertex.x += (Rsed.constants.groundTileSize * 1.5);
+                        vertex.x += (Rsed.constants.groundTileSize * 2);
                         vertex.y += (Rsed.constants.groundTileSize * 1);
                         vertex.z += (Rsed.constants.groundTileSize * 14.5);
                         
