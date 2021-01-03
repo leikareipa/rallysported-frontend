@@ -22,9 +22,6 @@ Rsed.scenes["3d"] = (function()
     /// mouse hover when various UI elements are toggled on/off.
     let updateMouseHoverOnFrameFinish = false;
 
-    let prevFrameTimestampMs = performance.now();
-    let frameTimeDeltaMs = 0;
-
     const sceneSettings = {
         // Whether to draw a wireframe around the scene's polygons. Note that we default to
         // not showing the wireframe on mobile devices, since we assume that they have small
@@ -282,9 +279,6 @@ Rsed.scenes["3d"] = (function()
 
         draw_mesh: function()
         {
-            frameTimeDeltaMs = (performance.now() - prevFrameTimestampMs);
-            prevFrameTimestampMs = performance.now();
-
             move_camera();
 
             const trackMesh = Rsed.world.meshBuilder.track_mesh(
@@ -376,14 +370,11 @@ Rsed.scenes["3d"] = (function()
     function move_camera()
     {
         cameraMovement.isMobileControls = Rsed.browserMetadata.isMobile;
-        cameraMovement.msSinceLastUpdate += frameTimeDeltaMs;
-
-        const movingDiagonally = ((cameraMovement.up || cameraMovement.down) &&
-                                  (cameraMovement.left || cameraMovement.right));
+        cameraMovement.msSinceLastUpdate += Rsed.core.tick_time_delta_ms();
 
         if (cameraMovement.isMobileControls)
         {
-            const movementSpeed = (0.03 * frameTimeDeltaMs);
+            const movementSpeed = (0.03 * Rsed.core.tick_time_delta_ms());
             const cameraMoveVector = Rngon.vector3((cameraMovement.up? -1 : cameraMovement.down? 1 : 0),
                                                    0,
                                                    (cameraMovement.left? -1 : cameraMovement.right? 1 : 0));

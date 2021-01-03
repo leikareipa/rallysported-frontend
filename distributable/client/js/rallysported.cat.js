@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (03 January 2021 06:58:17 UTC)
+// VERSION: live (03 January 2021 18:24:30 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8034,8 +8034,6 @@ let prevMousePos = {x:0, y:0};
 /// once the next frame has finished rendering. This is used e.g. to keep proper track
 /// mouse hover when various UI elements are toggled on/off.
 let updateMouseHoverOnFrameFinish = false;
-let prevFrameTimestampMs = performance.now();
-let frameTimeDeltaMs = 0;
 const sceneSettings = {
 // Whether to draw a wireframe around the scene's polygons. Note that we default to
 // not showing the wireframe on mobile devices, since we assume that they have small
@@ -8265,8 +8263,6 @@ return;
 },
 draw_mesh: function()
 {
-frameTimeDeltaMs = (performance.now() - prevFrameTimestampMs);
-prevFrameTimestampMs = performance.now();
 move_camera();
 const trackMesh = Rsed.world.meshBuilder.track_mesh(
 {
@@ -8344,12 +8340,10 @@ Rsed.visual.canvas.mousePickingBuffer.fill(null);
 function move_camera()
 {
 cameraMovement.isMobileControls = Rsed.browserMetadata.isMobile;
-cameraMovement.msSinceLastUpdate += frameTimeDeltaMs;
-const movingDiagonally = ((cameraMovement.up || cameraMovement.down) &&
-(cameraMovement.left || cameraMovement.right));
+cameraMovement.msSinceLastUpdate += Rsed.core.tick_time_delta_ms();
 if (cameraMovement.isMobileControls)
 {
-const movementSpeed = (0.03 * frameTimeDeltaMs);
+const movementSpeed = (0.03 * Rsed.core.tick_time_delta_ms());
 const cameraMoveVector = Rngon.vector3((cameraMovement.up? -1 : cameraMovement.down? 1 : 0),
 0,
 (cameraMovement.left? -1 : cameraMovement.right? 1 : 0));
@@ -9853,6 +9847,9 @@ let programFPS = 0;
 let project = Rsed.project.placeholder;
 // The scene we're currently displaying to the user.
 let currentScene = Rsed.scenes["3d"];
+// The number of milliseconds elapsed between the most recent tick and the one
+// preceding it. E.g. at 60 FPS this would be about 16.
+let tickTimeDeltaMs = 0;
 // Whether to display an FPS counter to the user.
 const fpsCounterEnabled = (()=>
 {
@@ -9861,10 +9858,11 @@ return (params.has("showFramerate") && (Number(params.get("showFramerate")) === 
 })();
 const publicInterface =
 {
+appName: "RallySportED",
+tick_time_delta_ms: ()=>tickTimeDeltaMs,
 is_running: ()=>coreIsRunning,
 renderer_fps: ()=>programFPS,
 fps_counter_enabled: ()=>fpsCounterEnabled,
-appName: "RallySportED",
 // A convenience function that appends the given object's properties to the
 // default RallySportED-js startup arguments, and returns that amalgamation.
 startup_args: function(customArgs = {})
@@ -9984,18 +9982,19 @@ return;
 publicInterface.render_loading_animation();
 return publicInterface;
 // Called once per frame to orchestrate program flow.
-function tick(timestamp = 0, frameDeltaMs = 0)
+function tick(timestamp = 0, timeDeltaMs = 0)
 {
 if (!coreIsRunning)
 {
 return;
 }
-programFPS = Math.round(1000 / (frameDeltaMs || 1));
+tickTimeDeltaMs = timeDeltaMs;
+programFPS = Math.round(1000 / (timeDeltaMs || 1));
 currentScene.handle_user_interaction();
 currentScene.draw_mesh();
 currentScene.draw_ui();
 // Keep ticking.
-window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
+window.requestAnimationFrame((newTimestamp)=>tick(newTimestamp, (newTimestamp - timestamp)));
 }
 // Test various browser compatibility factors, and give the user messages of warning where appropriate.
 function verify_browser_compatibility()

@@ -27,6 +27,10 @@ Rsed.core = (function()
     // The scene we're currently displaying to the user.
     let currentScene = Rsed.scenes["3d"];
 
+    // The number of milliseconds elapsed between the most recent tick and the one
+    // preceding it. E.g. at 60 FPS this would be about 16.
+    let tickTimeDeltaMs = 0;
+
     // Whether to display an FPS counter to the user.
     const fpsCounterEnabled = (()=>
     {
@@ -36,11 +40,12 @@ Rsed.core = (function()
 
     const publicInterface =
     {
+        appName: "RallySportED",
+        
+        tick_time_delta_ms: ()=>tickTimeDeltaMs,
         is_running: ()=>coreIsRunning,
         renderer_fps: ()=>programFPS,
         fps_counter_enabled: ()=>fpsCounterEnabled,
-
-        appName: "RallySportED",
 
         // A convenience function that appends the given object's properties to the
         // default RallySportED-js startup arguments, and returns that amalgamation.
@@ -195,21 +200,22 @@ Rsed.core = (function()
     return publicInterface;
 
     // Called once per frame to orchestrate program flow.
-    function tick(timestamp = 0, frameDeltaMs = 0)
+    function tick(timestamp = 0, timeDeltaMs = 0)
     {
         if (!coreIsRunning)
         {
             return;
         }
 
-        programFPS = Math.round(1000 / (frameDeltaMs || 1));
+        tickTimeDeltaMs = timeDeltaMs;
+        programFPS = Math.round(1000 / (timeDeltaMs || 1));
 
         currentScene.handle_user_interaction();
         currentScene.draw_mesh();
         currentScene.draw_ui();
 
         // Keep ticking.
-        window.requestAnimationFrame((time)=>tick(time, (time - timestamp)));
+        window.requestAnimationFrame((newTimestamp)=>tick(newTimestamp, (newTimestamp - timestamp)));
     }
 
     // Test various browser compatibility factors, and give the user messages of warning where appropriate.
