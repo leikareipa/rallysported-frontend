@@ -397,9 +397,9 @@ Rsed.scenes["3d"] = (function()
             
             Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
         }
-        else if (movingDiagonally)
+        else
         {
-            const msIntervalToMoveCamera = 40;
+            const msIntervalToMoveCamera = 30;
 
             if (cameraMovement.msSinceLastUpdate > msIntervalToMoveCamera)
             {
@@ -412,17 +412,6 @@ Rsed.scenes["3d"] = (function()
 
                 cameraMovement.msSinceLastUpdate = 0;
             }
-        }
-        else
-        {
-            const movementMult = 0.45;
-            const cameraMoveVector = Rngon.vector3((movementMult * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
-                                                    0,
-                                                    (movementMult * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
-
-            Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
-
-            cameraMovement.msSinceLastUpdate = 0;
         }
 
         return;

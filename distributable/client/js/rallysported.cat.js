@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (03 January 2021 06:29:27 UTC)
+// VERSION: live (03 January 2021 06:58:17 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -8360,9 +8360,9 @@ cameraMoveVector.y *= movementSpeed;
 cameraMoveVector.z *= movementSpeed;
 Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
 }
-else if (movingDiagonally)
+else
 {
-const msIntervalToMoveCamera = 40;
+const msIntervalToMoveCamera = 30;
 if (cameraMovement.msSinceLastUpdate > msIntervalToMoveCamera)
 {
 const movementMult = Math.round(cameraMovement.msSinceLastUpdate / msIntervalToMoveCamera);
@@ -8372,15 +8372,6 @@ const cameraMoveVector = Rngon.vector3((movementMult * (cameraMovement.up? -1 : 
 Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
 cameraMovement.msSinceLastUpdate = 0;
 }
-}
-else
-{
-const movementMult = 0.45;
-const cameraMoveVector = Rngon.vector3((movementMult * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
-0,
-(movementMult * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
-Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
-cameraMovement.msSinceLastUpdate = 0;
 }
 return;
 }
