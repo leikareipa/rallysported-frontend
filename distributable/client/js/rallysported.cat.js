@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (26 December 2020 19:25:51 UTC)
+// VERSION: live (03 January 2021 06:29:27 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -4191,7 +4191,6 @@ const position = {...defaultPosition};
 // The camera's rotation, in degrees.
 const rotation = {x:16, y:0, z:0};
 let verticalZoom = 0;
-const moveSpeed = 0.4;
 const publicInterface =
 {
 // Restore the camera's default position.
@@ -4206,16 +4205,14 @@ set_camera_position: function(x, y, z)
 position.x = 0;
 position.y = 0;
 position.z = 0;
-this.move_camera((x / moveSpeed),
-(y / moveSpeed),
-(z / moveSpeed));
+this.move_camera(x, y, z);
 },
 move_camera: function(deltaX, deltaY, deltaZ, enforceBounds = true)
 {
 const prevPos = this.position_floored();
-position.x += (deltaX * moveSpeed);
-position.y += (deltaY * moveSpeed);
-position.z += (deltaZ * moveSpeed);
+position.x += deltaX;
+position.y += deltaY;
+position.z += deltaZ;
 // Prevent the camera from moving past the track boundaries.
 if (enforceBounds)
 {
@@ -4308,7 +4305,6 @@ y: (position.y * Rsed.constants.groundTileSize),
 z: (position.z * Rsed.constants.groundTileSize),
 };
 },
-movement_speed: moveSpeed,
 // How many track ground tiles, horizontally and vertically, should be
 // visible on screen when using this camera.
 view_width: 28,
@@ -8038,6 +8034,8 @@ let prevMousePos = {x:0, y:0};
 /// once the next frame has finished rendering. This is used e.g. to keep proper track
 /// mouse hover when various UI elements are toggled on/off.
 let updateMouseHoverOnFrameFinish = false;
+let prevFrameTimestampMs = performance.now();
+let frameTimeDeltaMs = 0;
 const sceneSettings = {
 // Whether to draw a wireframe around the scene's polygons. Note that we default to
 // not showing the wireframe on mobile devices, since we assume that they have small
@@ -8062,6 +8060,8 @@ up: false,
 down: false,
 left: false,
 right: false,
+msSinceLastUpdate: 0,
+isMobileControls: false,
 };
 // Load UI components.
 let uiComponents = null;
@@ -8265,27 +8265,13 @@ return;
 },
 draw_mesh: function()
 {
-const isMobileControls = Rsed.browserMetadata.isMobile;
-// Move the camera based on user input.
-{
-const cameraMoveSpeed = 1.125;
-const cameraMoveVector = Rngon.vector3((cameraMoveSpeed * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
-0,
-(cameraMoveSpeed * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
-// We'll use smooth camera movement on mobile but jagged (tile-based) movement
-// otherwise. Jagged movement looks especially janky when going diagonally, so
-// we won't normalize its the movement vector - looks a bit better to have more
-// movement speed diagonally then.
-if (isMobileControls)
-{
-Rngon.vector3.normalize(cameraMoveVector);
-}
-Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
-}
+frameTimeDeltaMs = (performance.now() - prevFrameTimestampMs);
+prevFrameTimestampMs = performance.now();
+move_camera();
 const trackMesh = Rsed.world.meshBuilder.track_mesh(
 {
 cameraPos: Rsed.world.camera.position_floored(),
-cameraPosFloat: (isMobileControls? Rsed.world.camera.position() : Rsed.world.camera.position_floored()), // Smooth scrolling on mobile, tile-based otherwise.
+cameraPosFloat: (cameraMovement.isMobileControls? Rsed.world.camera.position() : Rsed.world.camera.position_floored()), // Smooth scrolling on mobile, tile-based otherwise.
 solidProps: sceneSettings.showProps,
 includeWireframe: sceneSettings.showWireframe,
 paintHoverPala: sceneSettings.showHoverPala,
@@ -8355,6 +8341,49 @@ Rsed.world.camera.move_camera(-touchDelta.x, 0, -touchDelta.y);
 Rsed.visual.canvas.mousePickingBuffer.fill(null);
 },
 });
+function move_camera()
+{
+cameraMovement.isMobileControls = Rsed.browserMetadata.isMobile;
+cameraMovement.msSinceLastUpdate += frameTimeDeltaMs;
+const movingDiagonally = ((cameraMovement.up || cameraMovement.down) &&
+(cameraMovement.left || cameraMovement.right));
+if (cameraMovement.isMobileControls)
+{
+const movementSpeed = (0.03 * frameTimeDeltaMs);
+const cameraMoveVector = Rngon.vector3((cameraMovement.up? -1 : cameraMovement.down? 1 : 0),
+0,
+(cameraMovement.left? -1 : cameraMovement.right? 1 : 0));
+Rngon.vector3.normalize(cameraMoveVector);
+/// TODO: Implement Rngon.vector3.scale(movementMult).
+cameraMoveVector.x *= (movementSpeed * 0.5);
+cameraMoveVector.y *= movementSpeed;
+cameraMoveVector.z *= movementSpeed;
+Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+}
+else if (movingDiagonally)
+{
+const msIntervalToMoveCamera = 40;
+if (cameraMovement.msSinceLastUpdate > msIntervalToMoveCamera)
+{
+const movementMult = Math.round(cameraMovement.msSinceLastUpdate / msIntervalToMoveCamera);
+const cameraMoveVector = Rngon.vector3((movementMult * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
+0,
+(movementMult * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
+Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+cameraMovement.msSinceLastUpdate = 0;
+}
+}
+else
+{
+const movementMult = 0.45;
+const cameraMoveVector = Rngon.vector3((movementMult * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
+0,
+(movementMult * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
+Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+cameraMovement.msSinceLastUpdate = 0;
+}
+return;
+}
 function update_cursor_graphic()
 {
 const cursors = Rsed.ui.cursorHandler.cursors;
@@ -8505,7 +8534,7 @@ command: "move",
 target: grab.propTrackIdx,
 data: {
 x: (mousePosDelta.x * 1.5),
-z: (mousePosDelta.y * 2.5),
+z: (mousePosDelta.y * 5),
 },
 });
 }

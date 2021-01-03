@@ -21,8 +21,6 @@ Rsed.world.camera = (function()
 
     let verticalZoom = 0;
 
-    const moveSpeed = 0.4;
-
     const publicInterface =
     {
         // Restore the camera's default position.
@@ -39,18 +37,16 @@ Rsed.world.camera = (function()
             position.y = 0;
             position.z = 0;
 
-            this.move_camera((x / moveSpeed),
-                             (y / moveSpeed),
-                             (z / moveSpeed));
+            this.move_camera(x, y, z);
         },
 
         move_camera: function(deltaX, deltaY, deltaZ, enforceBounds = true)
         {
             const prevPos = this.position_floored();
 
-            position.x += (deltaX * moveSpeed);
-            position.y += (deltaY * moveSpeed);
-            position.z += (deltaZ * moveSpeed);
+            position.x += deltaX;
+            position.y += deltaY;
+            position.z += deltaZ;
 
             // Prevent the camera from moving past the track boundaries.
             if (enforceBounds)
@@ -164,8 +160,6 @@ Rsed.world.camera = (function()
                 z: (position.z * Rsed.constants.groundTileSize),
             };
         },
-
-        movement_speed: moveSpeed,
 
         // How many track ground tiles, horizontally and vertically, should be
         // visible on screen when using this camera.

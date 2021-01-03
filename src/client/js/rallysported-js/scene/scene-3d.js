@@ -22,6 +22,9 @@ Rsed.scenes["3d"] = (function()
     /// mouse hover when various UI elements are toggled on/off.
     let updateMouseHoverOnFrameFinish = false;
 
+    let prevFrameTimestampMs = performance.now();
+    let frameTimeDeltaMs = 0;
+
     const sceneSettings = {
         // Whether to draw a wireframe around the scene's polygons. Note that we default to
         // not showing the wireframe on mobile devices, since we assume that they have small
@@ -50,6 +53,8 @@ Rsed.scenes["3d"] = (function()
         down: false,
         left: false,
         right: false,
+        msSinceLastUpdate: 0,
+        isMobileControls: false,
     };
 
     // Load UI components.
@@ -277,31 +282,15 @@ Rsed.scenes["3d"] = (function()
 
         draw_mesh: function()
         {
-            const isMobileControls = Rsed.browserMetadata.isMobile;
+            frameTimeDeltaMs = (performance.now() - prevFrameTimestampMs);
+            prevFrameTimestampMs = performance.now();
 
-            // Move the camera based on user input.
-            {
-                const cameraMoveSpeed = 1.125;
-                const cameraMoveVector = Rngon.vector3((cameraMoveSpeed * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
-                                                       0,
-                                                       (cameraMoveSpeed * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
-
-                // We'll use smooth camera movement on mobile but jagged (tile-based) movement
-                // otherwise. Jagged movement looks especially janky when going diagonally, so
-                // we won't normalize its the movement vector - looks a bit better to have more
-                // movement speed diagonally then.
-                if (isMobileControls)
-                {
-                    Rngon.vector3.normalize(cameraMoveVector);
-                }
-
-                Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
-            }
+            move_camera();
 
             const trackMesh = Rsed.world.meshBuilder.track_mesh(
             {
                 cameraPos: Rsed.world.camera.position_floored(),
-                cameraPosFloat: (isMobileControls? Rsed.world.camera.position() : Rsed.world.camera.position_floored()), // Smooth scrolling on mobile, tile-based otherwise.
+                cameraPosFloat: (cameraMovement.isMobileControls? Rsed.world.camera.position() : Rsed.world.camera.position_floored()), // Smooth scrolling on mobile, tile-based otherwise.
                 solidProps: sceneSettings.showProps,
                 includeWireframe: sceneSettings.showWireframe,
                 paintHoverPala: sceneSettings.showHoverPala,
@@ -383,6 +372,61 @@ Rsed.scenes["3d"] = (function()
             Rsed.visual.canvas.mousePickingBuffer.fill(null);
         },
     });
+
+    function move_camera()
+    {
+        cameraMovement.isMobileControls = Rsed.browserMetadata.isMobile;
+        cameraMovement.msSinceLastUpdate += frameTimeDeltaMs;
+
+        const movingDiagonally = ((cameraMovement.up || cameraMovement.down) &&
+                                  (cameraMovement.left || cameraMovement.right));
+
+        if (cameraMovement.isMobileControls)
+        {
+            const movementSpeed = (0.03 * frameTimeDeltaMs);
+            const cameraMoveVector = Rngon.vector3((cameraMovement.up? -1 : cameraMovement.down? 1 : 0),
+                                                   0,
+                                                   (cameraMovement.left? -1 : cameraMovement.right? 1 : 0));
+
+            Rngon.vector3.normalize(cameraMoveVector);
+
+            /// TODO: Implement Rngon.vector3.scale(movementMult). 
+            cameraMoveVector.x *= (movementSpeed * 0.5);
+            cameraMoveVector.y *= movementSpeed;
+            cameraMoveVector.z *= movementSpeed;
+            
+            Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+        }
+        else if (movingDiagonally)
+        {
+            const msIntervalToMoveCamera = 40;
+
+            if (cameraMovement.msSinceLastUpdate > msIntervalToMoveCamera)
+            {
+                const movementMult = Math.round(cameraMovement.msSinceLastUpdate / msIntervalToMoveCamera);
+                const cameraMoveVector = Rngon.vector3((movementMult * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
+                                                       0,
+                                                       (movementMult * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
+
+                Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+
+                cameraMovement.msSinceLastUpdate = 0;
+            }
+        }
+        else
+        {
+            const movementMult = 0.45;
+            const cameraMoveVector = Rngon.vector3((movementMult * (cameraMovement.up? -1 : cameraMovement.down? 1 : 0)),
+                                                    0,
+                                                    (movementMult * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
+
+            Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+
+            cameraMovement.msSinceLastUpdate = 0;
+        }
+
+        return;
+    }
 
     function update_cursor_graphic()
     {
@@ -564,7 +608,7 @@ Rsed.scenes["3d"] = (function()
                                     target: grab.propTrackIdx,
                                     data: {
                                         x: (mousePosDelta.x * 1.5),
-                                        z: (mousePosDelta.y * 2.5),
+                                        z: (mousePosDelta.y * 5),
                                     },
                                 });
                             }
