@@ -70,14 +70,6 @@ body
 #html-ui .menu-bar > .button-bar
 {
     display: flex;
-    border-right: 1px solid black;
-    border-radius: 2px;
-}
-
-#html-ui .menu-bar > .button-bar + .button-bar
-{
-    border-left: 1px solid #545454;
-    border-radius: 2px;
 }
 
 #html-ui .menu-bar > .button-bar:last-of-type
