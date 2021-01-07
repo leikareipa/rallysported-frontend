@@ -14,7 +14,7 @@
 Rsed.browserMetadata = (function()
 {
     const publicInterface = {
-        isMobile: Boolean(/android|mobi/i.test(navigator.userAgent)),
+        isMobile: Boolean(/android|mobi|(crios\/)/i.test(navigator.userAgent)),
         browserName: (/Chrome/i.test(navigator.userAgent)? "Chrome" :
                       /CriOS/i.test(navigator.userAgent)? "Chrome" :
                       /Opera/i.test(navigator.userAgent)? "Opera" :

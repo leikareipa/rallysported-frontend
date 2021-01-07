@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (03 January 2021 18:24:30 UTC)
+// VERSION: live (07 January 2021 02:29:33 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2732,7 +2732,7 @@ Rsed.clamp = (value = 0, min = 0, max = 1)=>Math.min(Math.max(value, min), max);
 Rsed.browserMetadata = (function()
 {
 const publicInterface = {
-isMobile: Boolean(/android|mobi/i.test(navigator.userAgent)),
+isMobile: Boolean(/android|mobi|(crios\/)/i.test(navigator.userAgent)),
 browserName: (/Chrome/i.test(navigator.userAgent)? "Chrome" :
 /CriOS/i.test(navigator.userAgent)? "Chrome" :
 /Opera/i.test(navigator.userAgent)? "Opera" :
