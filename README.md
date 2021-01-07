@@ -8,7 +8,7 @@ You can find RallySportED-js running live on the web [here](https://www.tarpeeks
 - Software 3D rendering that replicates the game's unique style
 - All in vanilla JavaScript (with a bit of Vue for the UI)
 
-![](./images/screenshots/beta.8/yleiso-ek.png)
+![](./images/screenshots/post-1.0/yleisoek.png)
 
 # End-user's guide
 An end-user's guide is provided in the [distributable/user-guide/](distributable/user-guide/)  directory; and hosted live [here](https://www.tarpeeksihyvaesoft.com/rallysported/user-guide/).
