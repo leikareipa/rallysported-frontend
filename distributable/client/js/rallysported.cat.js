@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (07 January 2021 02:29:33 UTC)
+// VERSION: live (07 January 2021 21:17:34 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6729,7 +6729,9 @@ return;
 // Generally, the "track" parameter is used to load the game's original demo tracks,
 // while the "content" parameter is used to load tracks (and, in the future, other
 // content, like cars) from the Rally-Sport Content server.
-const contentId = (params.get("content") || params.get("track") || null);
+const contentId = ((params.get("fromContent") || params.get("content")) || // <- 'fromContent' replaces 'content' since post-1.1 RallySportED-js.
+params.get("track") ||
+null);
 // If no content identifier was provided, we'll append a default one.
 if (!contentId)
 {

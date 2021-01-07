@@ -69,7 +69,9 @@ window.onload = function(event)
         // Generally, the "track" parameter is used to load the game's original demo tracks,
         // while the "content" parameter is used to load tracks (and, in the future, other
         // content, like cars) from the Rally-Sport Content server.
-        const contentId = (params.get("content") || params.get("track") || null);
+        const contentId = ((params.get("fromContent") || params.get("content")) || // <- 'fromContent' replaces 'content' since post-1.1 RallySportED-js.
+                           params.get("track") ||
+                           null);
 
         // If no content identifier was provided, we'll append a default one.
         if (!contentId)
