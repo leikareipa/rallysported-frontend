@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (07 January 2021 21:17:34 UTC)
+// VERSION: live (07 January 2021 21:23:05 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3511,7 +3511,7 @@ default: Rsed.throw("Unknown track name.");
 const serverResponse = await fetch(`./client/assets/tracks/${trackName}.json`);
 if (serverResponse.status !== 200)
 {
-Rsed.throw("Failed to fetch data from the RallySportED-js server.");
+Rsed.throw("Failed to fetch the requested data from the RallySportED-js server.");
 }
 try
 {
@@ -3530,7 +3530,7 @@ Rsed.throw_if_undefined(projectArgs.contentId);
 const serverResponse = await fetch(`${Rsed.constants.rallySportContentURL}/tracks/?id=${projectArgs.contentId}&json=true`);
 if (serverResponse.status !== 200)
 {
-Rsed.throw("Failed to fetch data from the Rally-Sport Content server.");
+Rsed.throw("Failed to fetch the requested data from the Rally-Sport Content server.");
 }
 try
 {
