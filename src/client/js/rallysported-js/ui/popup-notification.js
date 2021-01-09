@@ -54,10 +54,13 @@ Rsed.ui.popup_notification = function(string = "", args = {})
 
     popupElement.appendChild(iconElement);
     popupElement.appendChild(textContainer);
+    popupElement.onclick = close_popup;
 
     document.getElementById("popup-notifications-container").appendChild(popupElement);
 
-    const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
+    const removalTimer = (args.timeoutMs <= 0)
+                         ? false
+                         : setTimeout(close_popup, args.timeoutMs);
 
     const publicInterface =
     {

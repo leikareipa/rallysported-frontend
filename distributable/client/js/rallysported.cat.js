@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (07 January 2021 21:23:05 UTC)
+// VERSION: live (09 January 2021 18:10:53 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6041,8 +6041,11 @@ textContainer.innerHTML = `${args.notificationType == "fatal"? "Fatal:" : ""}
 ${string}`;
 popupElement.appendChild(iconElement);
 popupElement.appendChild(textContainer);
+popupElement.onclick = close_popup;
 document.getElementById("popup-notifications-container").appendChild(popupElement);
-const removalTimer = ((args.timeoutMs <= 0)? false : setTimeout(close_popup, args.timeoutMs));
+const removalTimer = (args.timeoutMs <= 0)
+? false
+: setTimeout(close_popup, args.timeoutMs);
 const publicInterface =
 {
 close: close_popup,
