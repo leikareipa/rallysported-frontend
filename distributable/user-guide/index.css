@@ -3,12 +3,8 @@
     --header-height: 90px;
     --side-panel-width: 330px;
     --content-margin: 20px;
+    --content-top-margin: 20px;
     --content-border-radius: 10px;
-}
-
-html
-{
-    scroll-behavior: smooth;
 }
 
 body
@@ -24,6 +20,7 @@ body
 
 header
 {
+    border-bottom: 1px solid  lightgray;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -35,7 +32,7 @@ header
     box-sizing: border-box;
     width: 100%;
     background-color: white;
-    padding-left: 35px;
+    padding-left: 10%;
     text-align: left;
     font-family: sans-serif;
     font-weight: normal;
@@ -89,11 +86,12 @@ hr
     width: var(--side-panel-width);
     text-align: left;
     padding: 10px;
-    margin-top: var(--content-margin);
+    padding-top: 0;
+    margin-top: var(--content-top-margin);
     margin-right: 0;
     height: calc(100% - 100px);
     overflow-y: auto;
-    height: calc(100% - var(--header-height) - var(--content-margin));
+    height: calc(100% - var(--header-height) - var(--content-top-margin));
 }
 
 #side-panel ul
@@ -131,6 +129,7 @@ hr
 #help-topics
 {
     margin: var(--content-margin);
+    margin-top: var(--content-top-margin);
     width: 100%;
     max-width: 45%;
     min-width: 850px;
@@ -157,6 +156,11 @@ hr
     border: 1px solid lightgray;
 }
 
+.help-topic:first-of-type
+{
+    margin-top: 0;
+}
+
 .help-topic li
 {
     margin-top: 10px;
@@ -166,6 +170,11 @@ hr
 {
     /* Vertically separate help topics from each other.*/
     margin-top: var(--content-margin);
+}
+
+.topic-anchor:first-child
+{
+    margin-top: calc(var(--content-margin) - var(--content-top-margin));
 }
 
 .help-topic *:last-of-type
@@ -237,6 +246,11 @@ hr
         left: var(--content-margin);
     }
 
+    header
+    {
+        padding-left: var(--content-margin);
+    }
+
     #help-topics
     {
         left: calc(var(--content-margin) + var(--side-panel-width));
@@ -272,6 +286,11 @@ hr
     {
         left: 0;
         width: 100%;
+    }
+
+    header
+    {
+        padding-left: 0;
     }
 }
 
