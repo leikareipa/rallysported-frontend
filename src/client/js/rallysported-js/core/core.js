@@ -77,6 +77,9 @@ Rsed.core = (function()
         
                 // If the user is viewing a stream, its id will be set here.
                 stream: null,
+
+                // Whether to run the DOSBox player immediately on load.
+                playOnStartup: false,
             }
         },
 
@@ -145,6 +148,11 @@ Rsed.core = (function()
             Rsed.ui.htmlUI.refresh();
             Rsed.ui.htmlUI.set_visible(true);
 
+            if (args.playOnStartup)
+            {
+                Rsed.player.play(true);
+            }
+
             coreIsRunning = true;
             tick();
         },
@@ -202,17 +210,16 @@ Rsed.core = (function()
     // Called once per frame to orchestrate program flow.
     function tick(timestamp = 0, timeDeltaMs = 0)
     {
-        if (!coreIsRunning)
+        if (coreIsRunning &&
+            !Rsed.player.is_playing())
         {
-            return;
+            tickTimeDeltaMs = timeDeltaMs;
+            programFPS = Math.round(1000 / (timeDeltaMs || 1));
+
+            currentScene.handle_user_interaction();
+            currentScene.draw_mesh();
+            currentScene.draw_ui();
         }
-
-        tickTimeDeltaMs = timeDeltaMs;
-        programFPS = Math.round(1000 / (timeDeltaMs || 1));
-
-        currentScene.handle_user_interaction();
-        currentScene.draw_mesh();
-        currentScene.draw_ui();
 
         // Keep ticking.
         window.requestAnimationFrame((newTimestamp)=>tick(newTimestamp, (newTimestamp - timestamp)));

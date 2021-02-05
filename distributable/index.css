@@ -22,8 +22,17 @@ body
                       linear-gradient(to bottom, rgb(20, 20, 20) 1px, transparent 1px);
 }
 
-/* For the HTML5 canvas that displays RallySportED's render output.*/
-.canvas
+#render-canvas-container
+{
+    width: 100%;
+    height: 100vh;
+    background-color: transparent;
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+}
+
+#render-canvas
 {
     background-color: transparent;
     height: 100%;
@@ -35,15 +44,74 @@ body
     margin: 0;
 }
 
-/* A container for the HTML5 canvas into which RallySportED renders.*/
-.canvas_container
+#jsdos-container
 {
-    width: 100%;
+    cursor: default;
+    z-index: 999999;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
     height: 100vh;
-    background-color: transparent;
+    background-color: black;
     display: inline-block;
     padding: 0;
     margin: 0;
+    display: none;
+}
+
+/* For the HTML5 canvas that displays RallySportED's render output.*/
+#jsdos-canvas
+{
+    position: relative;
+    z-index: 0;
+    object-fit: contain;
+    background-color: black;
+    height: 100%;
+    width: 100%;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    padding: 0;
+    margin: 0;
+}
+
+#jsdos-container .button
+{
+    margin: 20px;
+    padding: 10px;
+    background-color: transparent;
+    color: rgb(184, 184, 184);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1; /* Above the canvas.*/
+    cursor: pointer;
+}
+
+#jsdos-container .button:hover
+{
+    color: whitesmoke;
+}
+
+#jsdos-container .button.top
+{
+    top: 0;
+    bottom: unset;
+}
+
+#jsdos-container .button.right
+{
+    right: 0;
+    left: unset;
+}
+
+.dosbox-container
+{
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 #html-ui
@@ -87,7 +155,7 @@ body
     text-decoration: none;
     color: #c2c2c2;
     background: transparent;
-    padding: 0 12px 0 12px;
+    padding: 0 11px 0 11px;
 }
 
 #html-ui .menu-bar .button:hover
@@ -311,14 +379,9 @@ body
 
 @media only screen and (max-width: 600px)
 {
-    #html-ui .button-bar.right
+    #html-ui .button-bar:not(.main)
     {
         display: none;
-    }
-
-    #html-ui .button-bar.left
-    {
-        border: none;
     }
 }
 

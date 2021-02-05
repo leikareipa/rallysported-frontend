@@ -175,7 +175,7 @@ Rsed.project = async function(projectArgs = {})
 
         get internalName()
         {
-            return publicInterface.name;
+            return this.name;
         },
 
         get areAllChangesSaved()
@@ -187,7 +187,7 @@ Rsed.project = async function(projectArgs = {})
         {
             if (typeof newName !== "string")
             {
-                if (!(newName = window.prompt("Enter a new name for this track", publicInterface.internalName)))
+                if (!(newName = window.prompt("Enter a new name for this track", this.internalName)))
                 {
                     return;
                 }
@@ -204,7 +204,7 @@ Rsed.project = async function(projectArgs = {})
                 return;
             }
 
-            Rsed.log(`Renaming project ${publicInterface.name} to ${newName}`);
+            Rsed.log(`Renaming project ${this.name} to ${newName}`);
 
             projectData.meta.displayName = projectData.meta.internalName = newName;
 
@@ -237,20 +237,18 @@ Rsed.project = async function(projectArgs = {})
                 container: containerInBase64,
                 manifesto: updated_manifesto_string(),
                 meta: {
-                    internalName: publicInterface.internalName,
-                    displayName: publicInterface.name,
-                    width: publicInterface.maasto.width,
-                    height: publicInterface.maasto.height,
+                    internalName: this.internalName,
+                    displayName: this.name,
+                    width: this.maasto.width,
+                    height: this.maasto.height,
                 },
             });
         },
 
-        // Returns a promise that resolves with the project's current data as a JSZip zip
-        // blob. In case of error, the promise rejects with an error string (and/or whatever
-        // JSZip rejects with).
-        zip: async function(compressionLevel = 1)
+        // Appends this project's data files into the given JSZip zip file object.
+        insert_project_data_into_zip: async function(zip)
         {
-            const projectNameInZip = publicInterface.internalName.toUpperCase();
+            const projectNameInZip = this.internalName.toUpperCase();
 
             // The default HITABLE.TXT file (which holds Rally-Sport's top lap times) is
             // stored locally in a zip file. We'll need to deflate its data into an array.
@@ -264,14 +262,31 @@ Rsed.project = async function(projectArgs = {})
 
             if (!hitable)
             {
-                reject("Failed to find HITABLE.TXT.")
-            }
+                Rsed.ui.popup_notification("Couldn't find the HITABLE.TXT file.", {
+                    notificationType: "error",
+                });
 
-            const zip = new JSZip();
+                return false;
+            }
 
             zip.file(`${projectNameInZip}/${projectNameInZip}.DTA`, projectDataContainer.dataBuffer);
             zip.file(`${projectNameInZip}/${projectNameInZip}.$FT`, updated_manifesto_string());
             zip.file(`${projectNameInZip}/HITABLE.TXT`, hitable);
+
+            return true;
+        },
+
+        // Returns a promise that resolves with the project's current data as a JSZip zip
+        // blob. In case of error, the promise rejects with an error string (and/or whatever
+        // JSZip rejects with).
+        zip: async function(compressionLevel = 1)
+        {
+            const zip = new JSZip();
+
+            if (!await this.insert_project_data_into_zip(zip))
+            {
+                return false;
+            }
 
             return zip.generateAsync({
                 type: "blob",
@@ -283,9 +298,9 @@ Rsed.project = async function(projectArgs = {})
         },
 
         // Initiates a browser download of the project's current data as a ZIP file.
-        download_as_zip: async()=>
+        download_as_zip: async function()
         {
-            const filename = `${publicInterface.internalName.toUpperCase()}.ZIP`;
+            const filename = `${this.internalName.toUpperCase()}.ZIP`;
 
             Rsed.log(`Saving project "${projectData.meta.displayName}" into ${filename}.`);
 
@@ -296,7 +311,7 @@ Rsed.project = async function(projectArgs = {})
             // the user a chance to re-try.
             try
             {
-                const zipBlob = await publicInterface.zip();
+                const zipBlob = await this.zip();
                 saveAs(zipBlob, filename); // From FileSaver.js.
 
                 saved = true;

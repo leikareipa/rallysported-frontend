@@ -282,6 +282,11 @@ Rsed.ui.inputState = (function()
         {
             Rsed.throw_if_not_type("boolean", isDown);
 
+            if (Rsed.player.is_playing())
+            {
+                return;
+            }
+
             const keyIdx = (()=>
             {
                 switch (typeof keyCode)
@@ -323,6 +328,11 @@ Rsed.ui.inputState = (function()
         {
             Rsed.throw_if_not_type("number", x, y);
 
+            if (Rsed.player.is_playing())
+            {
+                return;
+            }
+
             mouseState.position.x = x;
             mouseState.position.y = y;
 
@@ -340,6 +350,11 @@ Rsed.ui.inputState = (function()
             Rsed.throw_if_undefined(mouseState.buttons[button]);
             Rsed.throw_if_not_type("string", button);
             Rsed.throw_if_not_type("boolean", isDown);
+
+            if (Rsed.player.is_playing())
+            {
+                return;
+            }
 
             if (isDown)
             {

@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (09 January 2021 18:10:53 UTC)
+// VERSION: live (05 February 2021 05:36:30 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -15,6 +15,7 @@
 //	./src/client/js/rallysported-js/misc/uuidgen.js
 //	./src/client/js/rallysported-js/misc/rngon-minimal-fill.js
 //	./src/client/js/rallysported-js/misc/rngon-minimal-tcl.js
+//	./src/client/js/rallysported-js/player/player.js
 //	./src/client/js/rallysported-js/project/project.js
 //	./src/client/js/rallysported-js/project/hitable.js
 //	./src/client/js/rallysported-js/misc/constants.js
@@ -3074,6 +3075,118 @@ ngonCache.ngons[i].isActive = false;
 return;
 }
 /*
+* Most recent known filename: js/player/player.js
+*
+* 2021 Tarpeeksi Hyvae Soft
+*
+* Software: RallySportED-js
+*
+*/
+"use strict";
+Rsed.player = (function()
+{
+let isPlayerStarting = false;
+let isPlaying = false;
+let jsDosController = null;
+const playerContainer = document.getElementById("jsdos-container");
+const playerCanvas = document.getElementById("jsdos-canvas");
+const stopButton = document.getElementById("stop-jsbox-button");
+Rsed.assert && (playerCanvas &&
+playerContainer &&
+stopButton)
+|| Rsed.throw("Malformed DOM for the player elements.");
+const publicInterface = {
+is_playing: function()
+{
+return isPlaying;
+},
+stop: stop_jsbox,
+play: async function(withAI = false)
+{
+if (!(await start_jsbox(withAI)))
+{
+stop_jsbox();
+}
+},
+};
+return publicInterface;
+function stop_jsbox()
+{
+if (jsDosController)
+{
+jsDosController.exit();
+}
+jsDosController = null;
+isPlayerStarting = false;
+isPlaying = false;
+playerContainer.style.display = "none";
+playerCanvas.getContext("2d").clearRect(0, 0, playerCanvas.width, playerCanvas.height);
+Rsed.ui.htmlUI.refresh();
+return;
+}
+async function start_jsbox(playWithAI = false)
+{
+// Don't allow more than one instance of the player.
+if (isPlayerStarting ||
+jsDosController)
+{
+return;
+}
+isPlayerStarting = true;
+stopButton.style.display = "none";
+playerContainer.style.display = "initial";
+const gameZip = await create_zip_for_jsbox();
+if (!gameZip)
+{
+Rsed.ui.popup_notification("Couldn't start the DOSBox player.", {
+notificationType: "error",
+});
+return false;
+}
+const options = {
+wdosboxUrl: "./js-dos/wdosbox.js",
+onerror: (error)=>{
+window.alert(error);
+stop_jsbox();
+},
+};
+Dos(playerCanvas, options)
+.ready(function (fileSystem, main) {
+fileSystem.extract(URL.createObjectURL(gameZip))
+.then(()=>{
+main(["-conf", "rsed.conf",
+"-c", `bitset game.dta 35 ${playWithAI? 0 : 32}`, // Refer to https://github.com/leikareipa/rallysported/blob/master/docs/rs-formats.txt on GAME.DTA's bytes.
+"-c", `bitset rallye.exe 82253 ${playWithAI? 224 : 69}`, // Make the starting lights go out faster if not playing with AI.
+"-c", `rload ${Rsed.core.current_project().name}`])
+.then((interface)=>{
+jsDosController = interface;
+isPlaying = true;
+stopButton.style.display = "initial";
+});
+});
+});
+return true;
+}
+async function create_zip_for_jsbox()
+{
+const zip = new JSZip();
+const baseArchive = await fetch("./js-dos/data/rallys-rsed.zip");
+if (!baseArchive.ok)
+{
+return false;
+}
+await zip.loadAsync(baseArchive.blob());
+await Rsed.core.current_project().insert_project_data_into_zip(zip);
+return await zip.generateAsync({
+type: "blob",
+compression: "DEFLATE",
+compressionOptions: {
+level: 1,
+},
+});
+}
+})();
+/*
 * Most recent known filename: js/project/project.js
 *
 * 2018-2019 Tarpeeksi Hyvae Soft /
@@ -3218,7 +3331,7 @@ return capitalizedName;
 },
 get internalName()
 {
-return publicInterface.name;
+return this.name;
 },
 get areAllChangesSaved()
 {
@@ -3228,7 +3341,7 @@ rename: function(newName = undefined)
 {
 if (typeof newName !== "string")
 {
-if (!(newName = window.prompt("Enter a new name for this track", publicInterface.internalName)))
+if (!(newName = window.prompt("Enter a new name for this track", this.internalName)))
 {
 return;
 }
@@ -3241,7 +3354,7 @@ notificationType: "error",
 });
 return;
 }
-Rsed.log(`Renaming project ${publicInterface.name} to ${newName}`);
+Rsed.log(`Renaming project ${this.name} to ${newName}`);
 projectData.meta.displayName = projectData.meta.internalName = newName;
 Rsed.ui.htmlUI.refresh();
 },
@@ -3267,19 +3380,17 @@ return JSON.stringify({
 container: containerInBase64,
 manifesto: updated_manifesto_string(),
 meta: {
-internalName: publicInterface.internalName,
-displayName: publicInterface.name,
-width: publicInterface.maasto.width,
-height: publicInterface.maasto.height,
+internalName: this.internalName,
+displayName: this.name,
+width: this.maasto.width,
+height: this.maasto.height,
 },
 });
 },
-// Returns a promise that resolves with the project's current data as a JSZip zip
-// blob. In case of error, the promise rejects with an error string (and/or whatever
-// JSZip rejects with).
-zip: async function(compressionLevel = 1)
+// Appends this project's data files into the given JSZip zip file object.
+insert_project_data_into_zip: async function(zip)
 {
-const projectNameInZip = publicInterface.internalName.toUpperCase();
+const projectNameInZip = this.internalName.toUpperCase();
 // The default HITABLE.TXT file (which holds Rally-Sport's top lap times) is
 // stored locally in a zip file. We'll need to deflate its data into an array.
 const hitable = await (async()=>
@@ -3290,12 +3401,26 @@ return (hitableFile? hitableFile.async("arraybuffer") : null);
 })();
 if (!hitable)
 {
-reject("Failed to find HITABLE.TXT.")
+Rsed.ui.popup_notification("Couldn't find the HITABLE.TXT file.", {
+notificationType: "error",
+});
+return false;
 }
-const zip = new JSZip();
 zip.file(`${projectNameInZip}/${projectNameInZip}.DTA`, projectDataContainer.dataBuffer);
 zip.file(`${projectNameInZip}/${projectNameInZip}.$FT`, updated_manifesto_string());
 zip.file(`${projectNameInZip}/HITABLE.TXT`, hitable);
+return true;
+},
+// Returns a promise that resolves with the project's current data as a JSZip zip
+// blob. In case of error, the promise rejects with an error string (and/or whatever
+// JSZip rejects with).
+zip: async function(compressionLevel = 1)
+{
+const zip = new JSZip();
+if (!await this.insert_project_data_into_zip(zip))
+{
+return false;
+}
 return zip.generateAsync({
 type: "blob",
 compression: "DEFLATE",
@@ -3305,9 +3430,9 @@ level: compressionLevel,
 });
 },
 // Initiates a browser download of the project's current data as a ZIP file.
-download_as_zip: async()=>
+download_as_zip: async function()
 {
-const filename = `${publicInterface.internalName.toUpperCase()}.ZIP`;
+const filename = `${this.internalName.toUpperCase()}.ZIP`;
 Rsed.log(`Saving project "${projectData.meta.displayName}" into ${filename}.`);
 let saved = false;
 // In case something goes wrong and an error gets thrown in some function while saving,
@@ -3315,7 +3440,7 @@ let saved = false;
 // the user a chance to re-try.
 try
 {
-const zipBlob = await publicInterface.zip();
+const zipBlob = await this.zip();
 saveAs(zipBlob, filename); // From FileSaver.js.
 saved = true;
 }
@@ -6763,6 +6888,11 @@ rsedStartupArgs.project.dataLocality = "server-rsc";
 }
 rsedStartupArgs.project.contentId = contentId;
 }
+if (window.location.hash == "#play")
+{
+history.pushState(null, null, " "); // Remove the hash.
+rsedStartupArgs.playOnStartup = true;
+}
 }
 Rsed.core.start(rsedStartupArgs);
 return;
@@ -7231,6 +7361,10 @@ mouseState.wheel += delta;
 set_key_down: function(keyCode, isDown = false)
 {
 Rsed.throw_if_not_type("boolean", isDown);
+if (Rsed.player.is_playing())
+{
+return;
+}
 const keyIdx = (()=>
 {
 switch (typeof keyCode)
@@ -7265,6 +7399,10 @@ Rsed.core.current_scene()[(isDown? "on_key_fire" : "on_key_release")](keyIdx, is
 set_mouse_pos: function(x = 0, y = 0)
 {
 Rsed.throw_if_not_type("number", x, y);
+if (Rsed.player.is_playing())
+{
+return;
+}
 mouseState.position.x = x;
 mouseState.position.y = y;
 // Update the hover info.
@@ -7280,6 +7418,10 @@ set_mouse_button_down: function(button = "left", isDown = false)
 Rsed.throw_if_undefined(mouseState.buttons[button]);
 Rsed.throw_if_not_type("string", button);
 Rsed.throw_if_not_type("boolean", isDown);
+if (Rsed.player.is_playing())
+{
+return;
+}
 if (isDown)
 {
 mouseState.buttons[button].isDown = true;
@@ -9894,6 +10036,8 @@ contentId: "demod",
 },
 // If the user is viewing a stream, its id will be set here.
 stream: null,
+// Whether to run the DOSBox player immediately on load.
+playOnStartup: false,
 }
 },
 // Renders a spinner until the core starts up.
@@ -9946,6 +10090,10 @@ verify_browser_compatibility();
 await load_project(args.project);
 Rsed.ui.htmlUI.refresh();
 Rsed.ui.htmlUI.set_visible(true);
+if (args.playOnStartup)
+{
+Rsed.player.play(true);
+}
 coreIsRunning = true;
 tick();
 },
@@ -9989,15 +10137,15 @@ return publicInterface;
 // Called once per frame to orchestrate program flow.
 function tick(timestamp = 0, timeDeltaMs = 0)
 {
-if (!coreIsRunning)
+if (coreIsRunning &&
+!Rsed.player.is_playing())
 {
-return;
-}
 tickTimeDeltaMs = timeDeltaMs;
 programFPS = Math.round(1000 / (timeDeltaMs || 1));
 currentScene.handle_user_interaction();
 currentScene.draw_mesh();
 currentScene.draw_ui();
+}
 // Keep ticking.
 window.requestAnimationFrame((newTimestamp)=>tick(newTimestamp, (newTimestamp - timestamp)));
 }
