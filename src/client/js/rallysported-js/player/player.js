@@ -53,8 +53,9 @@ Rsed.player = (function()
         jsDosController = null;
         isPlayerStarting = false;
         isPlaying = false;
-        playerContainer.style.display = "none";
+
         playerCanvas.getContext("2d").clearRect(0, 0, playerCanvas.width, playerCanvas.height);
+        playerContainer.style.display = "none"; 
 
         Rsed.ui.htmlUI.refresh();
 
@@ -105,6 +106,21 @@ Rsed.player = (function()
                     jsDosController = interface;
                     isPlaying = true;
                     stopButton.style.display = "initial";
+
+                    /// Kludge to detect DOSBox returning to the command prompt, i.e. the
+                    /// user exiting the game.
+                    const stdoutBuffer = [];
+                    jsDosController.listenStdout((chr)=>{
+                        if (stdoutBuffer.push(chr) > 4)
+                        {
+                            stdoutBuffer.shift();
+                        }
+
+                        if (stdoutBuffer.join("") == "C:\\>")
+                        {
+                            stop_jsbox();
+                        }
+                    });
                 });
             });
         });

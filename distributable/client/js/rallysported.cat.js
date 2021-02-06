@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (05 February 2021 05:36:30 UTC)
+// VERSION: live (06 February 2021 03:19:04 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -11,6 +11,8 @@
 //	./src/client/js/filesaver/FileSaver.min.js
 //	./src/client/js/retro-ngon/rngon.cat.js
 //	./src/client/js/rallysported-js/rallysported.js
+//	./src/client/js/rallysported-js/ui/ui.js
+//	./src/client/js/rallysported-js/ui/popup-notification.js
 //	./src/client/js/rallysported-js/misc/browser-metadata.js
 //	./src/client/js/rallysported-js/misc/uuidgen.js
 //	./src/client/js/rallysported-js/misc/rngon-minimal-fill.js
@@ -30,11 +32,9 @@
 //	./src/client/js/rallysported-js/track/kierros.js
 //	./src/client/js/rallysported-js/track/palat.js
 //	./src/client/js/rallysported-js/track/props.js
-//	./src/client/js/rallysported-js/ui/ui.js
 //	./src/client/js/rallysported-js/ui/asset-mutator.js
 //	./src/client/js/rallysported-js/ui/undo-stack.js
 //	./src/client/js/rallysported-js/ui/html.js
-//	./src/client/js/rallysported-js/ui/popup-notification.js
 //	./src/client/js/rallysported-js/ui/font.js
 //	./src/client/js/rallysported-js/ui/ground-brush.js
 //	./src/client/js/rallysported-js/ui/cursor-handler.js
@@ -2720,6 +2720,78 @@ Rsed.lerp = (x = 0, y = 0, interval = 0)=>(x + (interval * (y - x)));
 Rsed.clamp = (value = 0, min = 0, max = 1)=>Math.min(Math.max(value, min), max);
 }
 /*
+* Most recent known filename: js/ui/ui.js
+*
+* Tarpeeksi Hyvae Soft 2019 /
+* RallySportED-js
+*
+*/
+"use strict";
+Rsed.ui = {};
+/*
+* Most recent known filename: js/ui/notification.js
+*
+* 2019 Tarpeeksi Hyvae Soft /
+* RallySportED-js
+*
+*/
+"use strict";
+// Opens a self-closing popup notification in RallySportED's DOM.
+Rsed.ui.popup_notification = function(string = "", args = {})
+{
+Rsed.throw_if_not_type("string", string);
+Rsed.throw_if_not_type("object", args);
+args =
+{
+...{
+notificationType: "warning", // | "error" | "fatal"
+timeoutMs: 6000,
+},
+...args
+}
+Rsed.throw_if_not_type("number", args.timeoutMs);
+Rsed.throw_if_not_type("string", args.notificationType);
+const faIcon = (()=>
+{
+const meta = "fa-fw";
+switch (args.notificationType)
+{
+case "warning": return `${meta} fas fa-cat`;
+case "error": return `${meta} fas fa-spider`;
+case "fatal": return `${meta} fas fa-otter`;
+default: return `${meta} fas far fa-comment`;
+}
+})();
+const popupElement = document.createElement("div");
+const iconElement = document.createElement("i");
+const textContainer = document.createElement("div");
+iconElement.classList.add(...(`icon-element far ${faIcon}`.split(" ")));
+textContainer.classList.add("text-container");
+popupElement.classList.add("popup-notification",
+"animation-popup-slide-in",
+args.notificationType);
+textContainer.innerHTML = `${args.notificationType == "fatal"? "Fatal:" : ""}
+${string}`;
+popupElement.appendChild(iconElement);
+popupElement.appendChild(textContainer);
+popupElement.onclick = close_popup;
+document.getElementById("popup-notifications-container").appendChild(popupElement);
+const removalTimer = (args.timeoutMs <= 0)
+? false
+: setTimeout(close_popup, args.timeoutMs);
+const publicInterface =
+{
+close: close_popup,
+};
+return publicInterface;
+function close_popup()
+{
+clearTimeout(removalTimer);
+popupElement.remove();
+return;
+}
+}
+/*
 * Most recent known filename: js/misc/browser-metadata.js
 *
 * 2020 Tarpeeksi Hyvae Soft
@@ -3119,8 +3191,8 @@ jsDosController.exit();
 jsDosController = null;
 isPlayerStarting = false;
 isPlaying = false;
-playerContainer.style.display = "none";
 playerCanvas.getContext("2d").clearRect(0, 0, playerCanvas.width, playerCanvas.height);
+playerContainer.style.display = "none";
 Rsed.ui.htmlUI.refresh();
 return;
 }
@@ -3162,6 +3234,19 @@ main(["-conf", "rsed.conf",
 jsDosController = interface;
 isPlaying = true;
 stopButton.style.display = "initial";
+/// Kludge to detect DOSBox returning to the command prompt, i.e. the
+/// user exiting the game.
+const stdoutBuffer = [];
+jsDosController.listenStdout((chr)=>{
+if (stdoutBuffer.push(chr) > 4)
+{
+stdoutBuffer.shift();
+}
+if (stdoutBuffer.join("") == "C:\\>")
+{
+stop_jsbox();
+}
+});
 });
 });
 });
@@ -5573,15 +5658,6 @@ return response.json();
 }
 }
 /*
-* Most recent known filename: js/ui/ui.js
-*
-* Tarpeeksi Hyvae Soft 2019 /
-* RallySportED-js
-*
-*/
-"use strict";
-Rsed.ui = {};
-/*
 * Most recent known filename: js/ui/asset-mutator.js
 *
 * 2020 Tarpeeksi Hyvae Soft
@@ -6120,69 +6196,6 @@ document.querySelector("#blue-screen #error-description").innerHTML = errorMessa
 };
 return publicInterface;
 })();
-/*
-* Most recent known filename: js/ui/notification.js
-*
-* 2019 Tarpeeksi Hyvae Soft /
-* RallySportED-js
-*
-*/
-"use strict";
-// Opens a self-closing popup notification in RallySportED's DOM.
-Rsed.ui.popup_notification = function(string = "", args = {})
-{
-Rsed.throw_if_not_type("string", string);
-Rsed.throw_if_not_type("object", args);
-args =
-{
-...{
-notificationType: "warning", // | "error" | "fatal"
-timeoutMs: 6000,
-},
-...args
-}
-Rsed.throw_if_not_type("number", args.timeoutMs);
-Rsed.throw_if_not_type("string", args.notificationType);
-const faIcon = (()=>
-{
-const meta = "fa-fw";
-switch (args.notificationType)
-{
-case "warning": return `${meta} fas fa-cat`;
-case "error": return `${meta} fas fa-spider`;
-case "fatal": return `${meta} fas fa-otter`;
-default: return `${meta} fas far fa-comment`;
-}
-})();
-const popupElement = document.createElement("div");
-const iconElement = document.createElement("i");
-const textContainer = document.createElement("div");
-iconElement.classList.add(...(`icon-element far ${faIcon}`.split(" ")));
-textContainer.classList.add("text-container");
-popupElement.classList.add("popup-notification",
-"animation-popup-slide-in",
-args.notificationType);
-textContainer.innerHTML = `${args.notificationType == "fatal"? "Fatal:" : ""}
-${string}`;
-popupElement.appendChild(iconElement);
-popupElement.appendChild(textContainer);
-popupElement.onclick = close_popup;
-document.getElementById("popup-notifications-container").appendChild(popupElement);
-const removalTimer = (args.timeoutMs <= 0)
-? false
-: setTimeout(close_popup, args.timeoutMs);
-const publicInterface =
-{
-close: close_popup,
-};
-return publicInterface;
-function close_popup()
-{
-clearTimeout(removalTimer);
-popupElement.remove();
-return;
-}
-}
 /*
 * Most recent known filename: js/ui/font.js
 *
