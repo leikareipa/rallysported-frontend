@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (06 February 2021 21:25:51 UTC)
+// VERSION: live (06 February 2021 23:09:55 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -10053,44 +10053,6 @@ stream: null,
 playOnStartup: false,
 }
 },
-// Renders a spinner until the core starts up.
-render_loading_animation: function()
-{
-const targetScale = 2000;
-let currentScale = 25;
-(function render_loop(frameCount = 170)
-{
-if (coreIsRunning ||
-corePanicked)
-{
-return;
-}
-if (frameCount >= 180)
-{
-const shade = 168;
-currentScale = Rsed.lerp(currentScale, targetScale, 0.0001);
-const meshes = new Array(100).fill().map((p, idx)=>
-{
-const point = Rngon.ngon([Rngon.vertex((idx / 5000), 0, 0)],
-{
-color: Rngon.color_rgba(shade, shade, shade),
-});
-const mesh = Rngon.mesh([point],
-{
-rotation: Rngon.rotation_vector(70, 0, ((500 + frameCount * idx) / 30)),
-scaling: Rngon.scaling_vector(currentScale, currentScale, currentScale)
-});
-return mesh;
-});
-Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), meshes,
-{
-cameraPosition: Rngon.translation_vector(0, 0, -14),
-scale: 0.25,
-});
-}
-window.requestAnimationFrame(()=>render_loop(frameCount + 1));
-})();
-},
 // Starts up RallySportED with the given project to edit.
 start: async function(args = {})
 {
@@ -10108,7 +10070,6 @@ if (args.playOnStartup)
 Rsed.player.play(true);
 }
 coreIsRunning = true;
-tick();
 },
 // Something went fatally wrong and the app can't recover from it. All that's
 // left to do is to shut everything down and ask the user to reload.
@@ -10145,8 +10106,47 @@ currentScene.refresh_tilemap_view();
 return;
 },
 }
-publicInterface.render_loading_animation();
+tick();
+render_loading_animation();
 return publicInterface;
+// Renders a spinner until the core starts up.
+function render_loading_animation()
+{
+const targetScale = 2000;
+let currentScale = 25;
+(function render_loop(frameCount = 170)
+{
+if (coreIsRunning ||
+corePanicked)
+{
+return;
+}
+if (frameCount >= 180)
+{
+const shade = 168;
+currentScale = Rsed.lerp(currentScale, targetScale, 0.0001);
+const meshes = new Array(100).fill().map((p, idx)=>
+{
+const point = Rngon.ngon([Rngon.vertex((idx / 5000), 0, 0)],
+{
+color: Rngon.color_rgba(shade, shade, shade),
+});
+const mesh = Rngon.mesh([point],
+{
+rotation: Rngon.rotation_vector(70, 0, ((500 + frameCount * idx) / 30)),
+scaling: Rngon.scaling_vector(currentScale, currentScale, currentScale)
+});
+return mesh;
+});
+Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), meshes,
+{
+cameraPosition: Rngon.translation_vector(0, 0, -14),
+scale: 0.25,
+});
+}
+window.requestAnimationFrame(()=>render_loop(frameCount + 1));
+})();
+}
 // Called once per frame to orchestrate program flow.
 function tick(timestamp = 0, timeDeltaMs = 0)
 {

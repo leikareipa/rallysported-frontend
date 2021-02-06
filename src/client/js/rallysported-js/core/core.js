@@ -83,53 +83,6 @@ Rsed.core = (function()
             }
         },
 
-        // Renders a spinner until the core starts up.
-        render_loading_animation: function()
-        {
-            const targetScale = 2000;
-            let currentScale = 25;
-
-            (function render_loop(frameCount = 170)
-            {
-                if (coreIsRunning ||
-                    corePanicked)
-                {
-                    return;
-                }
-
-                if (frameCount >= 180)
-                {
-                    const shade = 168;
-
-                    currentScale = Rsed.lerp(currentScale, targetScale, 0.0001);
-
-                    const meshes = new Array(100).fill().map((p, idx)=>
-                    {
-                        const point = Rngon.ngon([Rngon.vertex((idx / 5000), 0, 0)],
-                        {
-                            color: Rngon.color_rgba(shade, shade, shade),
-                        });
-
-                        const mesh = Rngon.mesh([point],
-                        {
-                            rotation: Rngon.rotation_vector(70, 0, ((500 + frameCount * idx) / 30)),
-                            scaling: Rngon.scaling_vector(currentScale, currentScale, currentScale)
-                        });
-
-                        return mesh;
-                    });
-                    
-                    Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), meshes,
-                    {
-                        cameraPosition: Rngon.translation_vector(0, 0, -14),
-                        scale: 0.25,
-                    });
-                }
-
-                window.requestAnimationFrame(()=>render_loop(frameCount + 1));
-            })();
-        },
-
         // Starts up RallySportED with the given project to edit.
         start: async function(args = {})
         {
@@ -154,7 +107,6 @@ Rsed.core = (function()
             }
 
             coreIsRunning = true;
-            tick();
         },
 
         // Something went fatally wrong and the app can't recover from it. All that's
@@ -203,9 +155,57 @@ Rsed.core = (function()
         },
     }
 
-    publicInterface.render_loading_animation();
+    tick();
+    render_loading_animation();
 
     return publicInterface;
+
+    // Renders a spinner until the core starts up.
+    function render_loading_animation()
+    {
+        const targetScale = 2000;
+        let currentScale = 25;
+
+        (function render_loop(frameCount = 170)
+        {
+            if (coreIsRunning ||
+                corePanicked)
+            {
+                return;
+            }
+
+            if (frameCount >= 180)
+            {
+                const shade = 168;
+
+                currentScale = Rsed.lerp(currentScale, targetScale, 0.0001);
+
+                const meshes = new Array(100).fill().map((p, idx)=>
+                {
+                    const point = Rngon.ngon([Rngon.vertex((idx / 5000), 0, 0)],
+                    {
+                        color: Rngon.color_rgba(shade, shade, shade),
+                    });
+
+                    const mesh = Rngon.mesh([point],
+                    {
+                        rotation: Rngon.rotation_vector(70, 0, ((500 + frameCount * idx) / 30)),
+                        scaling: Rngon.scaling_vector(currentScale, currentScale, currentScale)
+                    });
+
+                    return mesh;
+                });
+                
+                Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), meshes,
+                {
+                    cameraPosition: Rngon.translation_vector(0, 0, -14),
+                    scale: 0.25,
+                });
+            }
+
+            window.requestAnimationFrame(()=>render_loop(frameCount + 1));
+        })();
+    }
 
     // Called once per frame to orchestrate program flow.
     function tick(timestamp = 0, timeDeltaMs = 0)
