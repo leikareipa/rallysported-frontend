@@ -1,9 +1,9 @@
 :root
 {
-    --header-height: 90px;
+    --header-height: 74px;
     --side-panel-width: 330px;
     --content-margin: 20px;
-    --content-top-margin: 20px;
+    --content-top-margin: 35px;
     --content-border-radius: 10px;
 }
 
@@ -20,7 +20,7 @@ body
 
 header
 {
-    border-bottom: 1px solid  lightgray;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: row;
     align-items: center;
