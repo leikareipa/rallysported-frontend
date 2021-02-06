@@ -109,7 +109,7 @@ window.onload = function(event)
 
         if (window.location.hash == "#play")
         {
-            history.pushState(null, null, " "); // Remove the hash.
+            history.replaceState(null, null, " "); // Remove the hash.
             rsedStartupArgs.playOnStartup = true;
         }
     }

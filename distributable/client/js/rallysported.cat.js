@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (06 February 2021 03:19:04 UTC)
+// VERSION: live (06 February 2021 21:25:51 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -6903,7 +6903,7 @@ rsedStartupArgs.project.contentId = contentId;
 }
 if (window.location.hash == "#play")
 {
-history.pushState(null, null, " "); // Remove the hash.
+history.replaceState(null, null, " "); // Remove the hash.
 rsedStartupArgs.playOnStartup = true;
 }
 }
