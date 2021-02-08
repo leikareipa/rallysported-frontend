@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (08 February 2021 21:28:58 UTC)
+// VERSION: live (08 February 2021 21:34:59 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3235,7 +3235,7 @@ main(["-conf", "rsed.conf",
 jsDosController = interface;
 isPlaying = true;
 stopButton.style.display = "initial";
-Rsed.ui.popup_notification("Hit space to start. A/Z drives and ,/. turns.", {
+Rsed.ui.popup_notification("Playing: space starts, A/Z drives, and ,/. turns.", {
 notificationType: "info",
 });
 /// Kludge to detect DOSBox returning to the command prompt, i.e. the
@@ -10169,10 +10169,11 @@ Rsed.ui.popup_notification("This browser doesn't support saving projects to disk
 notificationType: "warning",
 });
 }
-// A crude test for whether the user's device might not have mouse/keyboard available.
+// A crude test for whether the user's device might not have the required input
+// devices available.
 if (Rsed.browserMetadata.isMobile)
 {
-Rsed.ui.popup_notification("Note: This app requires a mouse, a keyboard, and a non-small screen!",
+Rsed.ui.popup_notification("Note: This app has limited support for mobile devices.",
 {
 timeoutMs: 7000,
 });

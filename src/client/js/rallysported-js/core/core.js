@@ -229,10 +229,11 @@ Rsed.core = (function()
             });
         }
 
-        // A crude test for whether the user's device might not have mouse/keyboard available.
+        // A crude test for whether the user's device might not have the required input
+        // devices available.
         if (Rsed.browserMetadata.isMobile)
         {
-            Rsed.ui.popup_notification("Note: This app requires a mouse, a keyboard, and a non-small screen!",
+            Rsed.ui.popup_notification("Note: This app has limited support for mobile devices.",
             {
                 timeoutMs: 7000,
             });

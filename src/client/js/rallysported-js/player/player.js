@@ -107,7 +107,7 @@ Rsed.player = (function()
                     isPlaying = true;
                     stopButton.style.display = "initial";
 
-                    Rsed.ui.popup_notification("Hit space to start. A/Z drives and ,/. turns.", {
+                    Rsed.ui.popup_notification("Playing: space starts, A/Z drives, and ,/. turns.", {
                         notificationType: "info",
                     });
 
