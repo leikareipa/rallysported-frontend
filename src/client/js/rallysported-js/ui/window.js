@@ -379,13 +379,12 @@ window.drop_handler = function(event)
     }
 
     // Launch RallySportED-js with the dropped-in project's data.
-    Rsed.core.start(Rsed.core.startup_args({
-        project:
-        {
+    Rsed.core.start({
+        project: {
             dataLocality: "client",
             contentId: zipFile,
-        }
-    }));
+        },
+    });
 
     if ((Rsed.stream.role !== "server") && /// TODO: Instead of checking these roles individually, we could have a flag
         (Rsed.stream.role !== "streamer")) /// in Rsed.stream that indicates whether this stream is a receiver or sender.

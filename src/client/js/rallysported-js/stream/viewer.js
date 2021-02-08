@@ -72,13 +72,13 @@ Rsed.stream.viewer = function(streamId, signalFns)
                     {
                         const projectData = JSON.parse(packet.data);
 
-                        Rsed.core.start(Rsed.core.startup_args({
+                        Rsed.core.start({
                             stream: packet.header.creatorId, 
                             project: {
                                 dataLocality: "inline",
                                 data: projectData,
                             },
-                        }));
+                        });
                     }
                     catch (error)
                     {

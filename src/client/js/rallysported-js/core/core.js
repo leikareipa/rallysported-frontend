@@ -47,18 +47,6 @@ Rsed.core = (function()
         renderer_fps: ()=>programFPS,
         fps_counter_enabled: ()=>fpsCounterEnabled,
 
-        // A convenience function that appends the given object's properties to the
-        // default RallySportED-js startup arguments, and returns that amalgamation.
-        startup_args: function(customArgs = {})
-        {
-            const defaultArgs = publicInterface.default_startup_args();
-
-            return {
-                ...defaultArgs,
-                ...customArgs,
-            };
-        },
-
         default_startup_args: function()
         {
             return {
@@ -87,7 +75,11 @@ Rsed.core = (function()
         start: async function(args = {})
         {
             Rsed.throw_if_not_type("object", args);
-            Rsed.throw_if_undefined(args.project);
+            
+            args = {
+                ...this.default_startup_args(),
+                ...args,
+            };
 
             coreIsRunning = false;
 

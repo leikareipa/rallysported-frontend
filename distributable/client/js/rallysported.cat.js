@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (08 February 2021 03:28:32 UTC)
+// VERSION: live (08 February 2021 21:28:58 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -7124,13 +7124,12 @@ Rsed.log("The drop contained no RallySportED zip files. Ignoring it.");
 return;
 }
 // Launch RallySportED-js with the dropped-in project's data.
-Rsed.core.start(Rsed.core.startup_args({
-project:
-{
+Rsed.core.start({
+project: {
 dataLocality: "client",
 contentId: zipFile,
-}
-}));
+},
+});
 if ((Rsed.stream.role !== "server") && /// TODO: Instead of checking these roles individually, we could have a flag
 (Rsed.stream.role !== "streamer")) /// in Rsed.stream that indicates whether this stream is a receiver or sender.
 {
@@ -9914,13 +9913,13 @@ case "project-data":
 try
 {
 const projectData = JSON.parse(packet.data);
-Rsed.core.start(Rsed.core.startup_args({
+Rsed.core.start({
 stream: packet.header.creatorId,
 project: {
 dataLocality: "inline",
 data: projectData,
 },
-}));
+});
 }
 catch (error)
 {
@@ -10027,16 +10026,6 @@ tick_time_delta_ms: ()=>tickTimeDeltaMs,
 is_running: ()=>coreIsRunning,
 renderer_fps: ()=>programFPS,
 fps_counter_enabled: ()=>fpsCounterEnabled,
-// A convenience function that appends the given object's properties to the
-// default RallySportED-js startup arguments, and returns that amalgamation.
-startup_args: function(customArgs = {})
-{
-const defaultArgs = publicInterface.default_startup_args();
-return {
-...defaultArgs,
-...customArgs,
-};
-},
 default_startup_args: function()
 {
 return {
@@ -10061,7 +10050,10 @@ playOnStartup: false,
 start: async function(args = {})
 {
 Rsed.throw_if_not_type("object", args);
-Rsed.throw_if_undefined(args.project);
+args = {
+...this.default_startup_args(),
+...args,
+};
 coreIsRunning = false;
 // Hide the UI while we load up the project's data etc.
 Rsed.ui.htmlUI.set_visible(false);
