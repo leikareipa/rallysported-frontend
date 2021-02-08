@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (06 February 2021 23:09:55 UTC)
+// VERSION: live (08 February 2021 03:28:32 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -2744,7 +2744,7 @@ Rsed.throw_if_not_type("object", args);
 args =
 {
 ...{
-notificationType: "warning", // | "error" | "fatal"
+notificationType: "warning", // | "info" | "error" | "fatal"
 timeoutMs: 6000,
 },
 ...args
@@ -2756,6 +2756,7 @@ const faIcon = (()=>
 const meta = "fa-fw";
 switch (args.notificationType)
 {
+case "info": return `${meta} fas fa-info`;
 case "warning": return `${meta} fas fa-cat`;
 case "error": return `${meta} fas fa-spider`;
 case "fatal": return `${meta} fas fa-otter`;
@@ -3234,6 +3235,9 @@ main(["-conf", "rsed.conf",
 jsDosController = interface;
 isPlaying = true;
 stopButton.style.display = "initial";
+Rsed.ui.popup_notification("Hit space to start. A/Z drives and ,/. turns.", {
+notificationType: "info",
+});
 /// Kludge to detect DOSBox returning to the command prompt, i.e. the
 /// user exiting the game.
 const stdoutBuffer = [];

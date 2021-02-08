@@ -107,6 +107,10 @@ Rsed.player = (function()
                     isPlaying = true;
                     stopButton.style.display = "initial";
 
+                    Rsed.ui.popup_notification("Hit space to start. A/Z drives and ,/. turns.", {
+                        notificationType: "info",
+                    });
+
                     /// Kludge to detect DOSBox returning to the command prompt, i.e. the
                     /// user exiting the game.
                     const stdoutBuffer = [];
