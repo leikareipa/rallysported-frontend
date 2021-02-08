@@ -1,3 +1,9 @@
+:root
+{
+    --zindex-dosbox: 9999;
+    --zindex-popups: 99999;
+}
+
 *
 {
     /* Avoid some issues with double-clicks over the canvas initiating drags.*/
@@ -47,7 +53,7 @@ body
 #jsdos-container
 {
     cursor: default;
-    z-index: 999999;
+    z-index: var(--zindex-dosbox);
     position: fixed;
     top: 0;
     left: 0;
@@ -78,14 +84,14 @@ body
 
 #jsdos-container .button
 {
-    margin: 20px;
+    margin: 0;
     padding: 10px;
     background-color: transparent;
     color: rgb(184, 184, 184);
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1; /* Above the canvas.*/
+    z-index: 1; /* Above the js-dos canvas.*/
     cursor: pointer;
 }
 
@@ -96,13 +102,13 @@ body
 
 #jsdos-container .button.top
 {
-    top: 0;
+    top: 10px;
     bottom: unset;
 }
 
 #jsdos-container .button.right
 {
-    right: 0;
+    right: 20px;
     left: unset;
 }
 
@@ -250,6 +256,8 @@ body
 
 #popup-notifications-container
 {
+    cursor: initial;
+    z-index: var(--zindex-popups);
     width: 420px;
     height: auto;
     position: absolute;
