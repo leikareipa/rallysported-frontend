@@ -147,46 +147,50 @@ helpTopics["Loading tracks"] = `
     </p>
 `;
 
-helpTopics["The Serve feature"] = `
+helpTopics["The 'Quick share' feature"] = `
     <p>
         Want to show a track of yours to a friend, but don't want the hassle of sending
         them a ZIP file? You can use the Serve feature to produce a temporary sharable URL.
     </p>
 
     <p>
-        To enable Serve, follow these steps:
+        To generate a sharable URL, follow these steps:
     </p>
     
     <ul>
-        <li>Press the "Serve" button at the top left of the RallySportED-js UI. After a
-        few seconds, sometimes a bit more, the button should display the text "Serving",
-        and your browser's address bar should now contain a "transientServer" parameter.</li>
-        <li>Copy the entire link from the address bar and give it to the people you want
-        to share the track with. When they access this Serve URL, they'll get a copy of the
-        track as it appers in your browser at that moment.</li>
+        <li>Press the "Quick share" button at the top left of the RallySportED-js UI. After a
+        few seconds &ndash; sometimes a bit more &ndash; the button should display the text "Sharing",
+        and your browser's address bar should now contain a <i>transientServer</i> parameter.</li>
+        <li>Copy the address bar link and give it to the people you want
+        to share the track with. When they access this URL, they'll get a copy of the track as
+        it appears in your browser at that moment.</li>
     </ul>
 
     <p>
-        A few things to keep in mind about the Serve feature:
+        A few things to keep in mind about quick share:
     </p>
     
     <ul>
-        <li>The Serve URL works only for as long as you've got the RallySportED-js browser
-        tab open and are connected to the internet. Reloading or leaving the page will
-        stop the Serve.</li>
-        <li>Track data will be transferred using WebRTC technology directly from your browser
-        &ndash; via your internet connection &ndash; to people accessing the Serve URL.</li>
-        <li>Any changes you make to the track (including loading a new track with drag
-        & drop) after starting to Serve will be visible to those with the Serve URL when
-        they reload the page.</li>
-        <li>Changes made to the track by a person accessing your Serve URL will affect only
+        <li>The sharable URL works only for as long as you've got the RallySportED-js browser
+        tab open and are connected to the internet. If you reload or leave the page, the URL
+        will be invalidated and you need to generate a new one (by again pressing the "Quick
+        share" button).</li>
+        <li>Shared track data is transferred using WebRTC technology directly from your
+        browser to people accessing the URL. The data doesn't pass through a RallySportED server.</li>
+        <li>Any changes you make to the track &ndash; including loading a new track via drag
+        & drop &ndash; will be visible to people when they reload the URL. That is, changes aren't
+        transmitted in real time.</li>
+        <li>Changes made to the track by somebody accessing the shared URL will affect only
         their local copy, not yours or anybody else's.</li>
+        <li>While sharing is active, the "Quick share" button will display "Sharing (x)", where
+        <i>x</i> is the number of times the shared URL has been accessed.</li>
     </ul>
 
     <p>
-        To stop Serving, press the "Serving" button again. The "transientServer" parameter
-        should disappear from your browser's address bar, and the Serve URL will no longer
-        function. If you start Serving again, a new URL will be generated.
+        To stop sharing, press the "Quick share" button (called "Sharing" while sharing is
+        active) again. The <i>transientServer</i> parameter should disappear from your browser's
+        address bar, and the shared URL will no longer work. If you start sharing again,
+        a new URL will be generated.
     </p>
 `;
 

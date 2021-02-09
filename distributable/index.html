@@ -45,7 +45,7 @@
                          class="button right stream"
                          :class="streamStatus"
                          :title="((streamStatus == 'disabled' || streamStatus == 'viewer')
-                                 ? `Host this track's data from your browser to people online`
+                                 ? `Host this track's data from your browser`
                                  : (streamStatus == 'initializing')
                                    ? `Setting up...`
                                    : `Downloads: ${streamViewerCount}`)"
@@ -59,10 +59,10 @@
                                     : 'fa-fw fa-project-diagram')"></i>
 
                         {{(streamStatus == "server")
-                          ? `Serving (${streamViewerCount})`
+                          ? `Sharing (${streamViewerCount})`
                           : (streamStatus == "initializing")
-                            ? "Hold on..."
-                            : "Serve"}}
+                            ? "Initializing..."
+                            : "Quick share"}}
 
                     </div>
 
