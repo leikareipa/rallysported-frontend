@@ -294,7 +294,7 @@ Rsed.scenes["3d"] = (function()
             {
                 // The vanishing point. Defaults to the top middle of the screen, like in
                 // the game.
-                const vanishX = (Rngon.internalState.pixelBuffer.width / 2);
+                const vanishX = (Rngon.renderable_width_of(Rsed.visual.canvas.domElement, Rsed.visual.canvas.scalingFactor) / 2);
                 const vanishY = (4 - (Rsed.world.camera.vertical_zoom() * 2));
 
                 for (const ngon of trackMesh.ngons)
@@ -312,15 +312,9 @@ Rsed.scenes["3d"] = (function()
                         
                         // Transform the vertex into screen space via simple depth division
                         // toward the vanishing point.
-                        const z = (vertex.z / 600);
+                        const z = Math.max(Number.MIN_VALUE, (vertex.z / 600));
                         vertex.x = (vanishX + ((vertex.x - vanishX) / z));
                         vertex.y = (vanishY + ((vertex.y - vanishY) / z));
-
-                        // Clip against the screen plane.
-                        /// TODO: Implement proper interpolation of vertices so that meshes
-                        /// don't get misshapen at the edges of the screen.
-                        vertex.x = Math.max(-1, Math.min(vertex.x, Rngon.internalState.pixelBuffer.width));
-                        vertex.y = Math.max(-1, Math.min(vertex.y, Rngon.internalState.pixelBuffer.height));
                     }
                 }
             }
@@ -337,8 +331,10 @@ Rsed.scenes["3d"] = (function()
                 depthSort: "painter",
                 useDepthBuffer: false,
                 auxiliaryBuffers: [{buffer:Rsed.visual.canvas.mousePickingBuffer, property:"mousePickId"}],
-                ngonRasterizerFunction: Rsed.minimal_rngon_filler,
-                ngonTransformClipLighterFunction: Rsed.minimal_rngon_tcl,
+                modules: {
+                    ngonFill: Rsed.minimal_rngon_filler,
+                    transformClipLight: Rsed.minimal_rngon_tcl,
+                },
             });
 
             // If the rendering was resized since the previous frame...

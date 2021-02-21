@@ -10,20 +10,35 @@
 // A stripped-down version of the retro n-gon renderer's polygon transformer. Includes
 // only the features required by RallySportED-js, helping to boost FPS.
 //
+// Expects vertices to already be in screen space.
+//
 // For the original function, see Rngon.ngon_transform_and_light().
-Rsed.minimal_rngon_tcl = function(ngons = [],
-                                  objectMatrix = [],
-                                  cameraMatrix = [],
-                                  projectionMatrix = [],
-                                  screenSpaceMatrix = [],
-                                  cameraPos)
+Rsed.minimal_rngon_tcl = function(ngons = [])
 {
     const ngonCache = Rngon.internalState.ngonCache;
-    const clipSpaceMatrix = Rngon.matrix44.multiply(projectionMatrix, cameraMatrix);
+    const renderWidth = Rngon.internalState.pixelBuffer.width;
+    const renderHeight = Rngon.internalState.pixelBuffer.height;
 
     for (const ngon of ngons)
     {
-        // Ignore fully transparent polygons.
+        // Ignore n-gons that would be fully outside of the screen.
+        {
+            const boundingBox = ngon.vertices.reduce((bounds, v)=>{
+                if (bounds.xMin > v.x) bounds.xMin = v.x;
+                if (bounds.xMax < v.x) bounds.xMax = v.x;
+                if (bounds.yMin > v.y) bounds.yMin = v.y;
+                if (bounds.yMax < v.y) bounds.yMax = v.y;
+                return bounds;
+            }, {xMin: Infinity, xMax: -Infinity, yMin: Infinity, yMax: -Infinity});
+
+            if ((boundingBox.xMin >= renderWidth) || (boundingBox.xMax < 0) ||
+                (boundingBox.yMin >= renderHeight) || (boundingBox.yMax < 0))
+            {
+                continue;
+            }
+        }
+
+        // Ignore fully transparent n-gons.
         if (!ngon.material.color.alpha &&
             !ngon.material.hasWireframe)
         {
@@ -45,43 +60,6 @@ Rsed.minimal_rngon_tcl = function(ngons = [],
 
             cachedNgon.material = ngon.material;
             cachedNgon.isActive = true;
-        }
-
-        // Transform vertices into screen space and apply clipping. We'll do the transforming
-        // in steps: first into object space, then into clip space, and finally into screen
-        // space.
-        if (cachedNgon.material.allowTransform)
-        {
-            // Object space. Any built-in lighting is applied, if requested by the n-gon's
-            // material.
-            Rngon.ngon.transform(cachedNgon, objectMatrix);
-
-            // Clip space. Vertices that fall outside of the view frustum will be removed.
-            {
-                Rngon.ngon.transform(cachedNgon, clipSpaceMatrix);
-
-                if (Rngon.internalState.applyViewportClipping)
-                {
-                    Rngon.ngon.clip_to_viewport(cachedNgon);
-                }
-
-                // If there are no vertices left after clipping, it means this n-gon is
-                // not visible on the screen at all, and so we don't need to consider it
-                // for rendering.
-                if (!cachedNgon.vertices.length)
-                {
-                    ngonCache.count--;
-                    continue;
-                }
-            }
-
-            // Screen space. Vertices will be transformed such that their XY coordinates
-            // map directly into XY pixel coordinates in the rendered image (although
-            // the values may still be in floating-point).
-            {
-                Rngon.ngon.transform(cachedNgon, screenSpaceMatrix);
-                Rngon.ngon.perspective_divide(cachedNgon);
-            }
         }
     };
 

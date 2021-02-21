@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (21 October 2020 22:12:49 UTC)
+// VERSION: beta live (13 January 2021 19:09:54 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -75,6 +75,20 @@ const Rngon = {
     {
         console.log("Retro n-gon: " + string);
     }
+
+    // Returns the resulting width of an image if it were rendered onto the given canvas element.
+    // The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
+    Rngon.renderable_width_of = function(canvasElement, scale)
+    {
+        return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
+    }
+
+    // Returns the resulting height of an image if it were rendered onto the given canvas element.
+    // The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
+    Rngon.renderable_height_of = function(canvasElement, scale)
+    {
+        return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
+    }
 }
 
 // Global app state, for internal use by the renderer. Unless otherwise noted, these
@@ -82,23 +96,22 @@ const Rngon = {
 // based on settings requested by the user.
 Rngon.internalState =
 {
-    // A function that transforms, clips, and lights the given n-gons. The end
-    // result should be n-gons in screen-space coordinates placed into the internal
-    // n-gon cache.
-    //
-    // For the default implementation, see transform-and-light.js.
-    transform: (ngons = [],
-                objectMatrix = [],
-                cameraMatrix = [],
-                projectionMatrix = [],
-                screenSpaceMatrix = [],
-                cameraPos)=>{},
+    // Modules provide core renderer functionality in overridable packages (the
+    // user can provide custom modules to be used in place of the default ones).
+    // Each module is a function that performs a set of tasks.
+    modules: {
+        // Transforms the given n-gons into screen space, placing the transformed
+        // n-gons into the internal n-gon cache. Also applies lighting and viewport
+        // clipping.
+        transform_clip_light: undefined,
 
-    // A function that rasterizes the n-gons that're currently in the internal n-gon
-    // cache.
-    //
-    // For the default implementation, see ngon-fill.js.
-    rasterize: ()=>{},
+        // Rasterizes the n-gons in the internal n-gon cache onto the current
+        // render surface.
+        ngon_fill: undefined,
+
+        // Removes all rendered pixels from the render surface.
+        surface_wipe: undefined,
+    },
 
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
@@ -148,9 +161,9 @@ Rngon.internalState =
     // If true, enables the fragment buffer and allows the use of pixel shaders. Note
     // that enabling shaders carries a performance penalty even if you don't actually
     // make use of any pixel shaders.
-    usePixelShaders: false,
+    usePixelShader: false,
 
-    useVertexShaders: false,
+    useVertexShader: false,
 
     usePerspectiveCorrectInterpolation: false,
 
@@ -828,7 +841,7 @@ Rngon.ngon.clip_to_viewport = function(ngon)
                 const lerpStep = (prevVertex.w - prevComponent) /
                                   ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
 
-                if (Rngon.internalState.usePixelShaders)
+                if (Rngon.internalState.usePixelShader)
                 {
                     ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
                                                                             Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
@@ -879,7 +892,7 @@ Rngon.line_draw = function(vert1 = Rngon.vertex(),
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
-    const fragmentBuffer = (Rngon.internalState.usePixelShaders? Rngon.internalState.fragmentBuffer.data : null);
+    const fragmentBuffer = (Rngon.internalState.usePixelShader? Rngon.internalState.fragmentBuffer.data : null);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
@@ -1175,7 +1188,7 @@ let numRightEdges = 0;
 Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
-    const usePixelShaders = Rngon.internalState.usePixelShaders;
+    const usePixelShader = Rngon.internalState.usePixelShader;
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
@@ -1252,7 +1265,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     depthBuffer[depthBufferIdx] = depth;
                 }
 
-                if (usePixelShaders)
+                if (usePixelShader)
                 {
                     const fragment = fragmentBuffer[depthBufferIdx];
                     fragment.ngonIdx = n;
@@ -1375,7 +1388,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     edge.startInvW = startInvW;
                     edge.deltaInvW = deltaInvW;
 
-                    if (usePixelShaders)
+                    if (usePixelShader)
                     {
                         edge.startWorldX = vert1.worldX/w1;
                         edge.deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
@@ -1428,7 +1441,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
                         let iplInvW = (leftEdge.startInvW - deltaInvW);
 
-                        if (usePixelShaders)
+                        if (usePixelShader)
                         {
                             var deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
                             var iplWorldX = (leftEdge.startWorldX - deltaWorldX);
@@ -1462,7 +1475,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             pixelBufferIdx += 4;
                             depthBufferIdx++;
 
-                            if (usePixelShaders)
+                            if (usePixelShader)
                             {
                                 iplWorldX += deltaWorldX;
                                 iplWorldY += deltaWorldY;
@@ -1671,7 +1684,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     }
                                 }
 
-                                if (usePixelShaders)
+                                if (usePixelShader)
                                 {
                                     const fragment = fragmentBuffer[depthBufferIdx];
                                     fragment.ngonIdx = n;
@@ -1704,7 +1717,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         rightEdge.startV     += rightEdge.deltaV;
                         rightEdge.startInvW  += rightEdge.deltaInvW;
 
-                        if (usePixelShaders)
+                        if (usePixelShader)
                         {
                             leftEdge.startWorldX  += leftEdge.deltaWorldX;
                             leftEdge.startWorldY  += leftEdge.deltaWorldY;
@@ -1846,7 +1859,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].w,
                                                       ngon.vertices[v].shade);
 
-                if (Rngon.internalState.useVertexShaders ||
+                if (Rngon.internalState.useVertexShader ||
                     (ngon.material.vertexShading === "gouraud"))
                 {
                     cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
@@ -1875,7 +1888,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 // Interpolated world XYZ coordinates will be made available to shaders,
                 // but aren't needed if shaders are disabled.
-                if (Rngon.internalState.usePixelShaders)
+                if (Rngon.internalState.usePixelShader)
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
@@ -1887,7 +1900,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 // If using Gouraud shading, we need to transform all vertex normals; but
                 // the face normal won't be used and so can be ignored.
-                if (Rngon.internalState.useVertexShaders ||
+                if (Rngon.internalState.useVertexShader ||
                     (cachedNgon.material.vertexShading === "gouraud"))
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
@@ -1910,7 +1923,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 }
 
                 // Apply an optional, user-defined vertex shader.
-                if (Rngon.internalState.useVertexShaders)
+                if (Rngon.internalState.useVertexShader)
                 {
                     const args = [
                         cachedNgon,
@@ -1919,11 +1932,11 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                     const paramNamesString = "ngon, cameraPos";
 
-                    switch (typeof Rngon.internalState.vertex_shader_function)
+                    switch (typeof Rngon.internalState.vertex_shader)
                     {
                         case "function":
                         {
-                            Rngon.internalState.vertex_shader_function(...args);
+                            Rngon.internalState.vertex_shader(...args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
@@ -1931,7 +1944,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                         // equivalent to - the form "(a)=>{console.log(a)}".
                         case "string":
                         {
-                            Function(paramNamesString, `(${Rngon.internalState.vertex_shader_function})(${paramNamesString})`)(...args);
+                            Function(paramNamesString, `(${Rngon.internalState.vertex_shader})(${paramNamesString})`)(...args);
                             break;
                         }
                         default:
@@ -2078,13 +2091,28 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
 
 "use strict";
 
-// Renders the given meshes onto a DOM <canvas> element by the given id. The
-// <canvas> element must already exist.
-Rngon.render = function(canvasElementId,
+// Renders the given meshes onto a given DOM <canvas> element. Note that the target element
+// must already exist.
+Rngon.render = function(canvasElement,
                         meshes = [Rngon.mesh()],
                         options = {})
 {
     const renderCallInfo = Rngon.renderShared.setup_render_call_info();
+
+    // The canvas element can be passed in in a couple of ways, e.g. as a string that
+    // identifies the DOM element, or directly as a DOM element object. So let's figure
+    // out what we received, and turn it into a DOM element object for the renderer
+    // to operate on.
+    {
+        if (typeof canvasElement == "string")
+        {
+            canvasElement = document.getElementById(canvasElement);
+        }
+        else if (!(canvasElement instanceof Element))
+        {
+            Rngon.throw("Invalid canvas element.");
+        }
+    }
 
     options = Object.freeze({
         ...Rngon.renderShared.defaultRenderOptions,
@@ -2095,7 +2123,7 @@ Rngon.render = function(canvasElementId,
     
     // Render a single frame onto the target <canvas> element.
     {
-        const renderSurface = Rngon.surface(canvasElementId, options);
+        const renderSurface = Rngon.surface(canvasElement, options);
 
         // We'll render either always or only when the render canvas is in view,
         // depending on whether the user asked us for the latter option.
@@ -2143,9 +2171,10 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
                               options = {},
                               rngonUrl = null)
 {
-    options = {
-        ...options,
-        ...Rngon.renderShared.asyncRenderOptionOverrides,
+    // Modules are not supported by the async renderer.
+    options.modules = {
+        ngonFill: null,
+        transformClipLight: null,
     };
 
     return new Promise((resolve, reject)=>
@@ -2364,24 +2393,25 @@ Rngon.renderShared = {
     {
         const state = Rngon.internalState;
         
-        state.useDepthBuffer = (options.useDepthBuffer == true);
-        state.showGlobalWireframe = (options.globalWireframe == true);
-        state.applyViewportClipping = (options.clipToViewport == true);
+        state.useDepthBuffer = Boolean(options.useDepthBuffer);
+        state.showGlobalWireframe = Boolean(options.globalWireframe);
+        state.applyViewportClipping = Boolean(options.clipToViewport);
         state.lights = options.lights;
         state.farPlaneDistance = options.farPlane;
 
-        state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
-                                                     options.perspectiveCorrectInterpolation) == true);
+        state.usePerspectiveCorrectInterpolation = Boolean((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
+                                                            options.perspectiveCorrectInterpolation));
 
-        state.vertex_shader_function = options.vertexShaderFunction;
-        state.useVertexShaders = (options.vertexShaderFunction !== null);
+        state.useVertexShader = Boolean(options.vertexShader);
+        state.vertex_shader = options.vertexShader;
 
-        state.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
-                                       options.pixelShaderFunction);
-        state.usePixelShaders = (state.pixel_shader_function !== null);
+        state.usePixelShader = Boolean(options.pixelShader);
+        state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
+                              options.pixelShader); 
 
-        state.rasterizer = (options.ngonRasterizerFunction || Rngon.ngon_filler);
-        state.transform_clip_lighter = (options.ngonTransformClipLighterFunction || Rngon.ngon_transform_and_light);
+        state.modules.ngon_fill = (options.modules.ngonFill || Rngon.ngon_filler);
+        state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light)
+        state.modules.surface_wipe = (options.modules.surfaceWipe || Rngon.surface.wipe);
 
         return;
     },
@@ -2491,8 +2521,8 @@ Rngon.renderShared = {
     defaultRenderOptions: Object.freeze({
         cameraPosition: Rngon.vector3(0, 0, 0),
         cameraDirection: Rngon.vector3(0, 0, 0),
-        pixelShaderFunction: null, // If null, all pixel shader functionality will be disabled.
-        vertexShaderFunction: null, // If null, all vertex shader functionality will be disabled.
+        pixelShader: null, // If null, all pixel shader functionality will be disabled.
+        vertexShader: null, // If null, all vertex shader functionality will be disabled.
         scale: 1,
         fov: 43,
         nearPlane: 1,
@@ -2507,15 +2537,10 @@ Rngon.renderShared = {
         lights: [],
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
-        ngonRasterizerFunction: null, // If null, defaults to Rngon.ngon_filler.
-        ngonTransformClipLighterFunction: null, // If null, defaults to Rngon.ngon_transform_and_light.
-    }),
-
-    // Options that will be overridden with these values when calling render_async();
-    // i.e. to ignore the values supplied by the user.
-    asyncRenderOptionOverrides: Object.freeze({
-        ngonRasterizerFunction: null, // This feature is not supported by render_async().
-        ngonTransformClipLighterFunction: null, // This feature is not supported by render_async().
+        modules: {
+            ngonFill: null, // Null defaults to Rngon.ngon_filler.
+            transformClipLight: null, // Null defaults to Rngon.ngon_transform_and_light.
+        },
     }),
 
     // Returns an object containing the properties - and their defualt starting values -
@@ -2740,27 +2765,37 @@ Rngon.texture_rgba.create_with_data_from_file = function(filename)
 // element unless the 'canvasElementId' parameter is null, in which case rendering will be
 // to an off-screen buffer only.
 //
-// Note: Throws on unrecoverable errors; returns null if the surface size would be
-// <= 0 in width and/or height.
-Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <canvas> element.
-                         options = {})          // A reference to or copy of the options passed to render().
+// Returns null if the surface could not be created.
+Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
+                         options = {})   // A reference to or copy of the options passed to render().
 {
-    const renderOffscreen = Boolean(canvasElementId === null);
+    const renderOffscreen = Boolean(canvasElement === null);
 
-    if (renderOffscreen)
+    let surfaceWidth = undefined,
+        surfaceHeight = undefined,
+        renderContext = undefined;
+
+    try
     {
-        var {surfaceWidth,
-             surfaceHeight} = setup_offscreen(options.width, options.height);
+        if (renderOffscreen)
+        {
+            ({surfaceWidth, surfaceHeight} = setup_offscreen(options.width, options.height));
+        }
+        else
+        {
+            ({surfaceWidth,
+              surfaceHeight,
+              canvasElement,
+              renderContext} = setup_onscreen(canvasElement, options.scale));
+        }
+        
+        initialize_internal_surface_state(surfaceWidth, surfaceHeight);
     }
-    else
+    catch (error)
     {
-        var {surfaceWidth,
-             surfaceHeight,
-             canvasElement,
-             renderContext} = setup_onscreen(canvasElementId, options.scale);
+        Rngon.log(`Failed to create a render surface. ${error}`);
+        return null;
     }
-    
-    initialize_internal_surface_state(surfaceWidth, surfaceHeight);
 
     const cameraMatrix = Rngon.matrix44.multiply(Rngon.matrix44.rotation(options.cameraDirection.x,
                                                                          options.cameraDirection.y,
@@ -2786,7 +2821,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
         // this surface, the rasterized pixels will also be painted onto that canvas.
         display_meshes: function(meshes = [])
         {
-            this.wipe();
+            Rngon.internalState.modules.surface_wipe();
 
             // Prepare the meshes' n-gons for rendering. This will place the transformed
             // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
@@ -2795,12 +2830,13 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
 
                 for (const mesh of meshes)
                 {
-                    Rngon.internalState.transform_clip_lighter(mesh.ngons,
-                                                               Rngon.mesh.object_space_matrix(mesh),
-                                                               cameraMatrix,
-                                                               perspectiveMatrix,
-                                                               screenSpaceMatrix,
-                                                               options.cameraPosition);
+                    Rngon.internalState.modules.transform_clip_light(
+                        mesh.ngons,
+                        Rngon.mesh.object_space_matrix(mesh),
+                        cameraMatrix,
+                        perspectiveMatrix,
+                        screenSpaceMatrix,
+                        options.cameraPosition);
                 };
 
                 Rngon.renderShared.mark_npot_textures_in_ngon_cache();
@@ -2810,9 +2846,9 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             // Render the n-gons from the n-gon cache. The rendering will go into the
             // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
             {
-                Rngon.internalState.rasterizer(options.auxiliaryBuffers);
+                Rngon.internalState.modules.ngon_fill(options.auxiliaryBuffers);
 
-                if (Rngon.internalState.usePixelShaders)
+                if (Rngon.internalState.usePixelShader)
                 {
                     const args = {
                         renderWidth: surfaceWidth,
@@ -2825,11 +2861,11 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
 
                     const paramNamesString = `{${Object.keys(args).join(",")}}`;
 
-                    switch (typeof Rngon.internalState.pixel_shader_function)
+                    switch (typeof Rngon.internalState.pixel_shader)
                     {
                         case "function":
                         {
-                            Rngon.internalState.pixel_shader_function(args);
+                            Rngon.internalState.pixel_shader(args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
@@ -2837,7 +2873,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
                         // equivalent to - the form "(a)=>{console.log(a)}".
                         case "string":
                         {
-                            Function(paramNamesString, `(${Rngon.internalState.pixel_shader_function})(${paramNamesString})`)(args);
+                            Function(paramNamesString, `(${Rngon.internalState.pixel_shader})(${paramNamesString})`)(args);
                             break;
                         }
                         default:
@@ -2875,21 +2911,6 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             return Boolean((containerRect.top > -containerRect.height) &&
                            (containerRect.top < viewHeight));
         },
-
-        // Resets the surface's render buffers to their initial contents.
-        wipe: function()
-        {
-            Rngon.internalState.pixelBuffer.data.fill(0);
-
-            /// TODO: Wipe the fragment buffer.
-
-            if (Rngon.internalState.useDepthBuffer)
-            {
-                Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
-            }
-
-            return;
-        },
     });
 
     return publicInterface;
@@ -2904,7 +2925,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             Rngon.internalState.pixelBuffer = new ImageData(surfaceWidth, surfaceHeight);
         }
 
-        if ( Rngon.internalState.usePixelShaders &&
+        if ( Rngon.internalState.usePixelShader &&
             (Rngon.internalState.fragmentBuffer.width != surfaceWidth) ||
             (Rngon.internalState.fragmentBuffer.height != surfaceHeight))
         {
@@ -2929,28 +2950,24 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
         return;
     }
 
-    // Initializes the target DOM <canvas> element for rendering into.
-    function setup_onscreen(canvasElementId, scale)
+    // Initializes the target DOM <canvas> element for rendering into. Throws on errors.
+    function setup_onscreen(canvasElement, scale)
     {
-        const canvasElement = document.getElementById(canvasElementId);
         Rngon.assert && (canvasElement instanceof Element)
-                    || Rngon.throw("Can't find the given canvas element.");
+                     || Rngon.throw("Can't find the given canvas element.");
 
         const renderContext = canvasElement.getContext("2d");
 
-        // Size the canvas as per the requested render scale.
-        const surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
-        const surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
-        {
-            Rngon.assert && (!isNaN(surfaceWidth) &&
-                            !isNaN(surfaceHeight))
-                        || Rngon.throw("Failed to extract the canvas size.");
+        Rngon.assert && (renderContext instanceof CanvasRenderingContext2D)
+                     || Rngon.throw("Couldn't establish a canvas render context.");
 
-            if ((surfaceWidth <= 0) ||
-                (surfaceHeight <= 0))
-            {
-                return null;
-            }
+        // Size the canvas as per the requested render scale.
+        const surfaceWidth = Rngon.renderable_width_of(canvasElement, scale);
+        const surfaceHeight = Rngon.renderable_height_of(canvasElement, scale);
+        {
+            Rngon.assert && ((surfaceWidth > 0) &&
+                             (surfaceHeight > 0))
+                         || Rngon.throw("Couldn't retrieve the canvas's dimensions.");
 
             canvasElement.setAttribute("width", surfaceWidth);
             canvasElement.setAttribute("height", surfaceHeight);
@@ -2967,6 +2984,8 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
     // element. Right now, since the renderer by default renders into an off-screen
     // buffer first and then transfers the pixels onto a <canvas>, this function
     // is more about just skipping initialization of the <canvas> element.
+    //
+    // Note: This function should throw on errors.
     function setup_offscreen(width, height)
     {
         return {
@@ -2974,4 +2993,19 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             surfaceHeight: height,
         };
     }
+}
+
+// Resets the surface's render buffers to their initial contents.
+Rngon.surface.wipe = function()
+{
+    Rngon.internalState.pixelBuffer.data.fill(0);
+
+    /// TODO: Wipe the fragment buffer.
+
+    if (Rngon.internalState.useDepthBuffer)
+    {
+        Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
+    }
+
+    return;
 }

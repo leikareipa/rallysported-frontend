@@ -125,15 +125,15 @@ Rsed.minimal_rngon_filler = function(auxiliaryBuffers = [])
 
                 function add_edge(vert1, vert2, isLeftEdge)
                 {
-                    const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
-                    const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
+                    const startY = Math.round(vert1.y);
+                    const endY = Math.round(vert2.y);
                     const edgeHeight = (endY - startY);
                     
                     // Ignore horizontal edges.
                     if (edgeHeight === 0) return;
 
-                    const startX = Math.min(renderWidth, Math.max(0, Math.round(vert1.x)));
-                    const endX = Math.min(renderWidth, Math.max(0, Math.ceil(vert2.x)));
+                    const startX = Math.round(vert1.x);
+                    const endX = Math.ceil(vert2.x);
                     const deltaX = ((endX - startX) / edgeHeight);
 
                     const edge = (isLeftEdge? leftEdges[numLeftEdges++] : rightEdges[numRightEdges++]);
@@ -163,11 +163,13 @@ Rsed.minimal_rngon_filler = function(auxiliaryBuffers = [])
                 // Rasterize the n-gon in horizontal pixel spans over its height.
                 for (let y = ngonStartY; y < ngonEndY; y++)
                 {
-                    const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
-                    const spanEndX = Math.min(renderWidth, Math.max(0, Math.round(rightEdge.startX)));
+                    const spanStartX = Math.round(leftEdge.startX);
+                    const spanEndX = Math.round(rightEdge.startX);
                     const spanWidth = ((spanEndX - spanStartX) + 1);
 
-                    if (spanWidth > 0)
+                    if ((spanWidth > 0) &&
+                        (y >= 0) &&
+                        (y < renderHeight))
                     {
                         // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
                         let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
@@ -179,6 +181,10 @@ Rsed.minimal_rngon_filler = function(auxiliaryBuffers = [])
                             {
                                 pixelBufferIdx += 4;
                             
+                                // Bounds-check, since we don't clip vertices to the viewport.
+                                if (x < 0) continue;
+                                if (x >= renderWidth) break;
+
                                 pixelBuffer[pixelBufferIdx + 0] = material.color.red;
                                 pixelBuffer[pixelBufferIdx + 1] = material.color.green;
                                 pixelBuffer[pixelBufferIdx + 2] = material.color.blue;
@@ -202,12 +208,16 @@ Rsed.minimal_rngon_filler = function(auxiliaryBuffers = [])
                             
                             for (let x = spanStartX; x < spanEndX; x++)
                             {
+                                // Update values that're interpolated horizontally along the span.
+                                pixelBufferIdx += 4;
+
+                                // Bounds-check, since we don't clip vertices to the viewport.
+                                if (x < 0) continue;
+                                if (x >= renderWidth) break;
+
                                 // Will hold the texture coordinates used if we end up drawing
                                 // a textured pixel at the current x,y screen location.
                                 let u = 0.0, v = 0.0;
-
-                                // Update values that're interpolated horizontally along the span.
-                                pixelBufferIdx += 4;
                              
                                 // Screen-space UV mapping, as used e.g. in the DOS game Rally-Sport.
                                 {
@@ -252,10 +262,8 @@ Rsed.minimal_rngon_filler = function(auxiliaryBuffers = [])
                     }
 
                     // Update values that're interpolated vertically along the edges.
-                    {
-                        leftEdge.startX      += leftEdge.deltaX;
-                        rightEdge.startX     += rightEdge.deltaX;
-                    }
+                    leftEdge.startX  += leftEdge.deltaX;
+                    rightEdge.startX += rightEdge.deltaX;
 
                     // We can move onto the next edge when we're at the end of the current one.
                     if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
