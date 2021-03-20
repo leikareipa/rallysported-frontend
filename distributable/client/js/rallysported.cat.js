@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: RallySportED-js
 // AUTHOR: Tarpeeksi Hyvae Soft
-// VERSION: live (21 February 2021 17:27:31 UTC)
+// VERSION: live (20 March 2021 03:42:45 UTC)
 // LINK: https://www.github.com/leikareipa/rallysported-js/
 // INCLUDES: { JSZip (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso }
 // INCLUDES: { FileSaver.js (c) 2016 Eli Grey }
@@ -3245,6 +3245,7 @@ Dos(playerCanvas, options)
 fileSystem.extract(URL.createObjectURL(gameZip))
 .then(()=>{
 main(["-conf", "rsed.conf",
+"-c", "mixer master 17:17",
 "-c", `bitset game.dta 35 ${playWithAI? 0 : 32}`, // Refer to https://github.com/leikareipa/rallysported/blob/master/docs/rs-formats.txt on GAME.DTA's bytes.
 "-c", `bitset rallye.exe 82253 ${playWithAI? 224 : 69}`, // Make the starting lights go out faster if not playing with AI.
 "-c", `rload ${Rsed.core.current_project().name}`])
