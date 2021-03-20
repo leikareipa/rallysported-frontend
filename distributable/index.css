@@ -125,9 +125,9 @@ body
     font-family: sans-serif;
     background-image: linear-gradient(rgb(60, 60, 60), rgb(60, 60, 60));
     display: flex;
-    line-height: 180%;
+    align-items: center;
     width: 100vw;
-    height: auto;
+    height: 32px;
     padding: 0;
     position: absolute;
     left: 0;
@@ -139,11 +139,13 @@ body
 #html-ui .menu-bar
 {
     display: flex;
+    height: 100%;
 }
 
 #html-ui .menu-bar > .button-bar
 {
     display: flex;
+    height: 100%;
 }
 
 #html-ui .menu-bar > .button-bar:last-of-type
@@ -155,13 +157,15 @@ body
 {
     cursor: pointer;
     color: black;
-    display: inline-block;
+    display: flex;
     vertical-align: text-bottom;
     font-size: 85%;
     text-decoration: none;
     color: #c2c2c2;
     background: transparent;
     padding: 0 10px 0 10px;
+    align-items: center;
+    height: 100%;
 }
 
 #html-ui .menu-bar .button:hover
@@ -180,9 +184,10 @@ body
     text-decoration: none;
 }
 
-#html-ui .menu-bar .button .fas
+#html-ui .menu-bar .button .fas,
+#html-ui .menu-bar .button .fab
 {
-    margin-right: 2px;
+    margin-right: 4px;
 }
 
 #html-ui .button.stream.streamer,
