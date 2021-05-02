@@ -316,7 +316,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
         {
             if (trackPropLocations[trackId].locations.length >= Rsed.constants.maxPropCount)
             {
-                Rsed.alert("Maximum number of props already in use. Remove some to add more.");
+                Rsed.alert("All prop slots are already in use.");
                 return;
             }
 
