@@ -279,7 +279,7 @@ Rsed.scenes["texture"] = (function()
 
                 // For each pixel we're rendered, mark its texture UV coordinates into our
                 // mouse-picking buffer.
-                pixelShaderFunction: function({renderWidth, renderHeight, fragmentBuffer})
+                pixelShader: function({renderWidth, renderHeight, fragmentBuffer})
                 {
                     for (let i = 0; i < (renderWidth * renderHeight); i++)
                     {
