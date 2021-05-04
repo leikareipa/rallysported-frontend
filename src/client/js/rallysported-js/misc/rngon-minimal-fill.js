@@ -84,7 +84,55 @@ Rsed.minimal_rngon_filler = function(auxiliaryBuffers = [])
             // Y, i.e. top-to-bottom in screen space. The top-most vertex and the bottom-most
             // vertex will be shared between the two sides.
             {
+                // For rectangular ground tiles.
+                if (material.auxiliary.isGroundTile)
+                {
+                    Rngon.assert && (ngon.vertices.length == 4)
+                                 || Rngon.throw("Expected a rectangle.");
+
+                    let leftTop = ngon.vertices[3];
+                    let leftBottom = ngon.vertices[0];
+                    let rightTop = ngon.vertices[2];
+                    let rightBottom = ngon.vertices[1];
+
+                    if (leftTop.y > leftBottom.y)
+                    {
+                        [leftTop, leftBottom] = [leftBottom, leftTop];
+                    }
+
+                    if (rightTop.y > rightBottom.y)
+                    {
+                        [rightTop, rightBottom] = [rightBottom, rightTop];
+                    }
+
+                    if (leftTop.y < rightTop.y)
+                    {
+                        leftVerts[numLeftVerts++] = leftTop;
+                        leftVerts[numLeftVerts++] = leftBottom;
+                        rightVerts[numRightVerts++] = leftTop;
+                        rightVerts[numRightVerts++] = rightTop;
+                        rightVerts[numRightVerts++] = rightBottom;
+                    }
+                    else
+                    {
+                        leftVerts[numLeftVerts++] = rightTop;
+                        leftVerts[numLeftVerts++] = leftTop;
+                        leftVerts[numLeftVerts++] = leftBottom;
+                        rightVerts[numRightVerts++] = rightTop;
+                        rightVerts[numRightVerts++] = rightBottom;
+                    }
+
+                    if (leftBottom.y < rightBottom.y)
+                    {
+                        leftVerts[numLeftVerts++] = rightBottom;
+                    }
+                    else
+                    {
+                        rightVerts[numRightVerts++] = leftBottom;
+                    }
+                }
                 // Generic algorithm for n-sided convex polygons.
+                else
                 {
                     // Sort the vertices by height from smallest Y to largest Y.
                     ngon.vertices.sort(vertexSorters.verticalAscending);

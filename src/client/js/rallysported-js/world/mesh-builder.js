@@ -215,6 +215,7 @@ Rsed.world.meshBuilder = (function()
                                 }),
 
                                 isCorner: isCornerTile,
+                                isGroundTile: true,
                             }
                         });
 
