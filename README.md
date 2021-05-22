@@ -11,7 +11,7 @@ You can find RallySportED-js running live on the web [here](https://www.tarpeeks
 ![](./images/screenshots/post-1.0/yleisoek.png)
 
 # End-user's guide
-An end-user's guide is provided in the [distributable/user-guide/](distributable/user-guide/)  directory; and hosted live [here](https://www.tarpeeksihyvaesoft.com/rallysported/user-guide/).
+An end-user's guide is provided in the [distributable/help/](distributable/help/) directory; and hosted live [here](https://www.tarpeeksihyvaesoft.com/rallysported/help/).
 
 The guide walks you through the steps to creating a new track and getting it up and running in Rally-Sport.
 
