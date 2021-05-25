@@ -49,7 +49,7 @@ Rsed.ui.draw = (function()
             return;
         },
 
-        pixel: function(x = 0, y = 0, r = 255, g = 255, b = 255, m = undefined)
+        pixel: function(x = 0, y = 0, r = 255, g = 255, b = 255, mousePick = undefined)
         {
             const idx = ((x + y * Rsed.visual.canvas.width) * 4);
 
@@ -58,9 +58,9 @@ Rsed.ui.draw = (function()
             pixelSurface.data[idx + 2] = b;
             pixelSurface.data[idx + 3] = 255;
 
-            if (m != undefined)
+            if (mousePick != undefined)
             {
-                mousePickBuffer[(x + y * Rsed.visual.canvas.width)] = m;
+                put_mouse_pick_value(x, y, mousePick);
             }
 
             return;
@@ -124,7 +124,7 @@ Rsed.ui.draw = (function()
         // Draws the given string onto the screen at the given coordinates.
         // NOTE: If a coordinate's value is less than 0, its absolute value is interpreted as a percentage
         // of the screen's resolution in the range 0..1.
-        string: function(string = "", x = 0, y = 0)
+        string: function(string = "", x = 0, y = 0, mousePick = undefined)
         {
             string = String(string).toUpperCase();
 
@@ -152,7 +152,7 @@ Rsed.ui.draw = (function()
             {
                 for (let i = 0; i < (Rsed.ui.font.nativeHeight + 2); i++)
                 {
-                    this.pixel(x, y + i, 255, 255, 0);
+                    this.pixel(x, y + i, 255, 255, 0, mousePick);
                 }
                 
                 x++;
@@ -177,7 +177,7 @@ Rsed.ui.draw = (function()
                                       ? Rsed.visual.palette.color_at_idx(character.pixel_at(cx, cy-1))
                                       : Rsed.visual.palette.color_at_idx("background");
 
-                        this.pixel((x + cx), (y + cy), color.red, color.green, color.blue);
+                        this.pixel((x + cx), (y + cy), color.red, color.green, color.blue, mousePick);
                     }
                 }
 
@@ -188,7 +188,7 @@ Rsed.ui.draw = (function()
         },
     };
 
-    function put_mouse_pick_value(x = 0, y = 0, value = 0)
+    function put_mouse_pick_value(x = 0, y = 0, value)
     {
         mousePickBuffer[(x + y * pixelSurface.width)] = value;
 
