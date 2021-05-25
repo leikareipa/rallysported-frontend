@@ -106,21 +106,24 @@ Rsed.ui.component.palatPane =
                                            true);
                     }
 
-                    const mouseHover = component.is_hovered()
+                    const mouseHover = component.is_hovered();
 
                     // Draw a frame around the PALA over which the mouse cursor is hovering.
-                    if (mouseHover && options.indicateHover)
+                    if (mouseHover &&
+                        (options.indicateHover ||
+                         options.alwaysShowIdxTag ||
+                         Rsed.ui.inputState.key_down("tab")))
                     {
                         const frame = [
-                            X,X,X,_,_,_,X,X,X,
-                            X,_,_,_,_,_,_,_,X,
+                            X,X,_,_,_,_,_,X,X,
                             X,_,_,_,_,_,_,_,X,
                             _,_,_,_,_,_,_,_,_,
-                            _,_,_,_,X,_,_,_,_,
+                            _,_,_,_,_,_,_,_,_,
+                            _,_,_,_,_,_,_,_,_,
+                            _,_,_,_,_,_,_,_,_,
                             _,_,_,_,_,_,_,_,_,
                             X,_,_,_,_,_,_,_,X,
-                            X,_,_,_,_,_,_,_,X,
-                            X,X,X,_,_,_,X,X,X,
+                            X,X,_,_,_,_,_,X,X,
                         ];
 
                         Rsed.ui.draw.image(frame, null,
