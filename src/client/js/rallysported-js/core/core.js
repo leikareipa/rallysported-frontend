@@ -41,6 +41,11 @@ Rsed.core = (function()
     const publicInterface =
     {
         appName: "RallySportED",
+
+        // If true when Rsed.core.start() is called, the current track will be
+        // loaded into an instance of Rally-Sport running in the browser, allowing
+        // the user to play the track.
+        playOnStartup: false,
         
         tick_time_delta_ms: ()=>tickTimeDeltaMs,
         is_running: ()=>coreIsRunning,
@@ -65,9 +70,6 @@ Rsed.core = (function()
         
                 // If the user is viewing a stream, its id will be set here.
                 stream: null,
-
-                // Whether to run the DOSBox player immediately on load.
-                playOnStartup: false,
             }
         },
 
@@ -93,7 +95,7 @@ Rsed.core = (function()
             Rsed.ui.htmlUI.refresh();
             Rsed.ui.htmlUI.set_visible(true);
 
-            if (args.playOnStartup)
+            if (this.playOnStartup)
             {
                 Rsed.player.play(true);
             }

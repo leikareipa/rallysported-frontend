@@ -53,6 +53,12 @@ window.onload = function(event)
     
     // Parse the user-supplied URL parameters.
     {
+        if (window.location.hash == "#play")
+        {
+            history.replaceState(null, null, " "); // Remove the hash.
+            Rsed.core.playOnStartup = true;
+        }
+
         const params = new URLSearchParams(window.location.search);
 
         // If the user requests to view a stream, we just need to start the stream.
@@ -63,7 +69,6 @@ window.onload = function(event)
             Rsed.stream.start("viewer", params.get("transientServer"));
             
             return;
-
         }
 
         // The "track" and "content" parameters specify which track the user wants to load.
@@ -105,12 +110,6 @@ window.onload = function(event)
             }
 
             rsedStartupArgs.project.contentId = contentId;
-        }
-
-        if (window.location.hash == "#play")
-        {
-            history.replaceState(null, null, " "); // Remove the hash.
-            rsedStartupArgs.playOnStartup = true;
         }
     }
 
