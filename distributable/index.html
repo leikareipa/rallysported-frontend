@@ -44,7 +44,7 @@
                          class="button right stream"
                          :class="streamStatus"
                          :title="((streamStatus == 'disabled' || streamStatus == 'viewer')
-                                 ? `Host this track's data from your browser`
+                                 ? `Host this track from your browser to people online`
                                  : (streamStatus == 'initializing')
                                    ? `Setting up...`
                                    : `Downloads: ${streamViewerCount}`)"
@@ -68,15 +68,6 @@
                 </div>
 
                 <div class="button-bar">
-
-                    <div class="button"
-                         title="View RallySportED-js on GitHub"
-                         onclick="window.open('https://www.github.com/leikareipa/rallysported-js/', '_blank', 'noopener');">
-
-                        <i class="fab fa-fw fa-github"></i>
-                        GitHub
-
-                    </div>
 
                     <div class="button"
                          title="Open the user's manual"
