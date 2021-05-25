@@ -18,14 +18,12 @@ The guide walks you through the steps to creating a new track and getting it up 
 # Developer's guide
 If you'd like to modify RallySportED-js or otherwise inspect its internals, this guide is for you.
 
-## Setting up RallySportED-js on a server
-To set up RallySportED-js on your server, simply copy over the [distributable/](distributable/) directory. The app is client-based and doesn't need dynamic hosting.
+## Deploying
+Follow these steps to set up RallySportED-js on a server:
 
-- You can rename the `distributable` directory however you want, but its internal structure should remain as-is.
-
-You should now be able to run RallySportED-js in a browser by navigating to where you placed the files on your server, such that [distributable/index.html](distributable/index.html) is served.
-
-By default, the app will load Rally-Sport's track #4, from [distributable/client/assets/tracks/demo-4.json](distributable/client/assets/tracks/demo-4.json). For information on how to load a different track, see the [end user's guide](#end-users-guide). To find out more about RallySportED's data formats, see the [data formats](#data-formats) section.
+1. Run the [build script](./build-client-distributable.sh).
+2. Copy the contents of the [distributable/](distributable/) directory to where you want the app to live on your server.
+3. That's it.
 
 ## Data formats
 ### Rally-Sport's track data

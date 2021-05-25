@@ -1,6 +1,8 @@
 stats.php
 /misc/
 /distributable/node_modules/
+/distributable/client/js/*
+!/distributable/client/js/.placeholder
 *.inc
 
 # Symlinks in local repo.
