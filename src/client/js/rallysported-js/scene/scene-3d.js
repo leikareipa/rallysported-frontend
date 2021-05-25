@@ -64,6 +64,7 @@ Rsed.scenes["3d"] = (function()
             minimap:      Rsed.ui.component.tilemapMinimap.instance(),
             palatPane:    Rsed.ui.component.palatPane.instance(),
             fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
+            viewLabel:    Rsed.ui.component.label.instance(),
         };
     })();
 
@@ -235,6 +236,9 @@ Rsed.scenes["3d"] = (function()
 
             if (uiComponents) // Once the UI components have finished async loading.
             {
+                uiComponents.viewLabel.update("Terrain");
+                uiComponents.viewLabel.draw(3, 11);
+
                 if (Rsed.visual.canvas.domElement.clientWidth > 650)
                 {
                     if (!Rsed.browserMetadata.isMobile)
@@ -243,7 +247,7 @@ Rsed.scenes["3d"] = (function()
                         uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 11);
 
                         uiComponents.footerInfo.update(sceneSettings);
-                        uiComponents.footerInfo.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
+                        uiComponents.footerInfo.draw(3, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 5));
                     }
 
                     uiComponents.minimap.update(sceneSettings);

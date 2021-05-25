@@ -35,7 +35,7 @@ Rsed.scenes["texture"] = (function()
 
         // Whether to show the PALAT pane; i.e. a side panel that displays all the available
         // PALA textures.
-        showPalatPane: true,
+        showPalatPane: false,
     };
 
     // In which direction(s) the camera is currently moving. This is affected
@@ -54,8 +54,9 @@ Rsed.scenes["texture"] = (function()
         uiComponents = {
             fpsIndicator: Rsed.ui.component.fpsIndicator.instance(),
             colorSelector: Rsed.ui.component.colorSelector.instance(),
-            textureLabel: Rsed.ui.component.label.instance(),
+            resolutionLabel: Rsed.ui.component.label.instance(),
             zoomLabel: Rsed.ui.component.label.instance(),
+            viewLabel: Rsed.ui.component.label.instance(),
             clipboardLabel: Rsed.ui.component.label.instance(),
             palatPane: Rsed.ui.component.palatPane.instance({
                 selectionCallback: (palaIdx)=>scene.set_texture(Rsed.core.current_project().palat.texture[palaIdx]),
@@ -191,23 +192,23 @@ Rsed.scenes["texture"] = (function()
 
             if (uiComponents) // Once the UI components have finished async loading...
             {
+                uiComponents.viewLabel.update(`Texture`);
+                uiComponents.viewLabel.draw(3, 11);
+
                 uiComponents.colorSelector.update(sceneSettings);
                 uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 101), 11);
 
-                uiComponents.textureLabel.update(`Texture: ${texture.width} * ${texture.height}`);
-                uiComponents.textureLabel.draw(0, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 2) - 5));
+                const truncatedZoomValue = (1 / textureZoom).toString().match(/^-?\d+(?:\.\d{0,1})?/)[0];
+                uiComponents.zoomLabel.update(`Zoom: ${truncatedZoomValue}*`);
+                uiComponents.zoomLabel.draw(3, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 3) - 9));
+                
+                uiComponents.resolutionLabel.update(`Size: ${texture.width} * ${texture.height}`);
+                uiComponents.resolutionLabel.draw(3, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 2) - 7));
 
                 uiComponents.clipboardLabel.update(clipboard
                                                    ? `Clipboard: ${clipboard.width} * ${clipboard.height}${(clipboard.source == texture)? " (this)" : ""}`
                                                    : "Clipboard: empty");
-                uiComponents.clipboardLabel.draw(0, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 2));
-
-                {
-                    const truncatedZoomValue = (1 / textureZoom).toString().match(/^-?\d+(?:\.\d{0,1})?/)[0];
-
-                    uiComponents.zoomLabel.update(`Zoom: ${truncatedZoomValue}*`);
-                    uiComponents.zoomLabel.draw(0, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 3) - 8));
-                }
+                uiComponents.clipboardLabel.draw(3, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 5));
                 
                 if (Rsed.core.fps_counter_enabled())
                 {
