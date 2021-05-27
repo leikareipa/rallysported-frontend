@@ -1,8 +1,9 @@
 /*
  * Most recent known filename: js/scenes/scene-texture.js
  *
- * 2019 Tarpeeksi Hyvae Soft /
- * RallySportED-js
+ * 2019-2021 Tarpeeksi Hyvae Soft
+ * 
+ * Software: RallySportED-js
  *
  */
 
@@ -161,7 +162,7 @@ Rsed.scenes["texture"] = (function()
             }
             else if (key_is("q"))
             {
-                Rsed.core.set_scene("3d");
+                Rsed.core.set_scene("terrain");
                 Rsed.ui.inputState.set_key_down("q", false);
             }
             else

@@ -159,7 +159,7 @@ Rsed.scenes["tilemap"] = (function()
             }
             else if (key_is("q"))
             {
-                Rsed.core.set_scene("3d");
+                Rsed.core.set_scene("terrain");
             }
             else if (key_is("a") && !repeat)
             {

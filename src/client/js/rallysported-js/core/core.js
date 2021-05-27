@@ -25,7 +25,7 @@ Rsed.core = (function()
     let project = Rsed.project.placeholder;
 
     // The scene we're currently displaying to the user.
-    let currentScene = Rsed.scenes["3d"];
+    let currentScene = Rsed.scenes["terrain"];
 
     // The number of milliseconds elapsed between the most recent tick and the one
     // preceding it. E.g. at 60 FPS this would be about 16.

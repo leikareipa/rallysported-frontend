@@ -1,8 +1,9 @@
 /*
  * Most recent known filename: js/scenes/scene-3d.js
  *
- * 2019 Tarpeeksi Hyvae Soft /
- * RallySportED-js
+ * 2019-2021 Tarpeeksi Hyvae Soft
+ * 
+ * Software: RallySportED-js
  *
  */
 
@@ -10,9 +11,9 @@
 
 Rsed.scenes = Rsed.scenes || {};
 
-// RallySportED's main scene. Displays the project as a textured 3d mesh; and allows
-// the user to edit the heightmap and tilemap via mouse and keyboard interaction.
-Rsed.scenes["3d"] = (function()
+// A 3D view displaying the track's MAASTO and VARIMAA data. Lets the user edit
+// these data.
+Rsed.scenes["terrain"] = (function()
 {
     // Lets us keep track of mouse position delta between frames; e.g. for dragging props.
     let prevMousePos = {x:0, y:0};
@@ -242,7 +243,7 @@ Rsed.scenes["3d"] = (function()
                 {
                     uiComponents.viewLabel.update("Editor: Terrain");
                     uiComponents.viewLabel.draw(margin, margin);
-                    
+
                     uiComponents.activePala.update(sceneSettings);
                     uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), margin);
 
