@@ -30,6 +30,11 @@ body
     margin: 0;
 }
 
+body.playing
+{
+    overflow: hidden;
+}
+
 #render-canvas-container
 {
     width: 100%;

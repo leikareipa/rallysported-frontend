@@ -55,7 +55,8 @@ Rsed.player = (function()
         isPlaying = false;
 
         playerCanvas.getContext("2d").clearRect(0, 0, playerCanvas.width, playerCanvas.height);
-        playerContainer.style.display = "none"; 
+        playerContainer.style.display = "none";
+        document.body.classList.remove("playing");
 
         Rsed.ui.htmlUI.refresh();
 
@@ -74,6 +75,7 @@ Rsed.player = (function()
         isPlayerStarting = true;
         stopButton.style.display = "none";
         playerContainer.style.display = "initial";
+        document.body.classList.add("playing");
 
         const gameZip = await create_zip_for_jsbox();
 
@@ -106,6 +108,7 @@ Rsed.player = (function()
                 .then((interface)=>{
                     jsDosController = interface;
                     isPlaying = true;
+
                     stopButton.style.display = "initial";
                     
                     /// Kludge to detect DOSBox returning to the command prompt, i.e. the
