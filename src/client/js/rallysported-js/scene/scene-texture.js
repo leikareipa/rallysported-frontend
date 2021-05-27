@@ -192,27 +192,29 @@ Rsed.scenes["texture"] = (function()
 
             if (uiComponents) // Once the UI components have finished async loading...
             {
-                uiComponents.viewLabel.update(`Texture`);
-                uiComponents.viewLabel.draw(3, 11);
+                const margin = 4;
+
+                uiComponents.viewLabel.update("Editor: Texture");
+                uiComponents.viewLabel.draw(margin, margin);
 
                 uiComponents.colorSelector.update(sceneSettings);
-                uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 101), 11);
+                uiComponents.colorSelector.draw((Rsed.visual.canvas.width - 101), margin);
 
                 const truncatedZoomValue = (1 / textureZoom).toString().match(/^-?\d+(?:\.\d{0,1})?/)[0];
                 uiComponents.zoomLabel.update(`Zoom: ${truncatedZoomValue}*`);
-                uiComponents.zoomLabel.draw(3, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 3) - 9));
+                uiComponents.zoomLabel.draw(margin, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 3) - 9));
                 
                 uiComponents.resolutionLabel.update(`Size: ${texture.width} * ${texture.height}`);
-                uiComponents.resolutionLabel.draw(3, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 2) - 7));
+                uiComponents.resolutionLabel.draw(margin, (Rsed.visual.canvas.height - (Rsed.ui.font.nativeHeight * 2) - 7));
 
                 uiComponents.clipboardLabel.update(clipboard
                                                    ? `Clipboard: ${clipboard.width} * ${clipboard.height}${(clipboard.source == texture)? " (this)" : ""}`
                                                    : "Clipboard: empty");
-                uiComponents.clipboardLabel.draw(3, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 5));
+                uiComponents.clipboardLabel.draw(margin, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 5));
                 
                 if (Rsed.core.fps_counter_enabled())
                 {
-                    uiComponents.fpsIndicator.draw(3, 10);
+                    uiComponents.fpsIndicator.draw(margin, 10);
                 }
 
                 if (sceneSettings.showPalatPane)

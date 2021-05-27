@@ -181,25 +181,27 @@ Rsed.scenes["tilemap"] = (function()
 
             if (uiComponents) // Once the UI components have finished async loading...
             {
-                uiComponents.viewLabel.update(`Tilemap`);
-                uiComponents.viewLabel.draw(3, 11);
+                const margin = 4;
+
+                uiComponents.viewLabel.update("Editor: Tilemap");
+                uiComponents.viewLabel.draw(margin, margin);
 
                 uiComponents.activePala.update(sceneSettings);
-                uiComponents.activePala.draw((Rsed.visual.canvas.width - 20), 11);
+                uiComponents.activePala.draw((Rsed.visual.canvas.width - 20), margin);
 
                 uiComponents.footer.update(`Size: ${Rsed.core.current_project().maasto.width} * ${Rsed.core.current_project().maasto.width}`);
-                uiComponents.footer.draw(3, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 5));
+                uiComponents.footer.draw(margin, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 5));
 
                 if (sceneSettings.showPalatPane)
                 {
                     uiComponents.palatPane.update(sceneSettings);
-                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 31);
+                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - margin), 31);
                 }
 
                 if (Rsed.core.fps_counter_enabled())
                 {
                     uiComponents.fpsIndicator.update(sceneSettings);
-                    uiComponents.fpsIndicator.draw(3, 10);
+                    uiComponents.fpsIndicator.draw(margin, 10);
                 }
             }
 

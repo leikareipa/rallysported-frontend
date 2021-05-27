@@ -204,6 +204,9 @@ Rsed.core = (function()
     // Called once per frame to orchestrate program flow.
     function tick(timestamp = 0, timeDeltaMs = 0)
     {
+        const realScreenWidth = document.getElementById("render-canvas-container").clientWidth;
+        Rsed.visual.canvas.scalingFactor = Math.min(1, Math.max(0.05, ((1920 / realScreenWidth) * 0.25)));
+        
         if (coreIsRunning &&
             !Rsed.player.is_playing())
         {

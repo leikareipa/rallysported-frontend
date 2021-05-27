@@ -236,34 +236,33 @@ Rsed.scenes["3d"] = (function()
 
             if (uiComponents) // Once the UI components have finished async loading.
             {
-                uiComponents.viewLabel.update("Terrain");
-                uiComponents.viewLabel.draw(3, 11);
+                const margin = 4;
 
-                if (Rsed.visual.canvas.domElement.clientWidth > 650)
+                if (!Rsed.browserMetadata.isMobile)
                 {
-                    if (!Rsed.browserMetadata.isMobile)
-                    {
-                        uiComponents.activePala.update(sceneSettings);
-                        uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), 11);
+                    uiComponents.viewLabel.update("Editor: Terrain");
+                    uiComponents.viewLabel.draw(margin, margin);
+                    
+                    uiComponents.activePala.update(sceneSettings);
+                    uiComponents.activePala.draw((Rsed.visual.canvas.width - 88), margin);
 
-                        uiComponents.footerInfo.update(sceneSettings);
-                        uiComponents.footerInfo.draw(3, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 5));
-                    }
+                    uiComponents.footerInfo.update(sceneSettings);
+                    uiComponents.footerInfo.draw(margin, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 5));
+                }
 
-                    uiComponents.minimap.update(sceneSettings);
-                    uiComponents.minimap.draw((Rsed.visual.canvas.width - 4), 11);
+                uiComponents.minimap.update(sceneSettings);
+                uiComponents.minimap.draw((Rsed.visual.canvas.width - margin), margin);
 
-                    if (sceneSettings.showPalatPane)
-                    {
-                        uiComponents.palatPane.update(sceneSettings);
-                        uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 47);
-                    }
+                if (sceneSettings.showPalatPane)
+                {
+                    uiComponents.palatPane.update(sceneSettings);
+                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - margin), 47);
                 }
 
                 if (Rsed.core.fps_counter_enabled())
                 {
                     uiComponents.fpsIndicator.update(sceneSettings);
-                    uiComponents.fpsIndicator.draw(3, 10);
+                    uiComponents.fpsIndicator.draw(margin, 10);
                 }
             }
 
