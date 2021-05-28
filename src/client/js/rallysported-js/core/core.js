@@ -46,6 +46,8 @@ Rsed.core = (function()
         // loaded into an instance of Rally-Sport running in the browser, allowing
         // the user to play the track.
         playOnStartup: false,
+
+        resetMouseHover: false,
         
         tick_time_delta_ms: ()=>tickTimeDeltaMs,
         is_running: ()=>coreIsRunning,
@@ -216,6 +218,12 @@ Rsed.core = (function()
             currentScene.handle_user_interaction();
             currentScene.draw_mesh();
             currentScene.draw_ui();
+
+            if (publicInterface.resetMouseHover)
+            {
+                Rsed.ui.inputState.update_mouse_hover();
+                publicInterface.resetMouseHover = false;
+            }
         }
 
         // Keep ticking.

@@ -235,7 +235,7 @@ body.playing
     background-color: white;
     z-index: 3;
     display: none;
-    padding: 10px;
+    padding: 6px;
     border-radius: 8px;
     overflow-y: auto;
     box-sizing: border-box;
@@ -252,11 +252,9 @@ body.playing
 
 .dropdown-menu > .item:hover
 {
-    background-color: black;
+    background-color: dimgray;
     color: white;
     border-radius: 6px;
-    transform: scale(1.1);
-    box-shadow: 0 5px 4px rgba(0, 0, 0, 0.3);
 }
 
 .dropdown-menu.show

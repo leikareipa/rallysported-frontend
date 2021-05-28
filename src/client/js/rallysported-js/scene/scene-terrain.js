@@ -18,11 +18,6 @@ Rsed.scenes["terrain"] = (function()
     // Lets us keep track of mouse position delta between frames; e.g. for dragging props.
     let prevMousePos = {x:0, y:0};
 
-    /// Temp hack. Lets the renderer know that we want it to update mouse hover information
-    /// once the next frame has finished rendering. This is used e.g. to keep proper track
-    /// mouse hover when various UI elements are toggled on/off.
-    let updateMouseHoverOnFrameFinish = false;
-
     const sceneSettings = {
         // Whether to draw a wireframe around the scene's polygons. Note that we default to
         // not showing the wireframe on mobile devices, since we assume that they have small
@@ -127,7 +122,7 @@ Rsed.scenes["terrain"] = (function()
 
                 // Prevent a mouse click from acting on the ground behind the pane when the pane
                 // is brought up, and on the pane when the pane has been removed.
-                updateMouseHoverOnFrameFinish = true;
+                Rsed.core.resetMouseHover = true;
             }
             else if (key_is("z"))
             {
@@ -269,15 +264,6 @@ Rsed.scenes["terrain"] = (function()
 
             Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
 
-            // Note: We assume that UI drawing is the last step in rendering the current
-            // frame; and thus that once the UI rendering has finished, the frame is finished
-            // also.
-            if (updateMouseHoverOnFrameFinish)
-            {
-                Rsed.ui.inputState.update_mouse_hover();
-                updateMouseHoverOnFrameFinish = false;
-            }
-
             return;
         },
 
@@ -416,6 +402,11 @@ Rsed.scenes["terrain"] = (function()
         {
             const mouseHover = Rsed.ui.inputState.current_mouse_hover();
             const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
+
+            if (mouseHover && mouseHover.cursor)
+            {
+                return mouseHover.cursor;
+            }
 
             if (mouseGrab && (mouseGrab.type == "prop"))
             {

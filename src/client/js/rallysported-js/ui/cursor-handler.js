@@ -28,7 +28,7 @@ Rsed.ui.cursorHandler = (function()
 
     cursors.default = cursors.arrow;
 
-    // Pre-load the cursor images' data so they'll be immediately available for display
+    // Pre-load the cursor images' data so they'll be available immediately
     // when required.
     const cursorImages = Object.keys(cursors).map(c=>{
         const image = new Image();

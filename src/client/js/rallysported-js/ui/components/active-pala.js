@@ -42,6 +42,7 @@ Rsed.ui.component.activePala =
             const mousePick = new Array(palaTexture.indices.length).fill({
                 type: "ui-component",
                 componentId: component.id,
+                cursor: Rsed.ui.cursorHandler.cursors.fingerHand,
             });
 
             if (palaTexture)

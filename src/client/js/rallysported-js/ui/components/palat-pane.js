@@ -207,6 +207,7 @@ Rsed.ui.component.palatPane =
                             palatPaneMousePick[bufferTexel] = {
                                 type: "ui-component",
                                 componentId: component.id,
+                                cursor: Rsed.ui.cursorHandler.cursors.fingerHand,
                                 palaIdx: palaIdx,
                                 cornerX: ((x * palaThumbnailWidth) + palatPaneOffsetX),
                                 cornerY: ((y * palaThumbnailHeight) + palatPaneOffsetY),

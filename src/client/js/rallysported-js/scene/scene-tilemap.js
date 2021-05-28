@@ -15,11 +15,6 @@ Rsed.scenes = Rsed.scenes || {};
 // onto the tilemap.
 Rsed.scenes["tilemap"] = (function()
 {
-    /// Temp hack. Lets the renderer know that we want it to update mouse hover information
-    /// once the next frame has finished rendering. This is used e.g. to keep proper track
-    /// mouse hover when various UI elements are toggled on/off.
-    let updateMouseHoverOnFrameFinish = false;
-
     // A representation of the track's VARIMAA data.
     const tilemap = {
         texture: {
@@ -167,7 +162,7 @@ Rsed.scenes["tilemap"] = (function()
 
                 // Prevent a mouse click from acting on the ground behind the pane when the pane
                 // is brought up, and on the pane when the pane has been removed.
-                updateMouseHoverOnFrameFinish = true;
+                Rsed.core.resetMouseHover = true;
             }
             else
             {
@@ -214,15 +209,6 @@ Rsed.scenes["tilemap"] = (function()
             }
 
             Rsed.ui.draw.finish_drawing(Rsed.visual.canvas);
-
-            // Note: We assume that UI drawing is the last step in rendering the current
-            // frame; and thus that once the UI rendering has finished, the frame is finished
-            // also.
-            if (updateMouseHoverOnFrameFinish)
-            {
-                Rsed.ui.inputState.update_mouse_hover();
-                updateMouseHoverOnFrameFinish = false;
-            }
 
             return;
         },
@@ -277,13 +263,20 @@ Rsed.scenes["tilemap"] = (function()
         const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
         const mouseTilemapPosX = Math.round((mousePos.x - tilemap.offsetX) * (Rsed.core.current_project().maasto.width / tilemap.width));
         const mouseTilemapPosY = Math.round((mousePos.y - tilemap.offsetY) * (Rsed.core.current_project().maasto.height / tilemap.height));
+        const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+            
+        
 
         const isCursorOnTilemap = ((mouseTilemapPosX >= 0) &&
                                    (mouseTilemapPosY >= 0) &&
                                    (mouseTilemapPosX < Rsed.core.current_project().maasto.width) &&
                                    (mouseTilemapPosY < Rsed.core.current_project().maasto.height));
 
-        if (isCursorOnTilemap)
+        if (mouseHover && mouseHover.cursor)
+        {
+            Rsed.ui.cursorHandler.set_cursor(mouseHover.cursor);
+        }
+        else if (isCursorOnTilemap)
         {
             Rsed.ui.cursorHandler.set_cursor(cursors.pencil);
         }

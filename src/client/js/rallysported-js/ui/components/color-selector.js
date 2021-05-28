@@ -81,6 +81,7 @@ Rsed.ui.component.colorSelector =
                 swatchMousePick.fill({
                     type: "ui-component",
                     componentId: component.id,
+                    cursor: Rsed.ui.cursorHandler.cursors.fingerHand,
                     colorIdx: i,
                 });
 

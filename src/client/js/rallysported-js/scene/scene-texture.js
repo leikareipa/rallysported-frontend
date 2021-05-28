@@ -452,6 +452,13 @@ Rsed.scenes["texture"] = (function()
 
         const newCursor = (()=>
         {
+            const mouseHover = Rsed.ui.inputState.current_mouse_hover();
+            
+            if (mouseHover && mouseHover.cursor)
+            {
+                return mouseHover.cursor;
+            }
+
             if (isCursorOnTexture)
             {
                 if (Rsed.ui.inputState.key_down("tab"))

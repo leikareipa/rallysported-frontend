@@ -58,6 +58,7 @@ Rsed.ui.component.tilemapMinimap =
                     mousePick.push({
                         type: "ui-component",
                         componentId: component.id,
+                        cursor: Rsed.ui.cursorHandler.cursors.fingerHand,
                         tileX: tileX,
                         tileZ: tileZ
                     });
