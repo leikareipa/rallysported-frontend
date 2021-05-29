@@ -24,7 +24,7 @@ Rsed.core = (function()
     let project = Rsed.project.placeholder;
 
     // The scene we're currently displaying to the user.
-    let scene = Rsed.scenes["terrain"];
+    let scene = Rsed.scenes["terrain-editor"];
 
     // The number of milliseconds elapsed between the most recent tick and the one
     // preceding it. E.g. at 60 FPS this would be about 16.
@@ -134,7 +134,7 @@ Rsed.core = (function()
 
             // If we've switched to the tilemap scene, make sure it's reflecting
             // any changes we may have made to the track in the previous scene.
-            if (scene == Rsed.scenes["tilemap"])
+            if (scene == Rsed.scenes["tilemap-editor"])
             {
                 scene.regenerate_tilemap();
             }

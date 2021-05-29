@@ -201,9 +201,9 @@ Rsed.ui.undoStack = (function()
 
             // The texture-editing view doesn't automatically update its texture
             // reference, so we'll need to let it known the texture has changed.
-            if (Rsed.$currentScene == Rsed.scenes["texture"])
+            if (Rsed.$currentScene == Rsed.scenes["texture-editor"])
             {
-                Rsed.scenes["texture"].set_texture(updatedTexture);
+                Rsed.scenes["texture-editor"].set_texture(updatedTexture);
             }
         }
 

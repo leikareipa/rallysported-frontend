@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/scenes/scene-tilemap.js
+ * Most recent known filename: js/scene/tilemap-editor/tilemap-editor.js
  *
  * 2019-2021 Tarpeeksi Hyvae Soft
  * 
@@ -13,7 +13,7 @@ Rsed.scenes = Rsed.scenes || {};
 
 // A top-down view of the project's VARIMAA data as a tilemap. Lets the user paint
 // onto the tilemap.
-Rsed.scenes["tilemap"] = (function()
+Rsed.scenes["tilemap-editor"] = (function()
 {
     // A representation of the track's VARIMAA data.
     const tilemap = {
@@ -153,7 +153,7 @@ Rsed.scenes["tilemap"] = (function()
             }
             else if (key_is("q"))
             {
-                Rsed.$currentScene = "terrain";
+                Rsed.$currentScene = "terrain-editor";
             }
             else if (key_is("a") && !repeat)
             {

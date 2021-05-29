@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/scenes/scene-3d.js
+ * Most recent known filename: js/scene/terrain-editor/terrain-editor.js
  *
  * 2019-2021 Tarpeeksi Hyvae Soft
  * 
@@ -13,7 +13,7 @@ Rsed.scenes = Rsed.scenes || {};
 
 // A 3D view displaying the track's MAASTO and VARIMAA data. Lets the user edit
 // these data.
-Rsed.scenes["terrain"] = (function()
+Rsed.scenes["terrain-editor"] = (function()
 {
     // Lets us keep track of mouse position delta between frames; e.g. for dragging props.
     let prevMousePos = {x:0, y:0};
@@ -143,7 +143,7 @@ Rsed.scenes["terrain"] = (function()
             }
             else if (key_is("q"))
             {
-                Rsed.$currentScene = "tilemap";
+                Rsed.$currentScene = "tilemap-editor";
             }
             else if (key_is("t"))
             {
@@ -151,10 +151,10 @@ Rsed.scenes["terrain"] = (function()
 
                 if (mouseHover && mouseHover.texture)
                 {
-                    Rsed.scenes["texture"].set_texture(mouseHover.texture);
+                    Rsed.scenes["texture-editor"].set_texture(mouseHover.texture);
                 }
 
-                Rsed.$currentScene = "texture";
+                Rsed.$currentScene = "texture-editor";
             }
             else if (key_is("arrowup") ||
                      key_is("arrowdown"))

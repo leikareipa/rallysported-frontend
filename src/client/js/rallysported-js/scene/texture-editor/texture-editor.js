@@ -1,5 +1,5 @@
 /*
- * Most recent known filename: js/scenes/scene-texture.js
+ * Most recent known filename: js/scene/texture-editor/texture-editor.js
  *
  * 2019-2021 Tarpeeksi Hyvae Soft
  * 
@@ -12,7 +12,7 @@
 Rsed.scenes = Rsed.scenes || {};
 
 // A view of a given texture, allowing the user to modify the texture's pixels.
-Rsed.scenes["texture"] = (function()
+Rsed.scenes["texture-editor"] = (function()
 {
     // A reference to the Rsed.visual.texture() object that we're to edit.
     let texture = null;
@@ -162,7 +162,7 @@ Rsed.scenes["texture"] = (function()
             }
             else if (key_is("q"))
             {
-                Rsed.$currentScene = "terrain";
+                Rsed.$currentScene = "terrain-editor";
                 Rsed.ui.inputState.set_key_down("q", false);
             }
             else
