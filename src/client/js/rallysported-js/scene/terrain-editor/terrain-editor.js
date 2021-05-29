@@ -9,8 +9,6 @@
 
 "use strict";
 
-Rsed.scenes = Rsed.scenes || {};
-
 // A 3D view displaying the track's MAASTO and VARIMAA data. Lets the user edit
 // these data.
 Rsed.scenes["terrain-editor"] = (function()
@@ -309,7 +307,7 @@ Rsed.scenes["terrain-editor"] = (function()
                 }
             }
 
-            const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [trackMesh],
+            const renderInfo = Rngon.render(Rsed.visual.canvas.domElement, [trackMesh],
             {
                 cameraPosition: Rngon.translation_vector(0, 0, 0),
                 cameraDirection: Rsed.world.camera.rotation(),

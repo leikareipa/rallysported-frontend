@@ -9,8 +9,6 @@
 
 "use strict";
 
-Rsed.scenes = Rsed.scenes || {};
-
 // A top-down view of the project's VARIMAA data as a tilemap. Lets the user paint
 // onto the tilemap.
 Rsed.scenes["tilemap-editor"] = (function()
@@ -179,6 +177,12 @@ Rsed.scenes["tilemap-editor"] = (function()
         
         draw_ui: function()
         {
+            if ((Rsed.visual.canvas.width <= 0) ||
+                (Rsed.visual.canvas.height <= 0))
+            {
+                return;
+            }
+            
             Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
 
             if (uiComponents) // Once the UI components have finished async loading...

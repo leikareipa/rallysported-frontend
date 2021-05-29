@@ -24,7 +24,7 @@ Rsed.core = (function()
     let project = Rsed.project.placeholder;
 
     // The scene we're currently displaying to the user.
-    let scene = Rsed.scenes["terrain-editor"];
+    let scene = Rsed.scenes["loading-spinner"];
 
     // The number of milliseconds elapsed between the most recent tick and the one
     // preceding it. E.g. at 60 FPS this would be about 16.
@@ -76,8 +76,7 @@ Rsed.core = (function()
             };
 
             coreIsRunning = false;
-
-            Rsed.browserMetadata.warn_of_incompatibilities();
+            Rsed.$currentScene = "loading-spinner";
 
             // Hide the UI while we load up the project's data etc.
             Rsed.ui.htmlUI.set_visible(false);
@@ -93,6 +92,9 @@ Rsed.core = (function()
             }
 
             coreIsRunning = true;
+            Rsed.$currentScene = "terrain-editor";
+            
+            Rsed.browserMetadata.warn_of_incompatibilities();
 
             return;
         },
@@ -144,56 +146,8 @@ Rsed.core = (function()
     }
 
     tick();
-    render_loading_animation();
 
     return publicInterface;
-
-    // Renders a spinner until the core starts up.
-    function render_loading_animation()
-    {
-        const targetScale = 2000;
-        let currentScale = 25;
-
-        (function render_loop(frameCount = 170)
-        {
-            if (coreIsRunning ||
-                coreIsInPanic)
-            {
-                return;
-            }
-
-            if (frameCount >= 180)
-            {
-                const shade = 168;
-
-                currentScale = Rsed.lerp(currentScale, targetScale, 0.0001);
-
-                const meshes = new Array(100).fill().map((p, idx)=>
-                {
-                    const point = Rngon.ngon([Rngon.vertex((idx / 5000), 0, 0)],
-                    {
-                        color: Rngon.color_rgba(shade, shade, shade),
-                    });
-
-                    const mesh = Rngon.mesh([point],
-                    {
-                        rotation: Rngon.rotation_vector(70, 0, ((500 + frameCount * idx) / 30)),
-                        scaling: Rngon.scaling_vector(currentScale, currentScale, currentScale)
-                    });
-
-                    return mesh;
-                });
-                
-                Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), meshes,
-                {
-                    cameraPosition: Rngon.translation_vector(0, 0, -14),
-                    scale: 0.25,
-                });
-            }
-
-            window.requestAnimationFrame(()=>render_loop(frameCount + 1));
-        })();
-    }
 
     // Called once per frame to orchestrate program flow.
     function tick(timestamp = 0, timeDeltaMs = 0)
@@ -201,8 +155,7 @@ Rsed.core = (function()
         const realScreenWidth = document.getElementById("render-canvas-container").clientWidth;
         Rsed.visual.canvas.scalingFactor = Math.min(1, Math.max(0.05, ((1920 / realScreenWidth) * 0.25)));
         
-        if (coreIsRunning &&
-            !Rsed.player.is_playing())
+        if (!Rsed.player.is_playing())
         {
             tickDeltaMs = timeDeltaMs;
             ticksPerSecond = Math.round(1000 / (timeDeltaMs || 1));

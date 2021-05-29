@@ -9,8 +9,6 @@
 
 "use strict";
 
-Rsed.scenes = Rsed.scenes || {};
-
 // A view of a given texture, allowing the user to modify the texture's pixels.
 Rsed.scenes["texture-editor"] = (function()
 {
@@ -181,6 +179,12 @@ Rsed.scenes["texture-editor"] = (function()
 
         draw_ui: function()
         {
+            if ((Rsed.visual.canvas.width <= 0) ||
+                (Rsed.visual.canvas.height <= 0))
+            {
+                return;
+            }
+            
             if (!texture)
             {
                 Rsed.throw_if(Rsed.$currentProject.isPlaceholder,
@@ -271,7 +275,7 @@ Rsed.scenes["texture-editor"] = (function()
                 allowAlphaReject: false,
             });
 
-            const renderInfo = Rngon.render(Rsed.visual.canvas.domElement.getAttribute("id"), [Rngon.mesh([textureNgon])],
+            const renderInfo = Rngon.render(Rsed.visual.canvas.domElement, [Rngon.mesh([textureNgon])],
             {
                 cameraPosition: Rngon.translation_vector(-textureUserOffsetX, textureUserOffsetY, 0),
                 scale: Rsed.visual.canvas.scalingFactor,
