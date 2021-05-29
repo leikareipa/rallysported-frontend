@@ -419,7 +419,7 @@ Rsed.track.props = async function(textureAtlas = Uint8Array)
     function clamped_to_prop_margins(value)
     {
         const min = (Rsed.constants.propTileMargin * Rsed.constants.groundTileSize);
-        const max = ((Rsed.core.current_project().maasto.width - Rsed.constants.propTileMargin) * Rsed.constants.groundTileSize);
+        const max = ((Rsed.$currentProject.maasto.width - Rsed.constants.propTileMargin) * Rsed.constants.groundTileSize);
 
         return Rsed.clamp(value, min, max);
     }

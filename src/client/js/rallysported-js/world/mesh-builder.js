@@ -55,8 +55,8 @@ Rsed.world.meshBuilder = (function()
             // Returns true if the given XY coordinates are out of track bounds.
             function out_of_bounds(x, y)
             {
-                return Boolean((x < 0) || (x >= Rsed.core.current_project().maasto.width) ||
-                               (y < 1) || (y > Rsed.core.current_project().maasto.height));
+                return Boolean((x < 0) || (x >= Rsed.$currentProject.maasto.width) ||
+                               (y < 1) || (y > Rsed.$currentProject.maasto.height));
             }
 
             // The polygons that make up the track mesh.
@@ -74,7 +74,7 @@ Rsed.world.meshBuilder = (function()
             const fractionX = (args.cameraPosFloat.x - args.cameraPos.x);
             const fractionZ = (args.cameraPosFloat.z - args.cameraPos.z);
 
-            const project = Rsed.core.current_project();
+            const project = Rsed.$currentProject;
 
             for (let z = 0; z < Rsed.world.camera.view_height; z++)
             {
@@ -354,7 +354,7 @@ Rsed.world.meshBuilder = (function()
                 ...args
             };
 
-            const project = Rsed.core.current_project();
+            const project = Rsed.$currentProject;
             const srcMesh = project.props.mesh[propId];
             const dstMesh = [];
 

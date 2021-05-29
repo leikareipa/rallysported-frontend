@@ -60,7 +60,7 @@ Rsed.scenes["texture"] = (function()
             viewLabel: Rsed.ui.component.label.instance(),
             clipboardLabel: Rsed.ui.component.label.instance(),
             palatPane: Rsed.ui.component.palatPane.instance({
-                selectionCallback: (palaIdx)=>scene.set_texture(Rsed.core.current_project().palat.texture[palaIdx]),
+                selectionCallback: (palaIdx)=>scene.set_texture(Rsed.$currentProject.palat.texture[palaIdx]),
                 indicateSelection: false,
             }),
         };
@@ -162,7 +162,7 @@ Rsed.scenes["texture"] = (function()
             }
             else if (key_is("q"))
             {
-                Rsed.core.set_scene("terrain");
+                Rsed.$currentScene = "terrain";
                 Rsed.ui.inputState.set_key_down("q", false);
             }
             else
@@ -183,10 +183,10 @@ Rsed.scenes["texture"] = (function()
         {
             if (!texture)
             {
-                Rsed.throw_if(Rsed.core.current_project().isPlaceholder,
+                Rsed.throw_if(Rsed.$currentProject.isPlaceholder,
                               "Expected project data to have been loaded already.");
 
-                this.set_texture(Rsed.core.current_project().palat.texture[3]);
+                this.set_texture(Rsed.$currentProject.palat.texture[3]);
             }
 
             Rsed.ui.draw.begin_drawing(Rsed.visual.canvas);
@@ -213,15 +213,15 @@ Rsed.scenes["texture"] = (function()
                                                    : "Clipboard: empty");
                 uiComponents.clipboardLabel.draw(margin, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 5));
                 
-                if (Rsed.core.fps_counter_enabled())
+                if (Rsed.browserMetadata.has_url_param("showFPS"))
                 {
-                    uiComponents.fpsIndicator.draw(margin, 10);
+                    uiComponents.fpsIndicator.draw(margin, 11);
                 }
 
                 if (sceneSettings.showPalatPane)
                 {
                     uiComponents.palatPane.update(sceneSettings);
-                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 47);
+                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - 4), 43);
                 }
             }
 
@@ -234,10 +234,10 @@ Rsed.scenes["texture"] = (function()
         {
             if (!texture)
             {
-                Rsed.throw_if(Rsed.core.current_project().isPlaceholder,
+                Rsed.throw_if(Rsed.$currentProject.isPlaceholder,
                               "Expected project data to have been loaded already.");
 
-                this.set_texture(Rsed.core.current_project().palat.texture[3]);
+                this.set_texture(Rsed.$currentProject.palat.texture[3]);
             }
 
             // Update the camera's position.

@@ -109,7 +109,7 @@ Rsed.ui.draw = (function()
 
                     const color = ((typeof pixel === "object")? pixel : Rsed.visual.palette.color_at_idx(pixel));
                     
-                    this.pixel((x + cx), (y + cy), color.red, color.green, color.blue);
+                    Rsed.ui.draw.pixel((x + cx), (y + cy), color.red, color.green, color.blue);
 
                     if (mousePick != null)
                     {
@@ -152,7 +152,7 @@ Rsed.ui.draw = (function()
             {
                 for (let i = 0; i < (Rsed.ui.font.nativeHeight + 2); i++)
                 {
-                    this.pixel(x, y + i, 255, 255, 0, mousePick);
+                    Rsed.ui.draw.pixel(x, y + i, 255, 255, 0, mousePick);
                 }
                 
                 x++;
@@ -177,7 +177,7 @@ Rsed.ui.draw = (function()
                                       ? Rsed.visual.palette.color_at_idx(character.pixel_at(cx, cy-1))
                                       : Rsed.visual.palette.color_at_idx("background");
 
-                        this.pixel((x + cx), (y + cy), color.red, color.green, color.blue, mousePick);
+                        Rsed.ui.draw.pixel((x + cx), (y + cy), color.red, color.green, color.blue, mousePick);
                     }
                 }
 

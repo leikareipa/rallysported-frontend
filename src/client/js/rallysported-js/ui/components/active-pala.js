@@ -33,11 +33,11 @@ Rsed.ui.component.activePala =
             Rsed.throw_if_not_type("number", offsetX, offsetY);
             
             const currentPalaIdx = Rsed.ui.groundBrush.brush_pala_idx();
-            const billboardIdx = Rsed.core.current_project().palat.billboard_idx(currentPalaIdx);
-            const palaTexture = Rsed.core.current_project().palat.texture[currentPalaIdx];
+            const billboardIdx = Rsed.$currentProject.palat.billboard_idx(currentPalaIdx);
+            const palaTexture = Rsed.$currentProject.palat.texture[currentPalaIdx];
             const billboardTexture = (billboardIdx == null)
                                      ? null
-                                     : Rsed.core.current_project().palat.texture[billboardIdx];
+                                     : Rsed.$currentProject.palat.texture[billboardIdx];
 
             const mousePick = new Array(palaTexture.indices.length).fill({
                 type: "ui-component",

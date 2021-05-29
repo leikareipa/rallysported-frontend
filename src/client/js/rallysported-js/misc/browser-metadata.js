@@ -15,12 +15,43 @@ Rsed.browserMetadata = (function()
 {
     const publicInterface = {
         isMobile: Boolean(/android|mobi|(crios\/)/i.test(navigator.userAgent)),
+        
         browserName: (/Chrome/i.test(navigator.userAgent)? "Chrome" :
                       /CriOS/i.test(navigator.userAgent)? "Chrome" :
                       /Opera/i.test(navigator.userAgent)? "Opera" :
                       /Firefox/i.test(navigator.userAgent)? "Firefox" :
                       /Safari/i.test(navigator.userAgent)? "Safari" :
                       null),
+
+        has_url_param: function(paramName = "")
+        {
+            const params = new URLSearchParams(window.location.search);
+            return params.has(paramName);
+        },
+
+        warn_of_incompatibilities: function()
+        {
+            // RallySportED-js projects are exported (saved) via JSZip using Blobs.
+            if (!JSZip.support.blob)
+            {
+                Rsed.ui.popup_notification("This browser doesn't support saving projects to disk!",
+                {
+                    notificationType: "warning",
+                });
+            }
+
+            // A crude test for whether the user's device might not have the required input
+            // devices available.
+            if (Rsed.browserMetadata.isMobile)
+            {
+                Rsed.ui.popup_notification("This app has limited support for mobile devices.",
+                {
+                    timeoutMs: 7000,
+                });
+            }
+
+            return;
+        }
     };
 
     return publicInterface;

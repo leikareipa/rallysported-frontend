@@ -27,7 +27,7 @@ Rsed.ui.groundBrush = (function()
         // Modify the terrain at the given x,y coordinates with the given brush action.
         publicInterface.apply_brush_to_terrain = function(brushAction = 0, value = 0, x = 0, y = 0)
         {
-            const targetProject = Rsed.core.current_project();
+            const targetProject = Rsed.$currentProject;
 
             for (let by = -brushSize; by <= brushSize; by++)
             {

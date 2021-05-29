@@ -77,7 +77,7 @@ Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
         {
             const firstSpectatorTexIdx = 236; // Index of the first PALA representing a (standing) spectator. Assumes consecutive arrangement.
             const numSkins = 4;
-            const sameRows = ((Rsed.core.current_project().maasto.width === 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
+            const sameRows = ((Rsed.$currentProject.maasto.width === 128)? 16 : 32); // The game will repeat the same pattern of variants on the x axis this many times.
 
             const yOffs = (Math.floor(tileY / sameRows)) % numSkins;
             const texOffs = ((tileX + (numSkins - 1)) + (yOffs * (numSkins - 1))) % numSkins;

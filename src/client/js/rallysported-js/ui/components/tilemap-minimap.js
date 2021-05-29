@@ -38,8 +38,8 @@ Rsed.ui.component.tilemapMinimap =
             /// TODO: You can pre-generate the image rather than re-generating it each frame.
             const width = 64;
             const height = 32;
-            const xMul = (Rsed.core.current_project().maasto.width / width);
-            const yMul = (Rsed.core.current_project().maasto.width / height);
+            const xMul = (Rsed.$currentProject.maasto.width / width);
+            const yMul = (Rsed.$currentProject.maasto.width / height);
             const image = []; // An array of palette indices that forms the minimap image.
             const mousePick = [];
 
@@ -50,7 +50,8 @@ Rsed.ui.component.tilemapMinimap =
                     const tileX = (x * xMul);
                     const tileZ = (y * yMul);
 
-                    const pala = Rsed.core.current_project().palat.texture[Rsed.core.current_project().varimaa.tile_at(tileX, tileZ)];
+                    const tile = Rsed.$currentProject.varimaa.tile_at(tileX, tileZ);
+                    const pala = Rsed.$currentProject.palat.texture[tile];
                     let color = ((pala == null)? 0 : pala.indices[1]);
 
                     image.push(color);
@@ -87,8 +88,8 @@ Rsed.ui.component.tilemapMinimap =
                 }
 
                 const cameraPos = Rsed.world.camera.position_floored();
-                const maxX = (Rsed.core.current_project().maasto.width - Rsed.world.camera.view_width);
-                const maxZ = (Rsed.core.current_project().maasto.height - Rsed.world.camera.view_height);
+                const maxX = (Rsed.$currentProject.maasto.width - Rsed.world.camera.view_width);
+                const maxZ = (Rsed.$currentProject.maasto.height - Rsed.world.camera.view_height);
                 const camX = Math.max(0, (Math.min(maxX, cameraPos.x) / xMul));
                 const camZ = Math.max(0, (Math.min(maxZ, cameraPos.z) / yMul));
                 Rsed.ui.draw.image(frame, null, frameWidth, frameHeight, (offsetX - width + camX), (offsetY + camZ), true);

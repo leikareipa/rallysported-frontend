@@ -122,7 +122,7 @@ Rsed.stream.server = function(streamId, signalFns)
                 clearInterval(timer);
 
                 Rsed.stream.send_packet("project-data",
-                                        Rsed.core.current_project().json(),
+                                        Rsed.$currentProject.json(),
                                         newViewer,
                                         {
                                             keepAlive: false,

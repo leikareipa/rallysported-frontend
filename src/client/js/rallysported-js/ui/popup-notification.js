@@ -33,7 +33,7 @@ Rsed.ui.popup_notification = function(string = "", args = {})
         switch (args.notificationType)
         {
             case "info": return `${meta} fas fa-info`;
-            case "warning": return `${meta} fas fa-toilet-paper-slash`;
+            case "warning": return `${meta} fas fa-frog`;
             case "error": return `${meta} fas fa-spider`;
             case "fatal": return `${meta} fas fa-otter`;
             default: return `${meta} fas far fa-comment`;

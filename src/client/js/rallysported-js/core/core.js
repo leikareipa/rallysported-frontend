@@ -1,7 +1,7 @@
 /*
  * Most recent known filename: js/core/core.js
  *
- * 2018-2020 Tarpeeksi Hyvae Soft
+ * 2018-2021 Tarpeeksi Hyvae Soft
  * 
  * Software: RallySportED-js
  *
@@ -15,44 +15,34 @@ Rsed.core = (function()
     let coreIsRunning = false;
 
     // Set to true when core.panic() is called.
-    let corePanicked = false;
+    let coreIsInPanic = false;
 
-    // The number of frames per second being generated.
-    let programFPS = 0;
+    let ticksPerSecond = 0;
 
     // The project we've currently got loaded. When the user makes edits or requests a save,
     // this is the target project.
     let project = Rsed.project.placeholder;
 
     // The scene we're currently displaying to the user.
-    let currentScene = Rsed.scenes["terrain"];
+    let scene = Rsed.scenes["terrain"];
 
     // The number of milliseconds elapsed between the most recent tick and the one
     // preceding it. E.g. at 60 FPS this would be about 16.
-    let tickTimeDeltaMs = 0;
-
-    // Whether to display an FPS counter to the user.
-    const fpsCounterEnabled = (()=>
-    {
-        const params = new URLSearchParams(window.location.search);
-        return (params.has("showFramerate") && (Number(params.get("showFramerate")) === 1));
-    })();
+    let tickDeltaMs = 0;
 
     const publicInterface =
     {
-        appName: "RallySportED",
-
-        // If true when Rsed.core.start() is called, the current track will be
-        // loaded into an instance of Rally-Sport running in the browser, allowing
-        // the user to play the track.
-        playOnStartup: false,
-
-        resetMouseHover: false,
+        forceUpdateMouseHoverOnTickEnd: false,
         
-        tick_time_delta_ms: ()=>tickTimeDeltaMs,
-        is_running: ()=>coreIsRunning,
-        renderer_fps: ()=>programFPS,
-        fps_counter_enabled: ()=>fpsCounterEnabled,
+        get ticksPerSecond()
+        {
+            return ticksPerSecond;
+        },
+
+        get tickDeltaMs()
+        {
+            return tickDeltaMs;
+        },
 
         default_startup_args: function()
         {
@@ -81,28 +71,30 @@ Rsed.core = (function()
             Rsed.throw_if_not_type("object", args);
             
             args = {
-                ...this.default_startup_args(),
+                ...Rsed.core.default_startup_args(),
                 ...args,
             };
 
             coreIsRunning = false;
 
+            Rsed.browserMetadata.warn_of_incompatibilities();
+
             // Hide the UI while we load up the project's data etc.
             Rsed.ui.htmlUI.set_visible(false);
-
-            verify_browser_compatibility();
 
             await load_project(args.project);
 
             Rsed.ui.htmlUI.refresh();
             Rsed.ui.htmlUI.set_visible(true);
 
-            if (this.playOnStartup)
+            if (Rsed.player.runOnStartup)
             {
                 Rsed.player.play(true);
             }
 
             coreIsRunning = true;
+
+            return;
         },
 
         // Something went fatally wrong and the app can't recover from it. All that's
@@ -112,7 +104,7 @@ Rsed.core = (function()
             Rsed.ui.htmlUI.display_blue_screen(errorMessage);
 
             coreIsRunning = false;
-            corePanicked = true;
+            coreIsInPanic = true;
 
             publicInterface.start = ()=>{}; // Prevent restarting from code.
         },
@@ -127,10 +119,10 @@ Rsed.core = (function()
 
         current_scene: function()
         {
-            Rsed.assert && (currentScene !== null)
+            Rsed.assert && (scene !== null)
                         || Rsed.throw("Attempting to access an uninitialized scene.");
 
-            return currentScene;
+            return scene;
         },
 
         set_scene: function(sceneName)
@@ -138,13 +130,13 @@ Rsed.core = (function()
             Rsed.assert && (Rsed.scenes[sceneName])
                         || Rsed.throw("Attempting to set an unknown scene.");
 
-            currentScene = Rsed.scenes[sceneName];
+            scene = Rsed.scenes[sceneName];
 
             // If we've switched to the tilemap scene, make sure it's reflecting
             // any changes we may have made to the track in the previous scene.
-            if (currentScene == Rsed.scenes["tilemap"])
+            if (scene == Rsed.scenes["tilemap"])
             {
-                currentScene.regenerate_tilemap();
+                scene.regenerate_tilemap();
             }
 
             return;
@@ -165,7 +157,7 @@ Rsed.core = (function()
         (function render_loop(frameCount = 170)
         {
             if (coreIsRunning ||
-                corePanicked)
+                coreIsInPanic)
             {
                 return;
             }
@@ -212,45 +204,22 @@ Rsed.core = (function()
         if (coreIsRunning &&
             !Rsed.player.is_playing())
         {
-            tickTimeDeltaMs = timeDeltaMs;
-            programFPS = Math.round(1000 / (timeDeltaMs || 1));
+            tickDeltaMs = timeDeltaMs;
+            ticksPerSecond = Math.round(1000 / (timeDeltaMs || 1));
 
-            currentScene.handle_user_interaction();
-            currentScene.draw_mesh();
-            currentScene.draw_ui();
+            scene.handle_user_interaction();
+            scene.draw_mesh();
+            scene.draw_ui();
 
-            if (publicInterface.resetMouseHover)
+            if (publicInterface.forceUpdateMouseHoverOnTickEnd)
             {
                 Rsed.ui.inputState.update_mouse_hover();
-                publicInterface.resetMouseHover = false;
+                publicInterface.forceUpdateMouseHoverOnTickEnd = false;
             }
         }
 
         // Keep ticking.
         window.requestAnimationFrame((newTimestamp)=>tick(newTimestamp, (newTimestamp - timestamp)));
-    }
-
-    // Test various browser compatibility factors, and give the user messages of warning where appropriate.
-    function verify_browser_compatibility()
-    {
-        // RallySportED-js projects are exported (saved) via JSZip using Blobs.
-        if (!JSZip.support.blob)
-        {
-            Rsed.ui.popup_notification("This browser doesn't support saving projects to disk!",
-            {
-                notificationType: "warning",
-            });
-        }
-
-        // A crude test for whether the user's device might not have the required input
-        // devices available.
-        if (Rsed.browserMetadata.isMobile)
-        {
-            Rsed.ui.popup_notification("Note: This app has limited support for mobile devices.",
-            {
-                timeoutMs: 7000,
-            });
-        }
     }
 
     async function load_project(projectMeta)

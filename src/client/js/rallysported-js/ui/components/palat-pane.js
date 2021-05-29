@@ -194,7 +194,7 @@ Rsed.ui.component.palatPane =
                 {
                     if (palaIdx > maxNumPalas) break;
 
-                    const pala = Rsed.core.current_project().palat.texture[palaIdx];
+                    const pala = Rsed.$currentProject.palat.texture[palaIdx];
                     for (let py = 0; py < palaHeight; py++)
                     {
                         for (let px = 0; px < palaWidth; px++)

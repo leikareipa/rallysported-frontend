@@ -18,7 +18,7 @@ Rsed.ui.component = function()
     const publicInterface =
     {
         // A string that uniquely identifies this component from other components.
-        id: Object.freeze(Rsed.generate_uuid4_string()),
+        id: Object.freeze(Rsed.generate_uuid4()),
 
         // If the mouse cursor is currently grabbing this component, returns the grab
         // information; otherwise null is returned.

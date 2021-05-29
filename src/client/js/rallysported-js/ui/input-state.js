@@ -317,9 +317,9 @@ Rsed.ui.inputState = (function()
 
             function fire_key(isRepeat = true)
             {
-                if (Rsed.core.current_scene())
+                if (Rsed.$currentScene)
                 {
-                    Rsed.core.current_scene()[(isDown? "on_key_fire" : "on_key_release")](keyIdx, isRepeat);
+                    Rsed.$currentScene[(isDown? "on_key_fire" : "on_key_release")](keyIdx, isRepeat);
                 }
             }
         },

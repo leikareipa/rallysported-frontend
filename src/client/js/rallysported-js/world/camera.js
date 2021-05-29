@@ -54,8 +54,8 @@ Rsed.world.camera = (function()
                 const marginX = 8;
                 const marginY = 9;
                 
-                const maxX = (Rsed.core.current_project().maasto.width - this.view_width);
-                const maxY = (Rsed.core.current_project().maasto.width - this.view_height + 1);
+                const maxX = (Rsed.$currentProject.maasto.width - this.view_width);
+                const maxY = (Rsed.$currentProject.maasto.width - this.view_height + 1);
 
                 position.x = Math.max(-marginX, Math.min(position.x, (maxX + marginX)));
                 position.z = Math.max(-marginY, Math.min(position.z, (maxY + marginY)));
@@ -76,7 +76,7 @@ Rsed.world.camera = (function()
                 
                 // Force mouse hover to update, since there might now be a different tile under
                 // the cursor.
-                Rsed.core.resetMouseHover = true;
+                Rsed.core.forceUpdateMouseHoverOnTickEnd = true;
 
                 // If the user is grabbing onto a prop while the camera moves, move the prop as well.
                 {
@@ -88,12 +88,12 @@ Rsed.world.camera = (function()
                         // Note: the starting line (always prop #0) is not user-editable.
                         if (grab.propTrackIdx !== 0)
                         {
-                            Rsed.core.current_project().props.move(Rsed.core.current_project().track_id(),
-                                                                   grab.propTrackIdx,
-                                                                   {
-                                                                       x: (posDelta.x * Rsed.constants.groundTileSize),
-                                                                       z: (posDelta.z * Rsed.constants.groundTileSize),
-                                                                   });
+                            Rsed.$currentProject.props.move(Rsed.$currentProject.track_id(),
+                                                            grab.propTrackIdx,
+                                                            {
+                                                                x: (posDelta.x * Rsed.constants.groundTileSize),
+                                                                z: (posDelta.z * Rsed.constants.groundTileSize),
+                                                            });
                         }
                     }
                 }

@@ -25,6 +25,10 @@ Rsed.player = (function()
                 || Rsed.throw("Malformed DOM for the player elements.");
 
     const publicInterface = {
+        // Whether to run the player automatically when Rsed.core.start()
+        // is called.
+        runOnStartup: false,
+
         is_playing: function()
         {
             return isPlaying;
@@ -104,7 +108,7 @@ Rsed.player = (function()
                       "-c", "mixer master 17:17",
                       "-c", `bitset game.dta 35 ${playWithAI? 0 : 32}`, // Refer to https://github.com/leikareipa/rallysported/blob/master/docs/rs-formats.txt on GAME.DTA's bytes.
                       "-c", `bitset rallye.exe 82253 ${playWithAI? 224 : 69}`, // Make the starting lights go out faster if not playing with AI.
-                      "-c", `rload ${Rsed.core.current_project().name}`])
+                      "-c", `rload ${Rsed.$currentProject.name}`])
                 .then((interface)=>{
                     jsDosController = interface;
                     isPlaying = true;
@@ -143,7 +147,7 @@ Rsed.player = (function()
         }
 
         await zip.loadAsync(baseArchive.blob());
-        await Rsed.core.current_project().insert_project_data_into_zip(zip);
+        await Rsed.$currentProject.insert_project_data_into_zip(zip);
 
         return await zip.generateAsync({
             type: "blob",

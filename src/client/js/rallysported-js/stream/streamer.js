@@ -156,7 +156,7 @@ Rsed.stream.streamer = function(streamId, signalFns)
                 clearInterval(timer);
 
                 Rsed.stream.send_packet("project-data",
-                                        Rsed.core.current_project().json(),
+                                        Rsed.$currentProject.json(),
                                         newViewer);
 
                 viewers.push(newViewer);

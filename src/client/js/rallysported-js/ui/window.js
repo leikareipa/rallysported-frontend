@@ -31,7 +31,7 @@ window.onunload = function()
 
 window.onbeforeunload = function(event)
 {
-    if (!Rsed.core.current_project().areAllChangesSaved)
+    if (!Rsed.$currentProject.areAllChangesSaved)
     {
         event.preventDefault();
 
@@ -56,7 +56,7 @@ window.onload = function(event)
         if (window.location.hash == "#play")
         {
             history.replaceState(null, null, " "); // Remove the hash.
-            Rsed.core.playOnStartup = true;
+            Rsed.player.runOnStartup = true;
         }
 
         const params = new URLSearchParams(window.location.search);
@@ -186,7 +186,7 @@ window.oncontextmenu = function(event)
     if ( Rsed.ui.inputState.current_mouse_hover() &&
         (Rsed.ui.inputState.current_mouse_hover().type === "prop")) 
     {
-        const isFinishLine = Rsed.core.current_project().props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish");
+        const isFinishLine = Rsed.$currentProject.props.name(Rsed.ui.inputState.current_mouse_hover().propId).toLowerCase().startsWith("finish");
 
         Rsed.ui.htmlUI.refresh_prop_list(isFinishLine);
 

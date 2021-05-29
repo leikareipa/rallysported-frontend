@@ -57,7 +57,7 @@ Rsed.scenes["tilemap"] = (function()
         // Updates the tilemap's texture within the given dirty rectangle.
         refresh_tilemap_texture: function(startX = 0, startY = 0, width = -1, height = -1)
         {
-            const project = Rsed.core.current_project();
+            const project = Rsed.$currentProject;
             
             const maxX = ((width == -1)? tilemap.texture.width : Math.min(tilemap.texture.width, (width + startX)));
             const maxY = ((height == -1)? tilemap.texture.height : Math.min(tilemap.texture.height, (height + startY)));
@@ -107,7 +107,7 @@ Rsed.scenes["tilemap"] = (function()
 
         regenerate_tilemap: function()
         {
-            const project = Rsed.core.current_project();
+            const project = Rsed.$currentProject;
 
             tilemap.texture.width = project.varimaa.width;
             tilemap.texture.height = project.varimaa.height;
@@ -147,14 +147,13 @@ Rsed.scenes["tilemap"] = (function()
                     scene.regenerate_tilemap();
                 }
             }
-            else if (key_is("y") &&
-                     Rsed.ui.inputState.key_down("control") )
+            else if (key_is("y") && Rsed.ui.inputState.key_down("control") )
             {
                 Rsed.ui.undoStack.redo();
             }
             else if (key_is("q"))
             {
-                Rsed.core.set_scene("terrain");
+                Rsed.$currentScene = "terrain";
             }
             else if (key_is("a") && !repeat)
             {
@@ -162,7 +161,7 @@ Rsed.scenes["tilemap"] = (function()
 
                 // Prevent a mouse click from acting on the ground behind the pane when the pane
                 // is brought up, and on the pane when the pane has been removed.
-                Rsed.core.resetMouseHover = true;
+                Rsed.core.forceUpdateMouseHoverOnTickEnd = true;
             }
             else
             {
@@ -192,19 +191,19 @@ Rsed.scenes["tilemap"] = (function()
                 uiComponents.activePala.update(sceneSettings);
                 uiComponents.activePala.draw((Rsed.visual.canvas.width - 20), margin);
 
-                uiComponents.footer.update(`Size: ${Rsed.core.current_project().maasto.width} * ${Rsed.core.current_project().maasto.width}`);
+                uiComponents.footer.update(`Size: ${Rsed.$currentProject.maasto.width} * ${Rsed.$currentProject.maasto.width}`);
                 uiComponents.footer.draw(margin, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 5));
 
                 if (sceneSettings.showPalatPane)
                 {
                     uiComponents.palatPane.update(sceneSettings);
-                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - margin), 31);
+                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - margin), 27);
                 }
 
-                if (Rsed.core.fps_counter_enabled())
+                if (Rsed.browserMetadata.has_url_param("showFPS"))
                 {
                     uiComponents.fpsIndicator.update(sceneSettings);
-                    uiComponents.fpsIndicator.draw(margin, 10);
+                    uiComponents.fpsIndicator.draw(margin, 11);
                 }
             }
 
@@ -217,8 +216,8 @@ Rsed.scenes["tilemap"] = (function()
         {
            if ((Rsed.visual.canvas.width != knownCanvasSizeX) ||
                (Rsed.visual.canvas.height != knownCanvasSizeY) ||
-               (Rsed.core.current_project().varimaa.width != tilemap.texture.width) ||
-               (Rsed.core.current_project().varimaa.height != tilemap.texture.height))
+               (Rsed.$currentProject.varimaa.width != tilemap.texture.width) ||
+               (Rsed.$currentProject.varimaa.height != tilemap.texture.height))
            {
                scene.regenerate_tilemap();
            }
@@ -261,16 +260,16 @@ Rsed.scenes["tilemap"] = (function()
     {
         const cursors = Rsed.ui.cursorHandler.cursors;
         const mousePos = Rsed.ui.inputState.mouse_pos_scaled_to_render_resolution();
-        const mouseTilemapPosX = Math.round((mousePos.x - tilemap.offsetX) * (Rsed.core.current_project().maasto.width / tilemap.width));
-        const mouseTilemapPosY = Math.round((mousePos.y - tilemap.offsetY) * (Rsed.core.current_project().maasto.height / tilemap.height));
+        const mouseTilemapPosX = Math.round((mousePos.x - tilemap.offsetX) * (Rsed.$currentProject.maasto.width / tilemap.width));
+        const mouseTilemapPosY = Math.round((mousePos.y - tilemap.offsetY) * (Rsed.$currentProject.maasto.height / tilemap.height));
         const mouseHover = Rsed.ui.inputState.current_mouse_hover();
             
         
 
         const isCursorOnTilemap = ((mouseTilemapPosX >= 0) &&
                                    (mouseTilemapPosY >= 0) &&
-                                   (mouseTilemapPosX < Rsed.core.current_project().maasto.width) &&
-                                   (mouseTilemapPosY < Rsed.core.current_project().maasto.height));
+                                   (mouseTilemapPosX < Rsed.$currentProject.maasto.width) &&
+                                   (mouseTilemapPosY < Rsed.$currentProject.maasto.height));
 
         if (mouseHover && mouseHover.cursor)
         {
@@ -295,8 +294,8 @@ Rsed.scenes["tilemap"] = (function()
         // Handle painting the tilemap.
         if (Rsed.ui.inputState.mouse_button_down())
         {
-            const mouseTilemapPosX = Math.round((mousePos.x - tilemap.offsetX) * (Rsed.core.current_project().maasto.width / tilemap.width));
-            const mouseTilemapPosY = Math.round((mousePos.y - tilemap.offsetY) * (Rsed.core.current_project().maasto.height / tilemap.height));
+            const mouseTilemapPosX = Math.round((mousePos.x - tilemap.offsetX) * (Rsed.$currentProject.maasto.width / tilemap.width));
+            const mouseTilemapPosY = Math.round((mousePos.y - tilemap.offsetY) * (Rsed.$currentProject.maasto.height / tilemap.height));
             const brushSize = (Rsed.ui.groundBrush.brush_size() + 1);
 
             Rsed.ui.groundBrush.apply_brush_to_terrain(Rsed.ui.groundBrush.brushAction.changePala,

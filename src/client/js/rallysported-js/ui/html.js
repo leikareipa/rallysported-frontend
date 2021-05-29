@@ -47,7 +47,7 @@ Rsed.ui.htmlUI = (function()
                 Rsed.ui.assetMutator.user_edit("prop", {
                     command: "set-type",
                     target: Rsed.ui.inputState.current_mouse_hover().propTrackIdx,
-                    data: Rsed.core.current_project().props.id_for_name(name),
+                    data: Rsed.$currentProject.props.id_for_name(name),
                 });
 
                 window.close_dropdowns();
@@ -57,16 +57,16 @@ Rsed.ui.htmlUI = (function()
 
             refresh_prop_list: function(forFinishLines = false)
             {
-                this.propList = Rsed.core.current_project().props.names()
-                                         .filter(propName=>(forFinishLines? propName.startsWith("finish") : !propName.startsWith("finish")))
-                                         .map(propName=>({propName}));
+                this.propList = Rsed.$currentProject.props.names()
+                                    .filter(propName=>(forFinishLines? propName.startsWith("finish") : !propName.startsWith("finish")))
+                                    .map(propName=>({propName}));
 
                 return;
             },
             
             refresh_track_name: function()
             {
-                this.trackName = Rsed.core.current_project().name;
+                this.trackName = Rsed.$currentProject.name;
 
                 return;
             },
@@ -83,16 +83,16 @@ Rsed.ui.htmlUI = (function()
         {
             uiContainer.refresh_track_name();
 
-            if ((typeof Rsed.core.current_project().name == "string") &&
-                Rsed.core.current_project().name.length)
+            if ((typeof Rsed.$currentProject.name == "string") &&
+                Rsed.$currentProject.name.length)
             {
-                document.title = `${Rsed.core.current_project().areAllChangesSaved? "" : "* "}
-                                  ${Rsed.core.current_project().name} - 
-                                  ${Rsed.core.appName}`;
+                document.title = `${Rsed.$currentProject.areAllChangesSaved? "" : "* "}
+                                  ${Rsed.$currentProject.name} - 
+                                  ${Rsed.productName}`;
             }
             else
             {
-                document.title = Rsed.core.appName;
+                document.title = Rsed.productName;
             }
         },
 

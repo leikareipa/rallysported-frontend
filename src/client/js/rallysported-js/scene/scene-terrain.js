@@ -122,7 +122,7 @@ Rsed.scenes["terrain"] = (function()
 
                 // Prevent a mouse click from acting on the ground behind the pane when the pane
                 // is brought up, and on the pane when the pane has been removed.
-                Rsed.core.resetMouseHover = true;
+                Rsed.core.forceUpdateMouseHoverOnTickEnd = true;
             }
             else if (key_is("z"))
             {
@@ -143,7 +143,7 @@ Rsed.scenes["terrain"] = (function()
             }
             else if (key_is("q"))
             {
-                Rsed.core.set_scene("tilemap");
+                Rsed.$currentScene = "tilemap";
             }
             else if (key_is("t"))
             {
@@ -154,7 +154,7 @@ Rsed.scenes["terrain"] = (function()
                     Rsed.scenes["texture"].set_texture(mouseHover.texture);
                 }
 
-                Rsed.core.set_scene("texture");
+                Rsed.$currentScene = "texture";
             }
             else if (key_is("arrowup") ||
                      key_is("arrowdown"))
@@ -185,9 +185,9 @@ Rsed.scenes["terrain"] = (function()
 
                 if (!isNaN(newHeight))
                 {
-                    for (let y = 0; y < Rsed.core.current_project().maasto.height; y++)
+                    for (let y = 0; y < Rsed.$currentProject.maasto.height; y++)
                     {
-                        for (let x = 0; x < Rsed.core.current_project().maasto.width; x++)
+                        for (let x = 0; x < Rsed.$currentProject.maasto.width; x++)
                         {
                             Rsed.ui.assetMutator.user_edit("maasto", {
                                 command: "set-height",
@@ -252,13 +252,13 @@ Rsed.scenes["terrain"] = (function()
                 if (sceneSettings.showPalatPane)
                 {
                     uiComponents.palatPane.update(sceneSettings);
-                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - margin), 47);
+                    uiComponents.palatPane.draw((Rsed.visual.canvas.width - margin), 43);
                 }
 
-                if (Rsed.core.fps_counter_enabled())
+                if (Rsed.browserMetadata.has_url_param("showFPS"))
                 {
                     uiComponents.fpsIndicator.update(sceneSettings);
-                    uiComponents.fpsIndicator.draw(margin, 10);
+                    uiComponents.fpsIndicator.draw(margin, 11);
                 }
             }
 
@@ -356,11 +356,11 @@ Rsed.scenes["terrain"] = (function()
     function move_camera()
     {
         cameraMovement.isMobileControls = Rsed.browserMetadata.isMobile;
-        cameraMovement.msSinceLastUpdate += Rsed.core.tick_time_delta_ms();
+        cameraMovement.msSinceLastUpdate += Rsed.core.tickDeltaMs;
 
         if (cameraMovement.isMobileControls)
         {
-            const movementSpeed = (0.03 * Rsed.core.tick_time_delta_ms());
+            const movementSpeed = (0.03 * Rsed.core.tickDeltaMs);
             const cameraMoveVector = Rngon.vector3((cameraMovement.up? -1 : cameraMovement.down? 1 : 0),
                                                    0,
                                                    (cameraMovement.left? -1 : cameraMovement.right? 1 : 0));
@@ -480,7 +480,7 @@ Rsed.scenes["terrain"] = (function()
                     if (Rsed.ui.inputState.left_mouse_button_down() &&
                         Rsed.ui.inputState.left_mouse_click_modifiers().includes("tab"))
                     {
-                        const palaIdx = Rsed.core.current_project().varimaa.tile_at(hover.groundTileX, hover.groundTileY);
+                        const palaIdx = Rsed.$currentProject.varimaa.tile_at(hover.groundTileX, hover.groundTileY);
 
                         Rsed.ui.groundBrush.set_brush_pala_idx(palaIdx);
 
@@ -493,7 +493,7 @@ Rsed.scenes["terrain"] = (function()
                     {
                         Rsed.ui.assetMutator.user_edit("prop", {
                             command: "add",
-                            target: Rsed.core.current_project().props.id_for_name("tree"),
+                            target: Rsed.$currentProject.props.id_for_name("tree"),
                             data: {
                                 x: (hover.groundTileX * Rsed.constants.groundTileSize),
                                 z: (hover.groundTileY * Rsed.constants.groundTileSize),
