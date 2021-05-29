@@ -1,29 +1,27 @@
 /*
- * Most recent known filename: js/world/camera.js
+ * Most recent known filename: js/scene/terrain-editor/camera.js
  *
- * Tarpeeksi Hyvae Soft 2018 /
- * RallySportED-js
+ * 2018 Tarpeeksi Hyvae Soft
+ * 
+ * Software: RallySportED-js
  *
  */
 
 "use strict";
 
-Rsed.world.camera = (function()
+Rsed.scenes["terrain-editor"].camera = (function()
 {
-    // The camera's starting position, in tile units.
     const defaultPosition = {x:15.0, y:0.0, z:13.0};
 
-    // The camera's current position, in tile units.
     const position = {...defaultPosition};
 
-    // The camera's rotation, in degrees.
+    // The camera's rotation in degrees.
     const rotation = {x:16, y:0, z:0};
 
     let verticalZoom = 0;
 
     const publicInterface =
     {
-        // Restore the camera's default position.
         reset_camera_position: function()
         {
             position.x = defaultPosition.x;
@@ -79,11 +77,11 @@ Rsed.world.camera = (function()
                 Rsed.core.forceUpdateMouseHoverOnTickEnd = true;
 
                 // If the user is grabbing onto a prop while the camera moves, move the prop as well.
+                if (Rsed.ui.inputState.left_mouse_button_down())
                 {
                     const grab = Rsed.ui.inputState.current_mouse_grab();
 
-                    if (grab && (grab.type === "prop") &&
-                        Rsed.ui.inputState.left_mouse_button_down())
+                    if (grab && (grab.type == "prop"))
                     {
                         // Note: the starting line (always prop #0) is not user-editable.
                         if (grab.propTrackIdx !== 0)

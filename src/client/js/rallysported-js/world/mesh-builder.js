@@ -20,22 +20,13 @@ Rsed.world.meshBuilder = (function()
         track_mesh: function(args = {})
         {
             Rsed.throw_if_not_type("object", args);
+            Rsed.throw_if_not_type("object", args.camera);
 
             args =
             {
                 // Default args.
                 ...{
-                    // The camera's tile position in integer values.
-                    cameraPos: {
-                        x: 0,
-                        y: 0,
-                        z: 0,
-                    },
-
-                    // The camera's world position in floating-point values - e.g. the same as
-                    // 'cameraPos' but without having rounded to integer values. If this is given,
-                    // camera movement will be pixel-based (smooth) instead of tile-based (jagged).
-                    cameraPosFloat: undefined,
+                    jaggedCameraMovement: true,
 
                     // Whether to draw props with solid colors(/textures) or with just a wireframe.
                     solidProps: true,
@@ -47,10 +38,10 @@ Rsed.world.meshBuilder = (function()
                 ...args,
             };
 
-            if (!args.cameraPosFloat)
-            {
-                args.cameraPosFloat = args.cameraPos;
-            }  
+            const cameraPosFloored = args.camera.position_floored();
+            const cameraPos = args.jaggedCameraMovement
+                              ? cameraPosFloored
+                              : args.camera.position();
 
             // Returns true if the given XY coordinates are out of track bounds.
             function out_of_bounds(x, y)
@@ -64,26 +55,26 @@ Rsed.world.meshBuilder = (function()
 
             // We'll shift the track mesh by these values (world units) to center the mesh on screen.
             // Note that we adjust Z to account for vertical camera zooming.
-            const centerView = {x: -((Rsed.world.camera.view_width / 2) * Rsed.constants.groundTileSize),
-                                y: (-650 + args.cameraPos.y),
-                                z: (3628 - (Rsed.world.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
+            const centerView = {x: -((args.camera.view_width / 2) * Rsed.constants.groundTileSize),
+                                y: (-650 + cameraPosFloored.y),
+                                z: (3628 - (args.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 
             const mouseHover = Rsed.ui.inputState.current_mouse_hover();
             const mouseGrab = Rsed.ui.inputState.current_mouse_grab();
 
-            const fractionX = (args.cameraPosFloat.x - args.cameraPos.x);
-            const fractionZ = (args.cameraPosFloat.z - args.cameraPos.z);
+            const fractionX = (cameraPos.x - cameraPosFloored.x);
+            const fractionZ = (cameraPos.z - cameraPosFloored.z);
 
             const project = Rsed.$currentProject;
 
-            for (let z = 0; z < Rsed.world.camera.view_height; z++)
+            for (let z = 0; z < args.camera.view_height; z++)
             {
                 // Add the ground tiles.
-                for (let x = 0; x < Rsed.world.camera.view_width; x++)
+                for (let x = 0; x < args.camera.view_width; x++)
                 {
                     // Coordinates of the current ground tile.
-                    const tileX = (x + args.cameraPos.x);
-                    const tileZ = (z + args.cameraPos.z);
+                    const tileX = (x + cameraPosFloored.x);
+                    const tileZ = (z + cameraPosFloored.z);
 
                     if (out_of_bounds(tileX, tileZ))
                     {
@@ -92,7 +83,7 @@ Rsed.world.meshBuilder = (function()
 
                     const isCornerTile = ((x == 0) ||
                                           (z == 0) ||
-                                          (x == (Rsed.world.camera.view_width - 1)));
+                                          (x == (args.camera.view_width - 1)));
 
                     // Coordinates in world units of the ground tile's top left vertex.
                     const vertX = (((x * Rsed.constants.groundTileSize) + centerView.x) - (fractionX * Rsed.constants.groundTileSize));
@@ -227,10 +218,10 @@ Rsed.world.meshBuilder = (function()
                 // the ground tiles so that the n-gons are properly sorted by depth for rendering.
                 // Otherwise, billboard/bridge tiles can become obscured by ground tiles behind
                 // them.
-                for (let x = 0; x < Rsed.world.camera.view_width; x++)
+                for (let x = 0; x < args.camera.view_width; x++)
                 {
-                    const tileX = (x + args.cameraPos.x);
-                    const tileZ = (z + args.cameraPos.z);
+                    const tileX = (x + cameraPosFloored.x);
+                    const tileZ = (z + cameraPosFloored.z);
 
                     if (out_of_bounds(tileX, tileZ))
                     {
@@ -239,7 +230,7 @@ Rsed.world.meshBuilder = (function()
 
                     const isCornerTile = ((x == 0) ||
                                           (z == 0) ||
-                                          (x == (Rsed.world.camera.view_width - 1)));
+                                          (x == (args.camera.view_width - 1)));
 
                     const vertX = (((x * Rsed.constants.groundTileSize) + centerView.x) - (fractionX * Rsed.constants.groundTileSize));
                     const vertZ = ((centerView.z - (z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
@@ -306,13 +297,13 @@ Rsed.world.meshBuilder = (function()
             const propLocations = project.props.locations_of_props_on_track(project.track_id());
             propLocations.forEach((pos, idx)=>
             {
-                if ((pos.x >= (args.cameraPos.x * Rsed.constants.groundTileSize)) &&
-                    (pos.x <= ((args.cameraPos.x + Rsed.world.camera.view_width) * Rsed.constants.groundTileSize)) &&
-                    (pos.z >= (args.cameraPos.z * Rsed.constants.groundTileSize)) &&
-                    (pos.z <= ((args.cameraPos.z + Rsed.world.camera.view_height) * Rsed.constants.groundTileSize)))
+                if ((pos.x >= (cameraPosFloored.x * Rsed.constants.groundTileSize)) &&
+                    (pos.x <= ((cameraPosFloored.x + args.camera.view_width) * Rsed.constants.groundTileSize)) &&
+                    (pos.z >= (cameraPosFloored.z * Rsed.constants.groundTileSize)) &&
+                    (pos.z <= ((cameraPosFloored.z + args.camera.view_height) * Rsed.constants.groundTileSize)))
                 {
-                    const x = ((pos.x + centerView.x - (args.cameraPos.x * Rsed.constants.groundTileSize)) - (fractionX * Rsed.constants.groundTileSize));
-                    const z = ((centerView.z - pos.z + (args.cameraPos.z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
+                    const x = ((pos.x + centerView.x - (cameraPosFloored.x * Rsed.constants.groundTileSize)) - (fractionX * Rsed.constants.groundTileSize));
+                    const z = ((centerView.z - pos.z + (cameraPosFloored.z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
                     
                     const groundHeight = centerView.y + project.maasto.tile_at((pos.x / Rsed.constants.groundTileSize), (pos.z / Rsed.constants.groundTileSize));
                     const y = (groundHeight + pos.y);

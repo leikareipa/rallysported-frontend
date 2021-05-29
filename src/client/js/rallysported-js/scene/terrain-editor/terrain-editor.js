@@ -62,7 +62,7 @@ Rsed.scenes["terrain-editor"] = (function()
         };
     })();
 
-    return Rsed.scene(
+    const scene = Rsed.scene(
     {
         on_key_release: function(key)
         {
@@ -244,7 +244,7 @@ Rsed.scenes["terrain-editor"] = (function()
                     uiComponents.footerInfo.draw(margin, (Rsed.visual.canvas.height - Rsed.ui.font.nativeHeight - 5));
                 }
 
-                uiComponents.minimap.update(sceneSettings);
+                uiComponents.minimap.update({camera: scene.camera});
                 uiComponents.minimap.draw((Rsed.visual.canvas.width - margin), margin);
 
                 if (sceneSettings.showPalatPane)
@@ -271,8 +271,8 @@ Rsed.scenes["terrain-editor"] = (function()
 
             const trackMesh = Rsed.world.meshBuilder.track_mesh(
             {
-                cameraPos: Rsed.world.camera.position_floored(),
-                cameraPosFloat: (cameraMovement.isMobileControls? Rsed.world.camera.position() : Rsed.world.camera.position_floored()), // Smooth scrolling on mobile, tile-based otherwise.
+                camera: scene.camera,
+                jaggedCameraMovement: (cameraMovement.isMobileControls? false : true),
                 solidProps: sceneSettings.showProps,
                 includeWireframe: sceneSettings.showWireframe,
                 paintHoverPala: sceneSettings.showHoverPala,
@@ -283,7 +283,7 @@ Rsed.scenes["terrain-editor"] = (function()
                 // The vanishing point. Defaults to the top middle of the screen, like in
                 // the game.
                 const vanishX = (Rngon.renderable_width_of(Rsed.visual.canvas.domElement, Rsed.visual.canvas.scalingFactor) / 2);
-                const vanishY = (4 - (Rsed.world.camera.vertical_zoom() * 2));
+                const vanishY = (4 - (scene.camera.vertical_zoom() * 2));
 
                 for (const ngon of trackMesh.ngons)
                 {
@@ -310,7 +310,7 @@ Rsed.scenes["terrain-editor"] = (function()
             const renderInfo = Rngon.render(Rsed.visual.canvas.domElement, [trackMesh],
             {
                 cameraPosition: Rngon.translation_vector(0, 0, 0),
-                cameraDirection: Rsed.world.camera.rotation(),
+                cameraDirection: scene.camera.rotation(),
                 scale: Rsed.visual.canvas.scalingFactor,
                 fov: 30,
                 nearPlane: 300,
@@ -345,7 +345,7 @@ Rsed.scenes["terrain-editor"] = (function()
 
             /// EXPERIMENTAL. Temporary testing of mobile controls.
             const touchDelta = Rsed.ui.inputState.get_touch_move_delta();
-            Rsed.world.camera.move_camera(-touchDelta.x, 0, -touchDelta.y);
+            scene.camera.move_camera(-touchDelta.x, 0, -touchDelta.y);
 
             Rsed.visual.canvas.mousePickingBuffer.fill(null);
         },
@@ -370,7 +370,7 @@ Rsed.scenes["terrain-editor"] = (function()
             cameraMoveVector.y *= movementSpeed;
             cameraMoveVector.z *= movementSpeed;
             
-            Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+            scene.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
         }
         else
         {
@@ -383,7 +383,7 @@ Rsed.scenes["terrain-editor"] = (function()
                                                        0,
                                                        (movementMult * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
 
-                Rsed.world.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+                scene.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
 
                 cameraMovement.msSinceLastUpdate = 0;
             }
@@ -448,7 +448,7 @@ Rsed.scenes["terrain-editor"] = (function()
     {
         if (Rsed.ui.inputState.mouse_wheel_scroll())
         {
-            Rsed.world.camera.zoom_vertically(-Rsed.ui.inputState.mouse_wheel_scroll() / 2);
+            scene.camera.zoom_vertically(-Rsed.ui.inputState.mouse_wheel_scroll() / 2);
             Rsed.ui.inputState.reset_wheel_scroll();
         }
 
@@ -595,4 +595,6 @@ Rsed.scenes["terrain-editor"] = (function()
 
         return;
     }
+
+    return scene;
 })();

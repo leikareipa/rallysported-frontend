@@ -177,12 +177,9 @@ Rsed.core = (function()
 
     async function load_project(projectMeta)
     {
-        project = Rsed.project.placeholder;
-
         /// TODO: Disable undo/redo while the project loads.
 
-        Rsed.world.camera.reset_camera_position();
-
+        project = Rsed.project.placeholder;
         project = await Rsed.project(projectMeta);
 
         Rsed.ui.undoStack.reset();

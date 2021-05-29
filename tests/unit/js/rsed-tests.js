@@ -17,79 +17,8 @@ Rsed.throw = (explanation = "(no reason given)")=>
 
 const unitTestResults = unit_tests("RallySportED-js", ()=>
 {
-    unit("Camera", ()=>
+    unit("Placeholder", ()=>
     {
-        // Movement.
-        {
-            Rsed.world.camera.reset_camera_position();
-            const camPos = Rsed.world.camera.position();
-
-            Rsed.world.camera.move_camera(11, 12, 13, false);
-            expect_true([()=>((camPos.x + 11) === Rsed.world.camera.position().x),
-                         ()=>((camPos.y + 12) === Rsed.world.camera.position().y),
-                         ()=>((camPos.z + 13) === Rsed.world.camera.position().z)]);
-
-            Rsed.world.camera.reset_camera_position();
-            expect_true([()=>(Rsed.world.camera.position().x === camPos.x),
-                         ()=>(Rsed.world.camera.position().y === camPos.y),
-                         ()=>(Rsed.world.camera.position().z === camPos.z)]);
-        }
-    });
-
-    unit("Texture", ()=>
-    {
-        const pixels = [{red:255, green:0, blue:123}, {red:0, green:111, blue:222}];
-        const indices = [0, 4];
-        const texture = Rsed.visual.texture(
-        {
-            width: 2,
-            height: 1,
-            pixels,
-            indices,
-        });
-
-        expect_true([()=>(texture.pixels.length === 2),
-                     ()=>(texture.indices.length === 2),
-                     ()=>(texture.width === 2),
-                     ()=>(texture.height === 1)]);
-
-        // Default values.
-        expect_true([()=>(!texture.alpha),
-                     ()=>(texture.flipped === "no")]);
-
-        // Invalid/missing values.
-        expect_fail([()=>{Rsed.visual.texture(
-                          {
-                              width: 3, // Should be 2.
-                              height: 1,
-                              pixels,
-                              indices,
-                          })},
-                     ()=>{Rsed.visual.texture(
-                          {
-                              width: 2,
-                              height: 1,
-                              indices,
-                              // No pixel array provided.
-                          })},
-                     ()=>{Rsed.visual.texture(
-                          {
-                              width: 2,
-                              // No width provided.
-                              pixels,
-                              indices,
-                          })}]);
-
-        // Pixel color values should be copied by reference, but indices by value.
-        pixels[0].r = 777;
-        expect_true([()=>(texture.pixels[0].r === 777)]);
-
-        // Immutability.
-        {
-            expect_fail([()=>{texture.width = 0},
-                         ()=>{texture.height = 0},
-                         ()=>{texture.flipped = 0}]);
-        }
     });
 });
 
