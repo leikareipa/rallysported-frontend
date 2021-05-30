@@ -283,7 +283,7 @@ Rsed.scenes["terrain-editor"] = (function()
                 // The vanishing point. Defaults to the top middle of the screen, like in
                 // the game.
                 const vanishX = (Rngon.renderable_width_of(Rsed.visual.canvas.domElement, Rsed.visual.canvas.scalingFactor) / 2);
-                const vanishY = (4 - (scene.camera.vertical_zoom() * 2));
+                const vanishY = (4 - (scene.camera.tilt * 2));
 
                 for (const ngon of trackMesh.ngons)
                 {
@@ -345,7 +345,7 @@ Rsed.scenes["terrain-editor"] = (function()
 
             /// EXPERIMENTAL. Temporary testing of mobile controls.
             const touchDelta = Rsed.ui.inputState.get_touch_move_delta();
-            scene.camera.move_camera(-touchDelta.x, 0, -touchDelta.y);
+            scene.camera.move_by(-touchDelta.x, 0, -touchDelta.y);
 
             Rsed.visual.canvas.mousePickingBuffer.fill(null);
         },
@@ -370,7 +370,7 @@ Rsed.scenes["terrain-editor"] = (function()
             cameraMoveVector.y *= movementSpeed;
             cameraMoveVector.z *= movementSpeed;
             
-            scene.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+            scene.camera.move_by(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
         }
         else
         {
@@ -383,7 +383,7 @@ Rsed.scenes["terrain-editor"] = (function()
                                                        0,
                                                        (movementMult * (cameraMovement.left? -1 : cameraMovement.right? 1 : 0)));
 
-                scene.camera.move_camera(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
+                scene.camera.move_by(cameraMoveVector.x, cameraMoveVector.y, cameraMoveVector.z);
 
                 cameraMovement.msSinceLastUpdate = 0;
             }
@@ -448,7 +448,7 @@ Rsed.scenes["terrain-editor"] = (function()
     {
         if (Rsed.ui.inputState.mouse_wheel_scroll())
         {
-            scene.camera.zoom_vertically(-Rsed.ui.inputState.mouse_wheel_scroll() / 2);
+            scene.camera.tilt_by(-Rsed.ui.inputState.mouse_wheel_scroll() / 2);
             Rsed.ui.inputState.reset_wheel_scroll();
         }
 

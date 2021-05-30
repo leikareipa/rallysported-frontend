@@ -12,33 +12,42 @@
 Rsed.scenes["terrain-editor"].camera = (function()
 {
     const defaultPosition = {x:15.0, y:0.0, z:13.0};
-
     const position = {...defaultPosition};
-
-    // The camera's rotation in degrees.
     const rotation = {x:16, y:0, z:0};
 
-    let verticalZoom = 0;
+    // Tilting combines vertical rotation and movement to shift the camera's
+    // view down and toward the middle tile row on the screen.
+    let tilt = 0;
 
     const publicInterface =
     {
-        reset_camera_position: function()
+        // How many track ground tiles, horizontally and vertically, should be
+        // visible on screen when using this camera.
+        viewportWidth: 28,
+        viewportHeight: 34,
+
+        get tilt()
+        {
+            return tilt;
+        },
+
+        reset_position: function()
         {
             position.x = defaultPosition.x;
             position.y = defaultPosition.y;
             position.z = defaultPosition.z;
         },
 
-        set_camera_position: function(x, y, z)
+        move_to: function(x, y, z)
         {
             position.x = 0;
             position.y = 0;
             position.z = 0;
 
-            this.move_camera(x, y, z);
+            this.move_by(x, y, z);
         },
 
-        move_camera: function(deltaX, deltaY, deltaZ, enforceBounds = true)
+        move_by: function(deltaX, deltaY, deltaZ, enforceBounds = true)
         {
             const prevPos = this.position_floored();
 
@@ -50,10 +59,10 @@ Rsed.scenes["terrain-editor"].camera = (function()
             if (enforceBounds)
             {
                 const marginX = 8;
-                const marginY = 9;
+                const marginY = 14;
                 
-                const maxX = (Rsed.$currentProject.maasto.width - this.view_width);
-                const maxY = (Rsed.$currentProject.maasto.width - this.view_height + 1);
+                const maxX = (Rsed.$currentProject.maasto.width - this.viewportWidth);
+                const maxY = (Rsed.$currentProject.maasto.width - this.viewportHeight + 1);
 
                 position.x = Math.max(-marginX, Math.min(position.x, (maxX + marginX)));
                 position.z = Math.max(-marginY, Math.min(position.z, (maxY + marginY)));
@@ -87,11 +96,10 @@ Rsed.scenes["terrain-editor"].camera = (function()
                         if (grab.propTrackIdx !== 0)
                         {
                             Rsed.$currentProject.props.move(Rsed.$currentProject.track_id(),
-                                                            grab.propTrackIdx,
-                                                            {
-                                                                x: (posDelta.x * Rsed.constants.groundTileSize),
-                                                                z: (posDelta.z * Rsed.constants.groundTileSize),
-                                                            });
+                                                            grab.propTrackIdx, {
+                                x: (posDelta.x * Rsed.constants.groundTileSize),
+                                z: (posDelta.z * Rsed.constants.groundTileSize),
+                            });
                         }
                     }
                 }
@@ -100,7 +108,7 @@ Rsed.scenes["terrain-editor"].camera = (function()
             return;
         },
 
-        rotate_camera: function(xDelta, yDelta, zDelta)
+        rotate_by: function(xDelta, yDelta, zDelta)
         {
             Rsed.throw_if_not_type("number", xDelta, yDelta, zDelta);
 
@@ -111,24 +119,16 @@ Rsed.scenes["terrain-editor"].camera = (function()
             return;
         },
 
-        // Moves the camera up/down while tilting it up/down, so that at its highest
-        // point, the camera is pointed directly down, and at its lowest point toward
-        // the horizon.
-        zoom_vertically: function(delta)
+        tilt_by: function(delta)
         {
             Rsed.throw_if_not_type("number", delta);
 
-            verticalZoom = Math.max(0, Math.min(296, (verticalZoom + delta)));
+            tilt = Math.max(0, Math.min(296, (tilt + delta)));
 
-            position.y = (-verticalZoom * 7);
-            rotation.x = (16 + (verticalZoom / 4));
+            position.y = (-tilt * 7);
+            rotation.x = (16 + (tilt / 10));
 
             return;
-        },
-
-        vertical_zoom: function()
-        {
-            return verticalZoom;
         },
 
         rotation: function()
@@ -149,23 +149,7 @@ Rsed.scenes["terrain-editor"].camera = (function()
         {
             return {...position};
         },
-
-        world_position: function()
-        {
-            return {
-                x: (position.x * Rsed.constants.groundTileSize),
-                y: (position.y * Rsed.constants.groundTileSize),
-                z: (position.z * Rsed.constants.groundTileSize),
-            };
-        },
-
-        // How many track ground tiles, horizontally and vertically, should be
-        // visible on screen when using this camera.
-        view_width: 28,
-        view_height: 31,
     };
-
-    publicInterface.reset_camera_position();
 
     return publicInterface;
 })();

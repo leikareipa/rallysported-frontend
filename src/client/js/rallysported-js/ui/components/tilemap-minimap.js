@@ -27,11 +27,11 @@ Rsed.ui.component.tilemapMinimap =
 
             if (grab)
             {
-                const x = Math.round((grab.tileX - (camera.view_width / 2)) + 1);
-                const z = Math.round((grab.tileZ - (camera.view_height / 2)) + 1);
+                const x = Math.round((grab.tileX - (camera.viewportWidth / 2)) + 1);
+                const z = Math.round((grab.tileZ - (camera.viewportHeight / 2)) + 1);
                 const y = camera.position().y;
 
-                camera.set_camera_position(x, y, z)
+                camera.move_to(x, y, z)
             }
         };
 
@@ -79,8 +79,8 @@ Rsed.ui.component.tilemapMinimap =
             if (image && xMul && yMul)
             {
                 const frame = [];
-                const frameWidth = Math.round((camera.view_width / xMul));
-                const frameHeight = Math.round((camera.view_height / yMul));
+                const frameWidth = Math.round((camera.viewportWidth / xMul));
+                const frameHeight = Math.round((camera.viewportHeight / yMul));
                 
                 for (let y = 0; y < frameHeight; y++)
                 {
@@ -95,8 +95,8 @@ Rsed.ui.component.tilemapMinimap =
                 }
 
                 const cameraPos = camera.position_floored();
-                const maxX = (Rsed.$currentProject.maasto.width - camera.view_width);
-                const maxZ = (Rsed.$currentProject.maasto.height - camera.view_height);
+                const maxX = (Rsed.$currentProject.maasto.width - camera.viewportWidth);
+                const maxZ = (Rsed.$currentProject.maasto.height - camera.viewportHeight);
                 const camX = Math.max(0, (Math.min(maxX, cameraPos.x) / xMul));
                 const camZ = Math.max(0, (Math.min(maxZ, cameraPos.z) / yMul));
                 Rsed.ui.draw.image(frame, null, frameWidth, frameHeight, (offsetX - width + camX), (offsetY + camZ), true);

@@ -55,7 +55,7 @@ Rsed.world.meshBuilder = (function()
 
             // We'll shift the track mesh by these values (world units) to center the mesh on screen.
             // Note that we adjust Z to account for vertical camera zooming.
-            const centerView = {x: -((args.camera.view_width / 2) * Rsed.constants.groundTileSize),
+            const centerView = {x: -((args.camera.viewportWidth / 2) * Rsed.constants.groundTileSize),
                                 y: (-650 + cameraPosFloored.y),
                                 z: (3628 - (args.camera.rotation().x / 7.5) + (Rsed.constants.groundTileSize * 3.5))};
 
@@ -67,10 +67,10 @@ Rsed.world.meshBuilder = (function()
 
             const project = Rsed.$currentProject;
 
-            for (let z = 0; z < args.camera.view_height; z++)
+            for (let z = 0; z < args.camera.viewportHeight; z++)
             {
                 // Add the ground tiles.
-                for (let x = 0; x < args.camera.view_width; x++)
+                for (let x = 0; x < args.camera.viewportWidth; x++)
                 {
                     // Coordinates of the current ground tile.
                     const tileX = (x + cameraPosFloored.x);
@@ -83,7 +83,7 @@ Rsed.world.meshBuilder = (function()
 
                     const isCornerTile = ((x == 0) ||
                                           (z == 0) ||
-                                          (x == (args.camera.view_width - 1)));
+                                          (x == (args.camera.viewportWidth - 1)));
 
                     // Coordinates in world units of the ground tile's top left vertex.
                     const vertX = (((x * Rsed.constants.groundTileSize) + centerView.x) - (fractionX * Rsed.constants.groundTileSize));
@@ -218,7 +218,7 @@ Rsed.world.meshBuilder = (function()
                 // the ground tiles so that the n-gons are properly sorted by depth for rendering.
                 // Otherwise, billboard/bridge tiles can become obscured by ground tiles behind
                 // them.
-                for (let x = 0; x < args.camera.view_width; x++)
+                for (let x = 0; x < args.camera.viewportWidth; x++)
                 {
                     const tileX = (x + cameraPosFloored.x);
                     const tileZ = (z + cameraPosFloored.z);
@@ -230,7 +230,7 @@ Rsed.world.meshBuilder = (function()
 
                     const isCornerTile = ((x == 0) ||
                                           (z == 0) ||
-                                          (x == (args.camera.view_width - 1)));
+                                          (x == (args.camera.viewportWidth - 1)));
 
                     const vertX = (((x * Rsed.constants.groundTileSize) + centerView.x) - (fractionX * Rsed.constants.groundTileSize));
                     const vertZ = ((centerView.z - (z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
@@ -298,9 +298,9 @@ Rsed.world.meshBuilder = (function()
             propLocations.forEach((pos, idx)=>
             {
                 if ((pos.x >= (cameraPosFloored.x * Rsed.constants.groundTileSize)) &&
-                    (pos.x <= ((cameraPosFloored.x + args.camera.view_width) * Rsed.constants.groundTileSize)) &&
+                    (pos.x <= ((cameraPosFloored.x + args.camera.viewportWidth) * Rsed.constants.groundTileSize)) &&
                     (pos.z >= (cameraPosFloored.z * Rsed.constants.groundTileSize)) &&
-                    (pos.z <= ((cameraPosFloored.z + args.camera.view_height) * Rsed.constants.groundTileSize)))
+                    (pos.z <= ((cameraPosFloored.z + args.camera.viewportHeight) * Rsed.constants.groundTileSize)))
                 {
                     const x = ((pos.x + centerView.x - (cameraPosFloored.x * Rsed.constants.groundTileSize)) - (fractionX * Rsed.constants.groundTileSize));
                     const z = ((centerView.z - pos.z + (cameraPosFloored.z * Rsed.constants.groundTileSize)) + (fractionZ * Rsed.constants.groundTileSize));
