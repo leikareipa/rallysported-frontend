@@ -9,11 +9,9 @@
 
 "use strict";
 
-Rsed.track = Rsed.track || {};
-
 // Provides information about a track's KIERROS data (the AI driver's checkpoints).
 // You can learn more about the KIERROS format at https://github.com/leikareipa/rallysported/tree/master/docs.
-Rsed.track.kierros = function(data = Uint8Array)
+Rsed.gameContent.kierros = function(data = Uint8Array)
 {
     const checkpoints = [];
     const bytesPerCheckpoint = 8;

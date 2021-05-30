@@ -8,8 +8,6 @@
 
 "use strict";
 
-Rsed.track = Rsed.track || {};
-
 // Provides information about and the means to modify a track's textures (which are called
 // "PALA" in Rally-Sport). For more information about the track texture format used in Rally-
 // Sport, check out https://github.com/leikareipa/rallysported/tree/master/docs.
@@ -20,7 +18,7 @@ Rsed.track = Rsed.track || {};
 // are the pixels of the first texture, the next (width * height) bytes those of the second
 // texture, etc. Each byte in the array gives the corresponding pixel's RGB color as a palette
 // index.
-Rsed.track.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
+Rsed.gameContent.palat = function(palaWidth = 0, palaHeight = 0, data = Uint8Array)
 {
     Rsed.assert && (palaWidth === palaHeight)
                 || Rsed.throw("Expected PALA width and height to be equal.");

@@ -8,12 +8,10 @@
 
 "use strict";
 
-Rsed.track = Rsed.track || {};
-
 // Provides information about and the means to modify a track's heightmap (which are called
 // "MAASTO" in Rally-Sport). For more information about the heightmap format used in Rally-
 // Sport, check out https://github.com/leikareipa/rallysported/tree/master/docs.
-Rsed.track.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Array)
+Rsed.gameContent.maasto = function(maastoWidth = 0, maastoHeight = 0, data = Uint8Array)
 {
     Rsed.assert && (maastoWidth === maastoHeight)
                 || Rsed.throw("Expected MAASTO width and height to be equal.");

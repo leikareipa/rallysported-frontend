@@ -119,28 +119,28 @@ Rsed.project = async function(projectArgs = {})
     // Pass relevant segments of the container's data into objects responsible for managing
     // the corresponding individual assets. Note that the data are passed by reference, so
     // modifications made by the objects to the data will be reflected in the container.
-    const maasto = Rsed.track.maasto(projectData.meta.width, projectData.meta.height,
-                                     new Uint8Array(projectDataContainer.dataBuffer,
-                                                    projectDataContainer.byteOffset().maasto,
-                                                    projectDataContainer.byteSize().maasto));
+    const maasto = Rsed.gameContent.maasto(projectData.meta.width, projectData.meta.height,
+                                           new Uint8Array(projectDataContainer.dataBuffer,
+                                                          projectDataContainer.byteOffset().maasto,
+                                                          projectDataContainer.byteSize().maasto));
 
-    const varimaa = Rsed.track.varimaa(projectData.meta.width, projectData.meta.height,
-                                       new Uint8Array(projectDataContainer.dataBuffer,
-                                                      projectDataContainer.byteOffset().varimaa,
-                                                      projectDataContainer.byteSize().varimaa));
+    const varimaa = Rsed.gameContent.varimaa(projectData.meta.width, projectData.meta.height,
+                                             new Uint8Array(projectDataContainer.dataBuffer,
+                                                            projectDataContainer.byteOffset().varimaa,
+                                                            projectDataContainer.byteSize().varimaa));
 
-    const palat = Rsed.track.palat(Rsed.constants.palaWidth, Rsed.constants.palaHeight,
-                                   new Uint8Array(projectDataContainer.dataBuffer,
-                                                  projectDataContainer.byteOffset().palat,
-                                                  projectDataContainer.byteSize().palat));
+    const palat = Rsed.gameContent.palat(Rsed.constants.palaWidth, Rsed.constants.palaHeight,
+                                         new Uint8Array(projectDataContainer.dataBuffer,
+                                                        projectDataContainer.byteOffset().palat,
+                                                        projectDataContainer.byteSize().palat));
 
-    const props = await Rsed.track.props(new Uint8Array(projectDataContainer.dataBuffer,
-                                                        projectDataContainer.byteOffset().text,
-                                                        projectDataContainer.byteSize().text));
+    const props = await Rsed.gameContent.props(new Uint8Array(projectDataContainer.dataBuffer,
+                                               projectDataContainer.byteOffset().text,
+                                               projectDataContainer.byteSize().text));
 
-    const kierros = await Rsed.track.kierros(new Uint8Array(projectDataContainer.dataBuffer,
-                                                            projectDataContainer.byteOffset().kierros,
-                                                            projectDataContainer.byteSize().kierros));
+    const kierros = await Rsed.gameContent.kierros(new Uint8Array(projectDataContainer.dataBuffer,
+                                                   projectDataContainer.byteOffset().kierros,
+                                                   projectDataContainer.byteSize().kierros));
 
     const manifesto = projectData.manifesto;
 

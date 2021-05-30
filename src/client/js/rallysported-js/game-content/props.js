@@ -8,8 +8,6 @@
 
 "use strict";
 
-Rsed.track = Rsed.track || {};
-
 // Provides information about and the means to modify a track's props (track-side 3d objects,
 // like trees and the finish line). For more information about track props, check out the
 // documentation at https://github.com/leikareipa/rallysported/tree/master/docs; and the
@@ -17,7 +15,7 @@ Rsed.track = Rsed.track || {};
 //
 // The textureAtlas parameter provides as an array the pixels of the prop texture atlas, with
 // each byte in it giving the corresponding pixel's RGB color as a palette index.
-Rsed.track.props = async function(textureAtlas = Uint8Array)
+Rsed.gameContent.props = async function(textureAtlas = Uint8Array)
 {
     const data = await fetch_prop_metadata_from_server();
 
