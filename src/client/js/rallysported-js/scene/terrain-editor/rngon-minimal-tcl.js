@@ -13,7 +13,7 @@
 // Expects vertices to already be in screen space.
 //
 // For the original function, see Rngon.ngon_transform_and_light().
-Rsed.minimal_rngon_tcl = function(ngons = [])
+Rsed.scenes["terrain-editor"].minimal_rngon_tcl = function(ngons = [])
 {
     const ngonCache = Rngon.internalState.ngonCache;
     const renderWidth = Rngon.internalState.pixelBuffer.width;

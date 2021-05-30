@@ -1,8 +1,9 @@
 /*
- * Most recent known filename: js/world/mesh-builder.js
+ * Most recent known filename: js/scene/terrain-editor/mesh-builder.js
  *
- * 2019 Tarpeeksi Hyvae Soft /
- * RallySportED-js
+ * 2019 Tarpeeksi Hyvae Soft
+ * 
+ * Software: RallySportED-js
  *
  */
 
@@ -10,7 +11,7 @@
 
 // Provides functions returning renderable 3d meshes of various world items - like the track and
 // its props - accounting for user-specified arguments such as camera position.
-Rsed.world.meshBuilder = (function()
+Rsed.scenes["terrain-editor"].meshBuilder = (function()
 {
     const publicInterface =
     {

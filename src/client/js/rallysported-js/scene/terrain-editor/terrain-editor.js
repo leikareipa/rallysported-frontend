@@ -269,7 +269,7 @@ Rsed.scenes["terrain-editor"] = (function()
         {
             move_camera();
 
-            const trackMesh = Rsed.world.meshBuilder.track_mesh(
+            const trackMesh = scene.meshBuilder.track_mesh(
             {
                 camera: scene.camera,
                 jaggedCameraMovement: (cameraMovement.isMobileControls? false : true),

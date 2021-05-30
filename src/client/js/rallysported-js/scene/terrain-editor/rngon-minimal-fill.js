@@ -35,7 +35,7 @@ let numRightEdges = 0;
 // code, please benchmark its effects on performance first - maintaining or
 // improving performance would be great, losing performance would be bad.
 //
-Rsed.minimal_rngon_filler = function(auxiliaryBuffers = [])
+Rsed.scenes["terrain-editor"].minimal_rngon_filler = function(auxiliaryBuffers = [])
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const renderWidth = Rngon.internalState.pixelBuffer.width;
