@@ -132,14 +132,18 @@ function create_app()
             <section class="dokki-topic"
                  :id=simplifiedTitle>
             
-                <h1 class="title">
-                    {{this.idx}}. {{this.title}}
-                </h1>
+                <span class="title">
 
-                <span class="permalink" title="Permalink to this topic">
-                    <a :href="'#'+simplifiedTitle">
-                        <i class="fas fa-link"/>
-                    </a>
+                    <h1>{{this.idx}}. {{this.title}}</h1>
+
+                    <span class="permalink" title="Permalink to this topic">
+                    
+                        <a :href="'#'+simplifiedTitle">
+                            <i class="fas fa-link"/>
+                        </a>
+
+                    </span>
+
                 </span>
 
                 <slot/>
@@ -194,10 +198,25 @@ function create_app()
             src: {default: ""},
             height: {default: "500px"},
             title: {default: "Inline frame"},
+            autofocus: {default: undefined},
         },
         data() {
             return {
                 isExpanded: false,
+            }
+        },
+        watch: {
+            isExpanded()
+            {
+                if (this.isExpanded && (this.$props.autofocus !== undefined))
+                {
+                    this.$nextTick(()=>
+                    {
+                        this.$refs["iframe"].onload = ()=>{
+                            this.$refs["iframe"].focus();
+                        };
+                    });
+                }
             }
         },
         template: `
@@ -223,7 +242,8 @@ function create_app()
                         :style="{height: height}">
 
                     <iframe class="dokki-iframe"
-                            :src=src>
+                            :src=src
+                            ref="iframe">
                     </iframe>
                     
                 </footer>

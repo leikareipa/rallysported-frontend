@@ -5,8 +5,9 @@
     --topics-width: 810px;
     --content-margin: 20px;
     --header-bottom-margin: 23px;
-    --topics-top-margin: calc(35px - var(--header-bottom-margin));
+    --topics-container-top-margin: calc(35px - var(--header-bottom-margin));
     --embedded-element-border-radius: 8px;
+    --link-color: #2264e8;
 
     /* Margins on the left and right of the page outside of which no content
      * is allowed.*/
@@ -55,6 +56,8 @@ body
 .dokki-header,
 [while-dokki-initializing]
 {
+    overflow-x: auto;
+    white-space: nowrap;
     border-bottom: 1px solid lightgray;
     display: flex;
     flex-direction: row;
@@ -71,7 +74,6 @@ body
     text-align: left;
     font-weight: normal;
     font-size: 160%;
-    white-space: normal;
     height: var(--header-height);
     position: fixed;
     width: 100%;
@@ -151,7 +153,7 @@ body
     align-items: center;
     text-align: left;
     position: relative;
-    left: calc(50% - var(--topics-width)/2);
+    left: calc(50% - var(--topics-width) / 2);
     top: 0;
     z-index: 0;
 }
@@ -162,7 +164,7 @@ body
     padding: 0;
     margin: 0;
     padding-top: 15px;
-    padding-bottom: 15px;
+    margin-bottom: 25px;
     width: 100%;
 }
 
@@ -171,14 +173,15 @@ body
     line-height: 1.5;
 }
 
-.dokki-topic p a
+.dokki-topic p a,
+.dokki-topic p a:visited
 {
-    color: #00ade6;
+    color: var(--link-color);
 }
 
 .dokki-topic:last-of-type
 {
-    padding-bottom: 0;
+    margin-bottom: 0;
 }
 
 .dokki-topic li
@@ -191,19 +194,26 @@ body
     margin-bottom: 0;
 }
 
-.dokki-topic .permalink
+.dokki-topic > .title
+{
+    overflow-x: auto;
+    display: flex;
+    align-items: center;
+}
+
+.dokki-topic > .title > .permalink
 {
     display: none;
-    padding-left: 5px;
+    padding-left: 6px;
     color: lightgray;
 }
 
-.dokki-topic .permalink:hover
+.dokki-topic > .title > .permalink:hover
 {
     color: gray;
 }
 
-.dokki-topic:hover .permalink
+.dokki-topic:hover > .title > .permalink
 {
     display: inline-block;
 }
@@ -221,13 +231,13 @@ body
 
 .dokki-topic h1
 {
-    display: inline-block; /* To allow permalink icons next to the h2 heading.*/
     font-size: 160%;
+    white-space: nowrap;
 }
 
 .dokki-topic h2
 {
-    font-size: 130%;
+    font-size: 125%;
 }
 
 .dokki-topic h2:not(:first-child)
@@ -246,12 +256,12 @@ body
 {
     visibility: hidden;
     position: relative;
-    top: calc(var(--header-height) * -1 - var(--content-margin) + var(--topics-top-margin) + 1px);
+    top: calc(var(--header-height) * -1 - var(--content-margin) + var(--topics-container-top-margin) + 1px);
 }
 
 .dokki-topic-anchor:first-child
 {
-    margin-top: calc(var(--content-margin) - var(--header-bottom-margin) - var(--topics-top-margin));
+    margin-top: calc(var(--content-margin) - var(--header-bottom-margin) - var(--topics-container-top-margin));
 }
 
 .dokki-text-block-with-line-numbers
@@ -296,7 +306,7 @@ body
 .dokki-embedded > header.clickable
 {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     box-sizing: border-box;
     cursor: pointer;
     user-select: none;
@@ -336,12 +346,12 @@ body
 .dokki-embedded > header > .revealer
 {
     margin-left: 10px;
-    color: #00ade6;
-    font-weight: normal;
+    color: var(--link-color);
     display: inline-block;
     margin-left: auto;
     font-variant: small-caps;
     text-transform: lowercase;
+    white-space: nowrap;
 }
 
 .dokki-embedded > hr
