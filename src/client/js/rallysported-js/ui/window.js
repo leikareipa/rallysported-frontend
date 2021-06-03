@@ -53,12 +53,6 @@ window.onload = function(event)
     
     // Parse the user-supplied URL parameters.
     {
-        if (window.location.hash == "#play")
-        {
-            history.replaceState(null, null, " "); // Remove the hash.
-            Rsed.player.runOnStartup = true;
-        }
-
         const params = new URLSearchParams(window.location.search);
 
         // If the user requests to view a stream, we just need to start the stream.
@@ -67,7 +61,6 @@ window.onload = function(event)
         if (params.has("transientServer"))
         {
             Rsed.stream.start("viewer", params.get("transientServer"));
-            
             return;
         }
 
@@ -84,7 +77,6 @@ window.onload = function(event)
         {
             params.append("track", "demod");
             window.location.search = params.toString();
-
             return;
         }
         else
@@ -94,7 +86,6 @@ window.onload = function(event)
                 !(/^[0-9a-zA-Z-.]+$/.test(contentId)))
             {
                 Rsed.throw("Invalid track identifier.");
-
                 return;
             }
 
@@ -110,6 +101,21 @@ window.onload = function(event)
             }
 
             rsedStartupArgs.project.contentId = contentId;
+        }
+    }
+
+    // Parse the URL hash, if any.
+    {
+        const hashParams = Rsed.browserMetadata.parse_hash_url();
+
+        if (hashParams["scene"])
+        {
+            rsedStartupArgs.scene = `${hashParams["scene"]}`;
+        }
+
+        if (hashParams["play"])
+        {
+            Rsed.player.runOnStartup = true;
         }
     }
 

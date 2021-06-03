@@ -59,6 +59,9 @@ Rsed.core = (function()
                     // reference.
                     contentId: "demod",
                 },
+
+                // Which scene (of Rsed.scenes.xxxx) to show by default.
+                scene: "terrain-editor",
         
                 // If the user is viewing a stream, its id will be set here.
                 stream: null,
@@ -92,7 +95,7 @@ Rsed.core = (function()
             }
 
             coreIsRunning = true;
-            Rsed.$currentScene = "terrain-editor";
+            Rsed.$currentScene = (args.scene || "terrain-editor");
             
             Rsed.browserMetadata.warn_of_incompatibilities();
 

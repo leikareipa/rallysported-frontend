@@ -29,6 +29,31 @@ Rsed.browserMetadata = (function()
             return params.has(paramName);
         },
 
+        parse_hash_url: function()
+        {
+            const hash = window.location.hash.substring(1);
+            const pairs = hash.split("/");
+            const params = {};
+
+            for (const pair of pairs)
+            {
+                let key, value;
+
+                if (pair.indexOf(":") >= 0)
+                {
+                    [key, value] = pair.split(":");
+                }
+                else
+                {
+                    [key, value] = [pair, true];
+                }
+
+                params[key] = value;
+            }
+
+            return params;
+        },
+
         warn_of_incompatibilities: function()
         {
             // RallySportED-js projects are exported (saved) via JSZip using Blobs.
