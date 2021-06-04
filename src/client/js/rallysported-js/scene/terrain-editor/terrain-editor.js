@@ -320,8 +320,8 @@ Rsed.scenes["terrain-editor"] = (function()
                 useDepthBuffer: false,
                 auxiliaryBuffers: [{buffer:Rsed.visual.canvas.mousePickingBuffer, property:"mousePickId"}],
                 modules: {
-                    ngonFill: Rsed.minimal_rngon_filler,
-                    transformClipLight: Rsed.minimal_rngon_tcl,
+                    ngonFill: Rsed.scenes["terrain-editor"].minimal_rngon_filler,
+                    transformClipLight: Rsed.scenes["terrain-editor"].minimal_rngon_tcl,
                 },
             });
 
