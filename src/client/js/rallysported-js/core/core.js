@@ -19,6 +19,9 @@ Rsed.core = (function()
 
     let ticksPerSecond = 0;
 
+    // The arguments passed to the most recent call to .start().
+    let startupArgs = {};
+
     // The project we've currently got loaded. When the user makes edits or requests a save,
     // this is the target project.
     let project = Rsed.project.placeholder;
@@ -60,9 +63,20 @@ Rsed.core = (function()
                     contentId: "demod",
                 },
 
+                ui:
+                {
+                    showMenubar: true,
+                    showInCanvas: true,
+                },
+
+                renderer:
+                {
+                    pixelated: true,
+                },
+
                 // Which scene (of Rsed.scenes.xxxx) to show by default.
                 scene: "terrain-editor",
-        
+
                 // If the user is viewing a stream, its id will be set here.
                 stream: null,
             }
@@ -78,6 +92,8 @@ Rsed.core = (function()
                 ...args,
             };
 
+            startupArgs = args;
+
             coreIsRunning = false;
             Rsed.$currentScene = "loading-spinner";
 
@@ -87,7 +103,16 @@ Rsed.core = (function()
             await load_project(args.project);
 
             Rsed.ui.htmlUI.refresh();
-            Rsed.ui.htmlUI.set_visible(true);
+            Rsed.ui.htmlUI.set_visible(args.ui.showMenubar);
+            
+            if (args.renderer.pixelated)
+            {
+                document.getElementById("render-canvas").classList.add("pixelated");
+            }
+            else
+            {
+                document.getElementById("render-canvas").classList.remove("pixelated");
+            }
 
             if (Rsed.player.runOnStartup)
             {
@@ -148,6 +173,7 @@ Rsed.core = (function()
         },
     }
 
+    startupArgs = publicInterface.default_startup_args();
     tick();
 
     return publicInterface;
@@ -165,7 +191,7 @@ Rsed.core = (function()
 
             scene.handle_user_interaction();
             scene.draw_mesh();
-            scene.draw_ui();
+            if (startupArgs.ui.showInCanvas) scene.draw_ui();
 
             if (publicInterface.forceUpdateMouseHoverOnTickEnd)
             {

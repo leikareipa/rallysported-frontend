@@ -1,7 +1,7 @@
 /*
  * Most recent known filename: js/misc/browser-metadata.js
  *
- * 2020 Tarpeeksi Hyvae Soft
+ * 2020-2021 Tarpeeksi Hyvae Soft
  * 
  * Software: RallySportED-js
  *
@@ -13,6 +13,13 @@
 // the app is running.
 Rsed.browserMetadata = (function()
 {
+    // The most recent URL hash parsed with parse_url_hash(); used as a cache
+    // to avoid re-parsing the hash when it hasn't changed between calls.
+    const latestUrlHash = {
+        string: "",
+        params: [],
+    };
+
     const publicInterface = {
         isMobile: Boolean(/android|mobi|(crios\/)/i.test(navigator.userAgent)),
         
@@ -29,29 +36,47 @@ Rsed.browserMetadata = (function()
             return params.has(paramName);
         },
 
-        parse_hash_url: function()
+        has_hash_param: function(paramName = "")
         {
-            const hash = window.location.hash.substring(1);
-            const pairs = hash.split("/");
-            const params = {};
+            const params = parse_url_hash();
+            return (params[paramName] !== undefined);
+        },
 
-            for (const pair of pairs)
-            {
-                let key, value;
+        hash_param: function(paramName = "")
+        {
+            const params = parse_url_hash();
+            const param = params[paramName];
 
-                if (pair.indexOf(":") >= 0)
+            return {
+                isDefined: (param !== undefined),
+                value: function()
                 {
-                    [key, value] = pair.split(":");
-                }
-                else
-                {
-                    [key, value] = [pair, true];
-                }
+                    if (!Array.isArray(param))
+                    {
+                        return false;
+                    }
 
-                params[key] = value;
+                    return this.value_at(0);
+                },
+                value_at: function(idx = 0)
+                {
+                    if (!Array.isArray(param))
+                    {
+                        return false;
+                    }
+
+                    return param[idx];
+                },
+                has: function(value = "")
+                {
+                    if (!Array.isArray(param))
+                    {
+                        return false;
+                    }
+
+                    return param.includes(value);
+                },
             }
-
-            return params;
         },
 
         warn_of_incompatibilities: function()
@@ -80,4 +105,58 @@ Rsed.browserMetadata = (function()
     };
 
     return publicInterface;
+
+    function parse_url_hash()
+    {
+        // We expect a hash to be something like "#gui:-menubar/play:true/scene:texture-editor".
+        const hashString = window.location.hash.substring(1);
+
+        // Don't re-parse if the params don't seem to have changed.
+        if (latestUrlHash.string == hashString)
+        {
+            return latestUrlHash.params;
+        }
+
+        const keyValuePairs = hashString.split("/").filter(s=>s.length);
+        const params = {};
+
+        for (const pair of keyValuePairs)
+        {
+            let key, values;
+
+            // We support key/value pairs of type "xxxx:yyyy" and "xxxx" (the latter
+            // behaves as if it were "xxxx:true"). The first-from-left ":" character
+            // marks the boundary between the key and value; subsequent ":" characters
+            // are part of the value. "|" characters mark the boundaries between
+            // multiple values, e.g. "key:value1|value2|value3".
+            [key, ...values] = pair.split(":");
+            values = values.join(":").split("|").filter(s=>s.length);
+
+            if (!values.length)
+            {
+                values = [true];
+            }
+            else
+            {
+                // The value is always given as a string by the browser, but for
+                // proper boolean logic we want to convert certain strings into
+                // their logical representations; so e.g. "false" == true but we
+                // instead want ("false" <- false) != true.
+                for (let i = 0; i < values.length; i++)
+                {
+                    if (!values[i].length) values[i] = true;
+                    else if (values[i] == "false") values[i] = false;
+                    else if (values[i] == "true") values[i] = true;
+                    else if (!isNaN(values[i])) values[i] = Number(values[i]);
+                }
+            }
+
+            params[key] = values;
+        }
+
+        latestUrlHash.string = hashString;
+        latestUrlHash.params = params;
+
+        return params;
+    }
 })();

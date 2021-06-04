@@ -15,6 +15,13 @@
 /// might otherwise fall through the dropdown menu.
 let RSED_DROPDOWN_ACTIVATED = false;
 
+window.onhashchange = function()
+{
+    window.location.reload();
+    
+    return;
+}
+
 window.onblur = function()
 {
     Rsed.ui.inputState.reset_keys();
@@ -104,18 +111,27 @@ window.onload = function(event)
         }
     }
 
-    // Parse the URL hash, if any.
+    // Parse the URL hash.
     {
-        const hashParams = Rsed.browserMetadata.parse_hash_url();
-
-        if (hashParams["scene"])
+        if (Rsed.browserMetadata.has_hash_param("ui"))
         {
-            rsedStartupArgs.scene = `${hashParams["scene"]}`;
+            rsedStartupArgs.ui.showMenubar = !Rsed.browserMetadata.hash_param("ui").has("-menubar");
+            rsedStartupArgs.ui.showInCanvas = !Rsed.browserMetadata.hash_param("ui").has("-canvas");
         }
 
-        if (hashParams["play"])
+        if (Rsed.browserMetadata.has_hash_param("renderer"))
         {
-            Rsed.player.runOnStartup = true;
+            rsedStartupArgs.renderer.pixelated = !Rsed.browserMetadata.hash_param("renderer").has("-pixelated");
+        }
+
+        if (Rsed.browserMetadata.has_hash_param("scene"))
+        {
+            rsedStartupArgs.scene = Rsed.browserMetadata.hash_param("scene").value();
+        }
+
+        if (Rsed.browserMetadata.has_hash_param("play"))
+        {
+            Rsed.player.runOnStartup = Rsed.browserMetadata.hash_param("play").value();
         }
     }
 
